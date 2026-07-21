@@ -83,7 +83,7 @@ function ProviderPage() {
             Serviços
           </h2>
           <div className="flex flex-wrap gap-2">
-            {provider.services.map((s) => (
+            {provider.services.map((s: string) => (
               <span
                 key={s}
                 className="px-3 py-1.5 bg-card ring-1 ring-border rounded-full text-sm"
