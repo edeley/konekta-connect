@@ -13,8 +13,10 @@ import { Route as PerfilRouteImport } from './routes/perfil'
 import { Route as PedidosRouteImport } from './routes/pedidos'
 import { Route as ChatRouteImport } from './routes/chat'
 import { Route as CarteiraRouteImport } from './routes/carteira'
+import { Route as AuthRouteImport } from './routes/auth'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as PrestadorIdRouteImport } from './routes/prestador.$id'
+import { Route as ChatIdRouteImport } from './routes/chat.$id'
 
 const PerfilRoute = PerfilRouteImport.update({
   id: '/perfil',
@@ -36,6 +38,11 @@ const CarteiraRoute = CarteiraRouteImport.update({
   path: '/carteira',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthRoute = AuthRouteImport.update({
+  id: '/auth',
+  path: '/auth',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
@@ -46,57 +53,81 @@ const PrestadorIdRoute = PrestadorIdRouteImport.update({
   path: '/prestador/$id',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ChatIdRoute = ChatIdRouteImport.update({
+  id: '/$id',
+  path: '/$id',
+  getParentRoute: () => ChatRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/auth': typeof AuthRoute
   '/carteira': typeof CarteiraRoute
-  '/chat': typeof ChatRoute
+  '/chat': typeof ChatRouteWithChildren
   '/pedidos': typeof PedidosRoute
   '/perfil': typeof PerfilRoute
+  '/chat/$id': typeof ChatIdRoute
   '/prestador/$id': typeof PrestadorIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/auth': typeof AuthRoute
   '/carteira': typeof CarteiraRoute
-  '/chat': typeof ChatRoute
+  '/chat': typeof ChatRouteWithChildren
   '/pedidos': typeof PedidosRoute
   '/perfil': typeof PerfilRoute
+  '/chat/$id': typeof ChatIdRoute
   '/prestador/$id': typeof PrestadorIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/auth': typeof AuthRoute
   '/carteira': typeof CarteiraRoute
-  '/chat': typeof ChatRoute
+  '/chat': typeof ChatRouteWithChildren
   '/pedidos': typeof PedidosRoute
   '/perfil': typeof PerfilRoute
+  '/chat/$id': typeof ChatIdRoute
   '/prestador/$id': typeof PrestadorIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/auth'
     | '/carteira'
     | '/chat'
     | '/pedidos'
     | '/perfil'
+    | '/chat/$id'
     | '/prestador/$id'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/carteira' | '/chat' | '/pedidos' | '/perfil' | '/prestador/$id'
+  to:
+    | '/'
+    | '/auth'
+    | '/carteira'
+    | '/chat'
+    | '/pedidos'
+    | '/perfil'
+    | '/chat/$id'
+    | '/prestador/$id'
   id:
     | '__root__'
     | '/'
+    | '/auth'
     | '/carteira'
     | '/chat'
     | '/pedidos'
     | '/perfil'
+    | '/chat/$id'
     | '/prestador/$id'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AuthRoute: typeof AuthRoute
   CarteiraRoute: typeof CarteiraRoute
-  ChatRoute: typeof ChatRoute
+  ChatRoute: typeof ChatRouteWithChildren
   PedidosRoute: typeof PedidosRoute
   PerfilRoute: typeof PerfilRoute
   PrestadorIdRoute: typeof PrestadorIdRoute
@@ -132,6 +163,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CarteiraRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/auth': {
+      id: '/auth'
+      path: '/auth'
+      fullPath: '/auth'
+      preLoaderRoute: typeof AuthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -146,13 +184,31 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PrestadorIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/chat/$id': {
+      id: '/chat/$id'
+      path: '/$id'
+      fullPath: '/chat/$id'
+      preLoaderRoute: typeof ChatIdRouteImport
+      parentRoute: typeof ChatRoute
+    }
   }
 }
 
+interface ChatRouteChildren {
+  ChatIdRoute: typeof ChatIdRoute
+}
+
+const ChatRouteChildren: ChatRouteChildren = {
+  ChatIdRoute: ChatIdRoute,
+}
+
+const ChatRouteWithChildren = ChatRoute._addFileChildren(ChatRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AuthRoute: AuthRoute,
   CarteiraRoute: CarteiraRoute,
-  ChatRoute: ChatRoute,
+  ChatRoute: ChatRouteWithChildren,
   PedidosRoute: PedidosRoute,
   PerfilRoute: PerfilRoute,
   PrestadorIdRoute: PrestadorIdRoute,

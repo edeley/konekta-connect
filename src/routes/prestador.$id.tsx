@@ -195,7 +195,7 @@ function ProviderPage() {
               <div>
                 <p className="text-xs font-medium text-muted-foreground mb-2">Serviço</p>
                 <div className="flex flex-wrap gap-2">
-                  {provider.services.map((s) => (
+                  {provider.services.map((s: string) => (
                     <button
                       key={s}
                       onClick={() => setService(s)}
