@@ -214,7 +214,7 @@ function ProviderPage() {
               <div>
                 <p className="text-xs font-medium text-muted-foreground mb-2">Horário</p>
                 <div className="grid grid-cols-2 gap-2">
-                  {slots.map((s) => (
+                  {slots.map((s: string) => (
                     <button
                       key={s}
                       onClick={() => setSlot(s)}
