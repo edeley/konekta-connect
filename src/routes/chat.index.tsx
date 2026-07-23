@@ -3,7 +3,7 @@ import { AppShell } from "@/components/AppShell";
 import { providers } from "@/lib/konekta-data";
 import { useStore } from "@/lib/store";
 
-export const Route = createFileRoute("/chat")({
+export const Route = createFileRoute("/chat/")({
   head: () => ({
     meta: [
       { title: "Conversas · KONEKTA" },

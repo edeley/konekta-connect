@@ -11,10 +11,10 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as PerfilRouteImport } from './routes/perfil'
 import { Route as PedidosRouteImport } from './routes/pedidos'
-import { Route as ChatRouteImport } from './routes/chat'
 import { Route as CarteiraRouteImport } from './routes/carteira'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as ChatIndexRouteImport } from './routes/chat.index'
 import { Route as PrestadorIdRouteImport } from './routes/prestador.$id'
 import { Route as ChatIdRouteImport } from './routes/chat.$id'
 
@@ -26,11 +26,6 @@ const PerfilRoute = PerfilRouteImport.update({
 const PedidosRoute = PedidosRouteImport.update({
   id: '/pedidos',
   path: '/pedidos',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ChatRoute = ChatRouteImport.update({
-  id: '/chat',
-  path: '/chat',
   getParentRoute: () => rootRouteImport,
 } as any)
 const CarteiraRoute = CarteiraRouteImport.update({
@@ -48,47 +43,52 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ChatIndexRoute = ChatIndexRouteImport.update({
+  id: '/chat/',
+  path: '/chat/',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const PrestadorIdRoute = PrestadorIdRouteImport.update({
   id: '/prestador/$id',
   path: '/prestador/$id',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ChatIdRoute = ChatIdRouteImport.update({
-  id: '/$id',
-  path: '/$id',
-  getParentRoute: () => ChatRoute,
+  id: '/chat/$id',
+  path: '/chat/$id',
+  getParentRoute: () => rootRouteImport,
 } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/carteira': typeof CarteiraRoute
-  '/chat': typeof ChatRouteWithChildren
   '/pedidos': typeof PedidosRoute
   '/perfil': typeof PerfilRoute
   '/chat/$id': typeof ChatIdRoute
   '/prestador/$id': typeof PrestadorIdRoute
+  '/chat/': typeof ChatIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/carteira': typeof CarteiraRoute
-  '/chat': typeof ChatRouteWithChildren
   '/pedidos': typeof PedidosRoute
   '/perfil': typeof PerfilRoute
   '/chat/$id': typeof ChatIdRoute
   '/prestador/$id': typeof PrestadorIdRoute
+  '/chat': typeof ChatIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/carteira': typeof CarteiraRoute
-  '/chat': typeof ChatRouteWithChildren
   '/pedidos': typeof PedidosRoute
   '/perfil': typeof PerfilRoute
   '/chat/$id': typeof ChatIdRoute
   '/prestador/$id': typeof PrestadorIdRoute
+  '/chat/': typeof ChatIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -96,41 +96,42 @@ export interface FileRouteTypes {
     | '/'
     | '/auth'
     | '/carteira'
-    | '/chat'
     | '/pedidos'
     | '/perfil'
     | '/chat/$id'
     | '/prestador/$id'
+    | '/chat/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/auth'
     | '/carteira'
-    | '/chat'
     | '/pedidos'
     | '/perfil'
     | '/chat/$id'
     | '/prestador/$id'
+    | '/chat'
   id:
     | '__root__'
     | '/'
     | '/auth'
     | '/carteira'
-    | '/chat'
     | '/pedidos'
     | '/perfil'
     | '/chat/$id'
     | '/prestador/$id'
+    | '/chat/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthRoute: typeof AuthRoute
   CarteiraRoute: typeof CarteiraRoute
-  ChatRoute: typeof ChatRouteWithChildren
   PedidosRoute: typeof PedidosRoute
   PerfilRoute: typeof PerfilRoute
+  ChatIdRoute: typeof ChatIdRoute
   PrestadorIdRoute: typeof PrestadorIdRoute
+  ChatIndexRoute: typeof ChatIndexRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -147,13 +148,6 @@ declare module '@tanstack/react-router' {
       path: '/pedidos'
       fullPath: '/pedidos'
       preLoaderRoute: typeof PedidosRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/chat': {
-      id: '/chat'
-      path: '/chat'
-      fullPath: '/chat'
-      preLoaderRoute: typeof ChatRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/carteira': {
@@ -177,6 +171,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/chat/': {
+      id: '/chat/'
+      path: '/chat'
+      fullPath: '/chat/'
+      preLoaderRoute: typeof ChatIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/prestador/$id': {
       id: '/prestador/$id'
       path: '/prestador/$id'
@@ -186,32 +187,23 @@ declare module '@tanstack/react-router' {
     }
     '/chat/$id': {
       id: '/chat/$id'
-      path: '/$id'
+      path: '/chat/$id'
       fullPath: '/chat/$id'
       preLoaderRoute: typeof ChatIdRouteImport
-      parentRoute: typeof ChatRoute
+      parentRoute: typeof rootRouteImport
     }
   }
 }
-
-interface ChatRouteChildren {
-  ChatIdRoute: typeof ChatIdRoute
-}
-
-const ChatRouteChildren: ChatRouteChildren = {
-  ChatIdRoute: ChatIdRoute,
-}
-
-const ChatRouteWithChildren = ChatRoute._addFileChildren(ChatRouteChildren)
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthRoute: AuthRoute,
   CarteiraRoute: CarteiraRoute,
-  ChatRoute: ChatRouteWithChildren,
   PedidosRoute: PedidosRoute,
   PerfilRoute: PerfilRoute,
+  ChatIdRoute: ChatIdRoute,
   PrestadorIdRoute: PrestadorIdRoute,
+  ChatIndexRoute: ChatIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
