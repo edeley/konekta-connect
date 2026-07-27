@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as TelasRouteImport } from './routes/telas'
+import { Route as SplashRouteImport } from './routes/splash'
 import { Route as PerfilRouteImport } from './routes/perfil'
 import { Route as PedidosRouteImport } from './routes/pedidos'
 import { Route as McpRouteImport } from './routes/mcp'
@@ -27,6 +28,11 @@ import { Route as Char91DotmcpChar93InvokeToolToolRouteImport } from './routes/[
 const TelasRoute = TelasRouteImport.update({
   id: '/telas',
   path: '/telas',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SplashRoute = SplashRouteImport.update({
+  id: '/splash',
+  path: '/splash',
   getParentRoute: () => rootRouteImport,
 } as any)
 const PerfilRoute = PerfilRouteImport.update({
@@ -106,6 +112,7 @@ export interface FileRoutesByFullPath {
   '/mcp': typeof McpRoute
   '/pedidos': typeof PedidosRoute
   '/perfil': typeof PerfilRoute
+  '/splash': typeof SplashRoute
   '/telas': typeof TelasRoute
   '/.mcp/list-tools': typeof Char91DotmcpChar93ListToolsRoute
   '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
@@ -122,6 +129,7 @@ export interface FileRoutesByTo {
   '/mcp': typeof McpRoute
   '/pedidos': typeof PedidosRoute
   '/perfil': typeof PerfilRoute
+  '/splash': typeof SplashRoute
   '/telas': typeof TelasRoute
   '/.mcp/list-tools': typeof Char91DotmcpChar93ListToolsRoute
   '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
@@ -139,6 +147,7 @@ export interface FileRoutesById {
   '/mcp': typeof McpRoute
   '/pedidos': typeof PedidosRoute
   '/perfil': typeof PerfilRoute
+  '/splash': typeof SplashRoute
   '/telas': typeof TelasRoute
   '/.mcp/list-tools': typeof Char91DotmcpChar93ListToolsRoute
   '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
@@ -157,6 +166,7 @@ export interface FileRouteTypes {
     | '/mcp'
     | '/pedidos'
     | '/perfil'
+    | '/splash'
     | '/telas'
     | '/.mcp/list-tools'
     | '/.well-known/oauth-protected-resource'
@@ -173,6 +183,7 @@ export interface FileRouteTypes {
     | '/mcp'
     | '/pedidos'
     | '/perfil'
+    | '/splash'
     | '/telas'
     | '/.mcp/list-tools'
     | '/.well-known/oauth-protected-resource'
@@ -189,6 +200,7 @@ export interface FileRouteTypes {
     | '/mcp'
     | '/pedidos'
     | '/perfil'
+    | '/splash'
     | '/telas'
     | '/.mcp/list-tools'
     | '/.well-known/oauth-protected-resource'
@@ -206,6 +218,7 @@ export interface RootRouteChildren {
   McpRoute: typeof McpRoute
   PedidosRoute: typeof PedidosRoute
   PerfilRoute: typeof PerfilRoute
+  SplashRoute: typeof SplashRoute
   TelasRoute: typeof TelasRoute
   Char91DotmcpChar93ListToolsRoute: typeof Char91DotmcpChar93ListToolsRoute
   Char91DotwellKnownChar93OauthProtectedResourceRoute: typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
@@ -222,6 +235,13 @@ declare module '@tanstack/react-router' {
       path: '/telas'
       fullPath: '/telas'
       preLoaderRoute: typeof TelasRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/splash': {
+      id: '/splash'
+      path: '/splash'
+      fullPath: '/splash'
+      preLoaderRoute: typeof SplashRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/perfil': {
@@ -326,6 +346,7 @@ const rootRouteChildren: RootRouteChildren = {
   McpRoute: McpRoute,
   PedidosRoute: PedidosRoute,
   PerfilRoute: PerfilRoute,
+  SplashRoute: SplashRoute,
   TelasRoute: TelasRoute,
   Char91DotmcpChar93ListToolsRoute: Char91DotmcpChar93ListToolsRoute,
   Char91DotwellKnownChar93OauthProtectedResourceRoute:
