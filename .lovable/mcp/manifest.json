@@ -1,0 +1,88 @@
+{
+  "version": 1,
+  "sdk_version": "0.24.0",
+  "path": "/mcp",
+  "auth": {
+    "type": "none"
+  },
+  "mcp": {
+    "server": {
+      "name": "konekta-mcp",
+      "version": "0.1.0",
+      "title": "KONEKTA STP"
+    },
+    "tools": [
+      {
+        "name": "list_categories",
+        "title": "Listar categorias de serviços",
+        "description": "Lista todas as categorias de serviços disponíveis na plataforma KONEKTA em São Tomé e Príncipe.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {}
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "search_providers",
+        "title": "Procurar prestadores",
+        "description": "Procura prestadores de serviços do KONEKTA por texto livre e/ou categoria, ordenados pela avaliação. Devolve nome, categoria, avaliação, preço inicial em Dobras e serviços.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "query": {
+              "description": "Texto a procurar no nome, categoria, bio ou serviços.",
+              "type": "string"
+            },
+            "category": {
+              "description": "Nome ou slug da categoria, por exemplo 'eletricista'.",
+              "type": "string"
+            },
+            "limit": {
+              "description": "Número máximo de resultados (predefinição 10).",
+              "type": "integer",
+              "minimum": -9007199254740991,
+              "maximum": 9007199254740991
+            }
+          }
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "get_provider",
+        "title": "Detalhes de um prestador",
+        "description": "Devolve os detalhes públicos de um prestador do KONEKTA a partir do seu id, por exemplo 'edmilson-varela'.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string",
+              "description": "Id do prestador."
+            }
+          },
+          "required": [
+            "id"
+          ]
+        },
+        "outputSchema": null
+      }
+    ]
+  }
+}
