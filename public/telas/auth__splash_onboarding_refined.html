@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+
+<html lang="pt"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0, viewport-fit=cover" name="viewport"/>
+<title>KONEKTA STP - Onboarding</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&amp;family=Inter:wght@400;500;600&amp;family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .slide-transition {
+            transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .dot-active {
+            width: 24px;
+            background-color: #006036;
+        }
+        .glass-card {
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(8px);
+        }
+    </style>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "surface-bright": "#fcf8ff",
+                        "on-error-container": "#93000a",
+                        "surface-container-highest": "#e2e0fb",
+                        "tertiary": "#4a5650",
+                        "secondary-container": "#83f7a7",
+                        "secondary-fixed": "#86faaa",
+                        "outline-variant": "#bec9be",
+                        "inverse-surface": "#2f2f43",
+                        "surface-container-low": "#f5f2ff",
+                        "on-primary-fixed": "#00210f",
+                        "on-primary-fixed-variant": "#00522e",
+                        "tertiary-fixed": "#d9e5df",
+                        "inverse-on-surface": "#f2efff",
+                        "grey200": "#E8E8EE",
+                        "warning-light": "#FEF3C7",
+                        "error-container": "#ffdad6",
+                        "on-primary-container": "#abffc6",
+                        "on-secondary-container": "#00723b",
+                        "surface": "#fcf8ff",
+                        "on-background": "#1a1a2d",
+                        "on-tertiary-fixed-variant": "#3d4944",
+                        "on-surface-variant": "#3f4941",
+                        "secondary": "#006d39",
+                        "error-light": "#FEE2E2",
+                        "surface-variant": "#e2e0fb",
+                        "warning": "#D97706",
+                        "primary-container": "#1a7a4a",
+                        "on-surface": "#1a1a2d",
+                        "tertiary-container": "#626e68",
+                        "grey400": "#9494B0",
+                        "grey50": "#FAFAFA",
+                        "on-secondary-fixed": "#00210d",
+                        "on-tertiary-container": "#e3f0e9",
+                        "surface-container-lowest": "#ffffff",
+                        "grey900": "#1A1A2E",
+                        "on-error": "#ffffff",
+                        "on-primary": "#ffffff",
+                        "outline": "#6f7a70",
+                        "tertiary-fixed-dim": "#bdc9c3",
+                        "grey600": "#5A5A7A",
+                        "grey100": "#F4F4F6",
+                        "error": "#DC2626",
+                        "primary-fixed": "#9bf6ba",
+                        "on-tertiary-fixed": "#131e1a",
+                        "secondary-fixed-dim": "#69dd90",
+                        "on-tertiary": "#ffffff",
+                        "surface-container": "#efecff",
+                        "surface-tint": "#006d3f",
+                        "background": "#fcf8ff",
+                        "surface-container-high": "#e8e6ff",
+                        "primary": "#006036",
+                        "primary-fixed-dim": "#80d9a0",
+                        "surface-dim": "#dad7f2",
+                        "on-secondary": "#ffffff",
+                        "inverse-primary": "#80d9a0",
+                        "on-secondary-fixed-variant": "#005229"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "sm": "8px",
+                        "xxl": "48px",
+                        "xs": "4px",
+                        "xl": "32px",
+                        "screen-margin": "20px",
+                        "md": "16px",
+                        "lg": "24px"
+                    },
+                    "fontFamily": {
+                        "caption": ["Inter"],
+                        "headline-md": ["Poppins"],
+                        "headline-lg": ["Poppins"],
+                        "body-lg": ["Inter"],
+                        "label": ["Inter"],
+                        "headline-sm": ["Poppins"],
+                        "body-sm": ["Inter"],
+                        "button": ["Poppins"],
+                        "title-sm": ["Poppins"]
+                    },
+                    "fontSize": {
+                        "caption": ["12px", {"lineHeight": "16px", "fontWeight": "400"}],
+                        "headline-md": ["22px", {"lineHeight": "30px", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+                        "headline-lg": ["28px", {"lineHeight": "36px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                        "body-lg": ["15px", {"lineHeight": "22px", "fontWeight": "400"}],
+                        "label": ["13px", {"lineHeight": "18px", "fontWeight": "500"}],
+                        "headline-sm": ["18px", {"lineHeight": "26px", "fontWeight": "500"}],
+                        "body-sm": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                        "button": ["16px", {"lineHeight": "24px", "fontWeight": "600"}],
+                        "title-sm": ["16px", {"lineHeight": "24px", "fontWeight": "500"}]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        body {
+            min-height: max(884px, 100dvh);
+        }
+    </style>
+</head>
+<body class="bg-surface font-body-lg text-on-surface overflow-hidden">
+<!-- Splash Screen (Persistent Overlay briefly) -->
+<div class="fixed inset-0 z-[100] bg-surface flex flex-col items-center justify-center transition-opacity duration-700 pointer-events-none opacity-0" id="splash">
+<div class="flex items-center space-x-2">
+<span class="text-[38px] font-bold font-headline-lg text-primary">KONEKTA</span>
+<span class="text-[38px] font-bold font-headline-lg text-grey900">STP</span>
+</div>
+<div class="mt-xl w-72 h-72 rounded-2xl overflow-hidden shadow-lg">
+<img alt="Konekta STP Professional connection" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuA76BiXSc3KNLHFLhQK2PKHwOdvuHle4QZFBpS2Sa1SS7LTXuUIhvWDHWF_VdRDkY23A3VArPY2qJ1yjRCvM-o7SHjP0rbv8oPWeCbq88d1gCwSFGc3t737CUD5QE3cPW8iR9-ozEcmTEpp2qr9rr_81DWGzGwyZjsTi8_1hqq7O_TMqgEFG1w7c9_xvR0a3KmMpFYGPYcBMijBaLaiIiYKK4OEOSEzQZfpOru-jX68SfgRwNdF61PDss5K7_Hp_rTREauIPHx0Gr4"/>
+</div>
+</div>
+<!-- Onboarding Container -->
+<main class="relative h-screen w-full max-w-md mx-auto bg-surface overflow-hidden flex flex-col">
+<!-- Slider Section -->
+<div class="flex-grow flex slide-transition w-[300%]" id="slider" style="transform: translateX(0%);">
+<!-- Slide 1: Logo & Connection -->
+<section class="w-screen max-w-md h-full flex flex-col items-center justify-center px-screen-margin text-center">
+<div class="mb-xxl transform transition-all duration-700">
+<div class="flex items-center justify-center space-x-1 mb-md">
+<h1 class="text-[38px] font-bold font-headline-lg text-primary">KONEKTA</h1>
+<h1 class="text-[38px] font-bold font-headline-lg text-grey900">STP</h1>
+</div>
+<div class="w-72 h-72 mx-auto mb-lg rounded-2xl overflow-hidden shadow-md">
+<img alt="Professional networking in São Tomé and Príncipe" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuA76BiXSc3KNLHFLhQK2PKHwOdvuHle4QZFBpS2Sa1SS7LTXuUIhvWDHWF_VdRDkY23A3VArPY2qJ1yjRCvM-o7SHjP0rbv8oPWeCbq88d1gCwSFGc3t737CUD5QE3cPW8iR9-ozEcmTEpp2qr9rr_81DWGzGwyZjsTi8_1hqq7O_TMqgEFG1w7c9_xvR0a3KmMpFYGPYcBMijBaLaiIiYKK4OEOSEzQZfpOru-jX68SfgRwNdF61PDss5K7_Hp_rTREauIPHx0Gr4"/>
+</div>
+<h2 class="font-headline-md text-headline-md text-on-surface mb-sm">A tua rede local</h2>
+<p class="font-body-lg text-body-lg text-grey600 px-lg">Conectando talentos e oportunidades nas ilhas de São Tomé e Príncipe.</p>
+</div>
+</section>
+<!-- Slide 2: Map & Search -->
+<section class="w-screen max-w-md h-full flex flex-col items-center justify-center px-screen-margin text-center">
+<div class="w-full max-w-sm aspect-square mb-xl rounded-2xl overflow-hidden shadow-sm bg-grey100 relative">
+<div class="absolute inset-0 bg-cover bg-center opacity-80" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuBjQ1uAVB5r0XvpV_UgcN6dh_WNgrdGstUNRDzYXEBvbo-OLhWV4WVLOPgRk_iQG6Tx7WBC8_Wd0AZ6ABkbXld-NSpgcb6tv63d-Pp-7J1Z5voDOJhb5sujuvZykJRlV68c5axYFSLqrCd2SFIkps8tRpv4ST0ZUaag3-7DeAFrVIWq0P7LuwPk8EKJMLDKGknLNeBKkkQ58jiewMFnh3oa4BAw9taBzvYDOEpnGmisg66G8BJmUWjiZxi0tCtL_73miiM353_ZAtk')"></div>
+<div class="absolute top-4 left-4 glass-card p-3 rounded-xl shadow-sm flex items-center gap-2">
+<span class="material-symbols-outlined text-primary">search</span>
+<div class="h-2 w-20 bg-grey200 rounded-full"></div>
+</div>
+</div>
+<h2 class="font-headline-lg text-headline-lg text-on-surface mb-md">Encontra quem precisas</h2>
+<p class="font-body-lg text-body-lg text-grey600">Localiza profissionais qualificados e serviços essenciais perto de ti, em qualquer ponto do arquipélago.</p>
+</section>
+<!-- Slide 3: Security & Trust -->
+<section class="w-screen max-w-md h-full flex flex-col items-center justify-center px-screen-margin text-center">
+<div class="w-64 h-64 bg-secondary-container/20 rounded-full flex items-center justify-center mb-xl">
+<span class="material-symbols-outlined text-primary text-[120px]" style="font-variation-settings: 'FILL' 1;">shield_with_heart</span>
+</div>
+<h2 class="font-headline-lg text-headline-lg text-on-surface mb-md">O teu dinheiro protegido</h2>
+<p class="font-body-lg text-body-lg text-grey600">Pagamentos seguros e garantidos. Só libertamos o valor quando o trabalho estiver concluído e aprovado por ti.</p>
+</section>
+</div>
+<!-- Bottom Controls -->
+<footer class="p-screen-margin pb-xxl flex flex-col gap-lg bg-surface">
+<!-- Progress Dots -->
+<div class="flex justify-center items-center gap-2">
+<div class="h-2 w-2 rounded-full bg-grey200 transition-all duration-300 dot-active" id="dot-0"></div>
+<div class="h-2 w-2 rounded-full bg-grey200 transition-all duration-300" id="dot-1"></div>
+<div class="h-2 w-2 rounded-full bg-grey200 transition-all duration-300" id="dot-2"></div>
+</div>
+<!-- Buttons -->
+<div class="flex flex-col gap-sm">
+<button class="w-full h-14 bg-primary text-on-primary font-button text-button rounded-xl shadow-md active:scale-95 transition-transform" id="next-btn">
+                Próximo
+            </button>
+<button class="w-full h-12 text-grey600 font-button text-button rounded-xl hover:bg-grey100 transition-colors" id="skip-btn">
+                Saltar
+            </button>
+</div>
+</footer>
+</main>
+<script>
+    let currentSlide = 0;
+    const totalSlides = 3;
+    const slider = document.getElementById('slider');
+    const nextBtn = document.getElementById('next-btn');
+    const skipBtn = document.getElementById('skip-btn');
+    const dots = [
+        document.getElementById('dot-0'),
+        document.getElementById('dot-1'),
+        document.getElementById('dot-2')
+    ];
+
+    function updateSlider() {
+        slider.style.transform = `translateX(-${(currentSlide * 100) / 3}%)`;
+        
+        // Update dots
+        dots.forEach((dot, index) => {
+            if (index === currentSlide) {
+                dot.classList.add('dot-active', 'bg-primary');
+                dot.classList.remove('bg-grey200');
+                dot.style.width = '24px';
+            } else {
+                dot.classList.remove('dot-active', 'bg-primary');
+                dot.classList.add('bg-grey200');
+                dot.style.width = '8px';
+            }
+        });
+
+        // Update button text on last slide
+        if (currentSlide === totalSlides - 1) {
+            nextBtn.innerText = 'Começar Agora';
+            skipBtn.style.opacity = '0';
+            skipBtn.style.pointerEvents = 'none';
+        } else {
+            nextBtn.innerText = 'Próximo';
+            skipBtn.style.opacity = '1';
+            skipBtn.style.pointerEvents = 'auto';
+        }
+    }
+
+    nextBtn.addEventListener('click', () => {
+        if (currentSlide < totalSlides - 1) {
+            currentSlide++;
+            updateSlider();
+        } else {
+            // Final action
+            nextBtn.classList.add('scale-90');
+            setTimeout(() => {
+                alert('Bem-vindo ao KONEKTA STP!');
+            }, 200);
+        }
+    });
+
+    skipBtn.addEventListener('click', () => {
+        currentSlide = totalSlides - 1;
+        updateSlider();
+    });
+
+    // Simple Splash Animation on Load
+    window.addEventListener('load', () => {
+        const splash = document.getElementById('splash');
+        // Show splash briefly then fade
+        splash.style.opacity = '1';
+        splash.classList.remove('pointer-events-none');
+        
+        setTimeout(() => {
+            splash.style.opacity = '0';
+            splash.classList.add('pointer-events-none');
+        }, 1500);
+    });
+
+    // Initialize
+    updateSlider();
+</script>
+</body></html>

@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+
+<html lang="pt"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Plus+Jakarta+Sans:wght@600;700;800&family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&family=Plus+Jakarta+Sans:wght@100..900&display=swap" rel="stylesheet"/>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .glass-card {
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+        }
+        .leve-leve-shadow {
+            box-shadow: 0 4px 20px -2px rgba(0, 96, 54, 0.08);
+        }
+    </style>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "primary-container": "#1a7a4a",
+                        "primary": "#006036",
+                        "surface-container-highest": "#d9e3f9",
+                        "error": "#ba1a1a",
+                        "on-surface": "#121c2c",
+                        "on-tertiary-container": "#ffe7e5",
+                        "on-primary-fixed-variant": "#00522e",
+                        "surface-container": "#e7eeff",
+                        "on-tertiary-fixed-variant": "#930018",
+                        "surface-dim": "#d0daf0",
+                        "on-secondary-fixed-variant": "#5d4200",
+                        "tertiary-fixed": "#ffdad7",
+                        "error-container": "#ffdad6",
+                        "on-tertiary": "#ffffff",
+                        "on-secondary-fixed": "#261900",
+                        "surface-variant": "#d9e3f9",
+                        "on-tertiary-fixed": "#410005",
+                        "on-background": "#121c2c",
+                        "on-primary-fixed": "#00210f",
+                        "tertiary-container": "#d01f2f",
+                        "on-surface-variant": "#3f4941",
+                        "on-secondary-container": "#6e4f00",
+                        "surface-bright": "#f9f9ff",
+                        "inverse-primary": "#80d9a0",
+                        "inverse-surface": "#273141",
+                        "background": "#f9f9ff",
+                        "tertiary-fixed-dim": "#ffb3af",
+                        "surface-tint": "#006d3f",
+                        "outline-variant": "#bec9be",
+                        "surface-container-low": "#f0f3ff",
+                        "on-error": "#ffffff",
+                        "surface-container-high": "#dee8ff",
+                        "on-error-container": "#93000a",
+                        "secondary": "#7b5900",
+                        "surface": "#f9f9ff",
+                        "on-primary": "#ffffff",
+                        "inverse-on-surface": "#ebf1ff",
+                        "surface-container-lowest": "#ffffff",
+                        "secondary-fixed-dim": "#fabd32",
+                        "on-primary-container": "#abffc6",
+                        "secondary-container": "#fdbf35",
+                        "tertiary": "#a9001d",
+                        "primary-fixed": "#9bf6ba",
+                        "outline": "#6f7a70",
+                        "primary-fixed-dim": "#80d9a0",
+                        "secondary-fixed": "#ffdea4",
+                        "on-secondary": "#ffffff"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "unit": "4px",
+                        "lg": "24px",
+                        "md": "16px",
+                        "gutter": "16px",
+                        "3xl": "64px",
+                        "2xl": "48px",
+                        "sm": "8px",
+                        "container-margin": "20px",
+                        "xs": "4px",
+                        "xl": "32px"
+                    },
+                    "fontFamily": {
+                        "body-lg": ["Inter"],
+                        "headline-lg": ["Plus Jakarta Sans"],
+                        "headline-lg-mobile": ["Plus Jakarta Sans"],
+                        "headline-md": ["Plus Jakarta Sans"],
+                        "label-sm": ["Inter"],
+                        "body-md": ["Inter"],
+                        "display": ["Plus Jakarta Sans"],
+                        "label-lg": ["Inter"]
+                    },
+                    "fontSize": {
+                        "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
+                        "headline-lg": ["32px", {"lineHeight": "40px", "fontWeight": "700"}],
+                        "headline-lg-mobile": ["24px", {"lineHeight": "32px", "fontWeight": "700"}],
+                        "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+                        "label-sm": ["12px", {"lineHeight": "16px", "fontWeight": "500"}],
+                        "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                        "display": ["40px", {"lineHeight": "48px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                        "label-lg": ["14px", {"lineHeight": "20px", "letterSpacing": "0.01em", "fontWeight": "600"}]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-surface font-body-md text-on-surface">
+<!-- Top Navigation Anchor (Manual Filter: Checkout state = No Global Nav) -->
+<header class="fixed top-0 w-full z-50 flex items-center px-container-margin h-16 bg-surface dark:bg-surface-dim shadow-sm">
+<button class="mr-4 p-2 rounded-full hover:bg-primary-container/10 transition-colors">
+<span class="material-symbols-outlined text-primary">arrow_back</span>
+</button>
+<h1 class="font-headline-lg-mobile text-headline-lg-mobile font-bold text-primary dark:text-primary-fixed">KONEKTA STP</h1>
+</header>
+<main class="pt-24 pb-12 px-container-margin max-w-md mx-auto min-h-screen">
+<!-- Order Progress Header -->
+<div class="mb-lg">
+<h2 class="font-headline-md text-headline-md text-on-surface mb-2">Confirmar Pedido</h2>
+<p class="text-on-surface-variant font-body-md">Revise os detalhes antes de finalizar o seu pagamento seguro.</p>
+</div>
+<!-- Service Summary Bento Card -->
+<div class="bg-surface-container-lowest border border-surface-variant/30 rounded-xl p-md leve-leve-shadow mb-md">
+<div class="flex items-start justify-between mb-md">
+<div>
+<span class="inline-block px-3 py-1 rounded-full bg-primary-container/10 text-primary font-label-lg text-label-lg mb-2">Serviço</span>
+<h3 class="font-headline-md text-headline-md text-on-surface">Limpeza Residencial</h3>
+<div class="flex items-center gap-1 mt-1 text-on-surface-variant font-label-sm text-label-sm">
+<span class="material-symbols-outlined text-xs">calendar_today</span>
+<span>Hoje, às 14:00</span>
+</div>
+</div>
+<div class="w-16 h-16 rounded-lg bg-surface-container overflow-hidden">
+<img class="w-full h-full object-cover" data-alt="A clean, minimalist high-definition photo of a bright, sunlit modern living room with pristine wooden floors and white walls. The scene is illuminated by soft, natural tropical morning light coming from a large window. The atmosphere is fresh and serene, perfectly representing a professional residential cleaning service in São Tomé and Príncipe." src="https://lh3.googleusercontent.com/aida-public/AB6AXuA7zbc19mnGqnTN8raq6rURxWA3Svj8ZwxSvSdBeJgiQE_S9u78_RlpMSHv8Z4Bm-U2JnDeGrvhnDlysfP9GPJ1OVHPg_pg4oBbtgpBt-y5498Q_lzr15nYkm0qOtpoTUAQA49Phu1gmCKkF6thEpREoSFxg3d9N7zECT8Qo_iyhNUeCAozxzhMQt4k0bFgWLlbbSK7AV7cPi9RCFWneHd6jq3xeHUaUNt1x_Uw4kO7r_rfbFqmvECIi7oDQn-4eam5jlT8oawGc50"/>
+</div>
+</div>
+</div>
+<!-- Provider Glass Card -->
+<div class="bg-white rounded-xl p-md leve-leve-shadow mb-md border border-surface-variant/20">
+<div class="flex items-center gap-md">
+<div class="relative">
+<div class="w-14 h-14 rounded-full overflow-hidden border-2 border-primary/20">
+<img class="w-full h-full object-cover" data-alt="A professional and friendly portrait of a middle-aged Santomean woman named Maria dos Santos, smiling warmly. She is dressed in a professional green work apron. The background is a soft-focus clean domestic environment. The lighting is warm and approachable, conveying deep trust, reliability, and local artisan community spirit." src="https://lh3.googleusercontent.com/aida-public/AB6AXuB_j90G3vduqIAPA0VYa7VaYtVX6Kq-UzqoJiMR1di6HJs7pvQj1ii3nVyXvZZP8TsmbbMlM90IL9dJgZvI7QynmMmHTXo5tlScfCD1EOD3DEXv0epa7q2Q_dQmEenFi03kQ4zeTEKOUrSGB0QAhZQOI4t4isdf5M6i1rCD-n_aCd7NXMKCmPWNaYJtnm7N81j_M7t5oECkjqdr969UcTSTwUS_4qdHBNcv23nqxpyWlXSdYRpr15yfq2HZ3MF2eqkY7nh5mconUNI"/>
+</div>
+<div class="absolute -bottom-1 -right-1 bg-primary text-white p-1 rounded-full border-2 border-white">
+<span class="material-symbols-outlined text-[14px]" style="font-variation-settings: 'FILL' 1;">verified</span>
+</div>
+</div>
+<div class="flex-1">
+<div class="flex items-center justify-between">
+<h4 class="font-label-lg text-label-lg text-on-surface">Maria dos Santos</h4>
+<div class="flex items-center gap-1 px-2 py-0.5 bg-secondary-container/20 text-secondary rounded-full">
+<span class="material-symbols-outlined text-xs" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="text-label-sm font-bold">4.9</span>
+</div>
+</div>
+<p class="text-on-surface-variant text-label-sm">Profissional Verificada</p>
+</div>
+</div>
+</div>
+<!-- Transparent Price Breakdown -->
+<div class="bg-surface-container-low rounded-xl p-md mb-md border border-primary/5">
+<h4 class="font-label-lg text-label-lg text-on-surface mb-md">Resumo de Custos</h4>
+<div class="space-y-3">
+<div class="flex justify-between items-center text-on-surface-variant">
+<span class="text-body-md font-body-md">Prestador (Maria)</span>
+<span class="font-body-md text-on-surface">450 STN</span>
+</div>
+<div class="flex justify-between items-center text-on-surface-variant">
+<span class="text-body-md font-body-md">Taxa Konekta</span>
+<span class="font-body-md text-on-surface">50 STN</span>
+</div>
+<div class="pt-3 mt-1 border-t border-surface-variant/50 flex justify-between items-center">
+<span class="font-headline-md text-headline-md text-on-surface">Total</span>
+<div class="text-right">
+<span class="font-headline-md text-headline-md text-primary">500 STN</span>
+<p class="text-[10px] text-on-surface-variant uppercase tracking-wider">Inclui impostos</p>
+</div>
+</div>
+</div>
+</div>
+<!-- Payment Method Selector (Simplified for Context) -->
+<div class="bg-white rounded-xl p-md leve-leve-shadow mb-lg border border-surface-variant/20">
+<div class="flex items-center justify-between mb-sm">
+<h4 class="font-label-lg text-label-lg text-on-surface">Forma de Pagamento</h4>
+<button class="text-primary font-label-sm text-label-sm">Alterar</button>
+</div>
+<div class="flex items-center gap-md p-3 rounded-lg bg-primary-container/5 border border-primary-container/10">
+<div class="w-10 h-10 rounded-full bg-primary flex items-center justify-center text-white">
+<span class="material-symbols-outlined">account_balance_wallet</span>
+</div>
+<div class="flex-1">
+<h5 class="font-label-lg text-label-lg text-on-surface">São Wallet</h5>
+<p class="text-on-surface-variant text-label-sm">Saldo: <span class="text-primary font-bold">1.200 STN</span></p>
+</div>
+<span class="material-symbols-outlined text-primary" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+</div>
+</div>
+<!-- Call To Action -->
+<div class="space-y-4">
+<button class="w-full h-14 bg-primary text-on-primary rounded-xl font-headline-md text-headline-md shadow-lg shadow-primary/20 flex items-center justify-center gap-2 active:scale-95 transition-all duration-200" id="confirmBtn">
+<span>Confirmar e Pagar</span>
+<span class="material-symbols-outlined">arrow_forward</span>
+</button>
+<p class="text-center text-label-sm text-on-surface-variant px-md">
+                Ao confirmar, você concorda com os nossos <a class="text-primary underline" href="#">Termos de Serviço</a>.
+            </p>
+</div>
+</main>
+<!-- Success Modal (Hidden by default) -->
+<div class="fixed inset-0 bg-on-surface/40 backdrop-blur-sm z-[100] flex items-center justify-center opacity-0 pointer-events-none transition-opacity duration-300" id="successOverlay">
+<div class="bg-white rounded-2xl p-lg max-w-[90%] w-80 text-center leve-leve-shadow transform scale-90 transition-transform duration-300">
+<div class="w-20 h-20 bg-primary-container/10 rounded-full flex items-center justify-center mx-auto mb-md">
+<span class="material-symbols-outlined text-primary text-4xl" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+</div>
+<h3 class="font-headline-md text-headline-md text-on-surface mb-2">Pagamento Confirmado!</h3>
+<p class="text-on-surface-variant font-body-md mb-lg">Maria foi notificada e já está a caminho do seu local.</p>
+<button class="w-full h-12 bg-primary text-on-primary rounded-lg font-label-lg text-label-lg" onclick="window.location.reload()">Ver Meus Pedidos</button>
+</div>
+</div>
+<!-- Universal Micro-interactions -->
+<script>
+        const confirmBtn = document.getElementById('confirmBtn');
+        const successOverlay = document.getElementById('successOverlay');
+        const modalContainer = successOverlay.querySelector('div');
+
+        confirmBtn.addEventListener('click', () => {
+            // Simulate payment processing
+            confirmBtn.disabled = true;
+            confirmBtn.innerHTML = '<span class="material-symbols-outlined animate-spin">sync</span><span>Processando...</span>';
+            
+            setTimeout(() => {
+                successOverlay.classList.remove('opacity-0', 'pointer-events-none');
+                modalContainer.classList.remove('scale-90');
+                modalContainer.classList.add('scale-100');
+            }, 1200);
+        });
+
+        // Close on overlay click
+        successOverlay.addEventListener('click', (e) => {
+            if (e.target === successOverlay) {
+                successOverlay.classList.add('opacity-0', 'pointer-events-none');
+                modalContainer.classList.add('scale-90');
+                setTimeout(() => {
+                    confirmBtn.disabled = false;
+                    confirmBtn.innerHTML = '<span>Confirmar e Pagar</span><span class="material-symbols-outlined">arrow_forward</span>';
+                }, 300);
+            }
+        });
+    </script>
+</body></html>

@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>KONEKTA STP - Service Request Step 2</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600&family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&family=Plus+Jakarta+Sans:wght@100..900&display=swap" rel="stylesheet"/>
+<!-- Tailwind Config -->
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "surface": "#f9f9ff",
+                    "on-tertiary-fixed": "#410005",
+                    "secondary-fixed": "#ffdea4",
+                    "on-surface-variant": "#3f4941",
+                    "surface-container-low": "#f0f3ff",
+                    "surface-bright": "#f9f9ff",
+                    "tertiary-fixed": "#ffdad7",
+                    "primary-fixed-dim": "#80d9a0",
+                    "on-primary": "#ffffff",
+                    "surface-container-high": "#dee8ff",
+                    "on-background": "#121c2c",
+                    "secondary": "#7b5900",
+                    "surface-container-highest": "#d9e3f9",
+                    "surface-container": "#e7eeff",
+                    "on-surface": "#121c2c",
+                    "on-tertiary-container": "#ffe7e5",
+                    "surface-variant": "#d9e3f9",
+                    "outline-variant": "#bec9be",
+                    "outline": "#6f7a70",
+                    "on-secondary": "#ffffff",
+                    "tertiary": "#a9001d",
+                    "primary-fixed": "#9bf6ba",
+                    "error-container": "#ffdad6",
+                    "background": "#f9f9ff",
+                    "on-primary-container": "#abffc6",
+                    "error": "#ba1a1a",
+                    "tertiary-fixed-dim": "#ffb3af",
+                    "primary": "#006036",
+                    "surface-dim": "#d0daf0",
+                    "secondary-fixed-dim": "#fabd32",
+                    "on-secondary-container": "#6e4f00",
+                    "primary-container": "#1a7a4a",
+                    "on-tertiary-fixed-variant": "#930018",
+                    "on-error": "#ffffff",
+                    "tertiary-container": "#d01f2f",
+                    "on-secondary-fixed-variant": "#5d4200",
+                    "on-primary-fixed": "#00210f",
+                    "on-secondary-fixed": "#261900",
+                    "surface-tint": "#006d3f",
+                    "inverse-primary": "#80d9a0",
+                    "surface-container-lowest": "#ffffff",
+                    "secondary-container": "#fdbf35",
+                    "on-tertiary": "#ffffff",
+                    "inverse-on-surface": "#ebf1ff",
+                    "on-primary-fixed-variant": "#00522e",
+                    "on-error-container": "#93000a",
+                    "inverse-surface": "#273141"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "unit": "4px",
+                    "container-margin": "20px",
+                    "xl": "32px",
+                    "gutter": "16px",
+                    "lg": "24px",
+                    "xs": "4px",
+                    "sm": "8px",
+                    "3xl": "64px",
+                    "md": "16px",
+                    "2xl": "48px"
+            },
+            "fontFamily": {
+                    "body-md": ["Inter"],
+                    "label-lg": ["Inter"],
+                    "body-lg": ["Inter"],
+                    "headline-md": ["Plus Jakarta Sans"],
+                    "display": ["Plus Jakarta Sans"],
+                    "label-sm": ["Inter"],
+                    "headline-lg-mobile": ["Plus Jakarta Sans"],
+                    "headline-lg": ["Plus Jakarta Sans"]
+            },
+            "fontSize": {
+                    "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                    "label-lg": ["14px", {"lineHeight": "20px", "letterSpacing": "0.01em", "fontWeight": "600"}],
+                    "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
+                    "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+                    "display": ["40px", {"lineHeight": "48px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                    "label-sm": ["12px", {"lineHeight": "16px", "fontWeight": "500"}],
+                    "headline-lg-mobile": ["24px", {"lineHeight": "32px", "fontWeight": "700"}],
+                    "headline-lg": ["32px", {"lineHeight": "40px", "fontWeight": "700"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .step-active {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .card-selection-active {
+            border: 2px solid #006036;
+            background-color: rgba(0, 96, 54, 0.04);
+        }
+        .glass-card {
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+        }
+        /* Custom scrollbar for better mobile feel */
+        ::-webkit-scrollbar {
+            width: 4px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #bec9be;
+            border-radius: 10px;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-surface text-on-surface font-body-md min-h-screen pb-32">
+<!-- Top App Bar -->
+<header class="fixed top-0 w-full z-50 flex justify-between items-center px-container-margin h-16 bg-surface shadow-sm">
+<div class="flex items-center gap-sm">
+<button class="material-symbols-outlined text-primary p-2 hover:bg-primary-container/10 transition-colors rounded-full active:scale-95 duration-150 ease-in-out">arrow_back</button>
+<h1 class="font-headline-lg-mobile text-headline-lg-mobile font-bold text-primary">KONEKTA STP</h1>
+</div>
+<div class="flex items-center">
+<span class="material-symbols-outlined text-primary p-2">notifications</span>
+</div>
+</header>
+<!-- Main Content Canvas -->
+<main class="mt-16 px-container-margin pt-lg">
+<!-- Progress Header -->
+<section class="mb-lg">
+<div class="flex justify-between items-end mb-sm">
+<div>
+<span class="font-label-sm text-label-sm text-primary uppercase tracking-wider">Step 2 of 4</span>
+<h2 class="font-headline-md text-headline-md text-on-surface mt-1">Service Details</h2>
+</div>
+<span class="font-label-lg text-label-lg text-primary">50%</span>
+</div>
+<div class="w-full h-2 bg-surface-variant rounded-full overflow-hidden">
+<div class="h-full bg-primary rounded-full" style="width: 50%"></div>
+</div>
+</section>
+<!-- Question 1: House Size -->
+<section class="mb-xl">
+<h3 class="font-label-lg text-label-lg text-on-surface-variant mb-md flex items-center gap-xs">
+<span class="material-symbols-outlined text-md">home</span>
+                HOW BIG IS YOUR SPACE?
+            </h3>
+<div class="grid grid-cols-2 gap-md">
+<!-- Option: 1 Bedroom -->
+<button class="size-card flex flex-col items-center justify-center p-md bg-surface-container-lowest rounded-xl border border-outline-variant/30 shadow-sm hover:shadow-md transition-all active:scale-95 text-center" onclick="selectSize(this)">
+<span class="material-symbols-outlined text-3xl text-primary mb-sm">bed</span>
+<span class="font-label-lg text-label-lg text-on-surface">1 Bedroom</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant mt-xs">Apt / Studio</span>
+</button>
+<!-- Option: 2 Bedrooms (Selected Placeholder) -->
+<button class="size-card card-selection-active flex flex-col items-center justify-center p-md bg-surface-container-lowest rounded-xl border border-primary shadow-sm hover:shadow-md transition-all active:scale-95 text-center" onclick="selectSize(this)">
+<span class="material-symbols-outlined text-3xl text-primary mb-sm">bedroom_parent</span>
+<span class="font-label-lg text-label-lg text-on-surface">2 Bedrooms</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant mt-xs">Medium House</span>
+</button>
+<!-- Option: 3 Bedrooms -->
+<button class="size-card flex flex-col items-center justify-center p-md bg-surface-container-lowest rounded-xl border border-outline-variant/30 shadow-sm hover:shadow-md transition-all active:scale-95 text-center" onclick="selectSize(this)">
+<span class="material-symbols-outlined text-3xl text-primary mb-sm">home_work</span>
+<span class="font-label-lg text-label-lg text-on-surface">3 Bedrooms</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant mt-xs">Large Family</span>
+</button>
+<!-- Option: 4+ Bedrooms -->
+<button class="size-card flex flex-col items-center justify-center p-md bg-surface-container-lowest rounded-xl border border-outline-variant/30 shadow-sm hover:shadow-md transition-all active:scale-95 text-center" onclick="selectSize(this)">
+<span class="material-symbols-outlined text-3xl text-primary mb-sm">villa</span>
+<span class="font-label-lg text-label-lg text-on-surface">4+ Bedrooms</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant mt-xs">Estate / Villa</span>
+</button>
+</div>
+</section>
+<!-- Question 2: Specific Tasks -->
+<section class="mb-xl">
+<h3 class="font-label-lg text-label-lg text-on-surface-variant mb-md flex items-center gap-xs">
+<span class="material-symbols-outlined text-md">checklist_rtl</span>
+                ADD SPECIFIC TASKS
+            </h3>
+<div class="space-y-md">
+<!-- Task: Deep Clean -->
+<div class="task-card flex items-center justify-between p-md bg-surface-container-lowest rounded-xl border border-outline-variant/30 shadow-sm transition-all">
+<div class="flex items-center gap-md">
+<div class="w-12 h-12 bg-primary-fixed flex items-center justify-center rounded-lg">
+<span class="material-symbols-outlined text-primary">cleaning_services</span>
+</div>
+<div>
+<p class="font-label-lg text-label-lg text-on-surface">Deep Clean</p>
+<p class="font-label-sm text-label-sm text-on-surface-variant">Intensive scrubbing</p>
+</div>
+</div>
+<label class="relative inline-flex items-center cursor-pointer">
+<input class="sr-only peer" type="checkbox"/>
+<div class="w-11 h-6 bg-outline-variant peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
+</label>
+</div>
+<!-- Task: Windows -->
+<div class="task-card flex items-center justify-between p-md bg-surface-container-lowest rounded-xl border border-outline-variant/30 shadow-sm transition-all">
+<div class="flex items-center gap-md">
+<div class="w-12 h-12 bg-primary-fixed flex items-center justify-center rounded-lg">
+<span class="material-symbols-outlined text-primary">window</span>
+</div>
+<div>
+<p class="font-label-lg text-label-lg text-on-surface">Windows</p>
+<p class="font-label-sm text-label-sm text-on-surface-variant">Interior & Exterior</p>
+</div>
+</div>
+<label class="relative inline-flex items-center cursor-pointer">
+<input checked="" class="sr-only peer" type="checkbox"/>
+<div class="w-11 h-6 bg-outline-variant peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
+</label>
+</div>
+<!-- Task: Laundry -->
+<div class="task-card flex items-center justify-between p-md bg-surface-container-lowest rounded-xl border border-outline-variant/30 shadow-sm transition-all">
+<div class="flex items-center gap-md">
+<div class="w-12 h-12 bg-primary-fixed flex items-center justify-center rounded-lg">
+<span class="material-symbols-outlined text-primary">local_laundry_service</span>
+</div>
+<div>
+<p class="font-label-lg text-label-lg text-on-surface">Laundry</p>
+<p class="font-label-sm text-label-sm text-on-surface-variant">Wash & Fold</p>
+</div>
+</div>
+<label class="relative inline-flex items-center cursor-pointer">
+<input class="sr-only peer" type="checkbox"/>
+<div class="w-11 h-6 bg-outline-variant peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
+</label>
+</div>
+</div>
+</section>
+<!-- Illustration / Decor -->
+<div class="relative w-full h-40 mt-lg mb-8 rounded-2xl overflow-hidden glass-card border border-white">
+<div class="absolute inset-0 bg-primary/5"></div>
+<div class="absolute inset-y-0 right-0 w-1/2" data-alt="A clean and bright modern living room in São Tomé, with large windows overlooking tropical greenery. The interior is minimalist with wooden furniture and natural light, reflecting the 'Leve-leve' philosophy. High-key lighting, soft shadows, and a palette of whites and deep greens create an atmosphere of professional reliability and freshness." style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuBQXyMv_fz90A8tsmlkNDDv1Lbnhut47AEd9qMyKVNF1FIpYL2vyr25ZyxKz60HldlSf7yIL-lf_SJ9sia_6St7GM-KzLT10u59m4eEyODf__CV_NV_5eCDNpWqLhVfiJCLUisGxkQhZSkGFCNSQVh9cth1ExR1sHYJ24oBL8zpz8dmFbit88HnA4CEtdAQXDEVdlm8BriSuDrPi8vK-nNMk3oIj2MQEXKufTXViaAsUM7zUOaDp2y_PMGU4ZS0eIwjMtbsLT09uvg')"></div>
+<div class="absolute inset-0 p-lg flex flex-col justify-center">
+<p class="font-label-lg text-label-lg text-primary mb-1">Quality Guaranteed</p>
+<p class="font-body-md text-body-md text-on-surface-variant max-w-[50%]">Our cleaners bring their own equipment and the Santomean spirit of excellence.</p>
+</div>
+</div>
+</main>
+<!-- Bottom Navigation (Contextual Actions) -->
+<footer class="fixed bottom-0 left-0 w-full z-50 bg-surface shadow-[0_-4px_12px_0_rgba(0,96,54,0.08)] px-container-margin py-md">
+<div class="max-w-xl mx-auto flex items-center gap-md">
+<button class="flex-1 h-12 flex items-center justify-center border border-primary text-primary font-label-lg text-label-lg rounded-xl hover:bg-primary/5 active:scale-95 transition-all">
+                Back
+            </button>
+<button class="flex-[2] h-12 flex items-center justify-center bg-primary text-on-primary font-label-lg text-label-lg rounded-xl shadow-md hover:bg-primary-container active:scale-95 transition-all">
+                Next
+            </button>
+</div>
+</footer>
+<!-- Micro-interactions Script -->
+<script>
+        function selectSize(element) {
+            // Remove active class from all cards
+            document.querySelectorAll('.size-card').forEach(card => {
+                card.classList.remove('card-selection-active', 'border-primary');
+                card.classList.add('border-outline-variant/30');
+            });
+            
+            // Add active class to selected card
+            element.classList.add('card-selection-active', 'border-primary');
+            element.classList.remove('border-outline-variant/30');
+            
+            // Subtle haptic feel simulation
+            if (window.navigator.vibrate) {
+                window.navigator.vibrate(10);
+            }
+        }
+
+        // Add visual feedback to checkboxes
+        document.querySelectorAll('input[type="checkbox"]').forEach(checkbox => {
+            checkbox.addEventListener('change', function() {
+                const card = this.closest('.task-card');
+                if (this.checked) {
+                    card.classList.add('border-primary');
+                    card.classList.remove('border-outline-variant/30');
+                    card.style.backgroundColor = 'rgba(0, 96, 54, 0.04)';
+                } else {
+                    card.classList.remove('border-primary');
+                    card.classList.add('border-outline-variant/30');
+                    card.style.backgroundColor = '#ffffff';
+                }
+            });
+        });
+
+        // Initialize state for checked items
+        document.querySelectorAll('input[type="checkbox"]:checked').forEach(checkbox => {
+            const card = checkbox.closest('.task-card');
+            card.classList.add('border-primary');
+            card.classList.remove('border-outline-variant/30');
+            card.style.backgroundColor = 'rgba(0, 96, 54, 0.04)';
+        });
+    </script>
+</body></html>

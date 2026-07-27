@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+
+<html lang="pt-ST"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Konekta STP - Gestão de Disponibilidade</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "on-secondary": "#ffffff",
+                    "tertiary-container": "#d01f2f",
+                    "surface-container-lowest": "#ffffff",
+                    "on-surface-variant": "#3f4941",
+                    "on-tertiary-container": "#ffe7e5",
+                    "on-secondary-container": "#6e4f00",
+                    "surface-bright": "#f9f9ff",
+                    "primary-container": "#1a7a4a",
+                    "secondary-container": "#fdbf35",
+                    "on-tertiary-fixed": "#410005",
+                    "on-primary-fixed": "#00210f",
+                    "tertiary-fixed-dim": "#ffb3af",
+                    "error": "#ba1a1a",
+                    "on-tertiary": "#ffffff",
+                    "primary": "#006036",
+                    "on-tertiary-fixed-variant": "#930018",
+                    "on-secondary-fixed": "#261900",
+                    "surface-variant": "#d9e3f9",
+                    "surface-container-low": "#f0f3ff",
+                    "surface-container-highest": "#d9e3f9",
+                    "on-surface": "#121c2c",
+                    "surface-tint": "#006d3f",
+                    "outline": "#6f7a70",
+                    "primary-fixed": "#9bf6ba",
+                    "secondary-fixed-dim": "#fabd32",
+                    "secondary": "#7b5900",
+                    "primary-fixed-dim": "#80d9a0",
+                    "on-background": "#121c2c",
+                    "on-error": "#ffffff",
+                    "inverse-on-surface": "#ebf1ff",
+                    "surface-container": "#e7eeff",
+                    "surface": "#f9f9ff",
+                    "secondary-fixed": "#ffdea4",
+                    "outline-variant": "#bec9be",
+                    "on-secondary-fixed-variant": "#5d4200",
+                    "tertiary": "#a9001d",
+                    "on-primary": "#ffffff",
+                    "on-primary-container": "#abffc6",
+                    "background": "#f9f9ff",
+                    "surface-dim": "#d0daf0",
+                    "inverse-surface": "#273141",
+                    "on-primary-fixed-variant": "#00522e",
+                    "on-error-container": "#93000a",
+                    "tertiary-fixed": "#ffdad7",
+                    "inverse-primary": "#80d9a0",
+                    "error-container": "#ffdad6",
+                    "surface-container-high": "#dee8ff"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "gutter": "16px",
+                    "xl": "32px",
+                    "3xl": "64px",
+                    "md": "16px",
+                    "container-margin": "20px",
+                    "lg": "24px",
+                    "xs": "4px",
+                    "sm": "8px",
+                    "2xl": "48px",
+                    "unit": "4px"
+            },
+            "fontFamily": {
+                    "label-sm": ["Inter"],
+                    "label-lg": ["Inter"],
+                    "body-md": ["Inter"],
+                    "body-lg": ["Inter"],
+                    "headline-md": ["Plus Jakarta Sans"],
+                    "headline-lg-mobile": ["Plus Jakarta Sans"],
+                    "display": ["Plus Jakarta Sans"],
+                    "headline-lg": ["Plus Jakarta Sans"]
+            },
+            "fontSize": {
+                    "label-sm": ["12px", {"lineHeight": "16px", "fontWeight": "500"}],
+                    "label-lg": ["14px", {"lineHeight": "20px", "letterSpacing": "0.01em", "fontWeight": "600"}],
+                    "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                    "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
+                    "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+                    "headline-lg-mobile": ["24px", {"lineHeight": "32px", "fontWeight": "700"}],
+                    "display": ["40px", {"lineHeight": "48px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                    "headline-lg": ["32px", {"lineHeight": "40px", "fontWeight": "700"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        body {
+            background-color: #f9f9ff;
+            color: #121c2c;
+            -webkit-font-smoothing: antialiased;
+        }
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+        }
+        .day-cell {
+            aspect-ratio: 1 / 1.1;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #bec9be;
+            border-radius: 10px;
+        }
+        .leve-leve-shadow {
+            box-shadow: 0 4px 12px rgba(0, 96, 54, 0.06);
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="pb-24">
+<!-- TopAppBar -->
+<header class="w-full top-0 sticky bg-surface dark:bg-surface-dim shadow-sm z-50 flex justify-between items-center px-container-margin py-md">
+<div class="flex items-center gap-4">
+<button class="material-symbols-outlined text-primary dark:text-primary-fixed-dim hover:bg-surface-container-low transition-colors p-2 rounded-full active:scale-95 duration-150">menu</button>
+<h1 class="font-headline-lg-mobile text-headline-lg-mobile text-primary dark:text-primary-fixed-dim tracking-tight">Konekta STP</h1>
+</div>
+<div class="flex items-center gap-3">
+<span class="font-label-lg text-label-lg text-primary hidden md:block">Disponibilidade</span>
+<div class="w-10 h-10 rounded-full bg-primary-container flex items-center justify-center text-on-primary-container font-bold overflow-hidden">
+<img class="w-full h-full object-cover" data-alt="A professional headshot of a smiling Santomean service provider, João Silva, wearing a clean polo shirt. The background is a soft-focus workshop with natural light streaming through a window, creating a warm, tropical corporate aesthetic with high-key lighting. The style is modern, professional, and friendly." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBIbnc4j3W5bLazKjTgch5POQN0zEN6MNuoMoK9lgYQp2ifBeC8u7eaQHES-9rrA53Vo6leZq2WhIr04cLsebedskMoYjo3vh3Ll5b5ZRR0C9-9laTJiHYFz7P4yi0pr5_pzakoUNS3ZO_ZtT6O8dfB6IGqk-jZURDDmcP4eezkM4MkdloYQgSoABD-joOa5uGe4OLavDWF4PwGEsJrwC1F4GNtvqeODYXx5lv_KYTDFx05kMk34eR6A1dYQSONivgBt4CXnYwDlyg"/>
+</div>
+</div>
+</header>
+<main class="max-w-[1200px] mx-auto px-container-margin mt-lg space-y-lg">
+<!-- Welcome Header -->
+<section class="flex flex-col gap-1">
+<h2 class="font-headline-md text-headline-md text-on-surface">Gerenciar Agenda</h2>
+<p class="font-body-md text-body-md text-on-surface-variant">Defina quando você está pronto para atender novos pedidos.</p>
+</section>
+<!-- Main Grid Layout -->
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-lg">
+<!-- Left Column: Calendar View (Bento Card 1) -->
+<div class="lg:col-span-8 bg-white rounded-xl leve-leve-shadow p-lg border border-surface-container-high">
+<div class="flex justify-between items-center mb-lg">
+<h3 class="font-headline-md text-headline-md-mobile flex items-center gap-2">
+<span class="material-symbols-outlined text-primary">calendar_month</span>
+                        Janeiro 2024
+                    </h3>
+<div class="flex gap-2">
+<button class="p-2 rounded-full hover:bg-surface-container-low border border-outline-variant text-on-surface-variant active:scale-95 transition-all">
+<span class="material-symbols-outlined">chevron_left</span>
+</button>
+<button class="p-2 rounded-full hover:bg-surface-container-low border border-outline-variant text-on-surface-variant active:scale-95 transition-all">
+<span class="material-symbols-outlined">chevron_right</span>
+</button>
+</div>
+</div>
+<div class="calendar-grid gap-2 text-center mb-2">
+<div class="font-label-sm text-label-sm text-on-surface-variant py-2">DOM</div>
+<div class="font-label-sm text-label-sm text-on-surface-variant py-2">SEG</div>
+<div class="font-label-sm text-label-sm text-on-surface-variant py-2">TER</div>
+<div class="font-label-sm text-label-sm text-on-surface-variant py-2">QUA</div>
+<div class="font-label-sm text-label-sm text-on-surface-variant py-2">QUI</div>
+<div class="font-label-sm text-label-sm text-on-surface-variant py-2">SEX</div>
+<div class="font-label-sm text-label-sm text-on-surface-variant py-2">SÁB</div>
+</div>
+<div class="calendar-grid gap-2">
+<!-- Week 1 - Placeholder/Empty -->
+<div class="day-cell bg-surface-container-low rounded-lg opacity-30"></div>
+<div class="day-cell bg-surface-container-low rounded-lg flex flex-col items-center justify-center gap-1 border border-transparent cursor-pointer hover:border-primary transition-all">
+<span class="font-label-lg text-label-lg">1</span>
+</div>
+<!-- Active Day -->
+<div class="day-cell bg-primary-container text-on-primary-container rounded-lg flex flex-col items-center justify-center gap-1 shadow-sm ring-2 ring-primary ring-offset-2">
+<span class="font-label-lg text-label-lg">2</span>
+<div class="flex gap-1">
+<div class="w-1 h-1 rounded-full bg-white"></div>
+<div class="w-1 h-1 rounded-full bg-white"></div>
+</div>
+</div>
+<!-- Regular Days -->
+<script>
+                        const calendarContainer = document.currentScript.parentElement;
+                        for(let i=3; i<=31; i++) {
+                            const isBusy = i % 5 === 0;
+                            const div = document.createElement('div');
+                            div.className = `day-cell rounded-lg flex flex-col items-center justify-center gap-1 border cursor-pointer transition-all hover:bg-surface-container-high ${isBusy ? 'bg-surface-container-low border-outline-variant text-on-surface-variant' : 'bg-white border-surface-variant text-on-surface'}`;
+                            div.innerHTML = `<span class="font-label-lg text-label-lg">${i}</span>${!isBusy ? '<div class="w-1.5 h-1.5 rounded-full bg-primary"></div>' : ''}`;
+                            calendarContainer.appendChild(div);
+                        }
+                    </script>
+</div>
+<div class="mt-lg pt-lg border-t border-surface-container flex flex-wrap gap-md">
+<div class="flex items-center gap-2">
+<div class="w-3 h-3 rounded-full bg-primary"></div>
+<span class="font-label-sm text-label-sm text-on-surface-variant">Disponível</span>
+</div>
+<div class="flex items-center gap-2">
+<div class="w-3 h-3 rounded-full bg-surface-container-low border border-outline-variant"></div>
+<span class="font-label-sm text-label-sm text-on-surface-variant">Ocupado / Bloqueado</span>
+</div>
+</div>
+</div>
+<!-- Right Column: Slots & Default Hours (Bento Stack) -->
+<div class="lg:col-span-4 space-y-lg">
+<!-- Time Slots Toggle Card -->
+<div class="bg-white rounded-xl leve-leve-shadow p-lg border border-surface-container-high">
+<h3 class="font-label-lg text-label-lg text-on-surface mb-md">Slots para 2 de Jan</h3>
+<div class="space-y-sm">
+<div class="flex items-center justify-between p-md bg-surface-container-low rounded-lg border border-surface-variant">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-primary">light_mode</span>
+<span class="font-label-lg text-label-lg">Manhã</span>
+</div>
+<button class="w-10 h-6 bg-primary-container rounded-full relative flex items-center px-1 transition-all">
+<div class="w-4 h-4 bg-white rounded-full translate-x-4 transition-transform"></div>
+</button>
+</div>
+<div class="flex items-center justify-between p-md bg-surface-container-low rounded-lg border border-surface-variant">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-primary">sunny</span>
+<span class="font-label-lg text-label-lg">Tarde</span>
+</div>
+<button class="w-10 h-6 bg-primary-container rounded-full relative flex items-center px-1 transition-all">
+<div class="w-4 h-4 bg-white rounded-full translate-x-4 transition-transform"></div>
+</button>
+</div>
+<div class="flex items-center justify-between p-md bg-surface-container-low rounded-lg border border-outline-variant opacity-60">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-on-surface-variant">dark_mode</span>
+<span class="font-label-lg text-label-lg">Noite</span>
+</div>
+<button class="w-10 h-6 bg-outline-variant rounded-full relative flex items-center px-1 transition-all">
+<div class="w-4 h-4 bg-white rounded-full translate-x-0 transition-transform"></div>
+</button>
+</div>
+</div>
+</div>
+<!-- Default Operating Hours Card -->
+<div class="bg-white rounded-xl leve-leve-shadow p-lg border border-surface-container-high">
+<div class="flex justify-between items-center mb-md">
+<h3 class="font-label-lg text-label-lg text-on-surface">Horário Padrão</h3>
+<button class="text-primary font-label-sm text-label-sm hover:underline">Editar</button>
+</div>
+<div class="space-y-xs">
+<div class="flex justify-between py-1 border-b border-surface-container-low">
+<span class="font-body-md text-body-md text-on-surface-variant">Seg - Sex</span>
+<span class="font-label-lg text-label-lg text-on-surface">08:00 - 18:00</span>
+</div>
+<div class="flex justify-between py-1 border-b border-surface-container-low">
+<span class="font-body-md text-body-md text-on-surface-variant">Sábado</span>
+<span class="font-label-lg text-label-lg text-on-surface">09:00 - 13:00</span>
+</div>
+<div class="flex justify-between py-1">
+<span class="font-body-md text-body-md text-on-surface-variant">Domingo</span>
+<span class="font-label-lg text-label-lg text-tertiary">Fechado</span>
+</div>
+</div>
+</div>
+<!-- Action Button -->
+<button class="w-full h-12 bg-primary text-white font-label-lg text-label-lg rounded-xl shadow-md flex items-center justify-center gap-2 hover:bg-surface-tint active:scale-95 transition-all">
+<span class="material-symbols-outlined">save</span>
+                    Salvar Alterações
+                </button>
+</div>
+</div>
+<!-- Quick Tips / Contextual Help -->
+<section class="bg-secondary-fixed text-on-secondary-fixed p-lg rounded-xl border border-secondary-container flex gap-lg items-start">
+<span class="material-symbols-outlined text-secondary scale-125">tips_and_updates</span>
+<div>
+<h4 class="font-label-lg text-label-lg mb-1">Dica Leve-leve</h4>
+<p class="font-body-md text-body-md">Mantenha seu calendário atualizado para evitar cancelamentos. Clientes preferem profissionais com horários confirmados!</p>
+</div>
+</section>
+</main>
+<!-- Bottom Navigation Bar (Mobile only) -->
+<nav class="md:hidden fixed bottom-0 left-0 w-full flex justify-around items-center h-20 px-2 pb-safe bg-surface dark:bg-surface-container-lowest shadow-[0_-4px_12px_rgba(0,96,54,0.08)] z-50 rounded-t-xl">
+<a class="flex flex-col items-center justify-center text-on-surface-variant px-4 py-1 hover:text-primary transition-all" href="#">
+<span class="material-symbols-outlined">dashboard</span>
+<span class="font-label-sm text-label-sm">Dashboard</span>
+</a>
+<a class="flex flex-col items-center justify-center bg-primary-container text-on-primary-container rounded-full px-4 py-1 active:scale-95 duration-200" href="#">
+<span class="material-symbols-outlined">list_alt</span>
+<span class="font-label-sm text-label-sm">Requests</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant px-4 py-1 hover:text-primary transition-all" href="#">
+<span class="material-symbols-outlined">payments</span>
+<span class="font-label-sm text-label-sm">Earnings</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant px-4 py-1 hover:text-primary transition-all" href="#">
+<span class="material-symbols-outlined">person</span>
+<span class="font-label-sm text-label-sm">Profile</span>
+</a>
+</nav>
+<!-- Modal for Quick Edit (Implicit functionality) -->
+<div class="hidden fixed inset-0 z-[100] flex items-center justify-center p-md" id="edit-modal">
+<div class="absolute inset-0 bg-on-surface/40 backdrop-blur-sm"></div>
+<div class="relative bg-white w-full max-w-md rounded-xl p-lg shadow-2xl animate-in fade-in zoom-in duration-300">
+<div class="flex justify-between items-center mb-md">
+<h3 class="font-headline-md text-headline-md-mobile">Bloquear Data</h3>
+<button class="material-symbols-outlined" onclick="toggleModal()">close</button>
+</div>
+<p class="font-body-md text-body-md mb-lg">Deseja marcar este dia inteiro como indisponível?</p>
+<div class="flex gap-md">
+<button class="flex-1 h-12 border border-outline-variant rounded-lg font-label-lg" onclick="toggleModal()">Cancelar</button>
+<button class="flex-1 h-12 bg-tertiary text-white rounded-lg font-label-lg" onclick="toggleModal()">Bloquear Dia</button>
+</div>
+</div>
+</div>
+<script>
+        function toggleModal() {
+            const modal = document.getElementById('edit-modal');
+            modal.classList.toggle('hidden');
+        }
+
+        // Simple interaction for calendar days
+        document.querySelectorAll('.day-cell').forEach(cell => {
+            cell.addEventListener('click', () => {
+                if(cell.innerText.trim()) {
+                    toggleModal();
+                }
+            });
+        });
+
+        // Toggle switches interaction
+        document.querySelectorAll('button[class*="rounded-full relative"]').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const circle = this.querySelector('div');
+                const isSelected = this.classList.contains('bg-primary-container');
+                
+                if(isSelected) {
+                    this.classList.remove('bg-primary-container');
+                    this.classList.add('bg-outline-variant');
+                    circle.style.transform = 'translateX(0)';
+                } else {
+                    this.classList.remove('bg-outline-variant');
+                    this.classList.add('bg-primary-container');
+                    circle.style.transform = 'translateX(1rem)';
+                }
+            });
+        });
+    </script>
+</body></html>

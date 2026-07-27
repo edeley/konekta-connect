@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+
+<html lang="pt"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>KONEKTA STP - Confirmação e Pagamento</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&amp;family=Inter:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "primary-fixed": "#9bf6ba",
+                        "tertiary-fixed-dim": "#ffb3b6",
+                        "tertiary": "#8b373f",
+                        "on-tertiary-fixed-variant": "#7c2b34",
+                        "surface-container-lowest": "#ffffff",
+                        "on-surface": "#1b1c1c",
+                        "on-secondary-fixed": "#201c00",
+                        "on-error-container": "#93000a",
+                        "secondary-container": "#f6e14a",
+                        "on-secondary-fixed-variant": "#504700",
+                        "surface-tint": "#006d3f",
+                        "secondary-fixed-dim": "#dcc831",
+                        "surface-container": "#f0eded",
+                        "surface-tonal": "#F7F7F7",
+                        "surface-container-low": "#f5f3f2",
+                        "inverse-surface": "#303030",
+                        "on-tertiary-fixed": "#40000d",
+                        "tertiary-fixed": "#ffdada",
+                        "on-secondary-container": "#6f6300",
+                        "surface-dim": "#dcd9d9",
+                        "inverse-on-surface": "#f3f0f0",
+                        "surface-container-high": "#eae8e7",
+                        "error-container": "#ffdad6",
+                        "status-success": "#1A7A4A",
+                        "category-bg-low-opacity": "rgba(26, 122, 74, 0.08)",
+                        "secondary-fixed": "#f9e44d",
+                        "primary-fixed-dim": "#80d9a0",
+                        "on-secondary": "#ffffff",
+                        "on-primary": "#ffffff",
+                        "error": "#ba1a1a",
+                        "on-primary-fixed-variant": "#00522e",
+                        "background": "#fbf9f8",
+                        "inverse-primary": "#80d9a0",
+                        "surface-background": "#FFFFFF",
+                        "on-tertiary-container": "#ffe7e7",
+                        "tertiary-container": "#a94e56",
+                        "surface": "#fbf9f8",
+                        "primary": "#006036",
+                        "on-primary-container": "#abffc6",
+                        "on-error": "#ffffff",
+                        "on-primary-fixed": "#00210f",
+                        "on-background": "#1b1c1c",
+                        "surface-bright": "#fbf9f8",
+                        "on-tertiary": "#ffffff",
+                        "on-surface-variant": "#3f4941",
+                        "primary-container": "#1a7a4a",
+                        "secondary": "#6a5f00",
+                        "outline-variant": "#bec9be",
+                        "surface-variant": "#e4e2e1",
+                        "status-warning": "#FFEA52",
+                        "outline": "#6f7a70",
+                        "surface-container-highest": "#e4e2e1"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "gutter": "20px",
+                        "base": "4px",
+                        "margin-mobile": "16px",
+                        "sm": "16px",
+                        "margin-desktop": "40px",
+                        "md": "24px",
+                        "xl": "48px",
+                        "lg": "32px",
+                        "xs": "8px"
+                    },
+                    "fontFamily": {
+                        "display-lg": ["Plus Jakarta Sans"],
+                        "body-lg": ["Inter"],
+                        "headline-md": ["Plus Jakarta Sans"],
+                        "headline-lg-mobile": ["Plus Jakarta Sans"],
+                        "headline-lg": ["Plus Jakarta Sans"],
+                        "body-md": ["Inter"],
+                        "label-sm": ["Inter"],
+                        "label-md": ["Inter"]
+                    },
+                    "fontSize": {
+                        "display-lg": ["48px", {"lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                        "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
+                        "headline-md": ["20px", {"lineHeight": "28px", "fontWeight": "600"}],
+                        "headline-lg-mobile": ["24px", {"lineHeight": "32px", "fontWeight": "700"}],
+                        "headline-lg": ["32px", {"lineHeight": "40px", "fontWeight": "700"}],
+                        "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                        "label-sm": ["12px", {"lineHeight": "16px", "fontWeight": "500"}],
+                        "label-md": ["14px", {"lineHeight": "20px", "letterSpacing": "0.01em", "fontWeight": "600"}]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        body {
+            background-color: #fbf9f8;
+            -webkit-font-smoothing: antialiased;
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .glass-effect {
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+        }
+        .shimmer {
+            background: linear-gradient(90deg, #F0F0F0 25%, #F7F7F7 50%, #F0F0F0 75%);
+            background-size: 200% 100%;
+            animation: shimmer 1.5s infinite;
+        }
+        @keyframes shimmer {
+            0% { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="font-body-md text-on-surface overflow-x-hidden">
+<header class="fixed top-0 left-0 w-full z-50 flex flex-col px-margin-mobile pt-sm pb-base bg-primary shadow-md text-on-primary">
+<div class="flex items-center justify-between w-full">
+<div class="flex items-center gap-xs">
+<button class="p-xs hover:bg-primary-container/20 rounded-full transition-colors duration-200">
+<span class="material-symbols-outlined">arrow_back</span>
+</button>
+<h1 class="font-headline-lg-mobile text-headline-lg-mobile font-bold">Resumo do Pedido</h1>
+</div>
+<div class="flex items-center gap-xs">
+<button class="p-xs hover:bg-primary-container/20 rounded-full transition-colors duration-200">
+<span class="material-symbols-outlined">notifications</span>
+</button>
+</div>
+</div>
+<div class="mt-base h-1 w-full bg-primary-fixed-dim/20 rounded-full overflow-hidden">
+<div class="h-full bg-primary-fixed w-3/4 rounded-full"></div>
+</div>
+</header>
+<main class="pt-xl mt-lg px-margin-mobile pb-32 max-w-2xl mx-auto space-y-lg">
+<section class="mt-md">
+<h2 class="font-headline-md text-headline-md mb-sm text-on-surface">Prestador Escolhido</h2>
+<div class="bg-surface-container-lowest rounded-xl shadow-[0px_4px_20px_rgba(0,0,0,0.05)] overflow-hidden flex items-center p-md gap-md border border-outline-variant/30">
+<div class="w-20 h-20 rounded-full overflow-hidden flex-shrink-0 border-2 border-primary-fixed">
+<img class="w-full h-full object-cover" data-alt="A professional portrait of a skilled African male technician named Manuel Santos in his 40s. He is wearing a clean grey workshop uniform and smiling warmly with a look of expert confidence. The background is a brightly lit, modern professional garage in São Tomé, evoking trust and reliability with a clean light-mode aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAvxcPfIQjyHdc2q7Co6Ki0dGiirpjU02aw_BORRNqY9DzpLOhUlCGW2LZg0jR6UWz3flHl7N6umWg_AG-vedUwVbFDdiJYYwkiRdaoppV75KIz9tQYCk2mCjzTIHxwsaHvtZOXoQKgS2JX43f7JkVl7kTvnKxellZw1oxR0oDzkYHg1D887oZYlZZFSFGhn4eXvS1wGD0TQzue9KuEWpjxEuf5zWsn8gi3d-GfZzREW-Mad51f6OL3PyxdfcEDRuyK3Jf0qickgB4"/>
+</div>
+<div class="flex-grow">
+<div class="flex justify-between items-start">
+<div>
+<h3 class="font-headline-md text-headline-md text-primary">Manuel Santos</h3>
+<p class="font-label-md text-label-md text-on-surface-variant flex items-center gap-1">
+<span class="material-symbols-outlined text-[16px]">verified</span> Especialista em Mecânica
+                            </p>
+</div>
+<div class="flex items-center bg-status-warning/20 px-xs py-[2px] rounded-full">
+<span class="material-symbols-outlined text-secondary text-[16px]" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="font-label-sm text-label-sm font-bold text-secondary ml-1">4.9</span>
+</div>
+</div>
+</div>
+</div>
+</section>
+<section>
+<h2 class="font-headline-md text-headline-md mb-sm text-on-surface">Detalhes do Serviço</h2>
+<div class="bg-surface-container-lowest rounded-xl shadow-[0px_4px_20px_rgba(0,0,0,0.05)] border border-outline-variant/30 overflow-hidden">
+<div class="p-md space-y-sm">
+<div class="flex justify-between items-center border-b border-outline-variant/20 pb-sm">
+<span class="font-label-md text-label-md text-on-surface-variant">Categoria</span>
+<span class="font-body-md text-body-md font-semibold">Reparação Automóvel</span>
+</div>
+<div class="flex justify-between items-center border-b border-outline-variant/20 pb-sm">
+<span class="font-label-md text-label-md text-on-surface-variant">Serviço</span>
+<span class="font-body-md text-body-md font-semibold">Manutenção de Rotina</span>
+</div>
+<div class="flex justify-between items-center border-b border-outline-variant/20 pb-sm">
+<span class="font-label-md text-label-md text-on-surface-variant">Data e Hora</span>
+<span class="font-body-md text-body-md font-semibold">Hoje, 14:30</span>
+</div>
+<div class="flex justify-between items-center">
+<span class="font-label-md text-label-md text-on-surface-variant">Localização</span>
+<span class="font-body-md text-body-md font-semibold">São Tomé, Água Grande</span>
+</div>
+</div>
+</div>
+</section>
+<section class="bg-[#E8F5EE] rounded-xl p-md border border-primary-container/20 flex gap-md items-start">
+<div class="bg-primary-container/10 p-xs rounded-lg">
+<span class="material-symbols-outlined text-primary text-[32px]">payments</span>
+</div>
+<div>
+<h3 class="font-headline-md text-headline-md text-primary mb-xs">Pagamento Seguro</h3>
+<p class="font-body-md text-body-md text-on-surface-variant">
+                    O pagamento é processado automaticamente pelo KONEKTA. 
+                    <span class="font-bold">270 STN</span> serão transferidos para Manuel Santos e <span class="font-bold">30 STN</span> (10%) cobrem os custos de proteção da plataforma.
+                </p>
+</div>
+</section>
+<section>
+<h2 class="font-headline-md text-headline-md mb-sm text-on-surface">Método de Pagamento</h2>
+<div class="bg-surface-container-lowest rounded-xl shadow-[0px_4px_20px_rgba(0,0,0,0.05)] border border-outline-variant/30 p-md">
+<div class="flex justify-between items-center">
+<div class="flex items-center gap-sm">
+<div class="w-12 h-12 rounded-lg bg-primary-fixed-dim flex items-center justify-center">
+<span class="material-symbols-outlined text-on-primary-fixed-variant">account_balance_wallet</span>
+</div>
+<div>
+<p class="font-label-md text-label-md text-on-surface-variant">Saldo da Carteira</p>
+<p class="font-headline-md text-headline-md">1.250 STN</p>
+</div>
+</div>
+<div class="text-status-success flex items-center font-bold">
+<span class="material-symbols-outlined mr-1">check_circle</span>
+                        Selecionado
+                    </div>
+</div>
+</div>
+</section>
+<section class="space-y-sm pt-sm">
+<div class="flex justify-between items-center text-on-surface-variant">
+<span class="font-body-md text-body-md">Subtotal do serviço</span>
+<span class="font-body-md text-body-md">270.00 STN</span>
+</div>
+<div class="flex justify-between items-center text-on-surface-variant">
+<span class="font-body-md text-body-md">Taxa de plataforma (10%)</span>
+<span class="font-body-md text-body-md">30.00 STN</span>
+</div>
+<div class="pt-sm border-t border-outline-variant flex justify-between items-center">
+<span class="font-headline-md text-headline-md text-on-surface">Total a pagar</span>
+<span class="font-headline-lg-mobile text-headline-lg-mobile font-bold text-primary">300.00 STN</span>
+</div>
+</section>
+</main>
+<footer class="fixed bottom-0 left-0 w-full z-[60] bg-surface border-t border-outline-variant p-md glass-effect">
+<div class="max-w-2xl mx-auto">
+<button class="w-full bg-primary text-on-primary py-lg rounded-xl font-headline-md text-headline-md shadow-lg shadow-primary/20 hover:bg-primary-container active:scale-95 transition-all duration-200 flex items-center justify-center gap-sm" id="confirmPay">
+                Confirmar e pagar 300 STN
+                <span class="material-symbols-outlined">send</span>
+</button>
+</div>
+</footer>
+<div class="fixed inset-0 z-[100] hidden items-center justify-center px-margin-mobile" id="successModal">
+<div class="absolute inset-0 bg-on-surface/60 backdrop-blur-sm"></div>
+<div class="relative bg-surface-container-lowest rounded-2xl w-full max-w-sm p-xl flex flex-col items-center text-center shadow-2xl scale-95 opacity-0 transition-all duration-300 transform" id="modalContent">
+<div class="w-24 h-24 rounded-full bg-status-success/10 text-status-success flex items-center justify-center mb-lg">
+<span class="material-symbols-outlined text-[64px]" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+</div>
+<h2 class="font-headline-lg-mobile text-headline-lg-mobile text-on-surface mb-sm">Pagamento Sucesso!</h2>
+<p class="font-body-md text-body-md text-on-surface-variant mb-xl">
+                O Manuel Santos já foi notificado e está a caminho da sua localização.
+            </p>
+<button class="w-full bg-primary text-on-primary py-md rounded-xl font-headline-md" onclick="location.reload()">
+                Ver detalhes do serviço
+            </button>
+</div>
+</div>
+<script>
+        const confirmBtn = document.getElementById('confirmPay');
+        const modal = document.getElementById('successModal');
+        const modalContent = document.getElementById('modalContent');
+
+        confirmBtn.addEventListener('click', () => {
+            confirmBtn.disabled = true;
+            confirmBtn.innerHTML = '<span class="material-symbols-outlined animate-spin">refresh</span> Processando...';
+            
+            setTimeout(() => {
+                modal.classList.remove('hidden');
+                modal.classList.add('flex');
+                setTimeout(() => {
+                    modalContent.classList.remove('scale-95', 'opacity-0');
+                    modalContent.classList.add('scale-100', 'opacity-100');
+                }, 10);
+            }, 1500);
+        });
+    </script>
+</body></html>

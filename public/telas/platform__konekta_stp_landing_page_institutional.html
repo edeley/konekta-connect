@@ -1,0 +1,520 @@
+<!DOCTYPE html>
+
+<html class="light" lang="pt-BR"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>KONEKTA STP - A Revolução dos Serviços</title>
+<!-- Google Fonts -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;family=JetBrains+Mono:wght@500&amp;family=Manrope:wght@600;700;800&amp;display=swap" rel="stylesheet"/>
+<!-- Material Symbols -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "tertiary": "#005886",
+                        "secondary": "#4e6073",
+                        "on-tertiary-container": "#e0efff",
+                        "error-container": "#ffdad6",
+                        "on-secondary-container": "#526478",
+                        "surface-variant": "#e1e3e4",
+                        "secondary-container": "#cfe2f9",
+                        "inverse-surface": "#2e3132",
+                        "secondary-fixed": "#d1e4fb",
+                        "primary": "#006036",
+                        "on-primary-container": "#abffc6",
+                        "on-tertiary-fixed": "#001d31",
+                        "tertiary-fixed": "#cce5ff",
+                        "primary-fixed": "#9bf6ba",
+                        "tertiary-container": "#0071ab",
+                        "outline": "#6f7a70",
+                        "on-primary": "#ffffff",
+                        "on-surface-variant": "#3f4941",
+                        "surface-container-highest": "#e1e3e4",
+                        "primary-container": "#1a7a4a",
+                        "on-error": "#ffffff",
+                        "surface-dim": "#d9dadb",
+                        "surface-container-low": "#f3f4f5",
+                        "on-primary-fixed-variant": "#00522e",
+                        "surface-container": "#edeeef",
+                        "surface": "#f8f9fa",
+                        "surface-container-high": "#e7e8e9",
+                        "surface-bright": "#f8f9fa",
+                        "on-surface": "#191c1d",
+                        "on-secondary-fixed-variant": "#36485b",
+                        "primary-fixed-dim": "#80d9a0",
+                        "on-primary-fixed": "#00210f",
+                        "inverse-primary": "#80d9a0",
+                        "outline-variant": "#bec9be",
+                        "error": "#ba1a1a",
+                        "on-background": "#191c1d",
+                        "tertiary-fixed-dim": "#92ccff",
+                        "secondary-fixed-dim": "#b5c8df",
+                        "on-tertiary": "#ffffff",
+                        "on-secondary-fixed": "#091d2e",
+                        "surface-tint": "#006d3f",
+                        "surface-container-lowest": "#ffffff",
+                        "on-secondary": "#ffffff",
+                        "on-error-container": "#93000a",
+                        "inverse-on-surface": "#f0f1f2",
+                        "on-tertiary-fixed-variant": "#004b73",
+                        "background": "#f8f9fa"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    "spacing": {
+                        "xxs": "4px",
+                        "xs": "8px",
+                        "lg": "24px",
+                        "xl": "32px",
+                        "container-margin": "24px",
+                        "unit": "4px",
+                        "md": "16px",
+                        "gutter": "16px",
+                        "sm": "12px"
+                    },
+                    "fontFamily": {
+                        "headline-lg": ["Manrope"],
+                        "body-lg": ["Inter"],
+                        "headline-sm": ["Manrope"],
+                        "headline-md": ["Manrope"],
+                        "display-lg": ["Manrope"],
+                        "body-md": ["Inter"],
+                        "body-sm": ["Inter"],
+                        "label-md": ["JetBrains Mono"]
+                    },
+                    "fontSize": {
+                        "headline-lg": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+                        "body-lg": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                        "headline-sm": ["20px", {"lineHeight": "28px", "fontWeight": "600"}],
+                        "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+                        "display-lg": ["48px", {"lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                        "body-md": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                        "body-sm": ["12px", {"lineHeight": "18px", "fontWeight": "400"}],
+                        "label-md": ["12px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "500"}]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        body { background-color: #f8f9fa; color: #191c1d; }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .zebra-table tr:nth-child(even) { background-color: #f3f4f5; }
+        .glass-card {
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(233, 236, 239, 0.5);
+        }
+    </style>
+</head>
+<body class="font-body-md text-body-md overflow-x-hidden">
+<!-- TopNavBar -->
+<header class="bg-surface sticky top-0 z-50 border-b border-outline-variant shadow-sm w-full">
+<div class="flex justify-between items-center h-16 px-gutter max-w-7xl mx-auto">
+<div class="font-headline-md text-headline-md font-bold text-primary">KONEKTA STP</div>
+<nav class="hidden md:flex items-center space-x-lg">
+<a class="font-body-md text-body-md text-primary font-bold border-b-2 border-primary pb-1" href="#">Services</a>
+<a class="font-body-md text-body-md text-secondary hover:text-primary transition-colors" href="#">Professionals</a>
+<a class="font-body-md text-body-md text-secondary hover:text-primary transition-colors" href="#">Business</a>
+<a class="font-body-md text-body-md text-secondary hover:text-primary transition-colors" href="#">About</a>
+</nav>
+<div class="flex items-center space-x-md">
+<button class="hidden md:block text-primary font-bold px-md py-xxs hover:bg-surface-container-low transition-all">Login</button>
+<button class="bg-primary text-on-primary font-bold px-lg py-sm rounded-lg hover:bg-primary-container transition-all">Get Started</button>
+</div>
+</div>
+</header>
+<main>
+<!-- Hero Section -->
+<section class="relative min-h-[870px] flex items-center overflow-hidden bg-surface">
+<div class="absolute inset-0 z-0">
+
+</div>
+<div class="container mx-auto px-container-margin grid grid-cols-1 lg:grid-cols-2 gap-xl relative z-10 py-xl">
+<div class="flex flex-col justify-center space-y-lg">
+<div class="inline-flex items-center space-x-xs bg-primary-fixed text-on-primary-fixed px-sm py-xxs rounded-full w-fit">
+<span class="material-symbols-outlined text-[18px]">verified</span>
+<span class="font-label-md text-label-md uppercase tracking-wider">A Plataforma Nº1 de STP</span>
+</div>
+<h1 class="font-display-lg text-display-lg text-on-surface leading-tight">
+                        A Revolução dos Serviços em <span class="text-primary">São Tomé e Príncipe</span>
+</h1>
+<p class="font-body-lg text-body-lg text-on-surface-variant max-w-xl">
+                        Encontre os melhores profissionais ou impulsione o seu negócio com a plataforma líder em serviços locais. Leve-leve, rápido e seguro.
+                    </p>
+<div class="flex flex-col sm:flex-row gap-md pt-md">
+<button class="bg-primary text-on-primary font-bold px-xl py-md rounded-xl text-body-lg shadow-lg hover:scale-105 transition-transform">
+                            Começar Agora
+                        </button>
+<button class="border-2 border-outline-variant text-on-surface-variant font-bold px-xl py-md rounded-xl text-body-lg hover:bg-surface-container-high transition-all">
+                            Ser um Profissional
+                        </button>
+</div>
+<div class="flex items-center space-x-lg pt-lg">
+<div class="flex -space-x-md">
+<div class="w-12 h-12 rounded-full border-4 border-surface overflow-hidden">
+<img class="w-full h-full object-cover" data-alt="Close-up portrait of a smiling young São Toméan woman wearing a modern professional headset in a bright airy office environment, representing customer support excellence. The lighting is warm and natural, reinforcing a mood of trust and local hospitality within a corporate modern UI context." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCQni1m4KI_8K-YkA7Pqt1iw2sSXfuhcHJUlC3LVKmouhPIu2CeCyPkCpCJYp73aq-PI4RwwB3oXYTgeVKCHkHf9ZiL4NuN6o8NFJMCqBMRYoqfIcyvAps-ibNebyle24_Dz6q1JpkMsdAhRmV6qKOSqct3vegpJL_7NmV0gzypY0ETpOybORG6bAv7ymz8nYkSnn98UPzmWhy1ZKnILgw04FUS_-wXDwOFyXQ6l41PWd0VC0U3ZYYy9zPrfeuSomzH59d6ZEUmh48"/>
+</div>
+<div class="w-12 h-12 rounded-full border-4 border-surface overflow-hidden">
+<img class="w-full h-full object-cover" data-alt="A focused male electrician from São Tomé and Príncipe working on a clean electrical panel, wearing professional green and white branded overalls. The setting is a modern residential interior, showcasing precision and reliability. High-key lighting with a clean, professional aesthetic aligned with the Konekta STP brand colors." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCjuIElPxlZn922a7TPofAn_tRc_PIcAj3g2FLLdsdi_O7zb-VwZbObRk3qN20lYFLWFKSKRkjTkmKpAss2KqEkN1a3w0DCJCZWSAH4MxjC1OtwIVlR6rEojuiXP9NImokT322_KlzJ2tPCmoVq3thL012h3hRqPpJcBqdL5OazdcwYoWu-q5j44i3RW4-3iBaY_ZEgg9UqsHHU7M7H2L-kAgW468jAjIcU8-NaQU9ckgf1IRcpAWpT2uO2u4N12RDPnfDLiyVC-L8"/>
+</div>
+<div class="w-12 h-12 rounded-full border-4 border-surface overflow-hidden">
+<img class="w-full h-full object-cover" data-alt="Professional plumber in São Tomé and Príncipe holding a wrench, smiling confidently at the camera. He is wearing a dark green polo shirt with a subtle Konekta logo. Background is a blurred modern kitchen setting. The image communicates professionalism, local expertise, and friendly service in a high-fidelity corporate style." src="https://lh3.googleusercontent.com/aida-public/AB6AXuC7_c6DfhLpjqijmhKfXJJXMGNuWuygaZx6yrIN4SscvqGtocFN8iUY6H4ujZ6cqRV5ihATcLy2tnXenwTCmr04l49QhHqmuYqKZe-29_w0XJv5J6ijuGjedzJyAQUQqb03ChwmOMDfLrr1qeq7vMeylbFX4Cy8Ld9IyjjOdUNg9TmOKUZ-ZF8wrcByYcjuQrPeHLk1_7WvuQYLAg7v92LN572vntpjphxMO3u16iJF6z7j4QniLUQOQV6oMtqa29gnsY8-Wk4h9Fo"/>
+</div>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant">
+<span class="font-bold text-primary">500+</span> profissionais verificados<br/>já ativos em São Tomé.
+                        </p>
+</div>
+</div>
+<div class="hidden lg:block relative">
+<div class="relative z-10 w-full h-[600px] rounded-3xl overflow-hidden shadow-2xl border-4 border-white">
+<img class="w-full h-full object-cover" data-alt="A vibrant, high-angle lifestyle shot of São Tomé city center showing local architecture and a bustling street under a clear blue sky. Overlaid is a transparent UI mock-up of the Konekta STP mobile app showing a professional profile and a booking confirmation. The lighting is bright and tropical, reflecting the local context while maintaining a clean, professional enterprise look." src="https://lh3.googleusercontent.com/aida-public/AB6AXuC25uVx7Mk7HqCF5W8fYyuVWBeKOIV5PI_IdDNq_3UUUojsu07aad4VJrjNdeuwVOwjuVqkzPMHEbRdPchakQNc1TU1Brj3G5Q5FhT02uJLelaXQKTMz-ZiBveXUcm6Zv5dml-PudGXqx4A3VVo-6NSIRINGeiSJYJdAV_rkapCoXTHuv0yhTzB0yPaKIc0Izsj_D7vAP4Qf59bgibBitTH1fPZECs6wny4J9H0SQGfm2bjhHGuZeqrJqX2ER0v0B4Hqh0iOjuvqIs"/>
+<!-- Floating Glass KPI Card -->
+<div class="absolute bottom-md right-md glass-card p-md rounded-xl shadow-lg border border-white/50 w-64 animate-bounce">
+<div class="flex items-center justify-between mb-xs">
+<span class="font-label-md text-label-md text-secondary">Reservas Ativas</span>
+<span class="text-primary material-symbols-outlined">trending_up</span>
+</div>
+<div class="font-headline-lg text-headline-lg text-on-surface">+12.5%</div>
+<div class="font-body-sm text-body-sm text-on-surface-variant">Crescimento esta semana</div>
+</div>
+</div>
+<!-- Decorative Element -->
+<div class="absolute -top-12 -left-12 w-48 h-48 bg-primary-container/20 rounded-full blur-3xl"></div>
+<div class="absolute -bottom-12 -right-12 w-64 h-64 bg-tertiary-container/10 rounded-full blur-3xl"></div>
+</div>
+</div>
+</section>
+<!-- How it Works: Bento Grid Layout -->
+<section class="py-xl bg-surface-container-lowest">
+<div class="container mx-auto px-container-margin">
+<div class="text-center mb-xl space-y-sm">
+<h2 class="font-headline-lg text-headline-lg text-on-surface">Como a Konekta Funciona</h2>
+<p class="font-body-lg text-body-lg text-on-surface-variant max-w-2xl mx-auto">Experiência simplificada de ponta a ponta para que você não perca tempo.</p>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-lg">
+<!-- Step 1 -->
+<div class="group bg-surface p-xl rounded-2xl border border-outline-variant hover:border-primary hover:shadow-md transition-all">
+<div class="w-16 h-16 bg-primary-container text-on-primary-container rounded-full flex items-center justify-center mb-md group-hover:scale-110 transition-transform">
+<span class="material-symbols-outlined text-[32px]">search_check</span>
+</div>
+<h3 class="font-headline-sm text-headline-sm mb-sm">1. Escolha</h3>
+<p class="font-body-md text-body-md text-on-surface-variant">Navegue por categorias e veja perfis detalhados de profissionais avaliados pela comunidade local.</p>
+</div>
+<!-- Step 2 -->
+<div class="group bg-surface p-xl rounded-2xl border border-outline-variant hover:border-primary hover:shadow-md transition-all">
+<div class="w-16 h-16 bg-tertiary text-on-tertiary rounded-full flex items-center justify-center mb-md group-hover:scale-110 transition-transform">
+<span class="material-symbols-outlined text-[32px]">event_available</span>
+</div>
+<h3 class="font-headline-sm text-headline-sm mb-sm">2. Reserve</h3>
+<p class="font-body-md text-body-md text-on-surface-variant">Agende o serviço no horário que melhor lhe convém. Tudo feito de forma digital e rápida.</p>
+</div>
+<!-- Step 3 -->
+<div class="group bg-surface p-xl rounded-2xl border border-outline-variant hover:border-primary hover:shadow-md transition-all">
+<div class="w-16 h-16 bg-primary text-on-primary rounded-full flex items-center justify-center mb-md group-hover:scale-110 transition-transform">
+<span class="material-symbols-outlined text-[32px]">task_alt</span>
+</div>
+<h3 class="font-headline-sm text-headline-sm mb-sm">3. Relaxe</h3>
+<p class="font-body-md text-body-md text-on-surface-variant">O profissional chega, realiza o trabalho com qualidade e você paga com segurança via São Wallet.</p>
+</div>
+</div>
+</div>
+</section>
+<!-- Business Section: Asymmetric Layout -->
+<section class="py-xl bg-surface">
+<div class="container mx-auto px-container-margin grid grid-cols-1 lg:grid-cols-12 gap-xl items-center">
+<div class="lg:col-span-7 space-y-lg order-2 lg:order-1">
+<div class="grid grid-cols-1 sm:grid-cols-2 gap-md">
+<div class="bg-surface-container p-lg rounded-xl border border-outline-variant space-y-sm">
+<span class="material-symbols-outlined text-primary text-[40px]">handshake</span>
+<h4 class="font-headline-sm text-headline-sm">Contratos de Manutenção</h4>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Soluções recorrentes para hotéis, escritórios e condomínios com faturamento mensal.</p>
+</div>
+<div class="bg-surface-container p-lg rounded-xl border border-outline-variant space-y-sm">
+<span class="material-symbols-outlined text-primary text-[40px]">groups</span>
+<h4 class="font-headline-sm text-headline-sm">Gestão de Equipes</h4>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Dashboard completo para monitorar ordens de serviço e performance de funcionários.</p>
+</div>
+</div>
+<div class="bg-primary text-on-primary p-xl rounded-2xl shadow-xl relative overflow-hidden">
+<div class="relative z-10">
+<h3 class="font-headline-lg text-headline-lg mb-md">Escalabilidade para seu Negócio</h3>
+<p class="font-body-lg text-body-lg mb-lg opacity-90">Konekta for Business oferece as ferramentas necessárias para empresas que buscam eficiência operacional em São Tomé.</p>
+<button class="bg-on-primary text-primary font-bold px-lg py-md rounded-lg hover:bg-surface transition-colors">Solicitar Proposta</button>
+</div>
+<div class="absolute -right-16 -bottom-16 opacity-10">
+<span class="material-symbols-outlined text-[300px]">business_center</span>
+</div>
+</div>
+</div>
+<div class="lg:col-span-5 order-1 lg:order-2">
+<div class="space-y-sm">
+<span class="font-label-md text-label-md text-tertiary font-bold tracking-widest uppercase">Para Empresas</span>
+<h2 class="font-display-lg text-headline-lg-mobile md:text-headline-lg text-on-surface">Profissionalize a gestão dos seus ativos</h2>
+<p class="font-body-lg text-body-lg text-on-surface-variant">Centralize todos os pedidos de reparo e manutenção em um único lugar. Tenha controle total sobre custos e prazos com transparência total.</p>
+<ul class="space-y-md pt-md">
+<li class="flex items-center space-x-sm">
+<span class="material-symbols-outlined text-primary" data-weight="fill">check_circle</span>
+<span class="font-body-md text-body-md">Suporte Dedicado 24/7</span>
+</li>
+<li class="flex items-center space-x-sm">
+<span class="material-symbols-outlined text-primary" data-weight="fill">check_circle</span>
+<span class="font-body-md text-body-md">Relatórios de Atividade em Tempo Real</span>
+</li>
+<li class="flex items-center space-x-sm">
+<span class="material-symbols-outlined text-primary" data-weight="fill">check_circle</span>
+<span class="font-body-md text-body-md">Pagamentos via Transferência ou São Wallet</span>
+</li>
+</ul>
+</div>
+</div>
+</div>
+</section>
+<!-- Trust Section -->
+<section class="py-xl bg-surface-container-low">
+<div class="container mx-auto px-container-margin">
+<div class="text-center mb-xl">
+<h2 class="font-headline-lg text-headline-lg text-on-surface">Por que confiar na Konekta?</h2>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-xl">
+<div class="text-center space-y-md p-lg">
+<div class="w-20 h-20 bg-white rounded-full shadow-sm flex items-center justify-center mx-auto border border-outline-variant">
+<span class="material-symbols-outlined text-primary text-[48px]">account_balance_wallet</span>
+</div>
+<h3 class="font-headline-sm text-headline-sm">Pagamentos Seguros</h3>
+<p class="font-body-md text-body-md text-on-surface-variant">Integração nativa com <strong>São Wallet</strong>. O dinheiro só é liberado após você confirmar a satisfação com o serviço.</p>
+</div>
+<div class="text-center space-y-md p-lg">
+<div class="w-20 h-20 bg-white rounded-full shadow-sm flex items-center justify-center mx-auto border border-outline-variant">
+<span class="material-symbols-outlined text-primary text-[48px]">verified_user</span>
+</div>
+<h3 class="font-headline-sm text-headline-sm">Profissionais Verificados</h3>
+<p class="font-body-md text-body-md text-on-surface-variant">Todos os nossos parceiros passam por uma rigorosa verificação de antecedentes e competências técnicas.</p>
+</div>
+<div class="text-center space-y-md p-lg">
+<div class="w-20 h-20 bg-white rounded-full shadow-sm flex items-center justify-center mx-auto border border-outline-variant">
+<span class="material-symbols-outlined text-primary text-[48px]">distance</span>
+</div>
+<h3 class="font-headline-sm text-headline-sm">Rastreio em Tempo Real</h3>
+<p class="font-body-md text-body-md text-on-surface-variant">Saiba exatamente onde está o seu profissional e o tempo estimado de chegada via GPS integrado.</p>
+</div>
+</div>
+</div>
+</section>
+<!-- Testimonials -->
+<section class="py-xl bg-surface-container-lowest overflow-hidden">
+<div class="container mx-auto px-container-margin">
+<div class="flex flex-col md:flex-row justify-between items-end mb-xl gap-md">
+<div class="max-w-xl">
+<h2 class="font-headline-lg text-headline-lg text-on-surface mb-sm">O que dizem os nossos utilizadores</h2>
+<p class="font-body-lg text-body-lg text-on-surface-variant">Junte-se a milhares de Santomenses que já transformaram a forma como contratam serviços.</p>
+</div>
+<div class="flex space-x-md">
+<button class="w-12 h-12 rounded-full border border-outline-variant flex items-center justify-center hover:bg-surface-container-high transition-colors">
+<span class="material-symbols-outlined">arrow_back</span>
+</button>
+<button class="w-12 h-12 rounded-full border border-outline-variant flex items-center justify-center bg-primary text-on-primary hover:opacity-90 transition-colors">
+<span class="material-symbols-outlined">arrow_forward</span>
+</button>
+</div>
+</div>
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-lg">
+<!-- Testimonial 1 -->
+<div class="bg-surface p-xl rounded-2xl border border-outline-variant shadow-sm flex flex-col justify-between">
+<div class="space-y-md">
+<div class="flex text-primary">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">star</span>
+</div>
+<p class="font-body-md text-body-md text-on-surface italic">"Tive um problema urgente de canalização à noite e encontrei um profissional em 5 minutos. O serviço foi excelente e paguei direto pelo telemóvel."</p>
+</div>
+<div class="flex items-center space-x-md mt-xl">
+<div class="w-12 h-12 rounded-full overflow-hidden bg-surface-variant">
+<img class="w-full h-full object-cover" data-alt="Portrait of a middle-aged São Toméan man with a warm, satisfied expression, standing in front of a modern home interior. He is wearing a casual button-down shirt. The image reflects a sense of security and satisfaction with local services, styled with professional corporate lighting and high clarity." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBE7aF3vcgaq_3jEwqMvWYYT6EiW3F4Rx3rrRb8VhU17rkeXp8YXraqyzOsUHgP8ZaSGZmaxsf7Uzknkw7BbQaodgGARum-_47Duu101t4s6Q1b-ikt4G3IquFc7N3uTNauXwoNEFSIMVhVr-rHQUvFPepopNzSJ_rw8-PEAC4eL1UPT1QPQWInM3bzNXM73tIEyL77DjzaD_hme_XMzK2xN4-AE9YeF3Dvei48qgbqec0U_vmoRSCyK7pLb-7aSgxVPiL6Blk0f3Q"/>
+</div>
+<div>
+<p class="font-headline-sm text-[16px] text-on-surface">Sr. Manuel Silva</p>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Cliente Particular, São Tomé</p>
+</div>
+</div>
+</div>
+<!-- Testimonial 2 -->
+<div class="bg-surface p-xl rounded-2xl border border-outline-variant shadow-sm flex flex-col justify-between">
+<div class="space-y-md">
+<div class="flex text-primary">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">star</span>
+</div>
+<p class="font-body-md text-body-md text-on-surface italic">"Como profissional independente, a Konekta trouxe-me mais clientes do que qualquer outro meio. A plataforma é fácil de usar e as avaliações dão confiança aos clientes."</p>
+</div>
+<div class="flex items-center space-x-md mt-xl">
+<div class="w-12 h-12 rounded-full overflow-hidden bg-surface-variant">
+<img class="w-full h-full object-cover" data-alt="Portrait of a young, confident female professional from São Tomé, holding a tablet showing a business dashboard. She is smiling, suggesting success and empowerment through technology. The background is a modern coworking space. The style is bright, clean, and representative of the digital transformation in São Tomé and Príncipe." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCwvw25vvLFG7DBmjXdnl6usgRTKuh9ft_7K6CRgGju3LFCEd5dgPRIy1VK4fGjOmqdwYeKglKtpOD5lAL9ur50YtSFsddun2_TbU5oo7YUpTE7avzLgN8SWUmf95wWNOuYeYiyv4HG4WnOokW0IRAHa2gSElxbTaKEK7-Y0cK0kYLCUnTZwEY2svRlASw7dYygMCwP3Iz4kH_ng0ScC9DPPG0gfUSn3DGYtIS6OwqKe88mnGddvCNTOk8gZ7OZmASuD1VNyyeiy-c"/>
+</div>
+<div>
+<p class="font-headline-sm text-[16px] text-on-surface">Maria dos Santos</p>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Especialista em TI</p>
+</div>
+</div>
+</div>
+<!-- Testimonial 3 -->
+<div class="bg-surface p-xl rounded-2xl border border-outline-variant shadow-sm flex flex-col justify-between">
+<div class="space-y-md">
+<div class="flex text-primary">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">star</span>
+</div>
+<p class="font-body-md text-body-md text-on-surface italic">"Usamos a Konekta para gerir a manutenção do nosso resort. Poupa-nos horas de coordenação e garante que tudo está funcional para os hóspedes."</p>
+</div>
+<div class="flex items-center space-x-md mt-xl">
+<div class="w-12 h-12 rounded-full overflow-hidden bg-surface-variant">
+<img class="w-full h-full object-cover" data-alt="Professional business executive in a light suit, standing on a terrace overlooking a tropical landscape in São Tomé. He has a calm, visionary look. The image embodies enterprise-level trust and high-end professional service management. The color palette is dominated by soft whites and natural greens, aligning with Konekta STP's brand identity." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAmy1zacb1HEwqfla88CWaZL3LIoXT8bKYVyVNbDm0KnY5EDB5_4kT4VeG7QKAulV2L9DxySRldYNZEegFaqrjRC1jqR1z6ErECUXbo-watfM4MIYtezQRz6K7onWvF8W2xhpHold6qM_i3pBn7SAjwKOoRYpNmUEpa2e7_J-_23TP-NBRFsHVuvxOU-xMSna3PuQrcV05aVwe3n8jemZt4WCXmQETmATBQvXVbKXAo7RiL7bTOc9it4jf0kyKF-JT2dD_PmgWbaaI"/>
+</div>
+<div>
+<p class="font-headline-sm text-[16px] text-on-surface">Eng. Roberto Lima</p>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Gestor de Infraestruturas</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Partner Logos -->
+<section class="py-lg border-y border-outline-variant bg-surface">
+<div class="container mx-auto px-container-margin">
+<p class="text-center font-label-md text-label-md text-secondary mb-lg uppercase tracking-widest">Nossos Parceiros Estratégicos</p>
+<div class="flex flex-wrap justify-center items-center gap-xl opacity-60 grayscale hover:grayscale-0 transition-all">
+<div class="font-headline-sm font-bold text-on-surface-variant">SÃO WALLET</div>
+<div class="font-headline-sm font-bold text-on-surface-variant">BCSTP</div>
+<div class="font-headline-sm font-bold text-on-surface-variant">UNITEL STP</div>
+<div class="font-headline-sm font-bold text-on-surface-variant">CST</div>
+<div class="font-headline-sm font-bold text-on-surface-variant">MIN. ECONOMIA</div>
+</div>
+</div>
+</section>
+<!-- Final CTA -->
+<section class="py-xl relative overflow-hidden">
+<div class="absolute inset-0 bg-primary-container z-0">
+
+</div>
+<div class="container mx-auto px-container-margin relative z-10 text-center text-on-primary py-xl">
+<h2 class="font-display-lg text-headline-lg-mobile md:text-display-lg mb-md">Pronto para começar?</h2>
+<p class="font-body-lg text-body-lg mb-xl max-w-2xl mx-auto opacity-90">Junte-se à maior rede de serviços de São Tomé e Príncipe hoje mesmo.</p>
+<div class="flex flex-col sm:flex-row justify-center gap-md">
+<button class="bg-white text-primary font-bold px-xl py-md rounded-xl text-body-lg shadow-xl hover:bg-surface transition-all">Começar Agora</button>
+<button class="bg-transparent border-2 border-white text-white font-bold px-xl py-md rounded-xl text-body-lg hover:bg-white/10 transition-all">Falar com Consultor</button>
+</div>
+</div>
+</section>
+</main>
+<!-- Footer -->
+<footer class="bg-surface-container-highest py-xl mt-auto border-t border-outline-variant">
+<div class="grid grid-cols-1 md:grid-cols-4 gap-lg px-container-margin max-w-7xl mx-auto">
+<div class="space-y-md">
+<div class="font-headline-sm text-headline-sm text-primary font-bold">KONEKTA STP</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Transformando a economia de serviços em São Tomé e Príncipe através da tecnologia e confiança.</p>
+<div class="flex space-x-md">
+<a class="text-secondary hover:text-primary transition-colors" href="#">
+<span class="material-symbols-outlined">public</span>
+</a>
+<a class="text-secondary hover:text-primary transition-colors" href="#">
+<span class="material-symbols-outlined">alternate_email</span>
+</a>
+<a class="text-secondary hover:text-primary transition-colors" href="#">
+<span class="material-symbols-outlined">phone</span>
+</a>
+</div>
+</div>
+<div>
+<h5 class="font-label-md text-label-md text-on-surface font-bold mb-md uppercase tracking-wider">Serviços</h5>
+<ul class="space-y-xs font-body-sm text-body-sm">
+<li><a class="text-secondary hover:text-primary hover:underline transition-all" href="#">Limpeza e Higiene</a></li>
+<li><a class="text-secondary hover:text-primary hover:underline transition-all" href="#">Manutenção e Reparos</a></li>
+<li><a class="text-secondary hover:text-primary hover:underline transition-all" href="#">Consultoria de TI</a></li>
+<li><a class="text-secondary hover:text-primary hover:underline transition-all" href="#">Eventos e Catering</a></li>
+</ul>
+</div>
+<div>
+<h5 class="font-label-md text-label-md text-on-surface font-bold mb-md uppercase tracking-wider">Empresa</h5>
+<ul class="space-y-xs font-body-sm text-body-sm">
+<li><a class="text-secondary hover:text-primary hover:underline transition-all" href="#">Sobre Nós</a></li>
+<li><a class="text-secondary hover:text-primary hover:underline transition-all" href="#">Carreiras</a></li>
+<li><a class="text-secondary hover:text-primary hover:underline transition-all" href="#">Privacidade</a></li>
+<li><a class="text-secondary hover:text-primary hover:underline transition-all" href="#">Termos</a></li>
+</ul>
+</div>
+<div>
+<h5 class="font-label-md text-label-md text-on-surface font-bold mb-md uppercase tracking-wider">Newsletter</h5>
+<p class="font-body-sm text-body-sm text-on-surface-variant mb-md">Receba as últimas novidades e ofertas exclusivas.</p>
+<form class="flex gap-xxs">
+<input class="bg-surface border border-outline-variant rounded-lg px-sm py-xxs w-full focus:ring-2 focus:ring-primary focus:border-transparent outline-none" placeholder="Email" type="email"/>
+<button class="bg-primary text-on-primary p-xxs rounded-lg">
+<span class="material-symbols-outlined">send</span>
+</button>
+</form>
+</div>
+</div>
+<div class="max-w-7xl mx-auto px-container-margin mt-xl pt-lg border-t border-outline-variant flex flex-col md:flex-row justify-between items-center gap-md">
+<p class="font-body-sm text-body-sm text-on-surface-variant opacity-80">© 2024 KONEKTA STP. All rights reserved.</p>
+<div class="flex space-x-lg">
+<a class="font-body-sm text-body-sm text-secondary hover:text-primary" href="#">Terms of Service</a>
+<a class="font-body-sm text-body-sm text-secondary hover:text-primary" href="#">Privacy Policy</a>
+<a class="font-body-sm text-body-sm text-secondary hover:text-primary" href="#">Contact Support</a>
+</div>
+</div>
+</footer>
+<script>
+        // Micro-interaction for button scaling
+        document.querySelectorAll('button').forEach(button => {
+            button.addEventListener('mousedown', () => {
+                button.classList.add('scale-95');
+            });
+            button.addEventListener('mouseup', () => {
+                button.classList.remove('scale-95');
+            });
+        });
+
+        // Simple scroll reveal effect
+        const observerOptions = {
+            threshold: 0.1
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('opacity-100', 'translate-y-0');
+                    entry.target.classList.remove('opacity-0', 'translate-y-10');
+                }
+            });
+        }, observerOptions);
+
+        document.querySelectorAll('section').forEach(section => {
+            section.classList.add('transition-all', 'duration-700', 'opacity-0', 'translate-y-10');
+            observer.observe(section);
+        });
+    </script>
+</body></html>

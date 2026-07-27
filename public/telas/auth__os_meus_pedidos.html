@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+
+<html lang="pt"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Histórico de Pedidos - KONEKTA STP</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600&family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&family=Plus+Jakarta+Sans:wght@100..900&display=swap" rel="stylesheet"/>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .fill-icon {
+            font-variation-settings: 'FILL' 1;
+        }
+        body {
+            background-color: #fbf9f8; /* background from config */
+            -webkit-tap-highlight-color: transparent;
+        }
+        .custom-shadow {
+            box-shadow: 0px 4px 20px rgba(0, 0, 0, 0.05);
+        }
+        .bento-card {
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+        .bento-card:active {
+            transform: scale(0.98);
+        }
+    </style>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "primary-fixed": "#9bf6ba",
+                      "tertiary-fixed-dim": "#ffb3b6",
+                      "tertiary": "#8b373f",
+                      "on-tertiary-fixed-variant": "#7c2b34",
+                      "surface-container-lowest": "#ffffff",
+                      "on-surface": "#1b1c1c",
+                      "on-secondary-fixed": "#201c00",
+                      "on-error-container": "#93000a",
+                      "secondary-container": "#f6e14a",
+                      "on-secondary-fixed-variant": "#504700",
+                      "surface-tint": "#006d3f",
+                      "secondary-fixed-dim": "#dcc831",
+                      "surface-container": "#f0eded",
+                      "surface-tonal": "#F7F7F7",
+                      "surface-container-low": "#f5f3f2",
+                      "inverse-surface": "#303030",
+                      "on-tertiary-fixed": "#40000d",
+                      "tertiary-fixed": "#ffdada",
+                      "on-secondary-container": "#6f6300",
+                      "surface-dim": "#dcd9d9",
+                      "inverse-on-surface": "#f3f0f0",
+                      "surface-container-high": "#eae8e7",
+                      "error-container": "#ffdad6",
+                      "status-success": "#1A7A4A",
+                      "category-bg-low-opacity": "rgba(26, 122, 74, 0.08)",
+                      "secondary-fixed": "#f9e44d",
+                      "primary-fixed-dim": "#80d9a0",
+                      "on-secondary": "#ffffff",
+                      "on-primary": "#ffffff",
+                      "error": "#ba1a1a",
+                      "on-primary-fixed-variant": "#00522e",
+                      "background": "#fbf9f8",
+                      "inverse-primary": "#80d9a0",
+                      "surface-background": "#FFFFFF",
+                      "on-tertiary-container": "#ffe7e7",
+                      "tertiary-container": "#a94e56",
+                      "surface": "#fbf9f8",
+                      "primary": "#006036",
+                      "on-primary-container": "#abffc6",
+                      "on-error": "#ffffff",
+                      "on-primary-fixed": "#00210f",
+                      "on-background": "#1b1c1c",
+                      "surface-bright": "#fbf9f8",
+                      "on-tertiary": "#ffffff",
+                      "on-surface-variant": "#3f4941",
+                      "primary-container": "#1a7a4a",
+                      "secondary": "#6a5f00",
+                      "outline-variant": "#bec9be",
+                      "surface-variant": "#e4e2e1",
+                      "status-warning": "#FFEA52",
+                      "outline": "#6f7a70",
+                      "surface-container-highest": "#e4e2e1"
+              },
+              "spacing": {
+                      "gutter": "20px",
+                      "base": "4px",
+                      "margin-mobile": "16px",
+                      "sm": "16px",
+                      "margin-desktop": "40px",
+                      "md": "24px",
+                      "xl": "48px",
+                      "lg": "32px",
+                      "xs": "8px"
+              },
+              "fontFamily": {
+                      "display-lg": ["Plus Jakarta Sans"],
+                      "body-lg": ["Inter"],
+                      "headline-md": ["Plus Jakarta Sans"],
+                      "headline-lg-mobile": ["Plus Jakarta Sans"],
+                      "headline-lg": ["Plus Jakarta Sans"],
+                      "body-md": ["Inter"],
+                      "label-sm": ["Inter"],
+                      "label-md": ["Inter"]
+              },
+              "fontSize": {
+                      "display-lg": ["48px", {"lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                      "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
+                      "headline-md": ["20px", {"lineHeight": "28px", "fontWeight": "600"}],
+                      "headline-lg-mobile": ["24px", {"lineHeight": "32px", "fontWeight": "700"}],
+                      "headline-lg": ["32px", {"lineHeight": "40px", "fontWeight": "700"}],
+                      "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                      "label-sm": ["12px", {"lineHeight": "16px", "fontWeight": "500"}],
+                      "label-md": ["14px", {"lineHeight": "20px", "letterSpacing": "0.01em", "fontWeight": "600"}]
+              }
+            },
+          },
+        }
+    </script>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="font-body-md text-on-background">
+<!-- TopAppBar -->
+<header class="fixed top-0 left-0 w-full z-50 flex flex-col px-margin-mobile pt-sm pb-base bg-primary dark:bg-primary-container text-on-primary shadow-md">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-4">
+<button class="w-10 h-10 flex items-center justify-center rounded-full hover:bg-primary-fixed-variant/10 transition-colors duration-200">
+<span class="material-symbols-outlined" data-icon="menu">menu</span>
+</button>
+<h1 class="font-headline-lg-mobile text-headline-lg-mobile font-bold text-on-primary">KONEKTA STP</h1>
+</div>
+<div class="flex items-center gap-2">
+<button class="w-10 h-10 flex items-center justify-center rounded-full hover:bg-primary-fixed-variant/10 transition-colors duration-200">
+<span class="material-symbols-outlined" data-icon="notifications">notifications</span>
+</button>
+</div>
+</div>
+</header>
+<!-- Main Content Canvas -->
+<main class="pt-24 pb-32 px-margin-mobile max-w-2xl mx-auto">
+<!-- Header Section -->
+<div class="mb-lg">
+<h2 class="font-headline-lg-mobile text-headline-lg-mobile text-on-surface mb-xs">Histórico de Pedidos</h2>
+<p class="font-body-md text-on-surface-variant">Acompanhe e gira as suas solicitações de serviço.</p>
+</div>
+<!-- Filter Chips (Atmospheric touch) -->
+<div class="flex gap-2 overflow-x-auto pb-md mb-md no-scrollbar">
+<button class="px-md py-xs rounded-full bg-primary text-on-primary font-label-md text-label-md whitespace-nowrap">Todos</button>
+<button class="px-md py-xs rounded-full bg-surface-variant text-on-surface-variant font-label-md text-label-md whitespace-nowrap">Em curso</button>
+<button class="px-md py-xs rounded-full bg-surface-variant text-on-surface-variant font-label-md text-label-md whitespace-nowrap">Concluídos</button>
+<button class="px-md py-xs rounded-full bg-surface-variant text-on-surface-variant font-label-md text-label-md whitespace-nowrap">Cancelados</button>
+</div>
+<!-- Orders List -->
+<div class="space-y-md">
+<!-- Order Card: In Progress -->
+<div class="bento-card bg-surface-background rounded-xl p-md custom-shadow border border-outline-variant/30">
+<div class="flex justify-between items-start mb-sm">
+<div class="flex gap-sm">
+<div class="w-12 h-12 rounded-lg bg-category-bg-low-opacity flex items-center justify-center text-primary">
+<span class="material-symbols-outlined" data-icon="plumbing">plumbing</span>
+</div>
+<div>
+<h3 class="font-headline-md text-headline-md text-on-surface">Reparação de Canalização</h3>
+<p class="font-label-md text-label-md text-on-surface-variant">Solicitado hoje, 10:30</p>
+</div>
+</div>
+<span class="px-sm py-1 rounded-full bg-blue-100 text-blue-700 font-label-sm text-label-sm flex items-center gap-1">
+<span class="w-2 h-2 rounded-full bg-blue-700 animate-pulse"></span>
+                        Em curso
+                    </span>
+</div>
+<div class="flex items-center gap-sm mb-md py-sm border-y border-outline-variant/20">
+<div class="w-10 h-10 rounded-full bg-surface-container overflow-hidden">
+<img class="w-full h-full object-cover" data-alt="A professional headshot of a service provider in São Tomé, a middle-aged man with a friendly smile wearing a clean green polo shirt. The background is a soft-focus tropical workshop. The lighting is warm and natural, creating a trustworthy and professional atmosphere consistent with a high-end service marketplace." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDjq1lZwpFnwz6BUJ6dr3T2QRihHoL7Vf6bxl2r_PxuRCljJswMuu9R_C7ySx6KCAmmpWUwaKKUxx_h3GKRsA9c3el6efX1cjRTzVwbQVBu8Tcv_HVBCbJ9I5Vh0jZvIvDCf7hctQ_1J49LoFwNsZB6Uj8AUqrvr174l4FI2bWfhesPj4ARKdW4yH7BXVa0x9uSrTaoKjxsDxNoaDnm0xfnjUX3R6Y97-pKw2SQxyWbtePYgACT-GLzbB7dXFPUfHRQ-Rl_5XsavlM"/>
+</div>
+<div>
+<p class="font-label-md text-label-md text-on-surface">João Silva</p>
+<div class="flex items-center gap-1">
+<span class="material-symbols-outlined text-secondary text-[16px]" data-icon="star" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant">4.9 (124 avaliações)</span>
+</div>
+</div>
+<div class="ml-auto text-right">
+<p class="font-headline-md text-headline-md text-primary">450 STN</p>
+</div>
+</div>
+<div class="flex gap-sm">
+<button class="flex-1 py-sm bg-surface-tonal text-on-surface font-label-md text-label-md rounded-lg hover:bg-surface-variant transition-colors">Ver Detalhes</button>
+<button class="flex-1 py-sm bg-primary text-on-primary font-label-md text-label-md rounded-lg shadow-sm hover:opacity-90 transition-opacity">Contactar</button>
+</div>
+</div>
+<!-- Order Card: Completed -->
+<div class="bento-card bg-surface-background rounded-xl p-md custom-shadow border border-outline-variant/30">
+<div class="flex justify-between items-start mb-sm">
+<div class="flex gap-sm">
+<div class="w-12 h-12 rounded-lg bg-category-bg-low-opacity flex items-center justify-center text-primary">
+<span class="material-symbols-outlined" data-icon="cleaning_services">cleaning_services</span>
+</div>
+<div>
+<h3 class="font-headline-md text-headline-md text-on-surface">Limpeza Residencial</h3>
+<p class="font-label-md text-label-md text-on-surface-variant">15 de Outubro, 2023</p>
+</div>
+</div>
+<span class="px-sm py-1 rounded-full bg-status-success/10 text-status-success font-label-sm text-label-sm flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]" data-icon="check_circle">check_circle</span>
+                        Concluído
+                    </span>
+</div>
+<div class="flex items-center gap-sm mb-md py-sm border-y border-outline-variant/20">
+<div class="w-10 h-10 rounded-full bg-surface-container overflow-hidden">
+<img class="w-full h-full object-cover" data-alt="A portrait of a professional cleaning specialist, a young woman with a kind expression and neat attire. She is standing in a bright, modern living room with lush tropical plants visible through the window. The aesthetic is clean, refreshing, and professional, using soft daylighting and a high-trust atmosphere." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDDlJIV5vdnjjxwKd4iS0EWF9cHuQhudgtvBFC-JEK1UymnKXxcUQNcCQgTPe2DCTHhqS1hZRTObmc1y5Ne4_dsMxF3Zir5B2cRz3WCg05ldCPbXWyTE7K6iEq6fOGq95tTM5pv8MyVFyQffRdXv4fzhzHOMskytJXMqw5rNoVwb3KIsI7_GqoD64hL6UoTOZ_JZfr9UUKTXL4RNzimyUEz3XdSLHbIwwGXgh20A6q8pDFM4L6JHniyrtc-TbHj__Zl79a39uHfoPo"/>
+</div>
+<div>
+<p class="font-label-md text-label-md text-on-surface">Maria dos Santos</p>
+<div class="flex items-center gap-1">
+<span class="material-symbols-outlined text-secondary text-[16px]" data-icon="star" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant">5.0 (89 avaliações)</span>
+</div>
+</div>
+<div class="ml-auto text-right">
+<p class="font-headline-md text-headline-md text-primary">320 STN</p>
+</div>
+</div>
+<div class="flex gap-sm">
+<button class="flex-1 py-sm bg-surface-tonal text-on-surface font-label-md text-label-md rounded-lg hover:bg-surface-variant transition-colors">Repetir Pedido</button>
+<button class="flex-1 py-sm border border-primary text-primary font-label-md text-label-md rounded-lg hover:bg-primary/5 transition-colors">Avaliar</button>
+</div>
+</div>
+<!-- Order Card: Cancelled -->
+<div class="bento-card bg-surface-background rounded-xl p-md custom-shadow border border-outline-variant/30 opacity-80">
+<div class="flex justify-between items-start mb-sm">
+<div class="flex gap-sm">
+<div class="w-12 h-12 rounded-lg bg-surface-variant flex items-center justify-center text-on-surface-variant">
+<span class="material-symbols-outlined" data-icon="electrical_services">electrical_services</span>
+</div>
+<div>
+<h3 class="font-headline-md text-headline-md text-on-surface">Manutenção Elétrica</h3>
+<p class="font-label-md text-label-md text-on-surface-variant">10 de Outubro, 2023</p>
+</div>
+</div>
+<span class="px-sm py-1 rounded-full bg-error/10 text-error font-label-sm text-label-sm flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]" data-icon="cancel">cancel</span>
+                        Cancelado
+                    </span>
+</div>
+<div class="flex items-center gap-sm mb-md py-sm border-y border-outline-variant/20">
+<div class="w-10 h-10 rounded-full bg-surface-container overflow-hidden grayscale">
+<img class="w-full h-full object-cover" data-alt="A portrait of a male electrician professional, shown in a clean and organized technical environment. The lighting is crisp and detailed, emphasizing precision. The overall tone is corporate and reliable, with a focus on professional competence and technical expertise." src="https://lh3.googleusercontent.com/aida-public/AB6AXuABzirya85puHoERlFM1jz6eTMKdonctIqode-y9Ypzjjgrg6LkhB-vXBdaHOAwazR72x65FGX3ZHtsM26lNQfKmrW5hxPMamJJ1jwWzGKrNWQBDQ-QMosFzDU5-_72bGWB5X7Dzx50E63S0r_YOwHFd6UiEaXNH3GZNY5dM1puqhetKezheXzgI7N90_pF25HgDAxygeD3d0Feu5Zhncq5oFgAiABZRdCMHKxqbhGe43YZmxSD4CCLeEhz21xjSE7BvTtVK-3UG0o"/>
+</div>
+<div>
+<p class="font-label-md text-label-md text-on-surface">Carlos Mendonça</p>
+<p class="font-label-sm text-label-sm text-error">Cancelado pelo cliente</p>
+</div>
+<div class="ml-auto text-right">
+<p class="font-headline-md text-headline-md text-on-surface-variant">500 STN</p>
+</div>
+</div>
+<button class="w-full py-sm bg-surface-tonal text-on-surface font-label-md text-label-md rounded-lg hover:bg-surface-variant transition-colors">Tentar Novo Prestador</button>
+</div>
+</div>
+<!-- Empty State Logic (Hidden by default) -->
+<div class="hidden flex-col items-center justify-center py-xl text-center" id="empty-state">
+<span class="material-symbols-outlined text-outline text-[64px] mb-md" data-icon="history">history</span>
+<h3 class="font-headline-md text-headline-md text-on-surface mb-xs">Sem pedidos ainda</h3>
+<p class="font-body-md text-on-surface-variant mb-lg">Os seus pedidos e serviços aparecerão aqui.</p>
+<button class="px-xl py-md bg-primary text-on-primary rounded-full font-label-md text-label-md shadow-md">Explorar Serviços</button>
+</div>
+</main>
+<!-- BottomNavBar -->
+<nav class="fixed bottom-0 left-0 w-full z-50 flex justify-around items-center h-xl px-2 pb-safe bg-surface dark:bg-surface-container-lowest border-t border-outline-variant shadow-lg">
+<a class="flex flex-col items-center justify-center text-on-surface-variant hover:bg-surface-variant/50 transition-transform scale-95 active:scale-90 p-2 rounded-lg" href="#">
+<span class="material-symbols-outlined" data-icon="home">home</span>
+<span class="font-label-md text-label-md">Home</span>
+</a>
+<a class="flex flex-col items-center justify-center text-primary font-bold hover:bg-surface-variant/50 transition-transform scale-95 active:scale-90 p-2 rounded-lg" href="#">
+<span class="material-symbols-outlined fill-icon" data-icon="receipt_long">receipt_long</span>
+<span class="font-label-md text-label-md">Orders</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant hover:bg-surface-variant/50 transition-transform scale-95 active:scale-90 p-2 rounded-lg" href="#">
+<span class="material-symbols-outlined" data-icon="account_balance_wallet">account_balance_wallet</span>
+<span class="font-label-md text-label-md">Wallet</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant hover:bg-surface-variant/50 transition-transform scale-95 active:scale-90 p-2 rounded-lg" href="#">
+<span class="material-symbols-outlined" data-icon="person">person</span>
+<span class="font-label-md text-label-md">Profile</span>
+</a>
+</nav>
+<!-- Micro-interactions Script -->
+<script>
+        document.querySelectorAll('.bento-card').forEach(card => {
+            card.addEventListener('click', function() {
+                // Haptic feedback simulation
+                if (window.navigator && window.navigator.vibrate) {
+                    window.navigator.vibrate(5);
+                }
+            });
+        });
+
+        // Filter chip logic
+        const chips = document.querySelectorAll('button.whitespace-nowrap');
+        chips.forEach(chip => {
+            chip.addEventListener('click', () => {
+                chips.forEach(c => {
+                    c.classList.remove('bg-primary', 'text-on-primary');
+                    c.classList.add('bg-surface-variant', 'text-on-surface-variant');
+                });
+                chip.classList.remove('bg-surface-variant', 'text-on-surface-variant');
+                chip.classList.add('bg-primary', 'text-on-primary');
+            });
+        });
+    </script>
+</body></html>

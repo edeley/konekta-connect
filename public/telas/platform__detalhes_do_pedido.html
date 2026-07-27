@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+
+<html lang="pt"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Solicitar Eletricista | KONEKTA STP</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Plus+Jakarta+Sans:wght@600;700;800&family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&family=Plus+Jakarta+Sans:wght@100..900&display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "secondary-container": "#fdbf35",
+                    "on-tertiary-container": "#ffe7e5",
+                    "surface-dim": "#d0daf0",
+                    "surface-tint": "#006d3f",
+                    "outline-variant": "#bec9be",
+                    "surface": "#f9f9ff",
+                    "error-container": "#ffdad6",
+                    "surface-container-lowest": "#ffffff",
+                    "on-background": "#121c2c",
+                    "inverse-primary": "#80d9a0",
+                    "on-surface": "#121c2c",
+                    "tertiary-container": "#d01f2f",
+                    "surface-container-low": "#f0f3ff",
+                    "error": "#ba1a1a",
+                    "surface-container-high": "#dee8ff",
+                    "surface-variant": "#d9e3f9",
+                    "on-primary": "#ffffff",
+                    "on-surface-variant": "#3f4941",
+                    "surface-container-highest": "#d9e3f9",
+                    "primary": "#006036",
+                    "on-secondary-fixed-variant": "#5d4200",
+                    "inverse-on-surface": "#ebf1ff",
+                    "on-error": "#ffffff",
+                    "secondary-fixed-dim": "#fabd32",
+                    "tertiary": "#a9001d",
+                    "tertiary-fixed": "#ffdad7",
+                    "outline": "#6f7a70",
+                    "on-secondary-container": "#6e4f00",
+                    "primary-fixed-dim": "#80d9a0",
+                    "on-secondary": "#ffffff",
+                    "primary-fixed": "#9bf6ba",
+                    "secondary-fixed": "#ffdea4",
+                    "background": "#f9f9ff",
+                    "on-secondary-fixed": "#261900",
+                    "on-tertiary-fixed": "#410005",
+                    "tertiary-fixed-dim": "#ffb3af",
+                    "on-error-container": "#93000a",
+                    "on-tertiary": "#ffffff",
+                    "on-primary-fixed-variant": "#00522e",
+                    "surface-bright": "#f9f9ff",
+                    "surface-container": "#e7eeff",
+                    "secondary": "#7b5900",
+                    "inverse-surface": "#273141",
+                    "on-tertiary-fixed-variant": "#930018",
+                    "on-primary-fixed": "#00210f",
+                    "primary-container": "#1a7a4a",
+                    "on-primary-container": "#abffc6"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "container-margin": "20px",
+                    "sm": "8px",
+                    "xl": "32px",
+                    "gutter": "16px",
+                    "lg": "24px",
+                    "xs": "4px",
+                    "unit": "4px",
+                    "md": "16px",
+                    "2xl": "48px",
+                    "3xl": "64px"
+            },
+            "fontFamily": {
+                    "label-sm": ["Inter"],
+                    "headline-lg-mobile": ["Plus Jakarta Sans"],
+                    "display": ["Plus Jakarta Sans"],
+                    "body-md": ["Inter"],
+                    "headline-md": ["Plus Jakarta Sans"],
+                    "label-lg": ["Inter"],
+                    "body-lg": ["Inter"],
+                    "headline-lg": ["Plus Jakarta Sans"]
+            },
+            "fontSize": {
+                    "label-sm": ["12px", {"lineHeight": "16px", "fontWeight": "500"}],
+                    "headline-lg-mobile": ["24px", {"lineHeight": "32px", "fontWeight": "700"}],
+                    "display": ["40px", {"lineHeight": "48px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                    "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                    "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+                    "label-lg": ["14px", {"lineHeight": "20px", "letterSpacing": "0.01em", "fontWeight": "600"}],
+                    "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
+                    "headline-lg": ["32px", {"lineHeight": "40px", "fontWeight": "700"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .step-active { width: 40px; }
+        .card-selected { border-color: #006036; background-color: #f0f7f3; }
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-thumb { background: #bec9be; border-radius: 10px; }
+        body { background-color: #f7f9fb; }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="antialiased text-on-surface font-body-md overflow-x-hidden">
+<!-- TopAppBar -->
+<header class="fixed top-0 w-full z-50 flex justify-between items-center px-container-margin h-16 bg-surface shadow-sm">
+<button class="flex items-center justify-center w-10 h-10 rounded-full hover:bg-primary-container/10 transition-colors">
+<span class="material-symbols-outlined text-primary">arrow_back</span>
+</button>
+<h1 class="font-headline-lg-mobile text-headline-lg-mobile font-bold text-primary tracking-tight">KONEKTA STP</h1>
+<button class="flex items-center justify-center w-10 h-10 rounded-full hover:bg-primary-container/10 transition-colors">
+<span class="material-symbols-outlined text-primary">notifications</span>
+</button>
+</header>
+<main class="pt-24 pb-32 px-container-margin max-w-lg mx-auto">
+<!-- Progress Indicator -->
+<div class="mb-xl">
+<div class="flex justify-between items-end mb-sm">
+<span class="font-label-lg text-primary">Passo 2 de 4</span>
+<span class="font-label-sm text-outline">Detalhes do Serviço</span>
+</div>
+<div class="h-2 bg-surface-variant/30 rounded-full flex gap-1.5">
+<div class="h-full bg-primary/40 rounded-full flex-1"></div>
+<div class="h-full bg-primary rounded-full step-active transition-all duration-500"></div>
+<div class="h-full bg-surface-variant/30 rounded-full flex-1"></div>
+<div class="h-full bg-surface-variant/30 rounded-full flex-1"></div>
+</div>
+</div>
+<!-- Section Title -->
+<section class="mb-lg">
+<h2 class="font-headline-md text-headline-md text-on-surface mb-xs">O que precisa ser feito?</h2>
+<p class="text-on-surface-variant text-body-md">Selecione o tipo de trabalho elétrico para que possamos encontrar o melhor profissional.</p>
+</section>
+<!-- Service Type Selection (Touchable Cards) -->
+<div class="grid grid-cols-1 gap-gutter mb-xl" id="service-types">
+<!-- Card 1: Reparação -->
+<label class="relative cursor-pointer group">
+<input checked="" class="sr-only peer" name="service_type" type="radio"/>
+<div class="p-md bg-surface-container-lowest border-2 border-transparent rounded-xl shadow-[0_4px_12px_rgba(0,96,54,0.06)] peer-checked:border-primary peer-checked:bg-primary/5 transition-all duration-200">
+<div class="flex items-center gap-md">
+<div class="w-12 h-12 bg-primary-container rounded-lg flex items-center justify-center text-on-primary-container">
+<span class="material-symbols-outlined text-3xl">build</span>
+</div>
+<div>
+<h3 class="font-label-lg text-headline-md text-primary">Reparação</h3>
+<p class="text-label-sm text-on-surface-variant">Tomadas, curto-circuitos ou interruptores.</p>
+</div>
+</div>
+</div>
+</label>
+<!-- Card 2: Instalação -->
+<label class="relative cursor-pointer group">
+<input class="sr-only peer" name="service_type" type="radio"/>
+<div class="p-md bg-surface-container-lowest border-2 border-transparent rounded-xl shadow-[0_4px_12px_rgba(0,96,54,0.06)] peer-checked:border-primary peer-checked:bg-primary/5 transition-all duration-200">
+<div class="flex items-center gap-md">
+<div class="w-12 h-12 bg-primary-container rounded-lg flex items-center justify-center text-on-primary-container">
+<span class="material-symbols-outlined text-3xl">bolt</span>
+</div>
+<div>
+<h3 class="font-label-lg text-headline-md text-primary">Instalação</h3>
+<p class="text-label-sm text-on-surface-variant">Luminárias, novos pontos de energia ou quadros.</p>
+</div>
+</div>
+</div>
+</label>
+<!-- Card 3: Emergência -->
+<label class="relative cursor-pointer group">
+<input class="sr-only peer" name="service_type" type="radio"/>
+<div class="p-md bg-surface-container-lowest border-2 border-transparent rounded-xl shadow-[0_4px_12px_rgba(0,96,54,0.06)] peer-checked:border-primary peer-checked:bg-primary/5 transition-all duration-200">
+<div class="flex items-center gap-md">
+<div class="w-12 h-12 bg-tertiary-container rounded-lg flex items-center justify-center text-on-tertiary-container">
+<span class="material-symbols-outlined text-3xl">emergency</span>
+</div>
+<div>
+<h3 class="font-label-lg text-headline-md text-tertiary">Emergência 24h</h3>
+<p class="text-label-sm text-on-surface-variant">Falta de luz total ou perigo imediato.</p>
+</div>
+</div>
+</div>
+</label>
+</div>
+<!-- Reference Point -->
+<section class="mb-xl">
+<label class="block font-label-lg text-on-surface mb-sm" for="reference">Ponto de Referência Local</label>
+<textarea class="w-full bg-surface-container-lowest border border-outline-variant rounded-xl p-md focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-all placeholder:text-outline/60 text-body-md" id="reference" placeholder="Ex: Perto do Mercado da Trindade, portão azul..." rows="3"></textarea>
+</section>
+<!-- Photo Upload -->
+<section class="mb-2xl">
+<div class="flex justify-between items-center mb-sm">
+<label class="font-label-lg text-on-surface">Fotos do Problema (Opcional)</label>
+<span class="text-label-sm text-outline">Máx 3 fotos</span>
+</div>
+<div class="grid grid-cols-3 gap-sm">
+<div class="aspect-square bg-surface-container-high rounded-xl border-2 border-dashed border-outline-variant flex flex-col items-center justify-center gap-xs cursor-pointer hover:bg-surface-variant transition-colors group">
+<span class="material-symbols-outlined text-primary group-hover:scale-110 transition-transform">add_a_photo</span>
+<span class="text-[10px] font-bold text-primary">ADICIONAR</span>
+</div>
+<div class="aspect-square bg-cover bg-center rounded-xl relative overflow-hidden group" data-alt="A close-up high-resolution photograph of a standard electrical fuse box in a Santomean residence. The lighting is natural and clear, showing the switches and wiring in a professional, service-oriented style. The colors are muted neutrals with the primary green theme of Konekta subtly integrated into the background lighting. Modern corporate aesthetic." style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuBNWbSQkdlJT73E0cFjyPpFPIw7MqMeP-T33avTEvbgVvSghJ5FO8VhBLjhvazX_eTBISKzZEHuFsg5PxEvZxxFqgw3KQgKrEvyYRcJ81cmS81mbBGBnz0DZQiA9ABublF_oWXnkTldgPPv4VRuerHPFtp8i5slNijXdwYFOVSZbwE7gBRFohPHDRsTkRnJFzuH2MJpyrVjmmnEf29tsRjWr8IfWSMv6cMMumrkQlMzI3HS_8Q2F8RAiJuba1Z1Ebx_g6eBF9kIemE')">
+<button class="absolute top-1 right-1 w-6 h-6 bg-error/90 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+<span class="material-symbols-outlined text-sm">close</span>
+</button>
+</div>
+<div class="aspect-square bg-surface-container-low rounded-xl border border-outline-variant/30"></div>
+</div>
+</section>
+</main>
+<!-- Bottom Navigation / Action Bar -->
+<footer class="fixed bottom-0 left-0 w-full z-50 bg-surface shadow-[0_-4px_12px_0_rgba(0,96,54,0.08)] px-4 pb-6 pt-4 rounded-t-xl">
+<div class="max-w-lg mx-auto flex gap-md">
+<button class="flex-1 h-14 bg-primary text-on-primary font-bold rounded-xl flex items-center justify-center gap-sm active:scale-95 transition-all shadow-lg shadow-primary/20">
+<span>PRÓXIMO PASSO</span>
+<span class="material-symbols-outlined">arrow_forward</span>
+</button>
+</div>
+</footer>
+<!-- Bottom Nav Bar (Hidden on this transactional screen as per protocol) -->
+<!-- The BottomNavBar is suppressed because this is a Task-Focused transaction (Smart Form) -->
+<script>
+        // Simple Interaction for selection
+        const cards = document.querySelectorAll('#service-types label');
+        cards.forEach(card => {
+            card.addEventListener('click', () => {
+                // Animation effect on tap
+                card.style.transform = 'scale(0.98)';
+                setTimeout(() => card.style.transform = 'scale(1)', 100);
+            });
+        });
+
+        // Floating label behavior placeholder
+        const textarea = document.getElementById('reference');
+        textarea.addEventListener('focus', () => {
+            textarea.parentElement.querySelector('label').classList.add('text-primary');
+        });
+        textarea.addEventListener('blur', () => {
+            textarea.parentElement.querySelector('label').classList.remove('text-primary');
+        });
+    </script>
+</body></html>

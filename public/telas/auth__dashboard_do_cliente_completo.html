@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+
+<html lang="pt-PT"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>KONEKTA STP - Dashboard do Cliente</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;family=Inter:wght@400;500;600&amp;family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind Configuration -->
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "on-secondary-fixed-variant": "#504700",
+                    "on-secondary-container": "#6f6300",
+                    "on-tertiary-fixed": "#40000d",
+                    "inverse-on-surface": "#f3f0f0",
+                    "on-secondary": "#ffffff",
+                    "on-tertiary": "#ffffff",
+                    "tertiary": "#8b373f",
+                    "on-error-container": "#93000a",
+                    "tertiary-container": "#a94e56",
+                    "primary-fixed-dim": "#80d9a0",
+                    "secondary-fixed": "#f9e44d",
+                    "surface-container": "#f0eded",
+                    "on-surface": "#1b1c1c",
+                    "on-primary": "#ffffff",
+                    "surface-variant": "#e4e2e1",
+                    "surface": "#fbf9f8",
+                    "on-secondary-fixed": "#201c00",
+                    "on-surface-variant": "#3f4941",
+                    "error-container": "#ffdad6",
+                    "surface-tint": "#006d3f",
+                    "on-tertiary-fixed-variant": "#7c2b34",
+                    "on-primary-fixed": "#00210f",
+                    "tertiary-fixed": "#ffdada",
+                    "surface-container-highest": "#e4e2e1",
+                    "status-success": "#1A7A4A",
+                    "error": "#ba1a1a",
+                    "surface-background": "#FFFFFF",
+                    "on-tertiary-container": "#ffe7e7",
+                    "outline-variant": "#bec9be",
+                    "surface-container-lowest": "#ffffff",
+                    "status-warning": "#FFEA52",
+                    "on-background": "#1b1c1c",
+                    "on-primary-container": "#abffc6",
+                    "inverse-surface": "#303030",
+                    "surface-bright": "#fbf9f8",
+                    "surface-tonal": "#F7F7F7",
+                    "primary-container": "#1a7a4a",
+                    "surface-container-high": "#eae8e7",
+                    "surface-dim": "#dcd9d9",
+                    "on-error": "#ffffff",
+                    "tertiary-fixed-dim": "#ffb3b6",
+                    "secondary": "#6a5f00",
+                    "secondary-fixed-dim": "#dcc831",
+                    "outline": "#6f7a70",
+                    "on-primary-fixed-variant": "#00522e",
+                    "primary": "#006036",
+                    "inverse-primary": "#80d9a0",
+                    "background": "#fbf9f8",
+                    "category-bg-low-opacity": "rgba(26, 122, 74, 0.08)",
+                    "secondary-container": "#f6e14a",
+                    "surface-container-low": "#f5f3f2",
+                    "primary-fixed": "#9bf6ba"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "xl": "48px",
+                    "base": "4px",
+                    "sm": "16px",
+                    "margin-mobile": "16px",
+                    "gutter": "20px",
+                    "lg": "32px",
+                    "xs": "8px",
+                    "md": "24px",
+                    "margin-desktop": "40px"
+            },
+            "fontFamily": {
+                    "body-md": ["Inter"],
+                    "headline-md": ["Plus Jakarta Sans"],
+                    "headline-lg-mobile": ["Plus Jakarta Sans"],
+                    "body-lg": ["Inter"],
+                    "headline-lg": ["Plus Jakarta Sans"],
+                    "display-lg": ["Plus Jakarta Sans"],
+                    "label-sm": ["Inter"],
+                    "label-md": ["Inter"]
+            },
+            "fontSize": {
+                    "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                    "headline-md": ["20px", {"lineHeight": "28px", "fontWeight": "600"}],
+                    "headline-lg-mobile": ["24px", {"lineHeight": "32px", "fontWeight": "700"}],
+                    "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
+                    "headline-lg": ["32px", {"lineHeight": "40px", "fontWeight": "700"}],
+                    "display-lg": ["48px", {"lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                    "label-sm": ["12px", {"lineHeight": "16px", "fontWeight": "500"}],
+                    "label-md": ["14px", {"lineHeight": "20px", "letterSpacing": "0.01em", "fontWeight": "600"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .active-dot {
+            animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: .4; }
+        }
+        .hide-scrollbar::-webkit-scrollbar { display: none; }
+        .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        body {
+            min-height: max(884px, 100dvh);
+        }
+    </style>
+</head>
+<body class="bg-background text-on-surface font-body-md min-h-screen pb-24">
+<!-- Top Navigation Header -->
+<header class="fixed top-0 left-0 w-full z-50 flex flex-col px-margin-mobile pt-sm pb-sm bg-primary dark:bg-primary shadow-md">
+<div class="flex items-center justify-between mb-sm">
+<div class="flex items-center gap-xs">
+<button class="p-xs -ml-xs text-on-primary">
+<span class="material-symbols-outlined">menu</span>
+</button>
+<div class="flex flex-col">
+<span class="font-headline-md text-headline-md font-bold text-on-primary">Olá, Erad! 👋</span>
+<div class="flex items-center gap-xs text-on-primary/80 font-label-sm text-label-sm">
+<span class="material-symbols-outlined text-[16px]">location_on</span>
+<span>São Tomé, Água Grande</span>
+</div>
+</div>
+</div>
+<div class="flex items-center gap-sm">
+<div class="relative p-xs rounded-full hover:bg-white/10 transition-colors cursor-pointer">
+<span class="material-symbols-outlined text-on-primary">notifications</span>
+<span class="absolute top-1.5 right-1.5 w-2.5 h-2.5 bg-secondary-container rounded-full border-2 border-primary"></span>
+</div>
+</div>
+</div>
+<!-- Search Bar -->
+<div class="relative w-full">
+<span class="material-symbols-outlined absolute left-sm top-1/2 -translate-y-1/2 text-on-surface-variant">search</span>
+<input class="w-full h-12 bg-white rounded-xl pl-12 pr-sm font-body-md text-on-surface outline-none border-none shadow-sm focus:ring-2 focus:ring-secondary-container transition-all" placeholder="Pesquisar serviços..." type="text"/>
+</div>
+</header>
+<main class="mt-44 px-margin-mobile">
+<!-- Active Order Card -->
+<section class="mb-lg">
+<div class="bg-[#E8F5EE] p-md rounded-xl shadow-sm border border-primary/10 flex items-center gap-md relative overflow-hidden">
+<div class="absolute top-0 right-0 px-sm py-1 bg-primary text-white rounded-bl-xl">
+<span class="flex items-center gap-xs">
+<span class="w-1.5 h-1.5 bg-white rounded-full active-dot"></span>
+<span class="text-[10px] font-bold uppercase tracking-wider">EM CURSO</span>
+</span>
+</div>
+<div class="w-14 h-14 rounded-full bg-white flex items-center justify-center text-primary shadow-sm border border-primary/10 shrink-0">
+<span class="material-symbols-outlined text-2xl" style="font-variation-settings: 'FILL' 1;">bolt</span>
+</div>
+<div class="flex flex-col">
+<h3 class="font-headline-md text-headline-md text-primary leading-tight">Reparação eléctrica</h3>
+<p class="font-body-md text-body-md text-on-surface-variant mb-1">com Manuel Santos</p>
+<button class="text-primary font-label-md text-label-md flex items-center gap-xs">
+                        Ver detalhes <span class="material-symbols-outlined text-sm">arrow_forward</span>
+</button>
+</div>
+</div>
+</section>
+<!-- Categories Grid -->
+<section class="mb-lg">
+<div class="flex items-center justify-between mb-sm">
+<h2 class="font-headline-md text-headline-md">Categorias</h2>
+<button class="text-primary font-label-md text-label-md">Ver tudo</button>
+</div>
+<div class="grid grid-cols-4 gap-y-sm gap-x-sm">
+<!-- Obras -->
+<div class="flex flex-col items-center gap-xs">
+<div class="w-16 h-16 rounded-2xl bg-[#79554815] flex items-center justify-center group hover:scale-105 active:scale-95 transition-all duration-200 cursor-pointer">
+<span class="material-symbols-outlined text-[#795548]">construction</span>
+</div>
+<span class="font-label-sm text-label-sm text-on-surface-variant">Obras</span>
+</div>
+<!-- Limpeza -->
+<div class="flex flex-col items-center gap-xs">
+<div class="w-16 h-16 rounded-2xl bg-[#2196F315] flex items-center justify-center group hover:scale-105 active:scale-95 transition-all duration-200 cursor-pointer">
+<span class="material-symbols-outlined text-[#2196F3]">cleaning_services</span>
+</div>
+<span class="font-label-sm text-label-sm text-on-surface-variant">Limpeza</span>
+</div>
+<!-- Transporte -->
+<div class="flex flex-col items-center gap-xs">
+<div class="w-16 h-16 rounded-2xl bg-[#FF980015] flex items-center justify-center group hover:scale-105 active:scale-95 transition-all duration-200 cursor-pointer">
+<span class="material-symbols-outlined text-[#FF9800]">local_shipping</span>
+</div>
+<span class="font-label-sm text-label-sm text-on-surface-variant">Transporte</span>
+</div>
+<!-- Comida -->
+<div class="flex flex-col items-center gap-xs">
+<div class="w-16 h-16 rounded-2xl bg-[#F4433615] flex items-center justify-center group hover:scale-105 active:scale-95 transition-all duration-200 cursor-pointer">
+<span class="material-symbols-outlined text-[#F44336]">restaurant</span>
+</div>
+<span class="font-label-sm text-label-sm text-on-surface-variant">Comida</span>
+</div>
+<!-- Beleza -->
+<div class="flex flex-col items-center gap-xs">
+<div class="w-16 h-16 rounded-2xl bg-[#9C27B015] flex items-center justify-center group hover:scale-105 active:scale-95 transition-all duration-200 cursor-pointer">
+<span class="material-symbols-outlined text-[#9C27B0]">content_cut</span>
+</div>
+<span class="font-label-sm text-label-sm text-on-surface-variant">Beleza</span>
+</div>
+<!-- TI -->
+<div class="flex flex-col items-center gap-xs">
+<div class="w-16 h-16 rounded-2xl bg-[#00968815] flex items-center justify-center group hover:scale-105 active:scale-95 transition-all duration-200 cursor-pointer">
+<span class="material-symbols-outlined text-[#009688]">devices</span>
+</div>
+<span class="font-label-sm text-label-sm text-on-surface-variant">TI</span>
+</div>
+<!-- Saúde -->
+<div class="flex flex-col items-center gap-xs">
+<div class="w-16 h-16 rounded-2xl bg-[#E91E6315] flex items-center justify-center group hover:scale-105 active:scale-95 transition-all duration-200 cursor-pointer">
+<span class="material-symbols-outlined text-[#E91E63]">medical_services</span>
+</div>
+<span class="font-label-sm text-label-sm text-on-surface-variant">Saúde</span>
+</div>
+<!-- Mais -->
+<div class="flex flex-col items-center gap-xs">
+<div class="w-16 h-16 rounded-2xl bg-surface-variant flex items-center justify-center group hover:scale-105 active:scale-95 transition-all duration-200 cursor-pointer">
+<span class="material-symbols-outlined text-on-surface-variant">grid_view</span>
+</div>
+<span class="font-label-sm text-label-sm text-on-surface-variant">Mais</span>
+</div>
+</div>
+</section>
+<!-- Nearby Providers -->
+<section class="mb-xl">
+<div class="flex items-center justify-between mb-sm">
+<h2 class="font-headline-md text-headline-md">Profissionais Próximos</h2>
+<button class="text-primary font-label-md text-label-md">Ver mapa</button>
+</div>
+<div class="flex gap-sm overflow-x-auto hide-scrollbar pb-base snap-x">
+<!-- Provider Card 1 -->
+<div class="min-w-[280px] snap-start bg-white rounded-2xl shadow-sm border border-outline-variant/30 p-sm">
+<div class="flex items-center gap-sm mb-sm">
+<div class="w-12 h-12 rounded-full bg-primary flex items-center justify-center text-white font-bold text-headline-md">MS</div>
+<div class="flex-1">
+<h4 class="font-label-md text-label-md text-on-surface">Manuel Santos</h4>
+<div class="flex items-center gap-xs">
+<span class="material-symbols-outlined text-status-warning text-[16px]" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="font-label-sm text-label-sm text-on-surface">4.9</span>
+<span class="text-on-surface-variant font-label-sm text-label-sm ml-1">• 0.8km</span>
+</div>
+</div>
+</div>
+<div class="h-40 rounded-xl bg-cover bg-center mb-sm relative overflow-hidden" style="background-image: url('https://lh3.googleusercontent.com/aida/AP1WRLusprvGlrch6sO-NbrYDMs0lhJq-7jZFKN9QPoyR-xUpGvMKl5sktu_pWSJDFu2m1sLHDmXNycTV6IqBYzVj1sjdrvZs5zybqlEC6X2ElWqns65_sWXqvjB7ZdnwJP8JxHGYX_U2X7O7RY_2hyIR67lV95j8zLfrhGenQFAiEaKc_Vtjnmt8nTvt555WJunw72Xkx0UylWoX98ykgABM61VYQfLvC3jaqMWE7QbRBK45VaOOMZfi-x1vg')">
+<span class="absolute bottom-sm left-sm px-sm py-1 bg-white/90 backdrop-blur-md rounded-lg font-label-sm text-label-sm text-primary font-semibold shadow-sm">Eletricista</span>
+</div>
+<div class="flex items-center justify-between">
+<div class="flex flex-col">
+<span class="text-on-surface-variant text-[10px] uppercase font-bold tracking-wider">A partir de</span>
+<span class="font-headline-md text-headline-md text-primary">300 STN</span>
+</div>
+<button class="px-6 py-2.5 bg-primary text-white rounded-full font-label-md text-label-md transition-all active:scale-95 shadow-md shadow-primary/20">Reservar</button>
+</div>
+</div>
+<!-- Provider Card 2 -->
+<div class="min-w-[280px] snap-start bg-white rounded-2xl shadow-sm border border-outline-variant/30 p-sm">
+<div class="flex items-center gap-sm mb-sm">
+<div class="w-12 h-12 rounded-full bg-tertiary-container flex items-center justify-center text-on-tertiary-container font-bold text-headline-md">AM</div>
+<div class="flex-1">
+<h4 class="font-label-md text-label-md text-on-surface">Ana Martins</h4>
+<div class="flex items-center gap-xs">
+<span class="material-symbols-outlined text-status-warning text-[16px]" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="font-label-sm text-label-sm text-on-surface">4.8</span>
+<span class="text-on-surface-variant font-label-sm text-label-sm ml-1">• 1.2km</span>
+</div>
+</div>
+</div>
+<div class="h-40 rounded-xl bg-cover bg-center mb-sm relative overflow-hidden" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuCZzIEFZ1TJoMjXVS9dOf0j1W5SaMxO3d3B0SamvUCtyzrD-YrQuZRnql-Uv5-tKgqf_RQ39CCbMOMn8Ix8cbW43ShrhldC96NBufF-VYi2aEwnAdbxlTnPQH2L_KRZ_RSxUuDRgmr-fqNssuQNz0B808KGkCpSgef5BVfWheemV4Hq0QdCtzvn7ebiSek1QC-yuPOdVp8OtLEitfdIZv8IyRfAKDhUAihE8B-SmOBAoTnv593c_hP2qEuyWPZhDNBYDe_DKrKvG38')">
+<span class="absolute bottom-sm left-sm px-sm py-1 bg-white/90 backdrop-blur-md rounded-lg font-label-sm text-label-sm text-primary font-semibold shadow-sm">Limpeza</span>
+</div>
+<div class="flex items-center justify-between">
+<div class="flex flex-col">
+<span class="text-on-surface-variant text-[10px] uppercase font-bold tracking-wider">A partir de</span>
+<span class="font-headline-md text-headline-md text-primary">250 STN</span>
+</div>
+<button class="px-6 py-2.5 bg-primary text-white rounded-full font-label-md text-label-md transition-all active:scale-95 shadow-md shadow-primary/20">Reservar</button>
+</div>
+</div>
+</div>
+</section>
+<!-- Promotional Banner -->
+<section class="mb-lg">
+<div class="w-full h-44 rounded-3xl overflow-hidden relative group cursor-pointer shadow-lg">
+<div class="absolute inset-0 bg-gradient-to-r from-black/70 via-black/30 to-transparent z-10"></div>
+<div class="absolute inset-0 bg-cover bg-center" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuCRQKmGVO1V6aLSdXMLJzlXcRPzZOmCtpJGjhuo5rE_0YR5bNOn4zybElkIL_cWW-FOK8t6zUQ4tDazbrEmcqp8Zyps3QFT-KG9j6Ke3STqLNK4ALvOtD03UgJkL9Xf0adVWgbCI2khZYzPzPvO_5LoNOVHGSxsOI5THZPxm5GjUZm8R0j1zf8048TKNzRKU8fJyMgpL2Fn3l7REt4w4wYhOE_kS9YwNJZxPKKrgUlpLWtKoQyghKLgD36-SkRIS7unSLDkNhaqPbk')"></div>
+<div class="absolute inset-0 z-20 flex flex-col justify-center px-md">
+<h3 class="text-white font-headline-lg-mobile text-headline-lg-mobile font-bold max-w-[220px] leading-tight">Renovação Total em Casa</h3>
+<p class="text-white/90 font-body-md text-body-md mt-1 mb-4">Agende uma consultoria grátis</p>
+<div>
+<span class="px-6 py-2 bg-white text-primary font-bold text-label-md rounded-full shadow-lg">Saber Mais</span>
+</div>
+</div>
+</div>
+</section>
+</main>
+<!-- Bottom Navigation Shell -->
+<nav class="fixed bottom-0 left-0 w-full z-50 flex justify-around items-center h-20 px-2 pb-safe bg-white dark:bg-surface-container-lowest border-t border-outline-variant/30 shadow-[0_-4px_16px_rgba(0,0,0,0.05)]">
+<!-- Home (Active) -->
+<a class="flex flex-col items-center justify-center text-primary font-bold transition-all transform scale-100 active:scale-90" href="#">
+<span class="material-symbols-outlined text-[26px]" style="font-variation-settings: 'FILL' 1;">home</span>
+<span class="font-label-sm text-[10px] mt-1 uppercase tracking-wider">Home</span>
+</a>
+<!-- Orders -->
+<a class="flex flex-col items-center justify-center text-on-surface-variant hover:text-primary transition-all transform active:scale-90 px-4" href="#">
+<span class="material-symbols-outlined text-[26px]">receipt_long</span>
+<span class="font-label-sm text-[10px] mt-1 uppercase tracking-wider">Pedidos</span>
+</a>
+<!-- Wallet -->
+<a class="flex flex-col items-center justify-center text-on-surface-variant hover:text-primary transition-all transform active:scale-90 px-4" href="#">
+<span class="material-symbols-outlined text-[26px]">account_balance_wallet</span>
+<span class="font-label-sm text-[10px] mt-1 uppercase tracking-wider">Carteira</span>
+</a>
+<!-- Profile -->
+<a class="flex flex-col items-center justify-center text-on-surface-variant hover:text-primary transition-all transform active:scale-90 px-4" href="#">
+<span class="material-symbols-outlined text-[26px]">person</span>
+<span class="font-label-sm text-[10px] mt-1 uppercase tracking-wider">Perfil</span>
+</a>
+</nav>
+<script>
+        // Micro-interaction for category items
+        document.querySelectorAll('.group').forEach(item => {
+            item.addEventListener('click', () => {
+                item.classList.add('scale-90');
+                setTimeout(() => item.classList.remove('scale-90'), 150);
+            });
+        });
+
+        // Search bar focus behavior
+        const searchInput = document.querySelector('input');
+        searchInput.addEventListener('focus', () => {
+            searchInput.parentElement.classList.add('ring-2', 'ring-secondary-container');
+        });
+        searchInput.addEventListener('blur', () => {
+            searchInput.parentElement.classList.remove('ring-2', 'ring-secondary-container');
+        });
+    </script>
+</body></html>

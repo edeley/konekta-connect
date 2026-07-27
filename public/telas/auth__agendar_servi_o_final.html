@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+
+<html lang="pt"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>KONEKTA STP - Agendar e Confirmar</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;family=Inter:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "secondary-container": "#f6e14a",
+                        "secondary-fixed": "#f9e44d",
+                        "surface-bright": "#fbf9f8",
+                        "on-error-container": "#93000a",
+                        "on-tertiary-fixed": "#40000d",
+                        "surface-dim": "#dcd9d9",
+                        "on-background": "#1b1c1c",
+                        "surface": "#fbf9f8",
+                        "error": "#ba1a1a",
+                        "surface-container": "#f0eded",
+                        "on-tertiary-fixed-variant": "#7c2b34",
+                        "background": "#fbf9f8",
+                        "inverse-on-surface": "#f3f0f0",
+                        "error-container": "#ffdad6",
+                        "on-surface": "#1b1c1c",
+                        "tertiary": "#8b373f",
+                        "surface-tint": "#006d3f",
+                        "primary-container": "#1a7a4a",
+                        "status-success": "#1A7A4A",
+                        "secondary-fixed-dim": "#dcc831",
+                        "tertiary-container": "#a94e56",
+                        "on-primary-fixed": "#00210f",
+                        "primary-fixed": "#9bf6ba",
+                        "on-tertiary-container": "#ffe7e7",
+                        "on-primary": "#ffffff",
+                        "primary": "#006036",
+                        "inverse-primary": "#80d9a0",
+                        "on-secondary": "#ffffff",
+                        "surface-container-low": "#f5f3f2",
+                        "outline-variant": "#bec9be",
+                        "on-primary-fixed-variant": "#00522e",
+                        "category-bg-low-opacity": "rgba(26, 122, 74, 0.08)",
+                        "status-warning": "#FFEA52",
+                        "inverse-surface": "#303030",
+                        "primary-fixed-dim": "#80d9a0",
+                        "secondary": "#6a5f00",
+                        "surface-variant": "#e4e2e1",
+                        "on-surface-variant": "#3f4941",
+                        "surface-container-lowest": "#ffffff",
+                        "surface-tonal": "#F7F7F7",
+                        "outline": "#6f7a70",
+                        "on-secondary-fixed-variant": "#504700",
+                        "surface-container-highest": "#e4e2e1",
+                        "on-secondary-container": "#6f6300",
+                        "on-primary-container": "#abffc6",
+                        "surface-container-high": "#eae8e7",
+                        "tertiary-fixed": "#ffdada",
+                        "on-secondary-fixed": "#201c00",
+                        "on-error": "#ffffff",
+                        "surface-background": "#FFFFFF",
+                        "on-tertiary": "#ffffff",
+                        "tertiary-fixed-dim": "#ffb3b6"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "margin-desktop": "40px",
+                        "gutter": "20px",
+                        "base": "4px",
+                        "sm": "16px",
+                        "xs": "8px",
+                        "xl": "48px",
+                        "margin-mobile": "16px",
+                        "md": "24px",
+                        "lg": "32px"
+                    },
+                    "fontFamily": {
+                        "label-sm": ["Inter"],
+                        "display-lg": ["Plus Jakarta Sans"],
+                        "headline-md": ["Plus Jakarta Sans"],
+                        "headline-lg-mobile": ["Plus Jakarta Sans"],
+                        "label-md": ["Inter"],
+                        "body-md": ["Inter"],
+                        "body-lg": ["Inter"],
+                        "headline-lg": ["Plus Jakarta Sans"]
+                    },
+                    "fontSize": {
+                        "label-sm": ["12px", {"lineHeight": "16px", "fontWeight": "500"}],
+                        "display-lg": ["48px", {"lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                        "headline-md": ["20px", {"lineHeight": "28px", "fontWeight": "600"}],
+                        "headline-lg-mobile": ["24px", {"lineHeight": "32px", "fontWeight": "700"}],
+                        "label-md": ["14px", {"lineHeight": "20px", "letterSpacing": "0.01em", "fontWeight": "600"}],
+                        "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                        "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
+                        "headline-lg": ["32px", {"lineHeight": "40px", "fontWeight": "700"}]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .option-card-selected {
+            border-color: #1a7a4a !important;
+            background-color: rgba(26, 122, 74, 0.05);
+            transform: scale(1.02);
+        }
+        .progress-glow {
+            box-shadow: 0 0 10px rgba(26, 122, 74, 0.4);
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-surface text-on-surface font-body-md min-h-screen pb-xl">
+<!-- Top Navigation Header (Transactional Mode) -->
+<header class="fixed top-0 left-0 w-full z-50 bg-primary dark:bg-primary-container text-on-primary shadow-md flex flex-col px-margin-mobile pt-sm pb-base">
+<div class="flex items-center justify-between mb-xs">
+<div class="flex items-center gap-sm">
+<button class="material-symbols-outlined hover:bg-on-primary/10 p-xs rounded-full transition-colors">arrow_back</button>
+<span class="font-headline-lg-mobile text-headline-lg-mobile font-bold text-on-primary">Agendar e Confirmar</span>
+</div>
+<span class="font-label-md text-label-md opacity-90">Passo 4 de 4</span>
+</div>
+<!-- Progress Bar Section -->
+<div class="w-full bg-on-primary/20 h-1 rounded-full overflow-hidden">
+<div class="bg-secondary-fixed h-full w-full progress-glow transition-all duration-700 ease-out"></div>
+</div>
+</header>
+<main class="pt-32 px-margin-mobile md:px-margin-desktop max-w-screen-md mx-auto space-y-lg">
+<!-- Animated Visual Feedback -->
+<div class="flex justify-center py-md">
+<div class="w-24 h-24 rounded-full bg-category-bg-low-opacity flex items-center justify-center relative">
+<span class="material-symbols-outlined text-primary text-[48px]" style="font-variation-settings: 'FILL' 1;">task_alt</span>
+<div class="absolute inset-0 rounded-full border-2 border-primary animate-ping opacity-20"></div>
+</div>
+</div>
+<!-- Section: Quando precisas? -->
+<section class="space-y-sm">
+<h2 class="font-headline-md text-headline-md text-primary flex items-center gap-xs">
+<span class="material-symbols-outlined">schedule</span>
+                Quando precisas?
+            </h2>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-sm">
+<!-- Option Cards -->
+<button class="group flex items-center p-md bg-surface-container-lowest border border-outline-variant rounded-xl text-left transition-all hover:shadow-md hover:border-primary/40 focus:outline-none" onclick="selectOption(this)">
+<div class="p-xs bg-category-bg-low-opacity rounded-lg mr-md text-primary group-hover:scale-110 transition-transform">
+<span class="material-symbols-outlined">bolt</span>
+</div>
+<div class="flex-1">
+<p class="font-label-md text-label-md text-on-surface">Agora mesmo</p>
+<p class="font-label-sm text-label-sm text-on-surface-variant">Urgência prioritária</p>
+</div>
+<span class="material-symbols-outlined text-primary opacity-0 group-[.option-card-selected]:opacity-100">check_circle</span>
+</button>
+<button class="group option-card-selected flex items-center p-md bg-surface-container-lowest border border-outline-variant rounded-xl text-left transition-all hover:shadow-md hover:border-primary/40 focus:outline-none" onclick="selectOption(this)">
+<div class="p-xs bg-category-bg-low-opacity rounded-lg mr-md text-primary group-hover:scale-110 transition-transform">
+<span class="material-symbols-outlined">calendar_today</span>
+</div>
+<div class="flex-1">
+<p class="font-label-md text-label-md text-on-surface">Ainda hoje</p>
+<p class="font-label-sm text-label-sm text-on-surface-variant">Nas próximas 12 horas</p>
+</div>
+<span class="material-symbols-outlined text-primary group-[.option-card-selected]:opacity-100">check_circle</span>
+</button>
+<button class="group flex items-center p-md bg-surface-container-lowest border border-outline-variant rounded-xl text-left transition-all hover:shadow-md hover:border-primary/40 focus:outline-none" onclick="selectOption(this)">
+<div class="p-xs bg-category-bg-low-opacity rounded-lg mr-md text-primary group-hover:scale-110 transition-transform">
+<span class="material-symbols-outlined">date_range</span>
+</div>
+<div class="flex-1">
+<p class="font-label-md text-label-md text-on-surface">Esta semana</p>
+<p class="font-label-sm text-label-sm text-on-surface-variant">Conforme disponibilidade</p>
+</div>
+<span class="material-symbols-outlined text-primary opacity-0 group-[.option-card-selected]:opacity-100">check_circle</span>
+</button>
+<button class="group flex items-center p-md bg-surface-container-lowest border border-outline-variant rounded-xl text-left transition-all hover:shadow-md hover:border-primary/40 focus:outline-none" onclick="selectOption(this)">
+<div class="p-xs bg-category-bg-low-opacity rounded-lg mr-md text-primary group-hover:scale-110 transition-transform">
+<span class="material-symbols-outlined">event</span>
+</div>
+<div class="flex-1">
+<p class="font-label-md text-label-md text-on-surface">Escolher data específica</p>
+<p class="font-label-sm text-label-sm text-on-surface-variant">Selecionar no calendário</p>
+</div>
+<span class="material-symbols-outlined text-primary opacity-0 group-[.option-card-selected]:opacity-100">check_circle</span>
+</button>
+</div>
+</section>
+<!-- Section: Resumo do Pedido -->
+<section class="space-y-sm">
+<h2 class="font-headline-md text-headline-md text-primary flex items-center gap-xs">
+<span class="material-symbols-outlined">receipt_long</span>
+                Resumo do Pedido
+            </h2>
+<div class="bg-surface-container-lowest border border-outline-variant rounded-xl shadow-lg overflow-hidden">
+<!-- Provider & Service Info -->
+<div class="p-md flex items-start gap-md border-b border-surface-container">
+<div class="w-16 h-16 rounded-lg overflow-hidden shadow-sm flex-shrink-0">
+<img class="w-full h-full object-cover" data-alt="A high-quality professional portrait of a skilled electrician named Manuel Santos, wearing a clean professional uniform with a tool belt. He is smiling confidently in a modern, well-lit environment. The lighting is soft and high-key, reflecting a light-mode UI aesthetic with professional white and tropical green tones in the background." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAxWBCZvk6lzKAuO6nvHRkBIc7yQzYnYLngOm9dxpknB1kgewPdEWklp5erXU0HzdWaikojEjeDlo-nCsNp6VGf7kahheDnj4oku49ozPjiCnppDshAy6mekp0DE0vLumKia2fuzCorP8C1bQp6zfs0z2LiH_zSdMLcfAB3I0omPw_mYpAFm0333pod_4JmYf1_QJN-0sxQhP4NvPbyW5qaOT2bdqivLd-N-1xkGPdFGh6QqerEYg6wJ782wtvGoZDXp4b_xHGRLl4"/>
+</div>
+<div class="flex-1 space-y-xs">
+<div class="flex justify-between">
+<span class="font-label-sm text-label-sm text-primary uppercase tracking-wider">Serviço</span>
+<div class="flex items-center gap-xs text-secondary font-label-sm">
+<span class="material-symbols-outlined text-sm" style="font-variation-settings: 'FILL' 1;">star</span>
+<span>4.9</span>
+</div>
+</div>
+<p class="font-headline-md text-headline-md leading-tight">Reparação Elétrica</p>
+<p class="font-body-md text-body-md text-on-surface-variant">Pro: <span class="font-bold text-on-surface">Manuel Santos</span></p>
+</div>
+</div>
+<!-- Location & Details -->
+<div class="p-md space-y-md">
+<div class="flex items-start gap-sm">
+<span class="material-symbols-outlined text-primary mt-1">location_on</span>
+<div class="flex-1">
+<p class="font-label-md text-label-md">Local de Atendimento</p>
+<p class="font-body-md text-body-md text-on-surface-variant">Bairro do Hospital, São Tomé</p>
+<p class="font-label-sm text-label-sm text-on-surface-variant mt-xs italic">"Ao lado da Farmácia Popular, portão verde."</p>
+</div>
+<button class="text-primary font-label-md hover:underline">Editar</button>
+</div>
+<div class="p-sm bg-surface-tonal rounded-lg flex items-center justify-between">
+<div class="flex items-center gap-sm">
+<span class="material-symbols-outlined text-primary">security</span>
+<span class="font-label-md text-label-md">Proteção KONEKTA Plus</span>
+</div>
+<span class="font-label-sm text-label-sm text-status-success font-bold">ATIVO</span>
+</div>
+</div>
+<!-- Total Estimation -->
+<div class="bg-primary-container/10 p-md flex items-center justify-between">
+<div>
+<p class="font-label-sm text-label-sm text-primary-container uppercase font-bold">Total Estimado</p>
+<p class="font-label-sm text-label-sm text-on-surface-variant">Pago após conclusão</p>
+</div>
+<p class="font-headline-lg-mobile text-headline-lg-mobile font-extrabold text-primary">Db. 450.00</p>
+</div>
+</div>
+</section>
+<!-- Terms Agreement -->
+<div class="flex items-center gap-sm px-xs">
+<input checked="" class="w-5 h-5 rounded border-outline text-primary focus:ring-primary" id="terms" type="checkbox"/>
+<label class="font-label-sm text-label-sm text-on-surface-variant" for="terms">
+                Concordo com os <a class="text-primary underline" href="#">Termos de Serviço</a> e garanto que as informações estão corretas.
+            </label>
+</div>
+<!-- Primary Action -->
+<div class="pt-sm">
+<button class="w-full bg-primary text-on-primary py-lg rounded-xl font-headline-md text-headline-md shadow-xl hover:bg-on-primary-fixed-variant transition-all transform active:scale-[0.98] flex items-center justify-center gap-sm">
+<span>Confirmar e Agendar</span>
+<span class="material-symbols-outlined">arrow_forward</span>
+</button>
+<p class="text-center mt-md font-label-sm text-label-sm text-on-surface-variant">
+                Enviaremos um SMS de confirmação para o seu número verificado.
+            </p>
+</div>
+</main>
+<!-- Visual Polish: Soft Ambient Background Pattern -->
+<div class="fixed inset-0 -z-10 pointer-events-none opacity-20">
+<div class="absolute top-0 right-0 w-96 h-96 bg-primary-container/30 rounded-full blur-[120px]"></div>
+<div class="absolute bottom-0 left-0 w-80 h-80 bg-secondary-container/20 rounded-full blur-[100px]"></div>
+</div>
+<script>
+        function selectOption(element) {
+            // Remove selection from all buttons
+            document.querySelectorAll('button[onclick="selectOption(this)"]').forEach(btn => {
+                btn.classList.remove('option-card-selected');
+                const check = btn.querySelector('.material-symbols-outlined:last-child');
+                if (check) check.classList.add('opacity-0');
+            });
+
+            // Add selection to clicked button
+            element.classList.add('option-card-selected');
+            const check = element.querySelector('.material-symbols-outlined:last-child');
+            if (check) check.classList.remove('opacity-0');
+            
+            // Subtle haptic-like scale effect logic already in Tailwind
+        }
+    </script>
+</body></html>

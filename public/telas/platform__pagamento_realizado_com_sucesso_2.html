@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+
+<html class="light" lang="pt-PT"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Pagamento Confirmado - KONEKTA STP</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;family=Inter:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "surface-container-lowest": "#ffffff",
+                    "on-tertiary-container": "#ffe7e5",
+                    "secondary-container": "#fdbf35",
+                    "inverse-on-surface": "#ebf1ff",
+                    "surface-container": "#e7eeff",
+                    "on-background": "#121c2c",
+                    "error-container": "#ffdad6",
+                    "on-primary-fixed-variant": "#00522e",
+                    "primary-fixed-dim": "#80d9a0",
+                    "on-secondary-fixed-variant": "#5d4200",
+                    "on-surface": "#121c2c",
+                    "on-error": "#ffffff",
+                    "surface-container-highest": "#d9e3f9",
+                    "surface-dim": "#d0daf0",
+                    "secondary": "#7b5900",
+                    "on-tertiary": "#ffffff",
+                    "on-primary-container": "#abffc6",
+                    "tertiary-container": "#d01f2f",
+                    "background": "#f9f9ff",
+                    "surface-tint": "#006d3f",
+                    "on-secondary": "#ffffff",
+                    "surface-variant": "#d9e3f9",
+                    "tertiary-fixed-dim": "#ffb3af",
+                    "secondary-fixed-dim": "#fabd32",
+                    "surface-container-high": "#dee8ff",
+                    "error": "#ba1a1a",
+                    "primary-container": "#1a7a4a",
+                    "surface-container-low": "#f0f3ff",
+                    "primary": "#006036",
+                    "on-tertiary-fixed-variant": "#930018",
+                    "inverse-surface": "#273141",
+                    "inverse-primary": "#80d9a0",
+                    "tertiary": "#a9001d",
+                    "secondary-fixed": "#ffdea4",
+                    "on-primary-fixed": "#00210f",
+                    "tertiary-fixed": "#ffdad7",
+                    "on-primary": "#ffffff",
+                    "surface": "#f9f9ff",
+                    "on-error-container": "#93000a",
+                    "primary-fixed": "#9bf6ba",
+                    "on-tertiary-fixed": "#410005",
+                    "on-secondary-fixed": "#261900",
+                    "outline": "#6f7a70",
+                    "on-surface-variant": "#3f4941",
+                    "surface-bright": "#f9f9ff",
+                    "outline-variant": "#bec9be",
+                    "on-secondary-container": "#6e4f00"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "container-margin": "20px",
+                    "xl": "32px",
+                    "gutter": "16px",
+                    "unit": "4px",
+                    "md": "16px",
+                    "lg": "24px",
+                    "xs": "4px",
+                    "3xl": "64px",
+                    "2xl": "48px",
+                    "sm": "8px"
+            },
+            "fontFamily": {
+                    "headline-lg-mobile": ["Plus Jakarta Sans"],
+                    "body-md": ["Inter"],
+                    "body-lg": ["Inter"],
+                    "headline-lg": ["Plus Jakarta Sans"],
+                    "display": ["Plus Jakarta Sans"],
+                    "label-sm": ["Inter"],
+                    "headline-md": ["Plus Jakarta Sans"],
+                    "label-lg": ["Inter"]
+            },
+            "fontSize": {
+                    "headline-lg-mobile": ["24px", {"lineHeight": "32px", "fontWeight": "700"}],
+                    "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                    "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
+                    "headline-lg": ["32px", {"lineHeight": "40px", "fontWeight": "700"}],
+                    "display": ["40px", {"lineHeight": "48px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                    "label-sm": ["12px", {"lineHeight": "16px", "fontWeight": "500"}],
+                    "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+                    "label-lg": ["14px", {"lineHeight": "20px", "letterSpacing": "0.01em", "fontWeight": "600"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        @keyframes celebrate {
+            0% { transform: scale(0.5); opacity: 0; }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); opacity: 1; }
+        }
+        .celebration-pop {
+            animation: celebrate 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+        }
+        .confetti {
+            position: absolute;
+            width: 8px;
+            height: 8px;
+            border-radius: 2px;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background text-on-surface font-body-md min-h-screen flex flex-col items-center justify-center overflow-hidden">
+<!-- Success Container (Transactional View - No Nav Shell per Rule) -->
+<main class="w-full max-w-md px-container-margin relative flex flex-col items-center text-center">
+<!-- Animated Background Elements -->
+<div class="absolute inset-0 pointer-events-none overflow-visible" id="confetti-container"></div>
+<!-- Illustration Section -->
+<div class="relative mb-lg celebration-pop">
+<div class="w-32 h-32 md:w-40 md:h-40 rounded-full bg-primary-container/20 flex items-center justify-center relative">
+<!-- Glowing Aura -->
+<div class="absolute inset-0 bg-primary/10 rounded-full animate-ping opacity-50"></div>
+<!-- Check Icon -->
+<span class="material-symbols-outlined text-primary text-[64px] md:text-[80px]" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+</div>
+</div>
+<!-- Success Message -->
+<div class="space-y-sm mb-2xl">
+<h1 class="font-headline-lg-mobile text-headline-lg-mobile text-primary tracking-tight">
+                Pagamento Confirmado!
+            </h1>
+<p class="font-body-md text-on-surface-variant max-w-[280px] mx-auto">
+                O seu serviço com <span class="font-bold text-on-surface">Maria dos Santos</span> foi processado com sucesso.
+            </p>
+</div>
+<!-- Transaction Card -->
+<div class="w-full bg-surface-container-lowest border border-outline-variant/30 rounded-xl p-lg shadow-[0_4px_12px_0_rgba(0,96,54,0.06)] mb-3xl">
+<div class="flex justify-between items-center mb-md pb-md border-b border-surface-variant/50">
+<span class="font-label-lg text-on-surface-variant">Valor Total</span>
+<span class="font-headline-md text-headline-md text-primary">500 STN</span>
+</div>
+<div class="space-y-md">
+<div class="flex items-center gap-md">
+<div class="w-12 h-12 rounded-full overflow-hidden bg-surface-container">
+<img class="w-full h-full object-cover" data-alt="A professional headshot of a friendly Santomean woman named Maria dos Santos, smiling warmly. She is wearing a professional yet casual attire in a bright, modern studio with soft daylight. The image has a light-mode aesthetic with high-key lighting, soft shadows, and clean backgrounds that perfectly align with the corporate modern and tropical warmth of the KONEKTA brand." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAq9ckrbz9-3i8iSj0fMmAToVUJpi7RegoOQBNAqMrEeRH0Nfq5vA_p99gh9W39OlBA8oJwgJv-vRhPW0Bu40ZDx7YmQo91PWoyiKYuioWKVrZfci0LjI9Zorp9VQYx2MpuccccMXTdFiIPuG4dJS6_f0IqVmRPWDuSxkXJH0omD39HpK0uTiPFOzS251BIfYnv47C4mopEO-FUmuJyVTnaEiTR_Tjw5KVOCv0mGf1JWruJwgz4vhoLwcyzXr830nzt4uoNpiKdl3c"/>
+</div>
+<div class="text-left">
+<p class="font-label-lg text-on-surface">Maria dos Santos</p>
+<p class="font-label-sm text-on-surface-variant">Limpeza Profissional</p>
+</div>
+</div>
+<div class="bg-surface-container-low rounded-lg p-md flex items-start gap-sm">
+<span class="material-symbols-outlined text-primary-container text-[20px]">calendar_today</span>
+<div class="text-left">
+<p class="font-label-sm font-bold text-on-surface">Agendamento</p>
+<p class="font-label-sm text-on-surface-variant">24 de Outubro, às 09:00</p>
+</div>
+</div>
+</div>
+</div>
+<!-- Action Buttons -->
+<div class="w-full flex flex-col gap-md">
+<button class="w-full h-14 bg-primary text-on-primary font-label-lg rounded-full shadow-lg active:scale-95 transition-all flex items-center justify-center gap-sm">
+                Acompanhar Pedido
+                <span class="material-symbols-outlined">arrow_forward</span>
+</button>
+<button class="w-full h-14 bg-transparent border-2 border-primary text-primary font-label-lg rounded-full active:scale-95 transition-all hover:bg-primary-container/10">
+                Voltar ao Início
+            </button>
+</div>
+<!-- Support Info -->
+<p class="mt-xl font-label-sm text-on-surface-variant">
+            Um comprovativo foi enviado para o seu e-mail.
+        </p>
+</main>
+<script>
+        // Simple micro-interaction for confetti effect
+        function createConfetti() {
+            const container = document.getElementById('confetti-container');
+            const colors = ['#006036', '#9bf6ba', '#fdbf35', '#1a7a4a'];
+            
+            for (let i = 0; i < 40; i++) {
+                const confetti = document.createElement('div');
+                confetti.className = 'confetti';
+                confetti.style.left = Math.random() * 100 + '%';
+                confetti.style.top = '-10%';
+                confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+                confetti.style.transform = `rotate(${Math.random() * 360}deg)`;
+                
+                const duration = Math.random() * 3 + 2;
+                const delay = Math.random() * 1;
+                
+                confetti.animate([
+                    { top: '-10%', opacity: 1, transform: `rotate(0deg)` },
+                    { top: '110%', opacity: 0, transform: `rotate(${Math.random() * 720}deg) translateX(${Math.random() * 50 - 25}px)` }
+                ], {
+                    duration: duration * 1000,
+                    delay: delay * 1000,
+                    easing: 'cubic-bezier(0.25, 0.46, 0.45, 0.94)',
+                    fill: 'forwards'
+                });
+
+                container.appendChild(confetti);
+                
+                // Cleanup
+                setTimeout(() => confetti.remove(), (duration + delay) * 1000);
+            }
+        }
+
+        // Trigger confetti on load
+        window.addEventListener('DOMContentLoaded', () => {
+            setTimeout(createConfetti, 300);
+        });
+    </script>
+</body></html>

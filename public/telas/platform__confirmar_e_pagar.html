@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+
+<html lang="pt"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Confirmação de Pedido - KONEKTA STP</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600&family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&family=Plus+Jakarta+Sans:wght@100..900&display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "secondary-container": "#fdbf35",
+                      "on-tertiary-container": "#ffe7e5",
+                      "surface-dim": "#d0daf0",
+                      "surface-tint": "#006d3f",
+                      "outline-variant": "#bec9be",
+                      "surface": "#f9f9ff",
+                      "error-container": "#ffdad6",
+                      "surface-container-lowest": "#ffffff",
+                      "on-background": "#121c2c",
+                      "inverse-primary": "#80d9a0",
+                      "on-surface": "#121c2c",
+                      "tertiary-container": "#d01f2f",
+                      "surface-container-low": "#f0f3ff",
+                      "error": "#ba1a1a",
+                      "surface-container-high": "#dee8ff",
+                      "surface-variant": "#d9e3f9",
+                      "on-primary": "#ffffff",
+                      "on-surface-variant": "#3f4941",
+                      "surface-container-highest": "#d9e3f9",
+                      "primary": "#006036",
+                      "on-secondary-fixed-variant": "#5d4200",
+                      "inverse-on-surface": "#ebf1ff",
+                      "on-error": "#ffffff",
+                      "secondary-fixed-dim": "#fabd32",
+                      "tertiary": "#a9001d",
+                      "tertiary-fixed": "#ffdad7",
+                      "outline": "#6f7a70",
+                      "on-secondary-container": "#6e4f00",
+                      "primary-fixed-dim": "#80d9a0",
+                      "on-secondary": "#ffffff",
+                      "primary-fixed": "#9bf6ba",
+                      "secondary-fixed": "#ffdea4",
+                      "background": "#f9f9ff",
+                      "on-secondary-fixed": "#261900",
+                      "on-tertiary-fixed": "#410005",
+                      "tertiary-fixed-dim": "#ffb3af",
+                      "on-error-container": "#93000a",
+                      "on-tertiary": "#ffffff",
+                      "on-primary-fixed-variant": "#00522e",
+                      "surface-bright": "#f9f9ff",
+                      "surface-container": "#e7eeff",
+                      "secondary": "#7b5900",
+                      "inverse-surface": "#273141",
+                      "on-tertiary-fixed-variant": "#930018",
+                      "on-primary-fixed": "#00210f",
+                      "primary-container": "#1a7a4a",
+                      "on-primary-container": "#abffc6"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.25rem",
+                      "lg": "0.5rem",
+                      "xl": "0.75rem",
+                      "full": "9999px"
+              },
+              "spacing": {
+                      "container-margin": "20px",
+                      "sm": "8px",
+                      "xl": "32px",
+                      "gutter": "16px",
+                      "lg": "24px",
+                      "xs": "4px",
+                      "unit": "4px",
+                      "md": "16px",
+                      "2xl": "48px",
+                      "3xl": "64px"
+              },
+              "fontFamily": {
+                      "label-sm": ["Inter"],
+                      "headline-lg-mobile": ["Plus Jakarta Sans"],
+                      "display": ["Plus Jakarta Sans"],
+                      "body-md": ["Inter"],
+                      "headline-md": ["Plus Jakarta Sans"],
+                      "label-lg": ["Inter"],
+                      "body-lg": ["Inter"],
+                      "headline-lg": ["Plus Jakarta Sans"]
+              },
+              "fontSize": {
+                      "label-sm": ["12px", {"lineHeight": "16px", "fontWeight": "500"}],
+                      "headline-lg-mobile": ["24px", {"lineHeight": "32px", "fontWeight": "700"}],
+                      "display": ["40px", {"lineHeight": "48px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                      "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                      "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+                      "label-lg": ["14px", {"lineHeight": "20px", "letterSpacing": "0.01em", "fontWeight": "600"}],
+                      "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
+                      "headline-lg": ["32px", {"lineHeight": "40px", "fontWeight": "700"}]
+              }
+            },
+          },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        body {
+            background-color: #F7F9FB; /* Level 0 Base from Style Guidance */
+            -webkit-tap-highlight-color: transparent;
+        }
+        .glass-card {
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+        .leve-shadow {
+            box-shadow: 0 4px 20px -2px rgba(0, 96, 54, 0.1);
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="font-body-md text-on-surface">
+<!-- TopAppBar -->
+<header class="fixed top-0 w-full z-50 flex justify-between items-center px-container-margin h-16 bg-surface dark:bg-surface-dim shadow-sm">
+<div class="flex items-center gap-md">
+<button class="p-2 hover:bg-primary-container/10 transition-colors rounded-full active:scale-95 duration-150">
+<span class="material-symbols-outlined text-primary dark:text-primary-fixed">arrow_back</span>
+</button>
+<h1 class="font-headline-md-mobile text-headline-md-mobile font-bold text-primary dark:text-primary-fixed">KONEKTA STP</h1>
+</div>
+<div class="flex items-center gap-sm">
+<button class="p-2 hover:bg-primary-container/10 transition-colors rounded-full active:scale-95 duration-150">
+<span class="material-symbols-outlined text-primary dark:text-primary-fixed">location_on</span>
+</button>
+<button class="p-2 hover:bg-primary-container/10 transition-colors rounded-full active:scale-95 duration-150">
+<span class="material-symbols-outlined text-primary dark:text-primary-fixed">notifications</span>
+</button>
+</div>
+</header>
+<main class="pt-20 pb-32 px-container-margin max-w-lg mx-auto">
+<!-- Introduction Header -->
+<section class="mb-xl text-center">
+<h2 class="font-headline-lg-mobile text-headline-lg-mobile text-primary mb-xs">Resumo do Pedido</h2>
+<p class="font-body-md text-on-surface-variant">Confirme os detalhes antes de processar o pagamento seguro.</p>
+</section>
+<!-- Service Provider Mini-Card -->
+<div class="bg-surface-container-lowest rounded-xl p-md leve-shadow mb-lg flex items-center gap-md">
+<div class="w-16 h-16 rounded-full bg-cover bg-center border-2 border-primary-container/20" data-alt="A professional Santomean artisan smiling warmly, wearing a neat workshop apron. The lighting is soft and natural, reflecting the tropical daytime ambiance of Sao Tome. The background shows a clean, organized professional environment with subtle hints of local craftsmanship, maintaining a high-legibility corporate modern aesthetic." style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuBvLbVBfOYMjAge3yKmG5AP8iH14LUZmAmyPxqzyznMCcma16ZwJrw9H0faMaIno8de9fZ0lNwlfOTWFs3VhyICAHz1j0uX9oKjcWDMxcNjVQIUYfGMk7FGJeEKpGjWqq57gkld7BILfQ_1ZY03vvqEqpGx2GilmcLeJ5ZHrCxfMPOS8FDIOALYBrm2o3tSDjXN8vR7tsKdEsg3Cuas16qMwfmTlFsTYljV2azbM8uYaApfY8vDRn9PHOv3kVqkkOULGJdCeGT794E')">
+</div>
+<div>
+<h3 class="font-label-lg text-label-lg text-on-surface">Manuel dos Santos</h3>
+<p class="font-label-sm text-label-sm text-outline">Eletricista Profissional</p>
+<div class="flex items-center gap-xs mt-1">
+<span class="material-symbols-outlined text-secondary text-[16px]" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="font-label-sm text-label-sm text-on-surface">4.9 (124 avaliações)</span>
+</div>
+</div>
+</div>
+<!-- Security Banner (Escrow Notification) -->
+<div class="bg-primary-container/10 border-l-4 border-primary rounded-lg p-md mb-lg flex items-start gap-md">
+<span class="material-symbols-outlined text-primary mt-0.5" style="font-variation-settings: 'FILL' 1;">verified_user</span>
+<div>
+<p class="font-label-lg text-label-lg text-on-primary-fixed-variant">Pagamento em Custódia (Escrow)</p>
+<p class="font-body-md text-sm text-on-surface-variant leading-relaxed">
+                    O seu dinheiro está seguro em custódia até que o serviço seja confirmado. O provedor só recebe após a sua aprovação final.
+                </p>
+</div>
+</div>
+<!-- Cost Summary (Transparent Breakdown) -->
+<section class="mb-lg">
+<h3 class="font-label-lg text-label-lg text-on-surface-variant mb-md px-1">Resumo de Custos</h3>
+<div class="glass-card rounded-xl p-lg leve-shadow flex flex-col gap-md">
+<div class="flex justify-between items-center">
+<span class="font-body-md text-outline">Taxa do Provedor (90%)</span>
+<span class="font-body-md font-semibold text-on-surface">1.350,00 STN</span>
+</div>
+<div class="flex justify-between items-center">
+<span class="font-body-md text-outline">Taxa Konekta (10%)</span>
+<span class="font-body-md font-semibold text-on-surface">150,00 STN</span>
+</div>
+<div class="h-[1px] w-full bg-outline-variant/30 my-xs"></div>
+<div class="flex justify-between items-center">
+<span class="font-label-lg text-label-lg text-primary">Total a Pagar</span>
+<span class="font-headline-md text-headline-md text-primary">1.500,00 STN</span>
+</div>
+</div>
+</section>
+<!-- Payment Method Card -->
+<section class="mb-xl">
+<h3 class="font-label-lg text-label-lg text-on-surface-variant mb-md px-1">Método de Pagamento</h3>
+<div class="bg-surface-container-lowest border-2 border-primary rounded-xl p-lg leve-shadow relative overflow-hidden group">
+<!-- Subtle background pattern -->
+<div class="absolute right-[-20px] top-[-20px] opacity-10 group-hover:scale-110 transition-transform duration-500">
+<span class="material-symbols-outlined text-[120px] text-primary">account_balance_wallet</span>
+</div>
+<div class="relative z-10 flex flex-col gap-sm">
+<div class="flex items-center gap-md">
+<div class="p-2 bg-secondary-container text-on-secondary-container rounded-lg">
+<span class="material-symbols-outlined">account_balance_wallet</span>
+</div>
+<div>
+<p class="font-label-lg text-label-lg text-on-surface">São Wallet</p>
+<p class="font-label-sm text-label-sm text-outline">Saldo Disponível: 2.450,00 STN</p>
+</div>
+</div>
+<div class="mt-md flex justify-between items-end">
+<span class="font-label-sm text-label-sm px-2 py-1 bg-primary/10 text-primary rounded-full">Selecionado</span>
+<button class="font-label-lg text-label-lg text-secondary underline hover:text-on-secondary-container transition-colors">Alterar</button>
+</div>
+</div>
+</div>
+</section>
+<!-- Main CTA -->
+<div class="fixed bottom-0 left-0 w-full bg-surface/80 backdrop-blur-md p-md px-container-margin z-40 border-t border-surface-variant/30 flex flex-col gap-sm">
+<p class="text-center font-label-sm text-label-sm text-outline px-md">
+                Ao clicar em confirmar, você concorda com os <a class="text-primary underline" href="#">Termos de Serviço</a> da Konekta.
+            </p>
+<button class="w-full bg-primary hover:bg-primary-container text-on-primary font-label-lg text-label-lg py-4 rounded-xl flex items-center justify-center gap-md active:scale-95 transition-all shadow-lg shadow-primary/20">
+<span>Confirmar & Pagar</span>
+<span class="material-symbols-outlined">lock</span>
+</button>
+</div>
+</main>
+<!-- Navigation suppressed for focused transaction task as per "Shell Visibility & Relevance" rule -->
+<script>
+        // Micro-interactions for button and interactive states
+        document.addEventListener('DOMContentLoaded', () => {
+            const payButton = document.querySelector('button.bg-primary');
+            payButton.addEventListener('click', function() {
+                this.innerHTML = `
+                    <svg class="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    <span>Processando...</span>
+                `;
+                this.classList.add('opacity-80', 'cursor-not-allowed');
+                setTimeout(() => {
+                    alert('Pagamento processado com sucesso! Manuel foi notificado.');
+                    location.reload();
+                }, 2000);
+            });
+        });
+    </script>
+</body></html>

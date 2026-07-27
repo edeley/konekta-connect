@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+
+<html lang="pt"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Código de Segurança do Serviço - KONEKTA STP</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;family=Inter:wght@400;500;600&amp;family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&amp;family=Plus+Jakarta+Sans:wght@100..900&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "outline-variant": "#bec9be",
+                    "surface-variant": "#e4e2e1",
+                    "tertiary": "#8b373f",
+                    "surface-tonal": "#F7F7F7",
+                    "inverse-primary": "#80d9a0",
+                    "on-primary": "#ffffff",
+                    "on-secondary-fixed": "#201c00",
+                    "inverse-surface": "#303030",
+                    "secondary-container": "#f6e14a",
+                    "on-background": "#1b1c1c",
+                    "on-tertiary": "#ffffff",
+                    "primary": "#006036",
+                    "on-error": "#ffffff",
+                    "error-container": "#ffdad6",
+                    "on-primary-container": "#abffc6",
+                    "surface-bright": "#fbf9f8",
+                    "secondary": "#6a5f00",
+                    "primary-fixed": "#9bf6ba",
+                    "tertiary-container": "#a94e56",
+                    "primary-container": "#1a7a4a",
+                    "outline": "#6f7a70",
+                    "on-tertiary-fixed": "#40000d",
+                    "surface-tint": "#006d3f",
+                    "on-secondary-container": "#6f6300",
+                    "error": "#ba1a1a",
+                    "on-primary-fixed": "#00210f",
+                    "secondary-fixed": "#f9e44d",
+                    "surface": "#fbf9f8",
+                    "on-tertiary-container": "#ffe7e7",
+                    "on-tertiary-fixed-variant": "#7c2b34",
+                    "on-primary-fixed-variant": "#00522e",
+                    "on-error-container": "#93000a",
+                    "surface-container": "#f0eded",
+                    "on-secondary": "#ffffff",
+                    "on-surface": "#1b1c1c",
+                    "surface-dim": "#dcd9d9",
+                    "secondary-fixed-dim": "#dcc831",
+                    "tertiary-fixed": "#ffdada",
+                    "surface-background": "#FFFFFF",
+                    "on-surface-variant": "#3f4941",
+                    "status-success": "#1A7A4A",
+                    "surface-container-high": "#eae8e7",
+                    "category-bg-low-opacity": "rgba(26, 122, 74, 0.08)",
+                    "primary-fixed-dim": "#80d9a0",
+                    "background": "#fbf9f8",
+                    "surface-container-lowest": "#ffffff",
+                    "on-secondary-fixed-variant": "#504700",
+                    "inverse-on-surface": "#f3f0f0",
+                    "surface-container-low": "#f5f3f2",
+                    "surface-container-highest": "#e4e2e1",
+                    "tertiary-fixed-dim": "#ffb3b6",
+                    "status-warning": "#FFEA52"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "margin-mobile": "16px",
+                    "xs": "8px",
+                    "margin-desktop": "40px",
+                    "xl": "48px",
+                    "sm": "16px",
+                    "base": "4px",
+                    "gutter": "20px",
+                    "md": "24px",
+                    "lg": "32px"
+            },
+            "fontFamily": {
+                    "body-lg": ["Inter"],
+                    "label-sm": ["Inter"],
+                    "headline-md": ["Plus Jakarta Sans"],
+                    "headline-lg": ["Plus Jakarta Sans"],
+                    "label-md": ["Inter"],
+                    "display-lg": ["Plus Jakarta Sans"],
+                    "headline-lg-mobile": ["Plus Jakarta Sans"],
+                    "body-md": ["Inter"]
+            },
+            "fontSize": {
+                    "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
+                    "label-sm": ["12px", {"lineHeight": "16px", "fontWeight": "500"}],
+                    "headline-md": ["20px", {"lineHeight": "28px", "fontWeight": "600"}],
+                    "headline-lg": ["32px", {"lineHeight": "40px", "fontWeight": "700"}],
+                    "label-md": ["14px", {"lineHeight": "20px", "letterSpacing": "0.01em", "fontWeight": "600"}],
+                    "display-lg": ["48px", {"lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                    "headline-lg-mobile": ["24px", {"lineHeight": "32px", "fontWeight": "700"}],
+                    "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .security-glow {
+            background: radial-gradient(circle at center, rgba(26, 122, 74, 0.05) 0%, rgba(26, 122, 74, 0) 70%);
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+</head>
+<body class="bg-surface font-body-md text-on-surface selection:bg-primary-fixed-dim selection:text-on-primary-fixed">
+<!-- Top Navigation Bar -->
+<header class="w-full top-0 sticky z-50 bg-surface-container-low shadow-sm">
+<div class="flex items-center justify-between px-margin-mobile h-16 w-full">
+<button class="transition-all duration-200 active:scale-95 hover:bg-surface-variant/20 p-2 rounded-full">
+<span class="material-symbols-outlined text-primary">arrow_back</span>
+</button>
+<h1 class="font-headline-md text-headline-md text-primary">Código de Segurança</h1>
+<button class="transition-all duration-200 active:scale-95 hover:bg-surface-variant/20 p-2 rounded-full">
+<span class="material-symbols-outlined text-on-surface-variant">notifications</span>
+</button>
+</div>
+</header>
+<main class="max-w-md mx-auto px-margin-mobile pt-sm pb-32">
+<!-- Status Indicator Card -->
+<div class="mb-lg p-md bg-surface-container-lowest rounded-xl shadow-[0px_4px_20px_rgba(0,0,0,0.05)] flex items-center gap-sm">
+<div class="w-12 h-12 rounded-full bg-category-bg-low-opacity flex items-center justify-center">
+<span class="material-symbols-outlined text-primary" style="font-variation-settings: 'FILL' 1;">electric_bolt</span>
+</div>
+<div>
+<p class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">Serviço em curso</p>
+<p class="font-label-md text-label-md text-on-surface">Reparação Elétrica com Manuel Santos</p>
+</div>
+</div>
+<!-- Security Branding Area -->
+<div class="flex flex-col items-center justify-center py-lg security-glow">
+<div class="w-24 h-24 mb-md relative">
+<!-- Circular background pulse -->
+<div class="absolute inset-0 bg-primary/10 rounded-full animate-ping opacity-25"></div>
+<div class="relative z-10 w-full h-full bg-white rounded-full flex items-center justify-center shadow-md">
+<span class="material-symbols-outlined text-primary text-5xl" style="font-variation-settings: 'FILL' 1;">verified_user</span>
+</div>
+</div>
+<h2 class="font-headline-lg-mobile text-headline-lg-mobile text-center text-on-surface mb-xs">Validar Execução</h2>
+<p class="font-body-md text-body-md text-center text-on-surface-variant max-w-[280px]">
+                Partilhe este código com o prestador apenas quando o serviço for iniciado e concluído para validar a execução.
+            </p>
+</div>
+<!-- Verification Code Card -->
+<div class="mt-md bg-white border border-outline-variant/30 rounded-3xl p-lg shadow-[0px_12px_32px_rgba(0,0,0,0.06)] relative overflow-hidden">
+<!-- Decorative tropical accent -->
+<div class="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-bl-[100%]"></div>
+<div class="flex flex-col items-center relative z-10">
+<span class="font-label-sm text-label-sm text-on-surface-variant mb-md uppercase tracking-[0.2em]">O seu código PIN</span>
+<div class="flex justify-center gap-4 mb-lg">
+<div class="w-14 h-20 bg-surface-container-low rounded-xl flex items-center justify-center border border-outline-variant/20 shadow-inner">
+<span class="font-display-lg text-[40px] text-primary">5</span>
+</div>
+<div class="w-14 h-20 bg-surface-container-low rounded-xl flex items-center justify-center border border-outline-variant/20 shadow-inner">
+<span class="font-display-lg text-[40px] text-primary">8</span>
+</div>
+<div class="w-14 h-20 bg-surface-container-low rounded-xl flex items-center justify-center border border-outline-variant/20 shadow-inner">
+<span class="font-display-lg text-[40px] text-primary">2</span>
+</div>
+<div class="w-14 h-20 bg-surface-container-low rounded-xl flex items-center justify-center border border-outline-variant/20 shadow-inner">
+<span class="font-display-lg text-[40px] text-primary">1</span>
+</div>
+</div>
+<button class="flex items-center gap-xs text-primary font-label-md py-2 px-4 hover:bg-category-bg-low-opacity rounded-full transition-colors active:scale-95" onclick="copyCode()">
+<span class="material-symbols-outlined text-body-md">content_copy</span>
+<span>Copiar Código</span>
+</button>
+</div>
+</div>
+<!-- Illustration Component -->
+<div class="mt-lg flex justify-center">
+<div class="w-full max-w-[200px] aspect-square rounded-2xl bg-surface-container-low flex items-center justify-center relative overflow-hidden group">
+
+<div class="relative z-10 flex flex-col items-center">
+<span class="material-symbols-outlined text-primary text-6xl mb-xs" style="font-variation-settings: 'FILL' 0;">shield_lock</span>
+<p class="font-label-sm text-label-sm text-on-surface-variant">Protegido por Konekta</p>
+</div>
+</div>
+</div>
+<!-- Help Action -->
+<div class="mt-xl text-center">
+<button class="font-label-md text-on-surface-variant hover:text-primary transition-colors flex items-center justify-center gap-xs mx-auto active:scale-95">
+<span class="material-symbols-outlined text-body-md">help_center</span>
+                Preciso de Ajuda
+            </button>
+</div>
+</main>
+<!-- Bottom Navigation Bar -->
+<nav class="fixed bottom-0 w-full z-50 bg-surface dark:bg-background border-t border-outline-variant dark:border-outline shadow-[0px_-4px_20px_rgba(0,0,0,0.05)]">
+<div class="flex justify-around items-center h-20 px-4 pb-2">
+<!-- Home -->
+<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-surface-variant px-4 py-1 transition-transform duration-300 ease-out active:scale-90 hover:text-primary" href="#">
+<span class="material-symbols-outlined">home</span>
+<span class="font-label-md text-label-md">Home</span>
+</a>
+<!-- Wallet -->
+<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-surface-variant px-4 py-1 transition-transform duration-300 ease-out active:scale-90 hover:text-primary" href="#">
+<span class="material-symbols-outlined">account_balance_wallet</span>
+<span class="font-label-md text-label-md">Wallet</span>
+</a>
+<!-- Payments (Active based on context of transaction/verification) -->
+<a class="flex flex-col items-center justify-center text-primary dark:text-primary-fixed bg-category-bg-low-opacity rounded-xl px-4 py-1 transition-transform duration-300 ease-out active:scale-90" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">payments</span>
+<span class="font-label-md text-label-md">Payments</span>
+</a>
+<!-- Account -->
+<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-surface-variant px-4 py-1 transition-transform duration-300 ease-out active:scale-90 hover:text-primary" href="#">
+<span class="material-symbols-outlined">person</span>
+<span class="font-label-md text-label-md">Account</span>
+</a>
+</div>
+</nav>
+<script>
+        function copyCode() {
+            const code = "5821";
+            navigator.clipboard.writeText(code).then(() => {
+                const btn = event.currentTarget;
+                const originalContent = btn.innerHTML;
+                btn.innerHTML = '<span class="material-symbols-outlined text-body-md text-status-success">check_circle</span><span class="text-status-success">Copiado!</span>';
+                setTimeout(() => {
+                    btn.innerHTML = originalContent;
+                }, 2000);
+            });
+        }
+    </script>
+</body></html>
