@@ -94,6 +94,12 @@ export type Order = {
   scheduledFor: string;
   status: OrderStatus;
   total: number;
+  address?: string;
+  notes?: string;
+  paymentMethod?: "carteira" | "dinheiro" | "mbway";
+  createdAt?: number;
+  rating?: { stars: number; comment?: string; at: number };
+  clientName?: string;
 };
 
 export const orders: Order[] = [

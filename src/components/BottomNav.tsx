@@ -1,38 +1,83 @@
 import { Link, useRouterState } from "@tanstack/react-router";
-import { Home, ClipboardList, MessageCircle, Wallet, User } from "lucide-react";
+import {
+  Home,
+  ClipboardList,
+  MessageCircle,
+  Wallet,
+  User,
+  LayoutDashboard,
+  CalendarDays,
+  TrendingUp,
+  Users,
+  Settings,
+  Banknote,
+} from "lucide-react";
+import type { UserRole } from "@/lib/store";
+import { cn } from "@/lib/utils";
 
-const tabs = [
+const clientTabs = [
   { to: "/", label: "Início", icon: Home },
   { to: "/pedidos", label: "Pedidos", icon: ClipboardList },
   { to: "/chat", label: "Chat", icon: MessageCircle },
   { to: "/carteira", label: "Carteira", icon: Wallet },
   { to: "/perfil", label: "Perfil", icon: User },
-] as const;
+];
 
-export function BottomNav() {
+const providerTabs = [
+  { to: "/pro", label: "Painel", icon: LayoutDashboard },
+  { to: "/pro/pedidos", label: "Pedidos", icon: ClipboardList },
+  { to: "/pro/agenda", label: "Agenda", icon: CalendarDays },
+  { to: "/pro/ganhos", label: "Ganhos", icon: TrendingUp },
+  { to: "/perfil", label: "Perfil", icon: User },
+];
+
+const adminTabs = [
+  { to: "/admin", label: "Painel", icon: LayoutDashboard },
+  { to: "/admin/prestadores", label: "Prestadores", icon: Users },
+  { to: "/admin/pedidos", label: "Pedidos", icon: ClipboardList },
+  { to: "/admin/financeiro", label: "Financeiro", icon: Banknote },
+  { to: "/admin/configuracoes", label: "Config.", icon: Settings },
+];
+
+export function navFor(role: UserRole) {
+  if (role === "prestador") return providerTabs;
+  if (role === "admin") return adminTabs;
+  return clientTabs;
+}
+
+export function BottomNav({ role = "cliente", wide = false }: { role?: UserRole; wide?: boolean }) {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
+  const tabs = navFor(role);
 
   return (
-    <nav className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-md bg-card border-t border-border px-4 py-2 pb-3 z-40">
-      <div className="flex justify-between items-center">
+    <nav
+      className={cn(
+        "fixed bottom-0 left-1/2 z-40 w-full -translate-x-1/2 border-t border-border bg-card/95 px-3 pb-3 pt-2 backdrop-blur-md",
+        wide ? "max-w-5xl" : "max-w-md",
+      )}
+    >
+      <div className="flex items-center justify-between">
         {tabs.map(({ to, label, icon: Icon }) => {
-          const active = to === "/" ? pathname === "/" : pathname.startsWith(to);
+          const root = to === "/" || to === "/pro" || to === "/admin";
+          const active = root ? pathname === to : pathname.startsWith(to);
           return (
             <Link
               key={to}
               to={to}
-              className={`flex flex-col items-center gap-1 py-1 px-3 rounded-lg transition-colors ${
-                active ? "text-terracotta" : "text-muted-foreground"
-              }`}
+              className={cn(
+                "press flex flex-1 flex-col items-center gap-1 rounded-xl py-1",
+                active ? "text-primary" : "text-muted-foreground",
+              )}
             >
-              <div
-                className={`size-8 rounded-lg flex items-center justify-center transition-colors ${
-                  active ? "bg-terracotta/10" : ""
-                }`}
+              <span
+                className={cn(
+                  "grid h-8 w-14 place-items-center rounded-full transition-all duration-200",
+                  active ? "bg-accent" : "bg-transparent",
+                )}
               >
-                <Icon size={18} strokeWidth={active ? 2.4 : 2} />
-              </div>
-              <span className="text-[10px] font-medium">{label}</span>
+                <Icon size={19} strokeWidth={active ? 2.4 : 1.9} />
+              </span>
+              <span className="text-[10px] font-semibold">{label}</span>
             </Link>
           );
         })}
