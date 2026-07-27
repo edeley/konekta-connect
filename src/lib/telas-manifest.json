@@ -1,0 +1,507 @@
+[
+  {
+    "file": "auth__acompanhamento_do_servi_o.html",
+    "group": "Autenticação & Cliente",
+    "title": "Acompanhamento do Serviço - KONEKTA STP"
+  },
+  {
+    "file": "auth__agendar_servi_o_final.html",
+    "group": "Autenticação & Cliente",
+    "title": "KONEKTA STP - Agendar e Confirmar"
+  },
+  {
+    "file": "auth__ajuda_inteligente.html",
+    "group": "Autenticação & Cliente",
+    "title": "KONEKTA STP - Ajuda Inteligente"
+  },
+  {
+    "file": "auth__ajuda_inteligente_refined.html",
+    "group": "Autenticação & Cliente",
+    "title": "KONEKTA STP - Ajuda Inteligente"
+  },
+  {
+    "file": "auth__avaliar_servi_o.html",
+    "group": "Autenticação & Cliente",
+    "title": "Avaliação do Prestador - KONEKTA STP"
+  },
+  {
+    "file": "auth__c_digo_de_verifica_o_do_servi_o.html",
+    "group": "Autenticação & Cliente",
+    "title": "Código de Segurança do Serviço - KONEKTA STP"
+  },
+  {
+    "file": "auth__chat_de_negocia_o.html",
+    "group": "Autenticação & Cliente",
+    "title": "KONEKTA STP - Mensagem"
+  },
+  {
+    "file": "auth__confirmar_e_pagar.html",
+    "group": "Autenticação & Cliente",
+    "title": "KONEKTA STP - Confirmação e Pagamento"
+  },
+  {
+    "file": "auth__dashboard_do_cliente_completo.html",
+    "group": "Autenticação & Cliente",
+    "title": "KONEKTA STP - Dashboard do Cliente"
+  },
+  {
+    "file": "auth__dashboard_do_cliente_vers_o_final.html",
+    "group": "Autenticação & Cliente",
+    "title": "KONEKTA STP - Dashboard do Cliente"
+  },
+  {
+    "file": "auth__escolha_o_seu_perfil.html",
+    "group": "Autenticação & Cliente",
+    "title": "KONEKTA STP - Seleção de Perfil"
+  },
+  {
+    "file": "auth__home_cliente.html",
+    "group": "Autenticação & Cliente",
+    "title": "KONEKTA STP - Client Home"
+  },
+  {
+    "file": "auth__lista_de_prestadores_ativos_final.html",
+    "group": "Autenticação & Cliente",
+    "title": "KONEKTA STP - Prestadores Ativos"
+  },
+  {
+    "file": "auth__lista_de_prestadores_ativos_refined.html",
+    "group": "Autenticação & Cliente",
+    "title": "KONEKTA STP - Construção"
+  },
+  {
+    "file": "auth__lista_de_prestadores_constru_o.html",
+    "group": "Autenticação & Cliente",
+    "title": "KONEKTA STP - Construção"
+  },
+  {
+    "file": "auth__login_no_google.html",
+    "group": "Autenticação & Cliente",
+    "title": "KONEKTA STP - Login"
+  },
+  {
+    "file": "auth__minha_carteira.html",
+    "group": "Autenticação & Cliente",
+    "title": "KONEKTA STP - Digital Wallet"
+  },
+  {
+    "file": "auth__negocia_o.html",
+    "group": "Autenticação & Cliente",
+    "title": "KONEKTA STP - Chat de Negociação"
+  },
+  {
+    "file": "auth__negocia_o_refined.html",
+    "group": "Autenticação & Cliente",
+    "title": "Negociação | KONEKTA STP"
+  },
+  {
+    "file": "auth__os_meus_pedidos.html",
+    "group": "Autenticação & Cliente",
+    "title": "Histórico de Pedidos - KONEKTA STP"
+  },
+  {
+    "file": "auth__pagamento_do_servi_o.html",
+    "group": "Autenticação & Cliente",
+    "title": "Pagamento Do Servi O"
+  },
+  {
+    "file": "auth__perfil_cliente_prestador.html",
+    "group": "Autenticação & Cliente",
+    "title": "Perfil - Alex Rivera | Konekta"
+  },
+  {
+    "file": "auth__perfil_do_prestador_manuel_santos.html",
+    "group": "Autenticação & Cliente",
+    "title": "Perfil de Manuel Santos | KONEKTA STP"
+  },
+  {
+    "file": "auth__perfil_e_defini_es.html",
+    "group": "Autenticação & Cliente",
+    "title": "KONEKTA STP - Perfil e Definições"
+  },
+  {
+    "file": "auth__prestadores_ativos.html",
+    "group": "Autenticação & Cliente",
+    "title": "KONEKTA STP - Explorar Prestadores"
+  },
+  {
+    "file": "auth__recupera_o_de_conta.html",
+    "group": "Autenticação & Cliente",
+    "title": "KONEKTA STP - Recuperação de Conta"
+  },
+  {
+    "file": "auth__recupera_o_de_conta_refined.html",
+    "group": "Autenticação & Cliente",
+    "title": "KONEKTA STP - Recuperação de Conta"
+  },
+  {
+    "file": "auth__recupera_o_de_conta_refined_v2.html",
+    "group": "Autenticação & Cliente",
+    "title": "KONEKTA STP - Recuperar Conta"
+  },
+  {
+    "file": "auth__registo.html",
+    "group": "Autenticação & Cliente",
+    "title": "KONEKTA STP - Registo"
+  },
+  {
+    "file": "auth__registo_completo_de_perfil.html",
+    "group": "Autenticação & Cliente",
+    "title": "Konekta STP - Registo de Perfil"
+  },
+  {
+    "file": "auth__registo_de_cliente_lean.html",
+    "group": "Autenticação & Cliente",
+    "title": "KONEKTA STP - Registo"
+  },
+  {
+    "file": "auth__registo_de_cliente_lean_v2.html",
+    "group": "Autenticação & Cliente",
+    "title": "KONEKTA STP - Registo"
+  },
+  {
+    "file": "auth__registo_de_cliente_refined.html",
+    "group": "Autenticação & Cliente",
+    "title": "KONEKTA STP - Registo"
+  },
+  {
+    "file": "auth__resumo_de_ganhos_prestador.html",
+    "group": "Autenticação & Cliente",
+    "title": "KONEKTA STP - Ganhos"
+  },
+  {
+    "file": "auth__smart_form_descri_o_e_fotos.html",
+    "group": "Autenticação & Cliente",
+    "title": "KONEKTA STP - Solicitar Serviço"
+  },
+  {
+    "file": "auth__smart_form_fase_1.html",
+    "group": "Autenticação & Cliente",
+    "title": "KONEKTA STP - Solicitar Serviço"
+  },
+  {
+    "file": "auth__splash_onboarding_mechanic.html",
+    "group": "Autenticação & Cliente",
+    "title": "KONEKTA STP - Splash"
+  },
+  {
+    "file": "auth__splash_onboarding_refined.html",
+    "group": "Autenticação & Cliente",
+    "title": "KONEKTA STP - Onboarding"
+  },
+  {
+    "file": "auth__validar_e_enviar_c_digo.html",
+    "group": "Autenticação & Cliente",
+    "title": "KONEKTA STP - Validação de Segurança"
+  },
+  {
+    "file": "platform__a_caminho_do_cliente.html",
+    "group": "Plataforma de Serviços",
+    "title": "A Caminho Do Cliente"
+  },
+  {
+    "file": "platform__acompanhamento_do_servi_o.html",
+    "group": "Plataforma de Serviços",
+    "title": "KONEKTA STP - Tracking"
+  },
+  {
+    "file": "platform__acompanhamento_em_tempo_real.html",
+    "group": "Plataforma de Serviços",
+    "title": "Acompanhamento Em Tempo Real"
+  },
+  {
+    "file": "platform__agendamento_do_servi_o_3_de_4.html",
+    "group": "Plataforma de Serviços",
+    "title": "KONEKTA STP - Agendamento de Serviço"
+  },
+  {
+    "file": "platform__avalia_o_do_servi_o.html",
+    "group": "Plataforma de Serviços",
+    "title": "Rate Your Service - KONEKTA STP"
+  },
+  {
+    "file": "platform__bem_vindo_ao_konekta_stp.html",
+    "group": "Plataforma de Serviços",
+    "title": "KONEKTA STP - Login"
+  },
+  {
+    "file": "platform__carregar_saldo_s_o_wallet.html",
+    "group": "Plataforma de Serviços",
+    "title": "Add Funds - KONEKTA STP"
+  },
+  {
+    "file": "platform__categorias_de_servi_os.html",
+    "group": "Plataforma de Serviços",
+    "title": "KONEKTA STP - Categories & Search"
+  },
+  {
+    "file": "platform__centro_de_ajuda.html",
+    "group": "Plataforma de Serviços",
+    "title": "Konekta STP - Help Center"
+  },
+  {
+    "file": "platform__chat_com_prestador.html",
+    "group": "Plataforma de Serviços",
+    "title": "Chat Com Prestador"
+  },
+  {
+    "file": "platform__configura_es_enterprise_desktop_1.html",
+    "group": "Plataforma de Serviços",
+    "title": "KONEKTA STP - Configurações Enterprise"
+  },
+  {
+    "file": "platform__configura_es_enterprise_desktop_2.html",
+    "group": "Plataforma de Serviços",
+    "title": "KONEKTA STP - Account Settings"
+  },
+  {
+    "file": "platform__confirma_o_de_pedido.html",
+    "group": "Plataforma de Serviços",
+    "title": "Confirma O De Pedido"
+  },
+  {
+    "file": "platform__confirmar_e_pagar.html",
+    "group": "Plataforma de Serviços",
+    "title": "Confirmação de Pedido - KONEKTA STP"
+  },
+  {
+    "file": "platform__contratos_de_manuten_o_business.html",
+    "group": "Plataforma de Serviços",
+    "title": "Konekta Enterprise - Contratos de Manutenção"
+  },
+  {
+    "file": "platform__dashboard_business_executivo.html",
+    "group": "Plataforma de Serviços",
+    "title": "Konekta Enterprise | Executive Overview"
+  },
+  {
+    "file": "platform__dashboard_business_operacional_1.html",
+    "group": "Plataforma de Serviços",
+    "title": "Konekta Enterprise | Command Center"
+  },
+  {
+    "file": "platform__dashboard_business_operacional_2.html",
+    "group": "Plataforma de Serviços",
+    "title": "Konekta Enterprise | Command Center"
+  },
+  {
+    "file": "platform__dashboard_business_operacional_3.html",
+    "group": "Plataforma de Serviços",
+    "title": "Konekta Enterprise | Operational Control"
+  },
+  {
+    "file": "platform__dashboard_business_vis_o_anal_tica.html",
+    "group": "Plataforma de Serviços",
+    "title": "Konekta Enterprise Dashboard"
+  },
+  {
+    "file": "platform__defini_es_e_seguran_a.html",
+    "group": "Plataforma de Serviços",
+    "title": "Defini Es E Seguran A"
+  },
+  {
+    "file": "platform__detalhes_da_equipa.html",
+    "group": "Plataforma de Serviços",
+    "title": "Team Details | Konekta Enterprise"
+  },
+  {
+    "file": "platform__detalhes_da_fatura_business.html",
+    "group": "Plataforma de Serviços",
+    "title": "KONEKTA STP - Detalhes da Fatura"
+  },
+  {
+    "file": "platform__detalhes_da_transa_o.html",
+    "group": "Plataforma de Serviços",
+    "title": "Transaction Details | KONEKTA STP"
+  },
+  {
+    "file": "platform__detalhes_do_pedido.html",
+    "group": "Plataforma de Serviços",
+    "title": "Solicitar Eletricista | KONEKTA STP"
+  },
+  {
+    "file": "platform__detalhes_do_pedido_2_de_4.html",
+    "group": "Plataforma de Serviços",
+    "title": "KONEKTA STP - Service Request Step 2"
+  },
+  {
+    "file": "platform__editar_perfil.html",
+    "group": "Plataforma de Serviços",
+    "title": "Editar Perfil"
+  },
+  {
+    "file": "platform__editar_portf_lio.html",
+    "group": "Plataforma de Serviços",
+    "title": "Editar Portf Lio"
+  },
+  {
+    "file": "platform__erro_de_liga_o_404.html",
+    "group": "Plataforma de Serviços",
+    "title": "Konekta STP - 404/Offline"
+  },
+  {
+    "file": "platform__fatura_o_consolidada_business.html",
+    "group": "Plataforma de Serviços",
+    "title": "Faturação Consolidada - Konekta Enterprise"
+  },
+  {
+    "file": "platform__finalizar_servi_o.html",
+    "group": "Plataforma de Serviços",
+    "title": "Konekta STP - Job Completion"
+  },
+  {
+    "file": "platform__ganhos_detalhados.html",
+    "group": "Plataforma de Serviços",
+    "title": "Konekta STP - Ganhos"
+  },
+  {
+    "file": "platform__gerir_disponibilidade.html",
+    "group": "Plataforma de Serviços",
+    "title": "Konekta STP - Gestão de Disponibilidade"
+  },
+  {
+    "file": "platform__gest_o_de_equipas_business.html",
+    "group": "Plataforma de Serviços",
+    "title": "Konekta Enterprise - Gestão de Equipas"
+  },
+  {
+    "file": "platform__gest_o_de_pedidos_prestador.html",
+    "group": "Plataforma de Serviços",
+    "title": "Konekta STP - Gestão de Pedidos"
+  },
+  {
+    "file": "platform__hist_rico_de_pedidos_1.html",
+    "group": "Plataforma de Serviços",
+    "title": "Order History - KONEKTA STP"
+  },
+  {
+    "file": "platform__hist_rico_de_pedidos_2.html",
+    "group": "Plataforma de Serviços",
+    "title": "Histórico de Pedidos - KONEKTA STP"
+  },
+  {
+    "file": "platform__konekta_stp_in_cio.html",
+    "group": "Plataforma de Serviços",
+    "title": "KONEKTA STP - Início"
+  },
+  {
+    "file": "platform__konekta_stp_in_cio_distritos_1.html",
+    "group": "Plataforma de Serviços",
+    "title": "KONEKTA STP - Home"
+  },
+  {
+    "file": "platform__konekta_stp_in_cio_distritos_2.html",
+    "group": "Plataforma de Serviços",
+    "title": "Konekta Stp In Cio Distritos 2"
+  },
+  {
+    "file": "platform__konekta_stp_landing_page_institutional.html",
+    "group": "Plataforma de Serviços",
+    "title": "KONEKTA STP - A Revolução dos Serviços"
+  },
+  {
+    "file": "platform__konekta_stp_service_marketplace.html",
+    "group": "Plataforma de Serviços",
+    "title": "Konekta Stp Service Marketplace"
+  },
+  {
+    "file": "platform__levantar_fundos_s_o_wallet.html",
+    "group": "Plataforma de Serviços",
+    "title": "KONEKTA STP - Retirar Fundos"
+  },
+  {
+    "file": "platform__lista_de_prestadores.html",
+    "group": "Plataforma de Serviços",
+    "title": "KONEKTA STP - Professional List"
+  },
+  {
+    "file": "platform__mensagens_com_cliente.html",
+    "group": "Plataforma de Serviços",
+    "title": "Mensagens Com Cliente"
+  },
+  {
+    "file": "platform__notifica_es.html",
+    "group": "Plataforma de Serviços",
+    "title": "Notifica Es"
+  },
+  {
+    "file": "platform__pagamento_realizado_com_sucesso_1.html",
+    "group": "Plataforma de Serviços",
+    "title": "Pagamento Realizado Com Sucesso 1"
+  },
+  {
+    "file": "platform__pagamento_realizado_com_sucesso_2.html",
+    "group": "Plataforma de Serviços",
+    "title": "Pagamento Confirmado - KONEKTA STP"
+  },
+  {
+    "file": "platform__painel_do_prestador_in_cio.html",
+    "group": "Plataforma de Serviços",
+    "title": "Konekta STP - Provider Dashboard"
+  },
+  {
+    "file": "platform__pedido_de_limpeza.html",
+    "group": "Plataforma de Serviços",
+    "title": "KONEKTA STP - Serviço de Limpeza"
+  },
+  {
+    "file": "platform__pedidos_vazios_estado_inicial.html",
+    "group": "Plataforma de Serviços",
+    "title": "KONEKTA STP - Meus Pedidos"
+  },
+  {
+    "file": "platform__perfil_do_prestador.html",
+    "group": "Plataforma de Serviços",
+    "title": "Professional Profile | KONEKTA STP"
+  },
+  {
+    "file": "platform__perfil_e_defini_es.html",
+    "group": "Plataforma de Serviços",
+    "title": "User Profile &amp; Settings - KONEKTA STP"
+  },
+  {
+    "file": "platform__perfil_profissional_gest_o.html",
+    "group": "Plataforma de Serviços",
+    "title": "Konekta STP - Perfil do Provedor"
+  },
+  {
+    "file": "platform__procurando_prestadores.html",
+    "group": "Plataforma de Serviços",
+    "title": "KONEKTA STP | Finding Your Professional"
+  },
+  {
+    "file": "platform__recupera_o_de_conta.html",
+    "group": "Plataforma de Serviços",
+    "title": "Account Recovery | Konekta STP"
+  },
+  {
+    "file": "platform__registo_enterprise.html",
+    "group": "Plataforma de Serviços",
+    "title": "Konekta Enterprise | Business Onboarding"
+  },
+  {
+    "file": "platform__revis_o_do_pedido_4_de_4_1.html",
+    "group": "Plataforma de Serviços",
+    "title": "KONEKTA STP - Revisão do Pedido"
+  },
+  {
+    "file": "platform__revis_o_do_pedido_4_de_4_2.html",
+    "group": "Plataforma de Serviços",
+    "title": "KONEKTA STP - Revisão Final"
+  },
+  {
+    "file": "platform__s_o_wallet_painel_principal.html",
+    "group": "Plataforma de Serviços",
+    "title": "KONEKTA STP - Wallet Dashboard"
+  },
+  {
+    "file": "platform__transferir_saldo_s_o_wallet.html",
+    "group": "Plataforma de Serviços",
+    "title": "KONEKTA STP - Transferência São Wallet"
+  },
+  {
+    "file": "platform__verifica_o_de_identidade.html",
+    "group": "Plataforma de Serviços",
+    "title": "Konekta STP - Verificação de Documentos"
+  }
+]
