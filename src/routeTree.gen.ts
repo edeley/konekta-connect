@@ -13,6 +13,7 @@ import { Route as TelasRouteImport } from './routes/telas'
 import { Route as SplashRouteImport } from './routes/splash'
 import { Route as PerfilRouteImport } from './routes/perfil'
 import { Route as PedidosRouteImport } from './routes/pedidos'
+import { Route as OnboardingRouteImport } from './routes/onboarding'
 import { Route as McpRouteImport } from './routes/mcp'
 import { Route as CarteiraRouteImport } from './routes/carteira'
 import { Route as AuthRouteImport } from './routes/auth'
@@ -43,6 +44,11 @@ const PerfilRoute = PerfilRouteImport.update({
 const PedidosRoute = PedidosRouteImport.update({
   id: '/pedidos',
   path: '/pedidos',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const OnboardingRoute = OnboardingRouteImport.update({
+  id: '/onboarding',
+  path: '/onboarding',
   getParentRoute: () => rootRouteImport,
 } as any)
 const McpRoute = McpRouteImport.update({
@@ -110,6 +116,7 @@ export interface FileRoutesByFullPath {
   '/auth': typeof AuthRoute
   '/carteira': typeof CarteiraRoute
   '/mcp': typeof McpRoute
+  '/onboarding': typeof OnboardingRoute
   '/pedidos': typeof PedidosRoute
   '/perfil': typeof PerfilRoute
   '/splash': typeof SplashRoute
@@ -127,6 +134,7 @@ export interface FileRoutesByTo {
   '/auth': typeof AuthRoute
   '/carteira': typeof CarteiraRoute
   '/mcp': typeof McpRoute
+  '/onboarding': typeof OnboardingRoute
   '/pedidos': typeof PedidosRoute
   '/perfil': typeof PerfilRoute
   '/splash': typeof SplashRoute
@@ -145,6 +153,7 @@ export interface FileRoutesById {
   '/auth': typeof AuthRoute
   '/carteira': typeof CarteiraRoute
   '/mcp': typeof McpRoute
+  '/onboarding': typeof OnboardingRoute
   '/pedidos': typeof PedidosRoute
   '/perfil': typeof PerfilRoute
   '/splash': typeof SplashRoute
@@ -164,6 +173,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/carteira'
     | '/mcp'
+    | '/onboarding'
     | '/pedidos'
     | '/perfil'
     | '/splash'
@@ -181,6 +191,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/carteira'
     | '/mcp'
+    | '/onboarding'
     | '/pedidos'
     | '/perfil'
     | '/splash'
@@ -198,6 +209,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/carteira'
     | '/mcp'
+    | '/onboarding'
     | '/pedidos'
     | '/perfil'
     | '/splash'
@@ -216,6 +228,7 @@ export interface RootRouteChildren {
   AuthRoute: typeof AuthRoute
   CarteiraRoute: typeof CarteiraRoute
   McpRoute: typeof McpRoute
+  OnboardingRoute: typeof OnboardingRoute
   PedidosRoute: typeof PedidosRoute
   PerfilRoute: typeof PerfilRoute
   SplashRoute: typeof SplashRoute
@@ -256,6 +269,13 @@ declare module '@tanstack/react-router' {
       path: '/pedidos'
       fullPath: '/pedidos'
       preLoaderRoute: typeof PedidosRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/onboarding': {
+      id: '/onboarding'
+      path: '/onboarding'
+      fullPath: '/onboarding'
+      preLoaderRoute: typeof OnboardingRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/mcp': {
@@ -344,6 +364,7 @@ const rootRouteChildren: RootRouteChildren = {
   AuthRoute: AuthRoute,
   CarteiraRoute: CarteiraRoute,
   McpRoute: McpRoute,
+  OnboardingRoute: OnboardingRoute,
   PedidosRoute: PedidosRoute,
   PerfilRoute: PerfilRoute,
   SplashRoute: SplashRoute,
