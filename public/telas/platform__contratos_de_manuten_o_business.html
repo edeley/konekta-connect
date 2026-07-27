@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+
+<html class="light" lang="pt-BR"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Konekta Enterprise - Contratos de Manutenção</title>
+<!-- Google Fonts -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500&amp;family=JetBrains+Mono:wght@500&amp;family=Manrope:wght@600;700;800&amp;display=swap" rel="stylesheet"/>
+<!-- Material Symbols -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "surface-container-highest": "#e1e3e4",
+                    "on-primary-fixed": "#00210f",
+                    "surface-container-low": "#f3f4f5",
+                    "outline": "#6f7a70",
+                    "on-error": "#ffffff",
+                    "error": "#ba1a1a",
+                    "error-container": "#ffdad6",
+                    "on-secondary-fixed-variant": "#36485b",
+                    "on-background": "#191c1d",
+                    "on-tertiary-fixed-variant": "#004b73",
+                    "on-secondary-container": "#526478",
+                    "secondary-container": "#cfe2f9",
+                    "tertiary": "#005886",
+                    "background": "#f8f9fa",
+                    "on-error-container": "#93000a",
+                    "surface-container-high": "#e7e8e9",
+                    "inverse-primary": "#80d9a0",
+                    "tertiary-fixed": "#cce5ff",
+                    "surface-container-lowest": "#ffffff",
+                    "primary-fixed-dim": "#80d9a0",
+                    "primary-container": "#1a7a4a",
+                    "on-tertiary-fixed": "#001d31",
+                    "on-secondary": "#ffffff",
+                    "inverse-surface": "#2e3132",
+                    "tertiary-fixed-dim": "#92ccff",
+                    "surface-dim": "#d9dadb",
+                    "primary": "#006036",
+                    "on-secondary-fixed": "#091d2e",
+                    "surface-container": "#edeeef",
+                    "outline-variant": "#bec9be",
+                    "on-tertiary-container": "#e0efff",
+                    "secondary-fixed-dim": "#b5c8df",
+                    "secondary": "#4e6073",
+                    "surface-bright": "#f8f9fa",
+                    "primary-fixed": "#9bf6ba",
+                    "on-surface-variant": "#3f4941",
+                    "secondary-fixed": "#d1e4fb",
+                    "on-primary": "#ffffff",
+                    "on-primary-fixed-variant": "#00522e",
+                    "tertiary-container": "#0071ab",
+                    "surface": "#f8f9fa",
+                    "surface-variant": "#e1e3e4",
+                    "on-tertiary": "#ffffff",
+                    "on-primary-container": "#abffc6",
+                    "on-surface": "#191c1d",
+                    "surface-tint": "#006d3f",
+                    "inverse-on-surface": "#f0f1f2"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.125rem",
+                    "lg": "0.25rem",
+                    "xl": "0.5rem",
+                    "full": "0.75rem"
+            },
+            "spacing": {
+                    "lg": "24px",
+                    "gutter": "16px",
+                    "xxs": "4px",
+                    "xl": "32px",
+                    "unit": "4px",
+                    "md": "16px",
+                    "container-margin": "24px",
+                    "sm": "12px",
+                    "xs": "8px"
+            },
+            "fontFamily": {
+                    "display-lg": ["Manrope"],
+                    "headline-lg": ["Manrope"],
+                    "headline-lg-mobile": ["Manrope"],
+                    "body-md": ["Inter"],
+                    "label-md": ["JetBrains Mono"],
+                    "body-sm": ["Inter"],
+                    "headline-md": ["Manrope"],
+                    "body-lg": ["Inter"],
+                    "headline-sm": ["Manrope"]
+            },
+            "fontSize": {
+                    "display-lg": ["48px", {"lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                    "headline-lg": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+                    "headline-lg-mobile": ["28px", {"lineHeight": "36px", "fontWeight": "600"}],
+                    "body-md": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                    "label-md": ["12px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "500"}],
+                    "body-sm": ["12px", {"lineHeight": "18px", "fontWeight": "400"}],
+                    "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+                    "body-lg": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                    "headline-sm": ["20px", {"lineHeight": "28px", "fontWeight": "600"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            display: inline-block;
+            line-height: 1;
+        }
+        body {
+            -webkit-tap-highlight-color: transparent;
+            font-family: 'Inter', sans-serif;
+        }
+        .bento-card {
+            transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+        .bento-card:active {
+            transform: scale(0.97);
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background text-on-surface min-h-screen pb-24">
+<!-- TopAppBar -->
+<header class="w-full top-0 sticky z-50 bg-surface dark:bg-inverse-surface border-b border-outline-variant dark:border-outline shadow-sm flex justify-between items-center px-container-margin py-md w-full max-w-full">
+<div class="flex items-center gap-sm">
+<span class="material-symbols-outlined text-primary dark:text-primary-fixed-dim cursor-pointer" data-icon="grid_view">grid_view</span>
+<h1 class="font-headline-md text-headline-md font-bold text-primary dark:text-primary-fixed">Konekta Enterprise</h1>
+</div>
+<div class="w-8 h-8 rounded-full overflow-hidden border border-outline-variant">
+<img class="w-full h-full object-cover" data-alt="A professional corporate avatar of a business unit profile. The image shows a close-up of a modern, diverse executive in a minimalist architectural office setting with soft, natural lighting. The color palette is composed of muted grays and crisp whites, reflecting a corporate modern and efficient brand identity." src="https://lh3.googleusercontent.com/aida-public/AB6AXuALCbLxO58yUgg25fyINM1TqXZ5u2a1_kmtrqqN5MhcUnkieVS3Ylh0f1tS-6g70r_6o31LLUjk3PtAGeOZhVLwn9Uz0IwK_tqkPiGVx4ptfi0cdvYUUempOfTvixr3v8tWOT0J6g5j-_u1Pyvj673_il_hIeOAi_wfnlhqIhkFPXtLPZKBjkgacAQBrElM6BtbJZhwmH2SWeWNLNT9Ms5OmSY6-8WyhgV3pbwRVc1oFerbFxel5_Ns5bhX9o-NYYOwb8Bf0Dp5G7U"/>
+</div>
+</header>
+<!-- Main Content -->
+<main class="p-container-margin">
+<!-- Header Section -->
+<div class="mb-lg">
+<h2 class="font-headline-lg-mobile text-headline-lg-mobile text-on-surface mb-xxs">Contratos</h2>
+<p class="font-body-md text-body-md text-on-surface-variant">Gerencie suas assinaturas de manutenção ativas.</p>
+</div>
+<!-- Dashboard Stats Row (Micro-Bento Pattern) -->
+<div class="grid grid-cols-2 gap-xs mb-lg">
+<div class="bg-surface-container-lowest p-md rounded-xl border border-outline-variant">
+<span class="font-label-md text-label-md text-on-surface-variant block mb-xxs uppercase tracking-wider">ATIVOS</span>
+<span class="font-headline-md text-headline-md text-primary">12</span>
+</div>
+<div class="bg-surface-container-lowest p-md rounded-xl border border-outline-variant">
+<span class="font-label-md text-label-md text-on-surface-variant block mb-xxs uppercase tracking-wider">VISITAS / MÊS</span>
+<span class="font-headline-md text-headline-md text-tertiary">24</span>
+</div>
+</div>
+<!-- Maintenance Contracts List -->
+<section class="flex flex-col gap-md">
+<!-- Contract Card 1 -->
+<div class="bento-card bg-surface-container-lowest border border-outline-variant rounded-xl overflow-hidden shadow-sm">
+<div class="p-md border-b border-surface-container">
+<div class="flex justify-between items-start mb-xs">
+<span class="bg-secondary-container text-on-secondary-container text-[10px] px-xs py-1 rounded font-bold uppercase tracking-widest">Semanal</span>
+<span class="material-symbols-outlined text-on-surface-variant opacity-40" data-icon="more_vert">more_vert</span>
+</div>
+<h3 class="font-headline-sm text-headline-sm text-on-surface">Weekly Office Cleaning</h3>
+</div>
+<div class="p-md grid grid-cols-1 gap-sm">
+<div class="flex items-center gap-sm">
+<div class="w-8 h-8 bg-surface-container rounded-full flex items-center justify-center">
+<span class="material-symbols-outlined text-primary text-[20px]" data-icon="event">event</span>
+</div>
+<div>
+<p class="font-label-md text-label-md text-on-surface-variant">PRÓXIMA VISITA</p>
+<p class="font-body-md text-body-md font-bold">Terça, 24 Out • 08:00</p>
+</div>
+</div>
+<div class="flex items-center gap-sm">
+<div class="w-8 h-8 bg-surface-container rounded-full flex items-center justify-center">
+<span class="material-symbols-outlined text-primary text-[20px]" data-icon="badge">badge</span>
+</div>
+<div>
+<p class="font-label-md text-label-md text-on-surface-variant">PRESTADOR</p>
+<p class="font-body-md text-body-md">Limp Pro Serviços Gerais</p>
+</div>
+</div>
+</div>
+<div class="px-md pb-md">
+<button class="w-full bg-surface-container-high py-xs rounded-lg font-label-md text-label-md text-on-surface font-bold transition-colors active:bg-surface-variant">DETALHES DO CONTRATO</button>
+</div>
+</div>
+<!-- Contract Card 2 -->
+<div class="bento-card bg-surface-container-lowest border border-outline-variant rounded-xl overflow-hidden shadow-sm">
+<div class="p-md border-b border-surface-container">
+<div class="flex justify-between items-start mb-xs">
+<span class="bg-tertiary-fixed text-on-tertiary-fixed-variant text-[10px] px-xs py-1 rounded font-bold uppercase tracking-widest">Mensal</span>
+<span class="material-symbols-outlined text-on-surface-variant opacity-40" data-icon="more_vert">more_vert</span>
+</div>
+<h3 class="font-headline-sm text-headline-sm text-on-surface">Monthly HVAC Checkup</h3>
+</div>
+<div class="p-md grid grid-cols-1 gap-sm">
+<div class="flex items-center gap-sm">
+<div class="w-8 h-8 bg-surface-container rounded-full flex items-center justify-center">
+<span class="material-symbols-outlined text-primary text-[20px]" data-icon="event">event</span>
+</div>
+<div>
+<p class="font-label-md text-label-md text-on-surface-variant">PRÓXIMA VISITA</p>
+<p class="font-body-md text-body-md font-bold">Segunda, 06 Nov • 14:30</p>
+</div>
+</div>
+<div class="flex items-center gap-sm">
+<div class="w-8 h-8 bg-surface-container rounded-full flex items-center justify-center">
+<span class="material-symbols-outlined text-primary text-[20px]" data-icon="badge">badge</span>
+</div>
+<div>
+<p class="font-label-md text-label-md text-on-surface-variant">PRESTADOR</p>
+<p class="font-body-md text-body-md">ClimaTech Eng. Térmica</p>
+</div>
+</div>
+</div>
+<div class="px-md pb-md">
+<button class="w-full bg-surface-container-high py-xs rounded-lg font-label-md text-label-md text-on-surface font-bold transition-colors active:bg-surface-variant">DETALHES DO CONTRATO</button>
+</div>
+</div>
+<!-- Contract Card 3 -->
+<div class="bento-card bg-surface-container-lowest border border-outline-variant rounded-xl overflow-hidden shadow-sm opacity-80">
+<div class="p-md border-b border-surface-container">
+<div class="flex justify-between items-start mb-xs">
+<span class="bg-surface-variant text-on-surface-variant text-[10px] px-xs py-1 rounded font-bold uppercase tracking-widest">Trimestral</span>
+<span class="material-symbols-outlined text-on-surface-variant opacity-40" data-icon="more_vert">more_vert</span>
+</div>
+<h3 class="font-headline-sm text-headline-sm text-on-surface">Jardinagem Externa</h3>
+</div>
+<div class="p-md grid grid-cols-1 gap-sm">
+<div class="flex items-center gap-sm">
+<div class="w-8 h-8 bg-surface-container rounded-full flex items-center justify-center">
+<span class="material-symbols-outlined text-primary text-[20px]" data-icon="event">event</span>
+</div>
+<div>
+<p class="font-label-md text-label-md text-on-surface-variant">PRÓXIMA VISITA</p>
+<p class="font-body-md text-body-md font-bold">15 Dez • 09:00</p>
+</div>
+</div>
+<div class="flex items-center gap-sm">
+<div class="w-8 h-8 bg-surface-container rounded-full flex items-center justify-center">
+<span class="material-symbols-outlined text-primary text-[20px]" data-icon="badge">badge</span>
+</div>
+<div>
+<p class="font-label-md text-label-md text-on-surface-variant">PRESTADOR</p>
+<p class="font-body-md text-body-md">GreenSpace Paisagismo</p>
+</div>
+</div>
+</div>
+<div class="px-md pb-md">
+<button class="w-full bg-surface-container-high py-xs rounded-lg font-label-md text-label-md text-on-surface font-bold transition-colors active:bg-surface-variant">DETALHES DO CONTRATO</button>
+</div>
+</div>
+</section>
+</main>
+<!-- Floating Action Button -->
+<button class="fixed right-lg bottom-28 w-[156px] h-14 bg-primary text-on-primary rounded-full shadow-lg flex items-center justify-center gap-xs active:scale-95 transition-transform z-40">
+<span class="material-symbols-outlined" data-icon="add">add</span>
+<span class="font-label-md text-label-md font-bold">Novo Contrato</span>
+</button>
+<!-- Bottom Navigation Bar (Responsive Pivot: Mobile) -->
+<nav class="fixed bottom-0 left-0 right-0 bg-surface border-t border-outline-variant md:hidden flex justify-around items-center h-20 px-xs z-50">
+<div class="flex flex-col items-center gap-1 flex-1 text-on-surface-variant transition-colors">
+<span class="material-symbols-outlined" data-icon="dashboard">dashboard</span>
+<span class="font-label-md text-label-md">Overview</span>
+</div>
+<div class="flex flex-col items-center gap-1 flex-1 text-on-surface-variant transition-colors">
+<span class="material-symbols-outlined" data-icon="groups">groups</span>
+<span class="font-label-md text-label-md">Teams</span>
+</div>
+<div class="flex flex-col items-center gap-1 flex-1 bg-secondary-container text-on-secondary-container rounded-xl py-2 px-1 transition-all font-bold">
+<span class="material-symbols-outlined" data-icon="description">description</span>
+<span class="font-label-md text-label-md">Contracts</span>
+</div>
+<div class="flex flex-col items-center gap-1 flex-1 text-on-surface-variant transition-colors">
+<span class="material-symbols-outlined" data-icon="receipt_long">receipt_long</span>
+<span class="font-label-md text-label-md">Invoices</span>
+</div>
+<div class="flex flex-col items-center gap-1 flex-1 text-on-surface-variant transition-colors">
+<span class="material-symbols-outlined" data-icon="settings">settings</span>
+<span class="font-label-md text-label-md">Settings</span>
+</div>
+</nav>
+<!-- Micro-Interactions Script -->
+<script>
+        document.querySelectorAll('.bento-card').forEach(card => {
+            card.addEventListener('click', () => {
+                // Subtle ripple/click effect simulation
+                console.log('Contract selected:', card.querySelector('h3').innerText);
+            });
+        });
+
+        // Simple FAB scroll behavior
+        let lastScroll = 0;
+        const fab = document.querySelector('.fixed.right-lg.bottom-28');
+        window.addEventListener('scroll', () => {
+            const currentScroll = window.pageYOffset;
+            if (currentScroll > lastScroll && currentScroll > 100) {
+                fab.style.transform = 'translateY(120%)';
+            } else {
+                fab.style.transform = 'translateY(0)';
+            }
+            lastScroll = currentScroll;
+        });
+    </script>
+</body></html>

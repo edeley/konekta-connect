@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+
+<html lang="pt"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0, viewport-fit=cover" name="viewport"/>
+<title>Avaliação do Prestador - KONEKTA STP</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;family=Inter:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Theme Configuration -->
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                "primary-fixed": "#9bf6ba",
+                "tertiary-fixed-dim": "#ffb3b6",
+                "tertiary": "#8b373f",
+                "on-tertiary-fixed-variant": "#7c2b34",
+                "surface-container-lowest": "#ffffff",
+                "on-surface": "#1b1c1c",
+                "on-secondary-fixed": "#201c00",
+                "on-error-container": "#93000a",
+                "secondary-container": "#f6e14a",
+                "on-secondary-fixed-variant": "#504700",
+                "surface-tint": "#006d3f",
+                "secondary-fixed-dim": "#dcc831",
+                "surface-container": "#f0eded",
+                "surface-tonal": "#F7F7F7",
+                "surface-container-low": "#f5f3f2",
+                "inverse-surface": "#303030",
+                "on-tertiary-fixed": "#40000d",
+                "tertiary-fixed": "#ffdada",
+                "on-secondary-container": "#6f6300",
+                "surface-dim": "#dcd9d9",
+                "inverse-on-surface": "#f3f0f0",
+                "surface-container-high": "#eae8e7",
+                "error-container": "#ffdad6",
+                "status-success": "#1A7A4A",
+                "category-bg-low-opacity": "rgba(26, 122, 74, 0.08)",
+                "secondary-fixed": "#f9e44d",
+                "primary-fixed-dim": "#80d9a0",
+                "on-secondary": "#ffffff",
+                "on-primary": "#ffffff",
+                "error": "#ba1a1a",
+                "on-primary-fixed-variant": "#00522e",
+                "background": "#fbf9f8",
+                "inverse-primary": "#80d9a0",
+                "surface-background": "#FFFFFF",
+                "on-tertiary-container": "#ffe7e7",
+                "tertiary-container": "#a94e56",
+                "surface": "#fbf9f8",
+                "primary": "#006036",
+                "on-primary-container": "#abffc6",
+                "on-error": "#ffffff",
+                "on-primary-fixed": "#00210f",
+                "on-background": "#1b1c1c",
+                "surface-bright": "#fbf9f8",
+                "on-tertiary": "#ffffff",
+                "on-surface-variant": "#3f4941",
+                "primary-container": "#1a7a4a",
+                "secondary": "#6a5f00",
+                "outline-variant": "#bec9be",
+                "surface-variant": "#e4e2e1",
+                "status-warning": "#FFEA52",
+                "outline": "#6f7a70",
+                "surface-container-highest": "#e4e2e1"
+            },
+            "borderRadius": {
+                "DEFAULT": "0.25rem",
+                "lg": "0.5rem",
+                "xl": "0.75rem",
+                "full": "9999px"
+            },
+            "spacing": {
+                "gutter": "20px",
+                "base": "4px",
+                "margin-mobile": "16px",
+                "sm": "16px",
+                "margin-desktop": "40px",
+                "md": "24px",
+                "xl": "48px",
+                "lg": "32px",
+                "xs": "8px"
+            },
+            "fontFamily": {
+                "display-lg": ["Plus Jakarta Sans"],
+                "body-lg": ["Inter"],
+                "headline-md": ["Plus Jakarta Sans"],
+                "headline-lg-mobile": ["Plus Jakarta Sans"],
+                "headline-lg": ["Plus Jakarta Sans"],
+                "body-md": ["Inter"],
+                "label-sm": ["Inter"],
+                "label-md": ["Inter"]
+            },
+            "fontSize": {
+                "display-lg": ["48px", {"lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
+                "headline-md": ["20px", {"lineHeight": "28px", "fontWeight": "600"}],
+                "headline-lg-mobile": ["24px", {"lineHeight": "32px", "fontWeight": "700"}],
+                "headline-lg": ["32px", {"lineHeight": "40px", "fontWeight": "700"}],
+                "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                "label-sm": ["12px", {"lineHeight": "16px", "fontWeight": "500"}],
+                "label-md": ["14px", {"lineHeight": "20px", "letterSpacing": "0.01em", "fontWeight": "600"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+      .material-symbols-outlined {
+        font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+      }
+      .star-active {
+        font-variation-settings: 'FILL' 1;
+        color: #F59E0B;
+      }
+      .star-inactive {
+        color: #D1D5DB;
+      }
+      .chip-active {
+        background-color: #006036;
+        color: #ffffff;
+      }
+      .hide-scroll::-webkit-scrollbar {
+        display: none;
+      }
+      .success-overlay {
+        backdrop-filter: blur(8px);
+        background-color: rgba(255, 255, 255, 0.9);
+      }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background text-on-surface font-body-md min-h-screen flex flex-col items-center">
+<!-- Top App Bar (From Shared Components) -->
+<header class="flex items-center w-full px-4 h-16 pt-safe fixed top-0 bg-primary z-40 shadow-sm">
+<button class="transition-all active:scale-95 text-on-primary mr-4">
+<span class="material-symbols-outlined">arrow_back</span>
+</button>
+<h1 class="font-headline-md text-headline-md font-bold text-on-primary">Avaliar Serviço</h1>
+</header>
+<main class="w-full max-w-md px-4 pt-24 pb-32 flex flex-col items-center">
+<!-- Provider Info -->
+<section class="flex flex-col items-center mb-8 w-full">
+<div class="relative mb-4 group">
+<div class="w-24 h-24 rounded-full border-4 border-white shadow-md overflow-hidden bg-surface-variant">
+<img class="w-full h-full object-cover" data-alt="A professional headshot of a friendly service provider from São Tomé and Príncipe, wearing a clean green polo shirt. The background is a soft-focus tropical garden during the golden hour. The lighting is warm and inviting, highlighting a high-trust, modern professional aesthetic with natural skin tones." src="https://lh3.googleusercontent.com/aida-public/AB6AXuC4rZqWHY9Gq26T9qqgcZQsN_bcGP4qNTpPYxbrsv-ZCsMFL-Daq1w6G8fwDqIjJ9ukX4V7njLDRHrWjR_PqPFhrHEHhRl366_4OH_q9fWCyV8-LDESGuaqS8USUzGEMXi8M2vb89avHUshknA8JWNH5R6YNoNlEK4Wkd-G4v2G4HFcOaRuJ6bIqDlG0_Dv9pMs7CLFOTyG0Duw1P8xfxJIB86oJrJsRw4mksqHD_bVdg84UR8oVNPKed8-RIrUJNmwUoXiygcWZGg"/>
+</div>
+<div class="absolute bottom-0 right-0 bg-status-success text-white rounded-full p-1 border-2 border-white">
+<span class="material-symbols-outlined text-[16px]" style="font-variation-settings: 'FILL' 1;">verified</span>
+</div>
+</div>
+<h2 class="font-headline-lg-mobile text-headline-lg-mobile text-on-surface mb-1">Carlos Manuel</h2>
+<p class="font-body-md text-on-surface-variant">Técnico de Climatização</p>
+</section>
+<!-- Rating Section -->
+<section class="w-full space-y-8 animate-in fade-in duration-500" id="rating-form">
+<div class="flex flex-col items-center">
+<p class="font-label-md text-label-md uppercase tracking-wider text-outline mb-4">Como foi o serviço?</p>
+<div class="flex gap-2" id="star-container">
+<button class="transition-transform active:scale-125" onclick="setRating(1)"><span class="material-symbols-outlined text-[48px] star-inactive">star</span></button>
+<button class="transition-transform active:scale-125" onclick="setRating(2)"><span class="material-symbols-outlined text-[48px] star-inactive">star</span></button>
+<button class="transition-transform active:scale-125" onclick="setRating(3)"><span class="material-symbols-outlined text-[48px] star-inactive">star</span></button>
+<button class="transition-transform active:scale-125" onclick="setRating(4)"><span class="material-symbols-outlined text-[48px] star-inactive">star</span></button>
+<button class="transition-transform active:scale-125" onclick="setRating(5)"><span class="material-symbols-outlined text-[48px] star-inactive">star</span></button>
+</div>
+</div>
+<!-- Quick Chips -->
+<div class="w-full">
+<p class="font-label-md text-label-md text-on-surface-variant mb-3">O que mais se destacou?</p>
+<div class="flex flex-wrap gap-2">
+<button class="px-4 py-2 rounded-full border border-outline-variant font-label-md text-label-md transition-all hover:bg-surface-variant active:scale-95" onclick="toggleChip(this)">Pontual</button>
+<button class="px-4 py-2 rounded-full border border-outline-variant font-label-md text-label-md transition-all hover:bg-surface-variant active:scale-95" onclick="toggleChip(this)">Profissional</button>
+<button class="px-4 py-2 rounded-full border border-outline-variant font-label-md text-label-md transition-all hover:bg-surface-variant active:scale-95" onclick="toggleChip(this)">Recomendo</button>
+<button class="px-4 py-2 rounded-full border border-outline-variant font-label-md text-label-md transition-all hover:bg-surface-variant active:scale-95" onclick="toggleChip(this)">Preço Justo</button>
+</div>
+</div>
+<!-- Comment Box -->
+<div class="w-full">
+<p class="font-label-md text-label-md text-on-surface-variant mb-3">Deixe um comentário (opcional)</p>
+<textarea class="w-full h-32 p-4 rounded-xl border border-outline-variant bg-surface-container-low focus:border-primary focus:ring-2 focus:ring-primary-fixed outline-none resize-none font-body-md transition-all shadow-sm" placeholder="Conte-nos como foi a sua experiência..."></textarea>
+</div>
+<!-- Submit Button -->
+<button class="w-full h-14 bg-primary text-on-primary rounded-xl font-headline-md text-headline-md shadow-lg transition-all active:scale-[0.98] hover:bg-primary-container" onclick="submitReview()">
+                Submeter Avaliação
+            </button>
+</section>
+<!-- Success State Overlay (Hidden by default) -->
+<section class="hidden fixed inset-0 z-50 flex flex-col items-center justify-center p-8 success-overlay text-center animate-in zoom-in duration-300" id="success-state">
+<div class="w-24 h-24 bg-status-success rounded-full flex items-center justify-center mb-6 shadow-xl animate-bounce">
+<span class="material-symbols-outlined text-white text-[64px]" style="font-variation-settings: 'FILL' 1, 'wght' 600;">check_circle</span>
+</div>
+<h3 class="font-headline-lg text-headline-lg text-primary mb-2">Avaliação Enviada!</h3>
+<p class="font-body-lg text-body-lg text-on-surface-variant max-w-xs mb-8">Obrigado por ajudar a comunidade KONEKTA a crescer com confiança.</p>
+<button class="w-full max-w-xs h-14 border-2 border-primary text-primary rounded-xl font-headline-md text-headline-md transition-all active:scale-95" onclick="window.location.reload()">
+                Voltar ao Início
+            </button>
+</section>
+</main>
+<!-- Bottom Nav Bar (From Shared Components) -->
+<nav class="fixed bottom-0 w-full z-40 flex justify-around items-center px-4 py-2 pb-safe bg-surface dark:bg-inverse-surface shadow-md rounded-t-xl">
+<button class="flex flex-col items-center justify-center text-on-surface-variant transition-transform active:scale-90 hover:bg-surface-variant p-2 rounded-xl">
+<span class="material-symbols-outlined">help_outline</span>
+<span class="font-label text-label">Help</span>
+</button>
+<button class="flex flex-col items-center justify-center text-on-surface-variant transition-transform active:scale-90 hover:bg-surface-variant p-2 rounded-xl">
+<span class="material-symbols-outlined">support_agent</span>
+<span class="font-label text-label">Support</span>
+</button>
+</nav>
+<script>
+        let currentRating = 0;
+
+        function setRating(rating) {
+            currentRating = rating;
+            const stars = document.querySelectorAll('#star-container span');
+            stars.forEach((star, index) => {
+                if (index < rating) {
+                    star.classList.add('star-active');
+                    star.classList.remove('star-inactive');
+                } else {
+                    star.classList.remove('star-active');
+                    star.classList.add('star-inactive');
+                }
+            });
+        }
+
+        function toggleChip(element) {
+            element.classList.toggle('chip-active');
+            element.classList.toggle('border-outline-variant');
+            element.classList.toggle('bg-primary');
+        }
+
+        function submitReview() {
+            if (currentRating === 0) {
+                alert('Por favor, selecione uma classificação em estrelas.');
+                return;
+            }
+            
+            const form = document.getElementById('rating-form');
+            const success = document.getElementById('success-state');
+            
+            form.classList.add('opacity-20', 'pointer-events-none');
+            success.classList.remove('hidden');
+        }
+    </script>
+</body></html>

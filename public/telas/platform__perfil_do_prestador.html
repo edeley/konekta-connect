@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+
+<html class="scroll-smooth" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Professional Profile | KONEKTA STP</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;family=Inter:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "secondary": "#7b5900",
+                    "primary-fixed-dim": "#80d9a0",
+                    "tertiary-fixed-dim": "#ffb3af",
+                    "surface-dim": "#d0daf0",
+                    "surface-container-lowest": "#ffffff",
+                    "on-tertiary-container": "#ffe7e5",
+                    "error": "#ba1a1a",
+                    "on-primary-container": "#abffc6",
+                    "on-tertiary": "#ffffff",
+                    "on-primary-fixed-variant": "#00522e",
+                    "on-error": "#ffffff",
+                    "error-container": "#ffdad6",
+                    "on-secondary-fixed": "#261900",
+                    "inverse-surface": "#273141",
+                    "inverse-primary": "#80d9a0",
+                    "secondary-container": "#fdbf35",
+                    "tertiary": "#a9001d",
+                    "tertiary-container": "#d01f2f",
+                    "surface": "#f9f9ff",
+                    "tertiary-fixed": "#ffdad7",
+                    "on-primary-fixed": "#00210f",
+                    "on-background": "#121c2c",
+                    "surface-bright": "#f9f9ff",
+                    "on-surface": "#121c2c",
+                    "on-surface-variant": "#3f4941",
+                    "surface-container-high": "#dee8ff",
+                    "secondary-fixed": "#ffdea4",
+                    "surface-container": "#e7eeff",
+                    "secondary-fixed-dim": "#fabd32",
+                    "on-error-container": "#93000a",
+                    "primary-fixed": "#9bf6ba",
+                    "surface-tint": "#006d3f",
+                    "inverse-on-surface": "#ebf1ff",
+                    "background": "#f9f9ff",
+                    "outline-variant": "#bec9be",
+                    "on-secondary": "#ffffff",
+                    "on-primary": "#ffffff",
+                    "on-tertiary-fixed": "#410005",
+                    "surface-container-highest": "#d9e3f9",
+                    "on-tertiary-fixed-variant": "#930018",
+                    "outline": "#6f7a70",
+                    "primary-container": "#1a7a4a",
+                    "on-secondary-container": "#6e4f00",
+                    "primary": "#006036",
+                    "surface-container-low": "#f0f3ff",
+                    "surface-variant": "#d9e3f9",
+                    "on-secondary-fixed-variant": "#5d4200"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "sm": "8px",
+                    "lg": "24px",
+                    "2xl": "48px",
+                    "3xl": "64px",
+                    "unit": "4px",
+                    "gutter": "16px",
+                    "xs": "4px",
+                    "container-margin": "20px",
+                    "xl": "32px",
+                    "md": "16px"
+            },
+            "fontFamily": {
+                    "headline-lg": ["Plus Jakarta Sans"],
+                    "headline-md": ["Plus Jakarta Sans"],
+                    "headline-lg-mobile": ["Plus Jakarta Sans"],
+                    "body-md": ["Inter"],
+                    "body-lg": ["Inter"],
+                    "label-sm": ["Inter"],
+                    "label-lg": ["Inter"],
+                    "display": ["Plus Jakarta Sans"]
+            },
+            "fontSize": {
+                    "headline-lg": ["32px", {"lineHeight": "40px", "fontWeight": "700"}],
+                    "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+                    "headline-lg-mobile": ["24px", {"lineHeight": "32px", "fontWeight": "700"}],
+                    "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                    "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
+                    "label-sm": ["12px", {"lineHeight": "16px", "fontWeight": "500"}],
+                    "label-lg": ["14px", {"lineHeight": "20px", "letterSpacing": "0.01em", "fontWeight": "600"}],
+                    "display": ["40px", {"lineHeight": "48px", "letterSpacing": "-0.02em", "fontWeight": "700"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            display: inline-block;
+            line-height: 1;
+        }
+        .leve-leve-shadow {
+            box-shadow: 0 10px 30px -5px rgba(0, 96, 54, 0.08);
+        }
+        .glass-header {
+            backdrop-filter: blur(12px);
+            background-color: rgba(249, 249, 255, 0.85);
+        }
+        body {
+            background-color: #F7F9FB;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="font-body-md text-on-surface antialiased">
+<!-- Top Navigation Bar -->
+<header class="fixed top-0 w-full z-50 flex justify-between items-center px-container-margin h-16 bg-surface dark:bg-surface-dim shadow-sm">
+<div class="flex items-center gap-2">
+<button class="w-10 h-10 flex items-center justify-center rounded-full hover:bg-primary-container/10 transition-colors">
+<span class="material-symbols-outlined text-primary">arrow_back</span>
+</button>
+<h1 class="font-headline-lg-mobile text-headline-lg-mobile font-bold text-primary dark:text-primary-fixed">KONEKTA STP</h1>
+</div>
+<div class="flex items-center gap-4">
+<span class="material-symbols-outlined text-primary">notifications</span>
+<span class="material-symbols-outlined text-primary">share</span>
+</div>
+</header>
+<main class="pt-16 pb-32 max-w-2xl mx-auto px-container-margin">
+<!-- Hero Section -->
+<section class="mt-lg flex flex-col items-center text-center">
+<div class="relative group">
+<div class="w-32 h-32 rounded-full overflow-hidden border-4 border-white shadow-lg">
+<img class="w-full h-full object-cover" data-alt="Close-up professional portrait of a smiling Santomean man in his early 40s, wearing a clean, crisp white polo shirt. He stands against a soft-focus background of lush tropical greenery in São Tomé. The lighting is warm and natural, highlighting a friendly and reliable expression. The overall style is high-end corporate photography with a warm island feel." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBfFWO7-ygDXtze9Zmd4C3NWPBvZCR3zehY2vxjiqjIe5idBpJmW-dEBypkArmDbP9KayTeUyYyKkWjG0siClx_lg9uoCM4fvUEE8PQVZd6MvwTXZTQK2MJGkrcyVUGFQkLHEeUTLhrGEL9CEkfWoT5wcOFxIA_DXbPLQWOhdDHPBgZ-Af64W_guHbDcXGwlVOcFaNbmVfificvtdXXLNfI6qpixsCdJo9Ofa9_RDCbD_NlwwpPSz6zzxcNk29s9T9Neyb9RA-0uYk"/>
+</div>
+<div class="absolute bottom-1 right-1 bg-secondary-container p-1 rounded-full border-2 border-white">
+<span class="material-symbols-outlined text-on-secondary-container text-sm" style="font-variation-settings: 'FILL' 1;">verified</span>
+</div>
+</div>
+<div class="mt-md">
+<h2 class="font-headline-md text-headline-md text-on-surface">Gilberto d'Almeida</h2>
+<p class="font-label-lg text-label-lg text-primary flex items-center justify-center gap-1">
+<span class="material-symbols-outlined text-sm">construction</span>
+                    Premium Home Maintenance &amp; Electrical
+                </p>
+<div class="flex items-center justify-center gap-2 mt-xs text-outline font-label-sm text-label-sm">
+<span class="material-symbols-outlined text-[16px]">location_on</span>
+                    Água Grande, São Tomé
+                </div>
+</div>
+</section>
+<!-- Stats Row -->
+<section class="mt-xl grid grid-cols-3 gap-md bg-white p-lg rounded-xl leve-leve-shadow">
+<div class="flex flex-col items-center border-r border-surface-variant/30">
+<span class="font-headline-md text-primary flex items-center">
+                    4.9
+                    <span class="material-symbols-outlined text-secondary ml-1" style="font-variation-settings: 'FILL' 1;">star</span>
+</span>
+<span class="font-label-sm text-label-sm text-outline">Rating</span>
+</div>
+<div class="flex flex-col items-center border-r border-surface-variant/30">
+<span class="font-headline-md text-primary">120+</span>
+<span class="font-label-sm text-label-sm text-outline">Jobs Done</span>
+</div>
+<div class="flex flex-col items-center">
+<span class="font-headline-md text-primary">8</span>
+<span class="font-label-sm text-label-sm text-outline">Years Exp.</span>
+</div>
+</section>
+<!-- About Section -->
+<section class="mt-xl">
+<h3 class="font-headline-md text-headline-md mb-md">About</h3>
+<div class="bg-white p-lg rounded-xl leve-leve-shadow">
+<p class="text-on-surface-variant leading-relaxed">
+                    With over 8 years of dedicated service in São Tomé, I specialize in providing high-quality electrical and general maintenance solutions. My philosophy is "Leve-leve"—ensuring every job is done with precision, care, and a steady hand. Whether it's a complete rewiring or a quick repair, I prioritize safety and reliability for all my clients.
+                </p>
+<div class="flex flex-wrap gap-xs mt-md">
+<span class="px-md py-xs bg-[#D4E9DE] text-primary rounded-full font-label-lg text-label-lg">Certified Electrician</span>
+<span class="px-md py-xs bg-[#D4E9DE] text-primary rounded-full font-label-lg text-label-lg">Multilingual</span>
+<span class="px-md py-xs bg-[#D4E9DE] text-primary rounded-full font-label-lg text-label-lg">Emergency Callouts</span>
+</div>
+</div>
+</section>
+<!-- Portfolio Gallery -->
+<section class="mt-xl">
+<div class="flex justify-between items-center mb-md">
+<h3 class="font-headline-md text-headline-md">Recent Projects</h3>
+<button class="text-primary font-label-lg text-label-lg flex items-center hover:underline">
+                    View All <span class="material-symbols-outlined ml-1">chevron_right</span>
+</button>
+</div>
+<div class="grid grid-cols-2 gap-md">
+<div class="aspect-square rounded-xl overflow-hidden leve-leve-shadow">
+<img class="w-full h-full object-cover" data-alt="High-resolution photograph of a modern, neatly organized electrical circuit breaker panel inside a bright contemporary Santomean home. The wires are perfectly color-coded and organized, demonstrating high-quality craftsmanship. The lighting is clean and bright, showcasing a professional and safe installation. Corporate photography style." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBmPBR7fw4pbRT703obwLQnhJ1Dl0_3GvPq4vYzyVUONh8UB5Da3KtCWAd1z4nFvVbZN2GWCyazGiK8Z3LUAyBrqwmHtG-BOwWRv7H33WiYOd6vWq0ynkkEl_kjJ1NYYU3Hm74E-tdCYI6VMq0HNQtpHIC-_q9ZHBLR-WItKhh1LAZezR98Bfj-HNxIKJIJGki68aYKhxAJUWn-CyLiRiO2uy0eOL5OpKrYaxEM_exeO-VXKa53iUuBWBmsfs9rqfDo79FMRJtsYuA"/>
+</div>
+<div class="grid grid-rows-2 gap-md">
+<div class="rounded-xl overflow-hidden leve-leve-shadow h-full">
+<img class="w-full h-full object-cover" data-alt="Action shot of professional hands installing a sleek, modern outdoor lighting fixture onto a textured stone wall during the golden hour in São Tomé. The warm sunset light creates a beautiful glow on the stone and the polished metallic surface of the lamp. Focus is sharp on the installation point, evoking trust and skill." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBV4GRESybRcA7jp5W7HF9zv2UbSPDVK9CFTyhECF3A-Cl7qAjgE-Yam4kyb89ed0vMc9LTykfnozYFFTJ9eVv3nbq-HXr3Vj8mpkK7Te9wq0NJqYZl84o-YRPqBwzuim70LbfVau0ZaKEYiXW-6VtN3APsQBgqvNc1FogQ4iWKIyOwx6Fyu8dTKMIr5GsD6JFL-6rRwY9z8fBIVvIDFDzUy2eE2QlcHvWIgy8svGZiFlhiKiqPbT2sTducZ8mXvRB3e45lBo1B5Ok"/>
+</div>
+<div class="rounded-xl overflow-hidden leve-leve-shadow h-full">
+<img class="w-full h-full object-cover" data-alt="A wide-angle shot of a beautifully lit living room in a Santomean villa, showcasing complex recessed ceiling lighting installed by a professional. The mood is calm and upscale, with warm light contrasting against clean white walls and wooden furniture. The image highlights the aesthetic result of professional electrical work." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDm-fSrMxUGqEVkB1Wr5UOeMKW652A10OswHYzoxj9BO2wvDOsC2biXlLVBiJCON4YORksVkYBMi2lTHGxQc9bdjHMZcI7vHKaRWlymgdkBK7ImrALmTrU55qwgZRi-ZjiQJRMLoi4Ipbfa_hUJPhbTumW-hJN9KttJXD-2zNX3pzatU4D7KqizNBJhr_5U5CAXa7sOxU38rBzDDUT2yOvbOPpSa8bNISvpJge11inFjQv7VPGzaYl5J4FoIgUNv4DOH1z3JoEZTiM"/>
+</div>
+</div>
+</div>
+</section>
+<!-- Services Offered -->
+<section class="mt-xl">
+<h3 class="font-headline-md text-headline-md mb-md">Services &amp; Pricing</h3>
+<div class="space-y-md">
+<!-- Service 1 -->
+<div class="flex items-center justify-between p-lg bg-white rounded-xl border border-surface-variant/30 hover:border-primary/50 transition-colors group">
+<div class="flex items-start gap-md">
+<div class="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center text-primary shrink-0">
+<span class="material-symbols-outlined">bolt</span>
+</div>
+<div>
+<h4 class="font-label-lg text-label-lg text-on-surface">Electrical Inspection</h4>
+<p class="font-label-sm text-label-sm text-outline">Full diagnostic of home circuits</p>
+</div>
+</div>
+<div class="text-right">
+<span class="block font-headline-md text-primary text-headline-md">Db 450</span>
+<span class="font-label-sm text-label-sm text-outline">Starting at</span>
+</div>
+</div>
+<!-- Service 2 -->
+<div class="flex items-center justify-between p-lg bg-white rounded-xl border border-surface-variant/30 hover:border-primary/50 transition-colors group">
+<div class="flex items-start gap-md">
+<div class="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center text-primary shrink-0">
+<span class="material-symbols-outlined">light_mode</span>
+</div>
+<div>
+<h4 class="font-label-lg text-label-lg text-on-surface">Lighting Installation</h4>
+<p class="font-label-sm text-label-sm text-outline">Internal/External fixtures</p>
+</div>
+</div>
+<div class="text-right">
+<span class="block font-headline-md text-primary text-headline-md">Db 250</span>
+<span class="font-label-sm text-label-sm text-outline">Per unit</span>
+</div>
+</div>
+<!-- Service 3 -->
+<div class="flex items-center justify-between p-lg bg-white rounded-xl border border-surface-variant/30 hover:border-primary/50 transition-colors group">
+<div class="flex items-start gap-md">
+<div class="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center text-primary shrink-0">
+<span class="material-symbols-outlined">home_repair_service</span>
+</div>
+<div>
+<h4 class="font-label-lg text-label-lg text-on-surface">General Maintenance</h4>
+<p class="font-label-sm text-label-sm text-outline">Hourly handymen services</p>
+</div>
+</div>
+<div class="text-right">
+<span class="block font-headline-md text-primary text-headline-md">Db 300</span>
+<span class="font-label-sm text-label-sm text-outline">Per hour</span>
+</div>
+</div>
+</div>
+</section>
+</main>
+<!-- Bottom Navigation Bar (Hidden on this sub-page as per mandate) -->
+<!-- Sticky Footer CTA -->
+<div class="fixed bottom-0 left-0 w-full z-50 bg-white/80 backdrop-blur-md px-container-margin py-md flex items-center gap-md border-t border-surface-variant/20">
+<button class="w-14 h-14 rounded-xl border border-primary text-primary flex items-center justify-center hover:bg-primary/5 transition-all">
+<span class="material-symbols-outlined">chat</span>
+</button>
+<button class="flex-1 bg-primary text-on-primary h-14 rounded-xl font-headline-md flex items-center justify-center gap-2 active:scale-[0.98] transition-transform shadow-lg shadow-primary/20">
+            Book Gilberto Now
+            <span class="material-symbols-outlined">calendar_month</span>
+</button>
+</div>
+<!-- Micro-interaction Script -->
+<script>
+        document.querySelectorAll('.active\\:scale-90').forEach(button => {
+            button.addEventListener('mousedown', () => {
+                button.classList.add('scale-95');
+            });
+            button.addEventListener('mouseup', () => {
+                button.classList.remove('scale-95');
+            });
+            button.addEventListener('mouseleave</script></body></html>

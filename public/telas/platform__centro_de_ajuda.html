@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+
+<html lang="pt-ST"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Konekta STP - Help Center</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;family=Inter:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style>
+        body {
+            font-family: 'Inter', sans-serif;
+            scroll-behavior: smooth;
+        }
+        .glass-nav {
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            background-color: rgba(247, 249, 251, 0.8);
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .faq-accordion[open] .expand-icon {
+            transform: rotate(180deg);
+        }
+        .leve-leve-card {
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+        .leve-leve-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px -5px rgba(0, 96, 54, 0.1);
+        }
+    </style>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "tertiary-fixed": "#ffdcc3",
+                        "on-tertiary-container": "#ffe8d9",
+                        "on-primary-fixed-variant": "#00522e",
+                        "inverse-on-surface": "#eff1f3",
+                        "surface-container-lowest": "#ffffff",
+                        "tertiary-fixed-dim": "#ffb77d",
+                        "surface-tint": "#006d3f",
+                        "on-primary-fixed": "#00210f",
+                        "on-tertiary-fixed-variant": "#6e3900",
+                        "on-surface-variant": "#3f4941",
+                        "on-primary-container": "#abffc6",
+                        "on-background": "#191c1e",
+                        "secondary": "#5d5f5f",
+                        "primary": "#006036",
+                        "surface-container-highest": "#e0e3e5",
+                        "surface-bright": "#f7f9fb",
+                        "primary-fixed-dim": "#80d9a0",
+                        "outline": "#6f7a70",
+                        "secondary-fixed-dim": "#c6c6c7",
+                        "secondary-container": "#dfe0e0",
+                        "on-secondary-fixed": "#1a1c1c",
+                        "surface-dim": "#d8dadc",
+                        "secondary-fixed": "#e2e2e2",
+                        "primary-container": "#1a7a4a",
+                        "on-secondary": "#ffffff",
+                        "on-secondary-fixed-variant": "#454747",
+                        "surface-variant": "#e0e3e5",
+                        "on-secondary-container": "#616363",
+                        "surface-container-high": "#e6e8ea",
+                        "surface-container": "#eceef0",
+                        "primary-fixed": "#9bf6ba",
+                        "on-tertiary-fixed": "#2f1500",
+                        "on-error": "#ffffff",
+                        "surface-container-low": "#f2f4f6",
+                        "error-container": "#ffdad6",
+                        "on-primary": "#ffffff",
+                        "error": "#ba1a1a",
+                        "on-error-container": "#93000a",
+                        "on-tertiary": "#ffffff",
+                        "background": "#f7f9fb",
+                        "outline-variant": "#bec9be",
+                        "on-surface": "#191c1e",
+                        "inverse-surface": "#2d3133",
+                        "inverse-primary": "#80d9a0",
+                        "surface": "#f7f9fb",
+                        "tertiary-container": "#a35700",
+                        "tertiary": "#7f4300"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "xs": "0.5rem",
+                        "lg": "2.5rem",
+                        "gutter": "1.5rem",
+                        "md": "1.5rem",
+                        "base": "4px",
+                        "margin-mobile": "1rem",
+                        "sm": "1rem",
+                        "margin-desktop": "5rem",
+                        "xl": "4rem"
+                    },
+                    "fontFamily": {
+                        "headline-md": ["Plus Jakarta Sans"],
+                        "display-lg": ["Plus Jakarta Sans"],
+                        "headline-lg": ["Plus Jakarta Sans"],
+                        "label-md": ["Inter"],
+                        "headline-lg-mobile": ["Plus Jakarta Sans"],
+                        "body-md": ["Inter"],
+                        "body-lg": ["Inter"],
+                        "label-sm": ["Inter"]
+                    },
+                    "fontSize": {
+                        "headline-md": ["24px", {"lineHeight": "1.3", "fontWeight": "600"}],
+                        "display-lg": ["48px", {"lineHeight": "1.2", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                        "headline-lg": ["32px", {"lineHeight": "1.2", "fontWeight": "700"}],
+                        "label-md": ["14px", {"lineHeight": "1.4", "letterSpacing": "0.01em", "fontWeight": "500"}],
+                        "headline-lg-mobile": ["24px", {"lineHeight": "1.3", "fontWeight": "700"}],
+                        "body-md": ["16px", {"lineHeight": "1.5", "fontWeight": "400"}],
+                        "body-lg": ["18px", {"lineHeight": "1.6", "fontWeight": "400"}],
+                        "label-sm": ["12px", {"lineHeight": "1.2", "fontWeight": "600"}]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background text-on-surface">
+<!-- Top Navigation -->
+<header class="w-full top-0 sticky z-40 bg-surface dark:bg-surface-dim shadow-sm flex justify-between items-center px-4 md:px-margin-desktop py-md glass-nav">
+<div class="flex items-center gap-4">
+<button class="md:hidden p-2 hover:bg-surface-container-low transition-colors rounded-full active:scale-95 duration-150">
+<span class="material-symbols-outlined text-primary">menu</span>
+</button>
+<h1 class="font-headline-lg-mobile text-headline-lg-mobile md:text-headline-lg md:font-headline-lg text-primary tracking-tight">Konekta STP</h1>
+</div>
+<nav class="hidden md:flex items-center gap-xl">
+<a class="font-label-lg text-on-surface-variant hover:text-primary transition-colors" href="#">Dashboard</a>
+<a class="font-label-lg text-on-surface-variant hover:text-primary transition-colors" href="#">Requests</a>
+<a class="font-label-lg text-primary font-bold" href="#">Help Center</a>
+</nav>
+<div class="flex items-center gap-4">
+<div class="hidden sm:flex flex-col text-right">
+<span class="font-label-md text-on-surface font-semibold">João Silva</span>
+<span class="text-label-sm text-on-surface-variant">Certified Plumber</span>
+</div>
+<div class="w-10 h-10 rounded-full bg-primary-fixed overflow-hidden ring-2 ring-primary/10">
+<img class="w-full h-full object-cover" data-alt="A professional headshot of a friendly Portuguese-speaking service provider in São Tomé and Príncipe. He is wearing a clean branded polo shirt and smiling confidently. The lighting is soft and natural, emphasizing a trustworthy and high-end professional persona against a minimalist, bright studio background in the Konekta STP brand style." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAK_xyJgCofThUqD6BYSFbB5NQ2xM4-XNUsRJsIeNgv9Kks1jDnwA5PgSNZzuOBMnzvmHOQ8FkFkyviU8lRIdVkCVJQ47xek019fkz4eo--wlNOI4aaEB-1GOygFecWC4lH7ApoHX_FYkaGtzCJ3WYyRvILu6-WPREIv-R0eDRzulHZUaNYcjzko7SPUqJ1j4yWeCrD1zU0kfK1T6kjOAploZMRd_kQIclLZX86r4xalRST_0zZiiFHWANDBhkhBf0WC8pNB1wk6r4"/>
+</div>
+</div>
+</header>
+<main class="max-w-[1280px] mx-auto px-4 md:px-margin-desktop pb-24">
+<!-- Hero Search Section -->
+<section class="py-xl text-center">
+<h2 class="font-display-lg text-[32px] md:text-display-lg text-on-surface mb-md">How can we help you?</h2>
+<div class="relative max-w-2xl mx-auto">
+<div class="absolute inset-y-0 left-6 flex items-center pointer-events-none">
+<span class="material-symbols-outlined text-outline">search</span>
+</div>
+<input class="w-full h-16 pl-16 pr-6 bg-surface-container-lowest border border-outline-variant rounded-full text-body-lg focus:ring-4 focus:ring-primary/5 focus:border-primary outline-none transition-all shadow-sm" placeholder="Search for articles, guides, or issues..." type="text"/>
+</div>
+<div class="mt-md flex flex-wrap justify-center gap-xs">
+<span class="font-label-sm text-on-surface-variant">Popular:</span>
+<a class="font-label-sm text-primary hover:underline" href="#">Payment verification</a>
+<span class="text-outline-variant">•</span>
+<a class="font-label-sm text-primary hover:underline" href="#">Service disputes</a>
+<span class="text-outline-variant">•</span>
+<a class="font-label-sm text-primary hover:underline" href="#">Updating profile</a>
+</div>
+</section>
+<!-- Main Content Grid -->
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-gutter">
+<!-- Category Bento Grid -->
+<div class="lg:col-span-8 grid grid-cols-1 md:grid-cols-2 gap-gutter">
+<!-- Category: Payments -->
+<div class="leve-leve-card p-lg bg-surface-container-lowest border border-outline-variant/30 rounded-xl">
+<div class="w-12 h-12 rounded-xl bg-primary-container/10 flex items-center justify-center mb-md">
+<span class="material-symbols-outlined text-primary text-[28px]" style="font-variation-settings: 'FILL' 1;">payments</span>
+</div>
+<h3 class="font-headline-md text-headline-md text-on-surface mb-sm">Payments</h3>
+<ul class="space-y-3">
+<li><a class="font-body-md text-on-surface-variant hover:text-primary transition-colors flex items-center justify-between" href="#">Payout schedules <span class="material-symbols-outlined text-sm">chevron_right</span></a></li>
+<li><a class="font-body-md text-on-surface-variant hover:text-primary transition-colors flex items-center justify-between" href="#">Handling service fees <span class="material-symbols-outlined text-sm">chevron_right</span></a></li>
+<li><a class="font-body-md text-on-surface-variant hover:text-primary transition-colors flex items-center justify-between" href="#">International card issues <span class="material-symbols-outlined text-sm">chevron_right</span></a></li>
+</ul>
+</div>
+<!-- Category: Account -->
+<div class="leve-leve-card p-lg bg-surface-container-lowest border border-outline-variant/30 rounded-xl">
+<div class="w-12 h-12 rounded-xl bg-tertiary-container/10 flex items-center justify-center mb-md">
+<span class="material-symbols-outlined text-tertiary text-[28px]" style="font-variation-settings: 'FILL' 1;">account_circle</span>
+</div>
+<h3 class="font-headline-md text-headline-md text-on-surface mb-sm">Account</h3>
+<ul class="space-y-3">
+<li><a class="font-body-md text-on-surface-variant hover:text-primary transition-colors flex items-center justify-between" href="#">Security verification <span class="material-symbols-outlined text-sm">chevron_right</span></a></li>
+<li><a class="font-body-md text-on-surface-variant hover:text-primary transition-colors flex items-center justify-between" href="#">Switching provider types <span class="material-symbols-outlined text-sm">chevron_right</span></a></li>
+<li><a class="font-body-md text-on-surface-variant hover:text-primary transition-colors flex items-center justify-between" href="#">GDPR and Data Privacy <span class="material-symbols-outlined text-sm">chevron_right</span></a></li>
+</ul>
+</div>
+<!-- Category: Service Quality -->
+<div class="leve-leve-card md:col-span-2 p-lg bg-surface-container-lowest border border-outline-variant/30 rounded-xl flex flex-col md:flex-row gap-lg items-center">
+<div class="w-24 h-24 flex-shrink-0 rounded-2xl overflow-hidden bg-primary-fixed/20 relative">
+<div class="absolute inset-0 flex items-center justify-center">
+<span class="material-symbols-outlined text-primary text-[48px]" style="font-variation-settings: 'FILL' 1;">verified</span>
+</div>
+</div>
+<div class="flex-grow">
+<h3 class="font-headline-md text-headline-md text-on-surface mb-xs">Service Quality &amp; Reviews</h3>
+<p class="font-body-md text-on-surface-variant mb-md">Learn how to maintain your status and manage client feedback effectively in São Tomé and Príncipe.</p>
+<div class="flex flex-wrap gap-xs">
+<span class="px-3 py-1 rounded-full bg-surface-container-low text-label-sm text-primary">Mediation</span>
+<span class="px-3 py-1 rounded-full bg-surface-container-low text-label-sm text-primary">Guidelines</span>
+<span class="px-3 py-1 rounded-full bg-surface-container-low text-label-sm text-primary">Badges</span>
+</div>
+</div>
+</div>
+<!-- FAQs -->
+<div class="md:col-span-2 mt-lg">
+<h3 class="font-headline-md text-headline-md text-on-surface mb-md">Frequently Asked Questions</h3>
+<div class="space-y-2">
+<details class="faq-accordion group bg-surface-container-low rounded-xl overflow-hidden border border-transparent open:border-outline-variant/20 transition-all">
+<summary class="flex items-center justify-between p-md cursor-pointer list-none font-label-md text-on-surface hover:bg-surface-container-high transition-colors">
+<span>How do I contact Konekta support during weekends?</span>
+<span class="material-symbols-outlined expand-icon transition-transform duration-300">expand_more</span>
+</summary>
+<div class="p-md pt-0 text-body-md text-on-surface-variant">
+                                Our platform support is available 24/7 through the Live Chat. For physical office visits in São Tomé, we operate Monday to Friday, 8:00 AM to 5:00 PM.
+                            </div>
+</details>
+<details class="faq-accordion group bg-surface-container-low rounded-xl overflow-hidden border border-transparent open:border-outline-variant/20 transition-all">
+<summary class="flex items-center justify-between p-md cursor-pointer list-none font-label-md text-on-surface hover:bg-surface-container-high transition-colors">
+<span>What should I do if a client cancels at the last minute?</span>
+<span class="material-symbols-outlined expand-icon transition-transform duration-300">expand_more</span>
+</summary>
+<div class="p-md pt-0 text-body-md text-on-surface-variant">
+                                Please refer to our Cancellation Policy section. Providers are eligible for a partial payout if the cancellation occurs within 2 hours of the scheduled service time.
+                            </div>
+</details>
+<details class="faq-accordion group bg-surface-container-low rounded-xl overflow-hidden border border-transparent open:border-outline-variant/20 transition-all">
+<summary class="flex items-center justify-between p-md cursor-pointer list-none font-label-md text-on-surface hover:bg-surface-container-high transition-colors">
+<span>How can I update my professional certifications?</span>
+<span class="material-symbols-outlined expand-icon transition-transform duration-300">expand_more</span>
+</summary>
+<div class="p-md pt-0 text-body-md text-on-surface-variant">
+                                Navigate to 'Service Settings' in your sidebar, then select 'Credentials'. You can upload photos of your new certificates there for verification.
+                            </div>
+</details>
+</div>
+</div>
+</div>
+<!-- Sidebar Contact Options -->
+<aside class="lg:col-span-4 space-y-gutter">
+<div class="p-lg bg-primary-container text-on-primary-container rounded-2xl shadow-lg relative overflow-hidden">
+<!-- Glassy Background Accent -->
+<div class="absolute -top-10 -right-10 w-40 h-40 bg-white/10 rounded-full blur-3xl"></div>
+<h3 class="font-headline-md text-headline-md mb-xs">Direct Support</h3>
+<p class="font-body-md mb-lg opacity-90">Need immediate assistance? Choose your preferred way to talk to our local team.</p>
+<div class="space-y-3">
+<button class="w-full flex items-center gap-md p-md bg-white/10 hover:bg-white/20 active:scale-95 transition-all rounded-xl border border-white/20">
+<span class="material-symbols-outlined">chat</span>
+<div class="text-left">
+<p class="font-label-md">Live Chat</p>
+<p class="text-xs opacity-70">Average response: 2 mins</p>
+</div>
+</button>
+<button class="w-full flex items-center gap-md p-md bg-[#25D366] text-white hover:brightness-105 active:scale-95 transition-all rounded-xl">
+<span class="material-symbols-outlined">chat_bubble</span>
+<div class="text-left">
+<p class="font-label-md">WhatsApp Support</p>
+<p class="text-xs opacity-80">Local STP number</p>
+</div>
+</button>
+<button class="w-full flex items-center gap-md p-md bg-white text-primary hover:bg-primary-fixed-dim active:scale-95 transition-all rounded-xl">
+<span class="material-symbols-outlined">mail</span>
+<div class="text-left">
+<p class="font-label-md">Email Us</p>
+<p class="text-xs opacity-70">support@konekta.st</p>
+</div>
+</button>
+</div>
+</div>
+<!-- Office Location Card -->
+<div class="p-lg bg-surface-container-lowest border border-outline-variant/30 rounded-xl">
+<h4 class="font-label-md text-on-surface-variant uppercase tracking-wider mb-md">Our Local Office</h4>
+<div class="h-40 w-full rounded-lg bg-surface-container overflow-hidden mb-md relative">
+<img class="w-full h-full object-cover grayscale opacity-60" data-location="Sao Tome" src="https://lh3.googleusercontent.com/aida-public/AB6AXuD8e8xxIynZjWcsSV5YJVyq93F9mWFx1q-0RPzGO9SvNqBwR1vNo-L9ZQOHmXhEQafBGWJ3-4e1S7YWHYCvw-TXNLIaWhFVryP7OEd_rphh-UuNTX7IeMmDZhi1I9LdIfPvlaYSdwbOQkNxbBz-UKxinOin8N9BeUmNq-MvW9MtQo9hgHL30VrBNWpMi89mZZXRx6KAxkL00HH32smOLTyu32M_XJ-Akfhe1sAOHhTbyl57lkuENx9EPtsLwiijn6Cm-hdvqAq2AVs"/>
+<div class="absolute inset-0 bg-primary/10"></div>
+<div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-8 h-8 bg-primary rounded-full border-4 border-white shadow-lg animate-pulse"></div>
+</div>
+<p class="font-label-md text-on-surface">Avenida Marginal 12 de Julho</p>
+<p class="font-body-md text-on-surface-variant">São Tomé, STP</p>
+</div>
+<!-- Help Badge -->
+<div class="p-md bg-secondary-container/30 border border-dashed border-outline/30 rounded-xl flex items-start gap-md">
+<span class="material-symbols-outlined text-outline">info</span>
+<p class="text-label-sm text-on-surface-variant italic">Konekta STP is committed to the Leve-Leve spirit, ensuring every dispute is handled with transparency and respect for our local community.</p>
+</div>
+</aside>
+</div>
+</main>
+<!-- Bottom Navigation Mobile -->
+<nav class="md:hidden fixed bottom-0 left-0 w-full flex justify-around items-center h-20 px-2 pb-safe bg-surface dark:bg-surface-container-lowest shadow-[0_-4px_12px_rgba(0,96,54,0.08)] z-50 rounded-t-xl">
+<a class="flex flex-col items-center justify-center text-on-surface-variant px-4 py-1 hover:text-primary transition-all" href="#">
+<span class="material-symbols-outlined">dashboard</span>
+<span class="font-label-sm text-label-sm">Dashboard</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant px-4 py-1 hover:text-primary transition-all" href="#">
+<span class="material-symbols-outlined">list_alt</span>
+<span class="font-label-sm text-label-sm">Requests</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant px-4 py-1 hover:text-primary transition-all" href="#">
+<span class="material-symbols-outlined">payments</span>
+<span class="font-label-sm text-label-sm">Earnings</span>
+</a>
+<div class="flex flex-col items-center justify-center bg-primary-container text-on-primary-container rounded-full px-4 py-1 active:scale-95 duration-200">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">help</span>
+<span class="font-label-sm text-label-sm">Support</span>
+</div>
+</nav>
+<script>
+        // Micro-interactions for the search bar
+        const searchInput = document.querySelector('input[type="text"]');
+        searchInput.addEventListener('focus', () => {
+            searchInput.parentElement.classList.add('scale-[1.02]');
+            searchInput.parentElement.style.transition = 'all 0.3s ease';
+        });</script></body></html>

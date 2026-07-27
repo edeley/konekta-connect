@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Transaction Details | KONEKTA STP</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;family=Inter:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .leve-leve-shadow {
+            box-shadow: 0 4px 20px -2px rgba(0, 96, 54, 0.08);
+        }
+        .glass-effect {
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+        }
+    </style>
+<!-- Insert Tailwind Config -->
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "surface": "#f9f9ff",
+                    "surface-dim": "#d0daf0",
+                    "on-surface": "#121c2c",
+                    "secondary-fixed-dim": "#fabd32",
+                    "error": "#ba1a1a",
+                    "primary-container": "#1a7a4a",
+                    "outline": "#6f7a70",
+                    "on-primary-fixed": "#00210f",
+                    "error-container": "#ffdad6",
+                    "surface-tint": "#006d3f",
+                    "surface-variant": "#d9e3f9",
+                    "secondary-fixed": "#ffdea4",
+                    "on-secondary-fixed-variant": "#5d4200",
+                    "tertiary": "#a9001d",
+                    "surface-container-low": "#f0f3ff",
+                    "on-primary-fixed-variant": "#00522e",
+                    "on-background": "#121c2c",
+                    "on-primary-container": "#abffc6",
+                    "inverse-on-surface": "#ebf1ff",
+                    "tertiary-fixed-dim": "#ffb3af",
+                    "secondary": "#7b5900",
+                    "surface-container-lowest": "#ffffff",
+                    "on-surface-variant": "#3f4941",
+                    "tertiary-container": "#d01f2f",
+                    "surface-container-highest": "#d9e3f9",
+                    "outline-variant": "#bec9be",
+                    "primary-fixed-dim": "#80d9a0",
+                    "on-secondary-fixed": "#261900",
+                    "on-error": "#ffffff",
+                    "inverse-primary": "#80d9a0",
+                    "on-secondary-container": "#6e4f00",
+                    "primary-fixed": "#9bf6ba",
+                    "on-secondary": "#ffffff",
+                    "tertiary-fixed": "#ffdad7",
+                    "inverse-surface": "#273141",
+                    "surface-container-high": "#dee8ff",
+                    "surface-container": "#e7eeff",
+                    "on-tertiary-fixed-variant": "#930018",
+                    "on-tertiary": "#ffffff",
+                    "background": "#f9f9ff",
+                    "surface-bright": "#f9f9ff",
+                    "on-tertiary-fixed": "#410005",
+                    "secondary-container": "#fdbf35",
+                    "on-primary": "#ffffff",
+                    "on-tertiary-container": "#ffe7e5",
+                    "primary": "#006036",
+                    "on-error-container": "#93000a"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "unit": "4px",
+                    "2xl": "48px",
+                    "container-margin": "20px",
+                    "xs": "4px",
+                    "gutter": "16px",
+                    "lg": "24px",
+                    "sm": "8px",
+                    "3xl": "64px",
+                    "xl": "32px",
+                    "md": "16px"
+            },
+            "fontFamily": {
+                    "headline-md": ["Plus Jakarta Sans"],
+                    "headline-lg": ["Plus Jakarta Sans"],
+                    "body-md": ["Inter"],
+                    "label-sm": ["Inter"],
+                    "headline-lg-mobile": ["Plus Jakarta Sans"],
+                    "display": ["Plus Jakarta Sans"],
+                    "label-lg": ["Inter"],
+                    "body-lg": ["Inter"]
+            },
+            "fontSize": {
+                    "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+                    "headline-lg": ["32px", {"lineHeight": "40px", "fontWeight": "700"}],
+                    "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                    "label-sm": ["12px", {"lineHeight": "16px", "fontWeight": "500"}],
+                    "headline-lg-mobile": ["24px", {"lineHeight": "32px", "fontWeight": "700"}],
+                    "display": ["40px", {"lineHeight": "48px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                    "label-lg": ["14px", {"lineHeight": "20px", "letterSpacing": "0.01em", "fontWeight": "600"}],
+                    "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-surface font-body-md text-on-surface antialiased">
+<!-- Top App Bar (Suppressed Global Nav for Detail View as per Semantic Shell Mandate) -->
+<header class="fixed top-0 w-full z-50 flex justify-between items-center px-container-margin h-16 bg-surface dark:bg-surface-dim shadow-sm">
+<button class="flex items-center justify-center w-10 h-10 rounded-full hover:bg-primary-container/10 transition-colors active:scale-95" onclick="window.history.back()">
+<span class="material-symbols-outlined text-on-surface">arrow_back</span>
+</button>
+<h1 class="font-headline-md-mobile text-headline-md-mobile font-bold text-primary">Transaction Detail</h1>
+<button class="flex items-center justify-center w-10 h-10 rounded-full hover:bg-primary-container/10 transition-colors active:scale-95">
+<span class="material-symbols-outlined text-on-surface">share</span>
+</button>
+</header>
+<main class="pt-24 pb-12 px-container-margin max-w-md mx-auto">
+<!-- Transaction Success Animation Hero -->
+<div class="relative w-full flex flex-col items-center mb-lg">
+<div class="w-20 h-20 bg-primary-fixed rounded-full flex items-center justify-center mb-md leve-leve-shadow">
+<span class="material-symbols-outlined text-primary text-4xl" style="font-variation-settings: 'wght' 600;">check_circle</span>
+</div>
+<h2 class="font-headline-lg-mobile text-headline-lg-mobile text-on-surface mb-xs">STN 1,450.00</h2>
+<div class="flex items-center gap-2 bg-primary-container/10 px-3 py-1 rounded-full">
+<span class="w-2 h-2 bg-primary rounded-full animate-pulse"></span>
+<span class="font-label-lg text-primary text-label-lg">Payment Successful</span>
+</div>
+</div>
+<!-- Transaction Bento Grid -->
+<div class="grid grid-cols-2 gap-md mb-lg">
+<!-- Details Card -->
+<div class="col-span-2 bg-surface-container-lowest rounded-xl p-lg leve-leve-shadow border border-surface-variant/30">
+<div class="flex justify-between items-start mb-lg">
+<div>
+<p class="font-label-sm text-label-sm text-outline mb-xs">Category</p>
+<p class="font-label-lg text-label-lg text-on-surface">Service Payment</p>
+</div>
+<div class="bg-secondary-container/20 p-2 rounded-lg">
+<span class="material-symbols-outlined text-secondary">payments</span>
+</div>
+</div>
+<div class="space-y-md">
+<div class="flex justify-between border-b border-surface-variant/20 pb-md">
+<span class="font-label-lg text-label-lg text-outline">Date</span>
+<span class="font-label-lg text-label-lg text-on-surface">Oct 24, 2023</span>
+</div>
+<div class="flex justify-between border-b border-surface-variant/20 pb-md">
+<span class="font-label-lg text-label-lg text-outline">Time</span>
+<span class="font-label-lg text-label-lg text-on-surface">14:32 GMT</span>
+</div>
+<div class="flex justify-between border-b border-surface-variant/20 pb-md">
+<span class="font-label-lg text-label-lg text-outline">Reference ID</span>
+<div class="flex items-center gap-1">
+<span class="font-label-lg text-label-lg text-on-surface font-mono">#TXN-9982104B</span>
+<span class="material-symbols-outlined text-primary text-sm cursor-pointer">content_copy</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Escrow Security Notice -->
+<div class="col-span-2 bg-primary text-on-primary rounded-xl p-lg flex items-start gap-md">
+<div class="mt-1">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">verified_user</span>
+</div>
+<div>
+<h3 class="font-label-lg text-label-lg mb-1">Escrow Protection Active</h3>
+<p class="text-xs opacity-90 leading-relaxed font-body-md">Your funds are securely held in escrow. They will only be released to the provider once you confirm the service has been completed satisfactorily.</p>
+</div>
+</div>
+<!-- Provider Mini Card -->
+<div class="col-span-2 bg-surface-container-lowest rounded-xl p-md flex items-center gap-md border border-surface-variant/30">
+<div class="w-12 h-12 rounded-full overflow-hidden bg-surface-dim">
+<img class="w-full h-full object-cover" data-alt="A professional headshot of a friendly Santomean man in his 40s, wearing a clean work shirt, smiling warmly against a bright, sunlit outdoor tropical background with blurred greenery. The lighting is soft and natural, emphasizing a trustworthy and professional character in a modern, light-themed aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDFyE0r9ZTb1r92dpUzFkdUSWA7eJAkulp0N4dtHzMbT0RSBiCzWpHFVS_T3ntTTUPdyC-rbX0LFdHGJt1P_JDRKFR-Lp1n4MZKjk5CviqkTMrR0eDfOEoyjOlIq_xv2JYktehc_qBiemYeA4E-PYcRWwKYpSrD_Vn6gY3rByxc_ulL7Z-ubdSyNxY4a6DP7NIIjpo6AvTOtwl2Q9traYWE1wyu2AjYP8rRl5k7c3FG7zYEcmG2uNIyz9sA0AOLLpoWcX0BkV26O3M"/>
+</div>
+<div class="flex-1">
+<p class="font-label-sm text-label-sm text-outline">Recipient</p>
+<p class="font-label-lg text-label-lg text-on-surface">Joaquim dos Santos</p>
+<p class="text-[10px] text-primary">Certified Electrician</p>
+</div>
+<button class="bg-surface-container p-2 rounded-full text-primary hover:bg-primary/10 transition-colors">
+<span class="material-symbols-outlined">message</span>
+</button>
+</div>
+</div>
+<!-- Actions -->
+<div class="space-y-md">
+<button class="w-full h-12 bg-primary text-on-primary font-label-lg text-label-lg rounded-xl flex items-center justify-center gap-2 active:scale-[0.98] transition-transform">
+<span class="material-symbols-outlined">download</span>
+                Download Receipt (PDF)
+            </button>
+<button class="w-full h-12 border border-outline text-on-surface-variant font-label-lg text-label-lg rounded-xl flex items-center justify-center gap-2 active:scale-[0.98] transition-transform">
+<span class="material-symbols-outlined">report</span>
+                Report a Problem
+            </button>
+</div>
+</main>
+<!-- Map Context Section (Glassmorphism Overlay Style) -->
+<section class="px-container-margin max-w-md mx-auto mb-3xl">
+<div class="relative h-40 rounded-xl overflow-hidden border border-surface-variant/30 leve-leve-shadow">
+<img class="w-full h-full object-cover grayscale opacity-50" data-alt="A stylized minimalist map of the city of São Tomé, focusing on a specific service location. The map uses a soft, light-mode palette of whites, pale greens, and subtle greys, with a prominent Primary Green pin marking the location. The aesthetic is clean and corporate, avoiding clutter to maintain the Leve-leve philosophy." data-location="São Tomé" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAnvcxTh0kE2gVR-btMBZZwkX6SNTAGSILoMsMvtSGE4zklq8iuju_rOdmM-mLo-7t2IursuhvbmjWi3e5Pqh35gV03r8mLv6sVwOhZc4WTMerWxNToNMbkLQNzMvxEU36Yc5rP2pTMyO3fs1IpPPwWs_DfZF0P5lgTn7s9blDcFUwm6MmoGC5MCSn6jRJiSQLIbNgl0RHahG2195W03os2DY2YkqEPzUbrcx6keX6vZ3pWLrUe0piGjVfTOb3YyvhPwjgaKoylELQ"/>
+<div class="absolute inset-0 bg-gradient-to-t from-surface to-transparent"></div>
+<div class="absolute bottom-3 left-3 flex items-center gap-2 bg-surface/90 backdrop-blur-md px-3 py-2 rounded-lg">
+<span class="material-symbols-outlined text-primary text-sm">location_on</span>
+<span class="text-xs font-label-lg">Agostinho Neto, São Tomé</span>
+</div>
+</div>
+</section>
+<!-- Script for subtle interaction -->
+<script>
+        document.querySelectorAll('button').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const icon = btn.querySelector('.material-symbols-outlined');
+                if (icon && icon.innerText === 'content_copy') {
+                    const original = icon.innerText;
+                    icon.innerText = 'check';
+                    setTimeout(() => {
+                        icon.innerText = original;
+                    }, 2000);
+                }
+            });
+        });
+    </script>
+</body></html>

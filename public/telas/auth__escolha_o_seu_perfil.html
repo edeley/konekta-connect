@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+
+<html lang="pt"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>KONEKTA STP - Seleção de Perfil</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;family=Inter:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "surface": "#fbf9f8",
+                        "surface-container-highest": "#e4e2e1",
+                        "secondary-container": "#f6e14a",
+                        "outline": "#6f7a70",
+                        "inverse-surface": "#303030",
+                        "on-tertiary-fixed": "#40000d",
+                        "status-success": "#1A7A4A",
+                        "category-bg-low-opacity": "rgba(26, 122, 74, 0.08)",
+                        "tertiary": "#8b373f",
+                        "secondary": "#6a5f00",
+                        "tertiary-container": "#a94e56",
+                        "on-surface-variant": "#3f4941",
+                        "on-secondary": "#ffffff",
+                        "surface-background": "#FFFFFF",
+                        "secondary-fixed": "#f9e44d",
+                        "on-secondary-container": "#6f6300",
+                        "on-primary-fixed": "#00210f",
+                        "surface-container": "#f0eded",
+                        "on-secondary-fixed": "#201c00",
+                        "secondary-fixed-dim": "#dcc831",
+                        "surface-bright": "#fbf9f8",
+                        "status-warning": "#FFEA52",
+                        "inverse-on-surface": "#f3f0f0",
+                        "surface-tonal": "#F7F7F7",
+                        "on-primary": "#ffffff",
+                        "surface-container-low": "#f5f3f2",
+                        "inverse-primary": "#80d9a0",
+                        "on-tertiary-fixed-variant": "#7c2b34",
+                        "surface-tint": "#006d3f",
+                        "primary-container": "#1a7a4a",
+                        "primary-fixed-dim": "#80d9a0",
+                        "surface-dim": "#dcd9d9",
+                        "background": "#fbf9f8",
+                        "surface-variant": "#e4e2e1",
+                        "on-primary-fixed-variant": "#00522e",
+                        "error-container": "#ffdad6",
+                        "tertiary-fixed-dim": "#ffb3b6",
+                        "on-error-container": "#93000a",
+                        "primary": "#006036",
+                        "primary-fixed": "#9bf6ba",
+                        "on-tertiary-container": "#ffe7e7",
+                        "on-secondary-fixed-variant": "#504700",
+                        "surface-container-high": "#eae8e7",
+                        "surface-container-lowest": "#ffffff",
+                        "on-surface": "#1b1c1c",
+                        "error": "#ba1a1a",
+                        "on-background": "#1b1c1c",
+                        "tertiary-fixed": "#ffdada",
+                        "outline-variant": "#bec9be",
+                        "on-error": "#ffffff",
+                        "on-tertiary": "#ffffff",
+                        "on-primary-container": "#abffc6"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.8rem",
+                        "xl": "1.2rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "sm": "16px",
+                        "base": "4px",
+                        "margin-desktop": "40px",
+                        "xl": "48px",
+                        "margin-mobile": "16px",
+                        "gutter": "20px",
+                        "md": "24px",
+                        "lg": "32px",
+                        "xs": "8px"
+                    },
+                    "fontFamily": {
+                        "body-md": ["Inter"],
+                        "body-lg": ["Inter"],
+                        "label-md": ["Inter"],
+                        "headline-md": ["Plus Jakarta Sans"],
+                        "display-lg": ["Plus Jakarta Sans"],
+                        "label-sm": ["Inter"],
+                        "headline-lg-mobile": ["Plus Jakarta Sans"],
+                        "headline-lg": ["Plus Jakarta Sans"]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        body { font-family: 'Inter', sans-serif; }
+        .plus-jakarta { font-family: 'Plus Jakarta Sans', sans-serif; }
+        
+        .option-card {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            border: 2px solid transparent;
+        }
+        
+        .option-card.selected {
+            border-color: #006036;
+            background-color: rgba(26, 122, 74, 0.04);
+            transform: scale(1.02);
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+        }
+
+        .option-card.selected .check-badge {
+            opacity: 1;
+        }
+
+        .bg-glass {
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+        }
+
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-surface text-on-background min-h-screen flex flex-col items-center justify-center p-4">
+<!-- Hero Background (Context: São Tomé and Príncipe Landscape) -->
+<div class="fixed inset-0 z-0 overflow-hidden">
+<div class="w-full h-full bg-cover bg-center scale-105 filter brightness-75 lg:brightness-90" data-alt="An expansive, high-resolution aerial panoramic photograph of the Pico Cão Grande in São Tomé and Príncipe. The iconic volcanic plug rises majestically from a dense, vibrant tropical rainforest bathed in the golden, warm light of a late afternoon sun. The lush green canopy extends into the distance under a clear blue sky, capturing the pristine and reliable natural beauty of the island. The overall aesthetic is cinematic and serene, reflecting a high-trust professional atmosphere." style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuCVGCKuiCbAqSedl-sOsGL20JaLuEQefZg6F4uRQ9SbeT_rvk6TF761Zjl6d0PxpopVxbgshp2vv_YxpkB46I4rlaCzEBD8oHRUkbfgwsaBAc5rfUs85Orrq47dIS-fljnmIIiKWEFMfjQdfAu9ENqmkbGB_1dh9sJxRjQIPq2uN6lkCguUhqQa2NSIMa_eKTDsX67iHPUucvHez3m140nw7Wso0hEe0hVrxt-66JYrSqQ0pRSZIA_Dlu7hw9lVaMxSxXlpzrOQOpc')"></div>
+</div>
+<!-- Main Selection Container -->
+<main class="relative z-10 w-full max-w-2xl bg-glass p-lg md:p-xl rounded-xl shadow-xl flex flex-col gap-lg border border-white/20">
+<!-- Header Section -->
+<header class="text-center flex flex-col gap-base">
+<h1 class="font-headline-lg-mobile md:font-headline-lg text-headline-lg-mobile md:text-headline-lg text-primary font-bold tracking-tight mb-xs">
+                KONEKTA STP
+            </h1>
+<p class="font-headline-md text-headline-md text-on-surface font-semibold">
+                Como pretende usar o Konekta?
+            </p>
+<p class="font-body-md text-body-md text-on-surface-variant max-w-md mx-auto">
+                Selecione o seu perfil para personalizar a sua experiência na plataforma líder de serviços em São Tomé e Príncipe.
+            </p>
+</header>
+<!-- Selection Options -->
+<div class="flex flex-col gap-md" id="selection-container">
+<!-- Option: Cliente -->
+<button class="option-card group relative flex items-center gap-md p-md bg-white rounded-lg border border-outline-variant text-left" id="option-cliente" onclick="selectOption('cliente')">
+<div class="flex-shrink-0 w-16 h-16 rounded-full overflow-hidden bg-surface-container flex items-center justify-center">
+<span class="material-symbols-outlined text-primary text-3xl">person_search</span>
+</div>
+<div class="flex-grow">
+<h3 class="font-label-md text-label-md text-on-surface mb-1">Cliente</h3>
+<p class="font-body-md text-body-md text-on-surface-variant">Procuro profissionais qualificados para serviços em minha casa.</p>
+</div>
+<div class="check-badge opacity-0 flex-shrink-0 text-primary transition-opacity">
+<span class="material-symbols-outlined text-3xl" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+</div>
+</button>
+<!-- Option: Prestador -->
+<button class="option-card group relative flex items-center gap-md p-md bg-white rounded-lg border border-outline-variant text-left" id="option-prestador" onclick="selectOption('prestador')">
+<div class="flex-shrink-0 w-16 h-16 rounded-full overflow-hidden bg-surface-container flex items-center justify-center">
+<span class="material-symbols-outlined text-primary text-3xl">handyman</span>
+</div>
+<div class="flex-grow">
+<h3 class="font-label-md text-label-md text-on-surface mb-1">Prestador</h3>
+<p class="font-body-md text-body-md text-on-surface-variant">Quero oferecer os meus serviços e aumentar os meus ganhos.</p>
+</div>
+<div class="check-badge opacity-0 flex-shrink-0 text-primary transition-opacity">
+<span class="material-symbols-outlined text-3xl" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+</div>
+</button>
+<!-- Option: Ambos -->
+<button class="option-card group relative flex items-center gap-md p-md bg-white rounded-lg border border-outline-variant text-left" id="option-ambos" onclick="selectOption('ambos')">
+<div class="flex-shrink-0 w-16 h-16 rounded-full overflow-hidden bg-surface-container flex items-center justify-center">
+<span class="material-symbols-outlined text-primary text-3xl">swap_horiz</span>
+</div>
+<div class="flex-grow">
+<h3 class="font-label-md text-label-md text-on-surface mb-1">Ambos</h3>
+<p class="font-body-md text-body-md text-on-surface-variant">Quero ter acesso a todas as funcionalidades da plataforma.</p>
+</div>
+<div class="check-badge opacity-0 flex-shrink-0 text-primary transition-opacity">
+<span class="material-symbols-outlined text-3xl" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+</div>
+</button>
+</div>
+<!-- Action Footer -->
+<div class="mt-xs flex flex-col gap-sm">
+<button class="w-full py-4 px-lg rounded-full font-label-md text-label-md bg-primary/40 text-white cursor-not-allowed transition-all duration-300 shadow-md flex items-center justify-center gap-xs" disabled="" id="continue-button">
+                Continuar
+                <span class="material-symbols-outlined">arrow_forward</span>
+</button>
+<div class="text-center">
+<p class="font-body-md text-body-md text-on-surface-variant">
+                    Já tem uma conta? 
+                    <a class="text-primary font-semibold hover:underline decoration-2 underline-offset-4" href="#">Iniciar Sessão</a>
+</p>
+</div>
+</div>
+</main>
+<!-- Support Message (Floating Aesthetic) -->
+<div class="fixed bottom-margin-mobile md:bottom-margin-desktop z-20 bg-white/90 px-md py-xs rounded-full shadow-lg border border-outline-variant text-primary flex items-center gap-xs animate-pulse">
+<span class="material-symbols-outlined text-md">verified_user</span>
+<span class="text-label-sm font-label-sm">Conexão segura e verificada</span>
+</div>
+<script>
+        let selectedProfile = null;
+
+        function selectOption(type) {
+            // Remove selection from all cards
+            document.querySelectorAll('.option-card').forEach(card => {
+                card.classList.remove('selected');
+            });
+
+            // Add selection to the clicked card
+            const selectedCard = document.getElementById(`option-${type}`);
+            selectedCard.classList.add('selected');
+            
+            selectedProfile = type;
+            
+            // Enable and style the continue button
+            const btn = document.getElementById('continue-button');
+            btn.disabled = false;
+            btn.classList.remove('bg-primary/40', 'cursor-not-allowed');
+            btn.classList.add('bg-primary', 'hover:bg-primary-container', 'active:scale-95');
+            
+            // Success Haptic Feedback simulation
+            console.log(`Profile Selected: ${type}`);
+        }
+
+        // Handle button click
+        document.getElementById('continue-button').addEventListener('click', function() {
+            if (selectedProfile) {
+                this.innerHTML = '<span class="material-symbols-outlined animate-spin">progress_activity</span> Carregando...';
+                setTimeout(() => {
+                    alert(`Redirecionando para o registo como: ${selectedProfile.toUpperCase()}`);
+                    window.location.reload();
+                }, 1000);
+            }
+        });
+    </script>
+</body></html>

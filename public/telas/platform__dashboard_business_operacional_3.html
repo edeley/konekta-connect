@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Konekta Enterprise | Operational Control</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;family=Manrope:wght@600;700;800&amp;family=JetBrains+Mono:wght@500&amp;family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                "surface-container-highest": "#e1e3e4",
+                "on-primary-fixed": "#00210f",
+                "surface-container-low": "#f3f4f5",
+                "outline": "#6f7a70",
+                "on-error": "#ffffff",
+                "error": "#ba1a1a",
+                "error-container": "#ffdad6",
+                "on-secondary-fixed-variant": "#36485b",
+                "on-background": "#191c1d",
+                "on-tertiary-fixed-variant": "#004b73",
+                "on-secondary-container": "#526478",
+                "secondary-container": "#cfe2f9",
+                "tertiary": "#005886",
+                "background": "#f8f9fa",
+                "on-error-container": "#93000a",
+                "surface-container-high": "#e7e8e9",
+                "inverse-primary": "#80d9a0",
+                "tertiary-fixed": "#cce5ff",
+                "surface-container-lowest": "#ffffff",
+                "primary-fixed-dim": "#80d9a0",
+                "primary-container": "#1a7a4a",
+                "on-tertiary-fixed": "#001d31",
+                "on-secondary": "#ffffff",
+                "inverse-surface": "#2e3132",
+                "tertiary-fixed-dim": "#92ccff",
+                "surface-dim": "#d9dadb",
+                "primary": "#006036",
+                "on-secondary-fixed": "#091d2e",
+                "surface-container": "#edeeef",
+                "outline-variant": "#bec9be",
+                "on-tertiary-container": "#e0efff",
+                "secondary-fixed-dim": "#b5c8df",
+                "secondary": "#4e6073",
+                "surface-bright": "#f8f9fa",
+                "primary-fixed": "#9bf6ba",
+                "on-surface-variant": "#3f4941",
+                "secondary-fixed": "#d1e4fb",
+                "on-primary": "#ffffff",
+                "on-primary-fixed-variant": "#00522e",
+                "tertiary-container": "#0071ab",
+                "surface": "#f8f9fa",
+                "surface-variant": "#e1e3e4",
+                "on-tertiary": "#ffffff",
+                "on-primary-container": "#abffc6",
+                "on-surface": "#191c1d",
+                "surface-tint": "#006d3f",
+                "inverse-on-surface": "#f0f1f2"
+            },
+            "borderRadius": {
+                "DEFAULT": "0.125rem",
+                "lg": "0.25rem",
+                "xl": "0.5rem",
+                "full": "0.75rem"
+            },
+            "spacing": {
+                "lg": "24px",
+                "gutter": "16px",
+                "xxs": "4px",
+                "xl": "32px",
+                "unit": "4px",
+                "md": "16px",
+                "container-margin": "24px",
+                "sm": "12px",
+                "xs": "8px"
+            },
+            "fontFamily": {
+                "display-lg": ["Manrope"],
+                "headline-lg": ["Manrope"],
+                "headline-lg-mobile": ["Manrope"],
+                "body-md": ["Inter"],
+                "label-md": ["JetBrains Mono"],
+                "body-sm": ["Inter"],
+                "headline-md": ["Manrope"],
+                "body-lg": ["Inter"],
+                "headline-sm": ["Manrope"]
+            },
+            "fontSize": {
+                "display-lg": ["48px", {"lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                "headline-lg": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+                "headline-lg-mobile": ["28px", {"lineHeight": "36px", "fontWeight": "600"}],
+                "body-md": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                "label-md": ["12px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "500"}],
+                "body-sm": ["12px", {"lineHeight": "18px", "fontWeight": "400"}],
+                "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+                "body-lg": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                "headline-sm": ["20px", {"lineHeight": "28px", "fontWeight": "600"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            vertical-align: middle;
+        }
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #bec9be;
+            border-radius: 10px;
+        }
+        body {
+          min-height: 100dvh;
+        }
+    </style>
+</head>
+<body class="bg-background text-on-surface font-body-md overflow-hidden">
+<!-- Sidebar Navigation -->
+<aside class="h-full w-64 fixed left-0 top-0 bg-surface-container-low border-r border-outline-variant flex flex-col gap-xs p-md z-50">
+<div class="mb-xl px-xs">
+<span class="font-headline-sm text-headline-sm font-black text-primary">Konekta STP</span>
+</div>
+<nav class="flex flex-col gap-xxs flex-1">
+<a class="flex items-center gap-md p-sm bg-secondary-container text-on-secondary-container rounded-xl font-bold transition-all" href="#">
+<span class="material-symbols-outlined">dashboard</span>
+<span class="font-label-md text-label-md">Overview</span>
+</a>
+<a class="flex items-center gap-md p-sm text-on-surface-variant hover:bg-surface-variant transition-all rounded-xl" href="#">
+<span class="material-symbols-outlined">groups</span>
+<span class="font-label-md text-label-md">Teams</span>
+</a>
+<a class="flex items-center gap-md p-sm text-on-surface-variant hover:bg-surface-variant transition-all rounded-xl" href="#">
+<span class="material-symbols-outlined">description</span>
+<span class="font-label-md text-label-md">Contracts</span>
+</a>
+<a class="flex items-center gap-md p-sm text-on-surface-variant hover:bg-surface-variant transition-all rounded-xl" href="#">
+<span class="material-symbols-outlined">receipt_long</span>
+<span class="font-label-md text-label-md">Invoices</span>
+</a>
+<a class="flex items-center gap-md p-sm text-on-surface-variant hover:bg-surface-variant transition-all rounded-xl" href="#">
+<span class="material-symbols-outlined">settings</span>
+<span class="font-label-md text-label-md">Settings</span>
+</a>
+</nav>
+<div class="mt-auto p-sm bg-surface-container-high rounded-xl flex items-center gap-sm">
+<div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-on-primary font-bold text-xs">JD</div>
+<div class="flex flex-col overflow-hidden">
+<span class="text-body-sm font-bold truncate">John Doe</span>
+<span class="text-[10px] text-on-surface-variant uppercase tracking-wider">Ops Manager</span>
+</div>
+</div>
+</aside>
+<!-- Main Content Area -->
+<main class="ml-64 h-screen overflow-y-auto custom-scrollbar flex flex-col relative">
+<!-- Header -->
+<header class="w-full sticky top-0 z-40 bg-surface/80 backdrop-blur-md border-b border-outline-variant flex justify-between items-center px-container-margin py-md">
+<div class="flex items-center gap-md">
+<span class="material-symbols-outlined text-primary cursor-pointer">grid_view</span>
+<h1 class="font-headline-md text-headline-md font-bold text-primary">Operational Control</h1>
+</div>
+<div class="flex items-center gap-sm">
+<button class="p-xs hover:bg-surface-container rounded-full relative">
+<span class="material-symbols-outlined">notifications</span>
+<span class="absolute top-1 right-1 w-2 h-2 bg-error rounded-full"></span>
+</button>
+<div class="w-8 h-8 rounded-full overflow-hidden border border-outline-variant">
+<img class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuD5svd2WCzekKyZ2hNIo93C_18IF307XwSw85pM9NwiW5x91E_a0kCvwXpkEiBcT93C2Ea28MhfwyM8H9tO0iR9v7KP0oRKNNPgBdqW4-HPaIwfH9dYg0Skb35jdpd3GG_b-JC_-t2qUvIbyJdRd4fUtdRDHKCWC9smxI1KU5o6oaecyVfG6W3Ly2Tk8jIHfyL-5F5YLMWfbdyR04W0v1DyPbDaJ4ozHBFXrElZkkN9ce6Xpq8YXtWpUTXhqRHjOT0ff48ubmO83aY"/>
+</div>
+</div>
+</header>
+<!-- Dashboard Body -->
+<div class="p-container-margin space-y-lg">
+<!-- Facility Health & Active Teams Map -->
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-gutter">
+<div class="lg:col-span-2 bg-surface-container-lowest border border-outline-variant rounded-xl overflow-hidden shadow-sm flex flex-col h-[400px]">
+<div class="p-md border-b border-outline-variant flex justify-between items-center bg-white">
+<h2 class="font-headline-sm text-headline-sm">Active Field Teams</h2>
+<div class="flex gap-xs">
+<span class="px-sm py-xxs bg-primary-container text-on-primary-container rounded-full text-[10px] font-bold">12 TEAMS LIVE</span>
+</div>
+</div>
+<div class="flex-1 relative bg-surface-container">
+<!-- Placeholder for Map -->
+<div class="absolute inset-0 grayscale opacity-40 bg-center bg-cover" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuCO7YhBAklhtDCP6sTvaRB1LV_-aRqCpFJmAijqfcV-d1PjrUrrXlbIfVf3Bsa9Gv6iQ10AmyZuXtyaMfIMeZrB8Dz8E_CH-Jw8sWPJk0_OcExeKOPbw9iUaLkcXTVd_IKDBcsQ0LD5h_d7O8CU80Y-MuoQQiSyMdTAL3lkq_ZSJFdQvYOL85AK62WmfIRDCI4cyDE4mjFNX1fMLydwL-YIMRQuLd5cuijqZjP3Nkjnw9UvU1pi4w4RCKO0YLYq4XnsueJX3fzWOOU')"></div>
+<!-- Map Pins -->
+<div class="absolute top-1/4 left-1/3 flex flex-col items-center group cursor-pointer">
+<div class="bg-primary text-on-primary px-sm py-xxs rounded-full text-[10px] font-bold shadow-lg mb-1">Team Delta</div>
+<span class="material-symbols-outlined text-primary text-3xl" style="font-variation-settings: 'FILL' 1;">location_on</span>
+</div>
+<div class="absolute bottom-1/3 right-1/4 flex flex-col items-center group cursor-pointer">
+<div class="bg-primary text-on-primary px-sm py-xxs rounded-full text-[10px] font-bold shadow-lg mb-1">Team Echo</div>
+<span class="material-symbols-outlined text-primary text-3xl" style="font-variation-settings: 'FILL' 1;">location_on</span>
+</div>
+<!-- Map Controls -->
+<div class="absolute bottom-md right-md flex flex-col gap-xs">
+<button class="w-8 h-8 bg-white border border-outline-variant rounded shadow-sm flex items-center justify-center hover:bg-surface-container transition-colors">
+<span class="material-symbols-outlined text-sm">add</span>
+</button>
+<button class="w-8 h-8 bg-white border border-outline-variant rounded shadow-sm flex items-center justify-center hover:bg-surface-container transition-colors">
+<span class="material-symbols-outlined text-sm">remove</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Facility Health KPI -->
+<div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-lg shadow-sm flex flex-col justify-between">
+<div>
+<h3 class="font-label-md text-label-md text-on-surface-variant uppercase tracking-wider mb-lg">Facility Health Status</h3>
+<div class="space-y-lg">
+<div>
+<div class="flex justify-between items-center mb-xs">
+<span class="text-body-sm font-bold">HVAC Systems</span>
+<span class="text-primary font-bold text-body-sm">98% Optimal</span>
+</div>
+<div class="h-2 w-full bg-surface-container rounded-full overflow-hidden">
+<div class="h-full bg-primary w-[98%]"></div>
+</div>
+</div>
+<div>
+<div class="flex justify-between items-center mb-xs">
+<span class="text-body-sm font-bold">Power Grid</span>
+<span class="text-primary font-bold text-body-sm">100% Stable</span>
+</div>
+<div class="h-2 w-full bg-surface-container rounded-full overflow-hidden">
+<div class="h-full bg-primary w-full"></div>
+</div>
+</div>
+<div>
+<div class="flex justify-between items-center mb-xs">
+<span class="text-body-sm font-bold">Security Network</span>
+<span class="text-error font-bold text-body-sm">Maintenance Due</span>
+</div>
+<div class="h-2 w-full bg-surface-container rounded-full overflow-hidden">
+<div class="h-full bg-error w-[75%]"></div>
+</div>
+</div>
+</div>
+</div>
+<button class="mt-xl w-full py-sm bg-surface-container-high text-on-surface border border-outline-variant rounded-lg font-bold text-body-sm hover:bg-surface-container-highest transition-colors">
+                        View Detailed Diagnostics
+                    </button>
+</div>
+</div>
+<!-- Maintenance & Quick Actions -->
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-gutter">
+<!-- Urgent Maintenance List -->
+<div class="lg:col-span-8 bg-surface-container-lowest border border-outline-variant rounded-xl overflow-hidden shadow-sm">
+<div class="p-md border-b border-outline-variant flex justify-between items-center">
+<h2 class="font-headline-sm text-headline-sm flex items-center gap-sm">
+                            Urgent Requests
+                            <span class="bg-error-container text-on-error-container text-[10px] px-sm py-xxs rounded-full font-bold">4 HIGH PRIORITY</span>
+</h2>
+<button class="text-primary font-bold text-body-sm hover:underline">View History</button>
+</div>
+<div class="divide-y divide-outline-variant">
+<!-- Request Item -->
+<div class="p-md flex items-center gap-md hover:bg-surface-container-low transition-colors cursor-pointer">
+<div class="w-10 h-10 rounded bg-error-container flex items-center justify-center text-error flex-shrink-0">
+<span class="material-symbols-outlined">warning</span>
+</div>
+<div class="flex-1 min-w-0">
+<div class="flex justify-between items-start">
+<p class="font-bold text-on-surface truncate">Server Room A: Cooling Failure</p>
+<span class="text-[10px] text-on-surface-variant whitespace-nowrap">12 MIN AGO</span>
+</div>
+<p class="text-body-sm text-on-surface-variant truncate">Critical temperature threshold reached. Immediate intervention required.</p>
+</div>
+<span class="material-symbols-outlined text-on-surface-variant">chevron_right</span>
+</div>
+<!-- Request Item -->
+<div class="p-md flex items-center gap-md hover:bg-surface-container-low transition-colors cursor-pointer">
+<div class="w-10 h-10 rounded bg-secondary-container flex items-center justify-center text-on-secondary-container flex-shrink-0">
+<span class="material-symbols-outlined">water_drop</span>
+</div>
+<div class="flex-1 min-w-0">
+<div class="flex justify-between items-start">
+<p class="font-bold text-on-surface truncate">Floor 4: Pipe Leakage</p>
+<span class="text-[10px] text-on-surface-variant whitespace-nowrap">45 MIN AGO</span>
+</div>
+<p class="text-body-sm text-on-surface-variant truncate">Minor leak reported in the restrooms. Potential water damage hazard.</p>
+</div>
+<span class="material-symbols-outlined text-on-surface-variant">chevron_right</span>
+</div>
+<!-- Request Item -->
+<div class="p-md flex items-center gap-md hover:bg-surface-container-low transition-colors cursor-pointer">
+<div class="w-10 h-10 rounded bg-surface-container flex items-center justify-center text-on-surface-variant flex-shrink-0">
+<span class="material-symbols-outlined">bolt</span>
+</div>
+<div class="flex-1 min-w-0">
+<div class="flex justify-between items-start">
+<p class="font-bold text-on-surface truncate">External Lighting: Area 2</p>
+<span class="text-[10px] text-on-surface-variant whitespace-nowrap">2 HOURS AGO</span>
+</div>
+<p class="text-body-sm text-on-surface-variant truncate">Multiple floodlights non-functional. Security risk reported.</p>
+</div>
+<span class="material-symbols-outlined text-on-surface-variant">chevron_right</span>
+</div>
+</div>
+</div>
+<!-- Quick Actions Grid -->
+<div class="lg:col-span-4 flex flex-col gap-gutter">
+<div class="bg-primary p-lg rounded-xl text-on-primary shadow-lg relative overflow-hidden flex flex-col gap-sm">
+<div class="relative z-10">
+<h3 class="font-headline-sm text-headline-sm mb-xs">New Service Order</h3>
+<p class="text-body-sm opacity-90 mb-lg">Dispatch a field team or create a new maintenance request instantly.</p>
+<button class="w-full py-md bg-on-primary text-primary rounded-lg font-bold text-body-sm hover:bg-surface-container transition-all flex items-center justify-center gap-sm">
+<span class="material-symbols-outlined">add_circle</span>
+                                Create Request
+                            </button>
+</div>
+<div class="absolute -right-8 -bottom-8 w-32 h-32 bg-white opacity-10 rounded-full blur-2xl"></div>
+</div>
+<div class="grid grid-cols-2 gap-sm flex-1">
+<button class="bg-surface-container-lowest border border-outline-variant p-md rounded-xl shadow-sm hover:bg-surface-container transition-all flex flex-col items-center justify-center gap-xs">
+<span class="material-symbols-outlined text-primary">person_add</span>
+<span class="font-label-md text-label-md">Add Staff</span>
+</button>
+<button class="bg-surface-container-lowest border border-outline-variant p-md rounded-xl shadow-sm hover:bg-surface-container transition-all flex flex-col items-center justify-center gap-xs">
+<span class="material-symbols-outlined text-primary">map</span>
+<span class="font-label-md text-label-md">Zone Mgmt</span>
+</button>
+<button class="bg-surface-container-lowest border border-outline-variant p-md rounded-xl shadow-sm hover:bg-surface-container transition-all flex flex-col items-center justify-center gap-xs">
+<span class="material-symbols-outlined text-primary">analytics</span>
+<span class="font-label-md text-label-md">Ops Report</span>
+</button>
+<button class="bg-surface-container-lowest border border-outline-variant p-md rounded-xl shadow-sm hover:bg-surface-container transition-all flex flex-col items-center justify-center gap-xs">
+<span class="material-symbols-outlined text-primary">inventory_2</span>
+<span class="font-label-md text-label-md">Supply Log</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+<!-- Footer -->
+<footer class="mt-auto p-lg border-t border-outline-variant bg-surface-container-low flex justify-between items-center text-on-surface-variant">
+<span class="text-body-sm">© 2024 Konekta Enterprise | Ops Console</span>
+<div class="flex gap-lg">
+<a class="text-body-sm hover:text-primary" href="#">System Status</a>
+<a class="text-body-sm hover:text-primary" href="#">Support</a>
+</div>
+</footer>
+</main>
+<!-- Global Floating Action Button -->
+<button class="fixed bottom-lg right-lg w-14 h-14 bg-primary text-on-primary rounded-full shadow-2xl flex items-center justify-center hover:scale-105 active:scale-95 transition-all z-50">
+<span class="material-symbols-outlined text-3xl">emergency</span>
+</button>
+</body></html>

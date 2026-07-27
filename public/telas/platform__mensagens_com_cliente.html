@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+
+<html lang="pt"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;family=Plus+Jakarta+Sans:wght@600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "on-secondary": "#ffffff",
+                    "tertiary-container": "#d01f2f",
+                    "surface-container-lowest": "#ffffff",
+                    "on-surface-variant": "#3f4941",
+                    "on-tertiary-container": "#ffe7e5",
+                    "on-secondary-container": "#6e4f00",
+                    "surface-bright": "#f9f9ff",
+                    "primary-container": "#1a7a4a",
+                    "secondary-container": "#fdbf35",
+                    "on-tertiary-fixed": "#410005",
+                    "on-primary-fixed": "#00210f",
+                    "tertiary-fixed-dim": "#ffb3af",
+                    "error": "#ba1a1a",
+                    "on-tertiary": "#ffffff",
+                    "primary": "#006036",
+                    "on-tertiary-fixed-variant": "#930018",
+                    "on-secondary-fixed": "#261900",
+                    "surface-variant": "#d9e3f9",
+                    "surface-container-low": "#f0f3ff",
+                    "surface-container-highest": "#d9e3f9",
+                    "on-surface": "#121c2c",
+                    "surface-tint": "#006d3f",
+                    "outline": "#6f7a70",
+                    "primary-fixed": "#9bf6ba",
+                    "secondary-fixed-dim": "#fabd32",
+                    "secondary": "#7b5900",
+                    "primary-fixed-dim": "#80d9a0",
+                    "on-background": "#121c2c",
+                    "on-error": "#ffffff",
+                    "inverse-on-surface": "#ebf1ff",
+                    "surface-container": "#e7eeff",
+                    "surface": "#f9f9ff",
+                    "secondary-fixed": "#ffdea4",
+                    "outline-variant": "#bec9be",
+                    "on-secondary-fixed-variant": "#5d4200",
+                    "tertiary": "#a9001d",
+                    "on-primary": "#ffffff",
+                    "on-primary-container": "#abffc6",
+                    "background": "#f9f9ff",
+                    "surface-dim": "#d0daf0",
+                    "inverse-surface": "#273141",
+                    "on-primary-fixed-variant": "#00522e",
+                    "on-error-container": "#93000a",
+                    "tertiary-fixed": "#ffdad7",
+                    "inverse-primary": "#80d9a0",
+                    "error-container": "#ffdad6",
+                    "surface-container-high": "#dee8ff"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "gutter": "16px",
+                    "xl": "32px",
+                    "3xl": "64px",
+                    "md": "16px",
+                    "container-margin": "20px",
+                    "lg": "24px",
+                    "xs": "4px",
+                    "sm": "8px",
+                    "2xl": "48px",
+                    "unit": "4px"
+            },
+            "fontFamily": {
+                    "label-sm": ["Inter"],
+                    "label-lg": ["Inter"],
+                    "body-md": ["Inter"],
+                    "body-lg": ["Inter"],
+                    "headline-md": ["Plus Jakarta Sans"],
+                    "headline-lg-mobile": ["Plus Jakarta Sans"],
+                    "display": ["Plus Jakarta Sans"],
+                    "headline-lg": ["Plus Jakarta Sans"]
+            },
+            "fontSize": {
+                    "label-sm": ["12px", {"lineHeight": "16px", "fontWeight": "500"}],
+                    "label-lg": ["14px", {"lineHeight": "20px", "letterSpacing": "0.01em", "fontWeight": "600"}],
+                    "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                    "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
+                    "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+                    "headline-lg-mobile": ["24px", {"lineHeight": "32px", "fontWeight": "700"}],
+                    "display": ["40px", {"lineHeight": "48px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                    "headline-lg": ["32px", {"lineHeight": "40px", "fontWeight": "700"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        body {
+            background-color: #f9f9ff;
+            color: #121c2c;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .chat-bubble-received {
+            border-radius: 1.25rem 1.25rem 1.25rem 0.25rem;
+        }
+        .chat-bubble-sent {
+            border-radius: 1.25rem 1.25rem 0.25rem 1.25rem;
+        }
+        .scrollbar-hide::-webkit-scrollbar {
+            display: none;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="min-h-screen flex flex-col font-body-md text-body-md">
+<!-- TopAppBar -->
+<header class="w-full top-0 sticky z-40 bg-surface dark:bg-surface-dim shadow-sm flex justify-between items-center px-container-margin py-md">
+<div class="flex items-center gap-md">
+<button class="p-xs text-primary dark:text-primary-fixed-dim hover:bg-surface-container-low transition-colors scale-95 active:duration-150 rounded-full">
+<span class="material-symbols-outlined">arrow_back</span>
+</button>
+<div class="flex items-center gap-sm">
+<div class="w-10 h-10 rounded-full overflow-hidden border border-outline-variant">
+<img class="w-full h-full object-cover" data-alt="A portrait of a middle-aged Santomean man with a friendly smile, clean-shaven, wearing a light blue polo shirt. He is outdoors in a bright, lush tropical garden with soft daylight filtering through palm leaves, creating a warm and trustworthy atmosphere. The image uses a vibrant but soft color palette with natural greens and high-key lighting to match the Leve-leve philosophy." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDKSvPFqqyqFqBoa0RTZhVpzXJWEMoO4M5C9EBaK-zz4fhUnwe9BnVU3_vCsEsmoTtP3871pUCkzIXAGw07kovtoXLIU006By3fRJPtozQxaIus1ly_0h4JWqcuc8XJMqP0ilFkikdkrCK1oy6cjKQpYmucYhTRFOWQk3oCXQ4av2meUymrj_z54jjV2LzxApiZWaMsT06JOn4YVeviZRqf4sxoBKGL0kztBBjyqafZNWsL7BUyKPn2aB1Vnz7rMsMjNLOMWZbxeQw"/>
+</div>
+<div class="flex flex-col">
+<h1 class="font-label-lg text-label-lg text-on-surface leading-tight">Maria Fernandes</h1>
+<span class="text-[10px] uppercase tracking-wider font-bold text-primary">Job ID: STP-4821</span>
+</div>
+</div>
+</div>
+<div class="flex items-center gap-sm">
+<button class="p-xs text-primary hover:bg-surface-container-low transition-colors rounded-full">
+<span class="material-symbols-outlined">call</span>
+</button>
+<button class="p-xs text-primary hover:bg-surface-container-low transition-colors rounded-full">
+<span class="material-symbols-outlined">more_vert</span>
+</button>
+</div>
+</header>
+<!-- Main Content: Chat Canvas -->
+<main class="flex-grow flex flex-col px-container-margin py-lg gap-lg mb-40">
+<!-- Job Context Banner -->
+<div class="bg-surface-container-low border border-outline-variant p-md rounded-xl flex items-start gap-md">
+<div class="bg-primary-container p-sm rounded-lg">
+<span class="material-symbols-outlined text-on-primary-container">plumbing</span>
+</div>
+<div class="flex-grow">
+<h2 class="font-label-lg text-label-lg text-on-surface">Reparação de Canoagem</h2>
+<p class="text-label-sm text-on-surface-variant">Agendado para: Hoje, 15:30</p>
+</div>
+<div class="text-right">
+<span class="font-label-lg text-label-lg text-primary">550 STN</span>
+</div>
+</div>
+<!-- Date Divider -->
+<div class="flex justify-center">
+<span class="bg-surface-container-highest text-on-surface-variant text-[10px] font-bold px-md py-xs rounded-full uppercase tracking-widest">Hoje</span>
+</div>
+<!-- Messages Area -->
+<div class="flex flex-col gap-md">
+<!-- Received Message -->
+<div class="flex flex-col items-start max-w-[85%]">
+<div class="chat-bubble-received bg-surface-container-high text-on-surface p-md shadow-sm">
+<p class="font-body-md text-body-md">Olá Sr. João, pode confirmar se consegue vir às 15:30? O problema na cozinha piorou um pouco.</p>
+</div>
+<span class="text-[10px] text-on-surface-variant mt-xs ml-sm">14:02</span>
+</div>
+<!-- Sent Message -->
+<div class="flex flex-col items-end self-end max-w-[85%]">
+<div class="chat-bubble-sent bg-primary text-on-primary p-md shadow-sm">
+<p class="font-body-md text-body-md">Com certeza, Maria. Já terminei o serviço anterior e estou a organizar as ferramentas.</p>
+</div>
+<div class="flex items-center gap-xs mt-xs mr-sm">
+<span class="text-[10px] text-on-surface-variant">14:05</span>
+<span class="material-symbols-outlined text-[12px] text-primary" style="font-variation-settings: 'FILL' 1;">done_all</span>
+</div>
+</div>
+<!-- Received Message -->
+<div class="flex flex-col items-start max-w-[85%]">
+<div class="chat-bubble-received bg-surface-container-high text-on-surface p-md shadow-sm">
+<p class="font-body-md text-body-md">Perfeito. A morada é a que está no perfil, perto da Igreja da Sé.</p>
+</div>
+<span class="text-[10px] text-on-surface-variant mt-xs ml-sm">14:06</span>
+</div>
+</div>
+</main>
+<!-- Fixed Interaction Layer -->
+<div class="fixed bottom-0 left-0 w-full z-30">
+<!-- Quick Replies Bar -->
+<div class="bg-gradient-to-t from-background via-background to-transparent pt-lg pb-sm px-container-margin overflow-x-auto scrollbar-hide flex gap-sm">
+<button class="whitespace-nowrap bg-white border border-primary text-primary px-lg py-sm rounded-full font-label-lg text-label-lg hover:bg-primary-container hover:text-on-primary-container transition-all scale-95 active:scale-90 flex items-center gap-xs shadow-sm" onclick="sendQuickReply('Estou a caminho')">
+<span class="material-symbols-outlined text-[18px]">directions_run</span>
+                Estou a caminho
+            </button>
+<button class="whitespace-nowrap bg-white border border-primary text-primary px-lg py-sm rounded-full font-label-lg text-label-lg hover:bg-primary-container hover:text-on-primary-container transition-all scale-95 active:scale-90 flex items-center gap-xs shadow-sm" onclick="sendQuickReply('Obrigado pelo pedido')">
+<span class="material-symbols-outlined text-[18px]">thumb_up</span>
+                Obrigado pelo pedido
+            </button>
+<button class="whitespace-nowrap bg-white border border-primary text-primary px-lg py-sm rounded-full font-label-lg text-label-lg hover:bg-primary-container hover:text-on-primary-container transition-all scale-95 active:scale-90 flex items-center gap-xs shadow-sm" onclick="sendQuickReply('Pode confirmar a morada?')">
+<span class="material-symbols-outlined text-[18px]">location_on</span>
+                Pode confirmar a morada?
+            </button>
+<button class="whitespace-nowrap bg-white border border-primary text-primary px-lg py-sm rounded-full font-label-lg text-label-lg hover:bg-primary-container hover:text-on-primary-container transition-all scale-95 active:scale-90 flex items-center gap-xs shadow-sm" onclick="sendQuickReply('Chego em 10 min')">
+<span class="material-symbols-outlined text-[18px]">schedule</span>
+                Chego em 10 min
+            </button>
+</div>
+<!-- Message Input Bar -->
+<div class="bg-surface px-container-margin py-md flex items-center gap-md border-t border-outline-variant shadow-lg">
+<button class="text-on-surface-variant hover:text-primary transition-colors">
+<span class="material-symbols-outlined">add_circle</span>
+</button>
+<div class="flex-grow bg-surface-container-low rounded-full px-lg py-sm flex items-center">
+<input class="bg-transparent w-full border-none focus:ring-0 text-body-md placeholder:text-on-surface-variant" placeholder="Escreva a sua mensagem..." type="text"/>
+<button class="text-on-surface-variant hover:text-primary transition-colors ml-sm">
+<span class="material-symbols-outlined">sentiment_satisfied</span>
+</button>
+</div>
+<button class="bg-primary text-on-primary w-12 h-12 rounded-full flex items-center justify-center shadow-md scale-95 active:scale-90 transition-all">
+<span class="material-symbols-outlined">send</span>
+</button>
+</div>
+</div>
+<!-- Micro-interaction Scripts -->
+<script>
+        function sendQuickReply(text) {
+            const messagesContainer = document.querySelector('main .flex-col.gap-md');
+            const now = new Date();
+            const time = now.getHours().toString().padStart(2, '0') + ':' + now.getMinutes().toString().padStart(2, '0');
+            
+            const newMessage = document.createElement('div');
+            newMessage.className = 'flex flex-col items-end self-end max-w-[85%] animate-in fade-in slide-in-from-bottom-2 duration-300';
+            newMessage.innerHTML = `
+                <div class="chat-bubble-sent bg-primary text-on-primary p-md shadow-sm">
+                    <p class="font-body-md text-body-md">${text}</p>
+                </div>
+                <div class="flex items-center gap-xs mt-xs mr-sm">
+                    <span class="text-[10px] text-on-surface-variant">${time}</span>
+                    <span class="material-symbols-outlined text-[12px] text-on-surface-variant">done</span>
+                </div>
+            `;
+            
+            messagesContainer.appendChild(newMessage);
+            window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+            
+            // Simulate delivery
+            setTimeout(() => {
+                const icon = newMessage.querySelector('.material-symbols-outlined');
+                icon.innerText = 'done_all';
+                icon.classList.remove('text-on-surface-variant');
+                icon.classList.add('text-primary');
+                icon.style.fontVariationSettings = "'FILL' 1";
+            }, 1000);
+        }
+
+        // Auto-scroll on load
+        window.onload = () => {
+            window.scrollTo(0, document.body.scrollHeight);
+        };
+    </script>
+</body></html>

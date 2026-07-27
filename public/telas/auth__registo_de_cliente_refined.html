@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+
+<html lang="pt"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0, viewport-fit=cover" name="viewport"/>
+<title>KONEKTA STP - Registo</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&amp;family=Inter:wght@400;500;600&amp;family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "grey100": "#F4F4F6",
+                    "outline-variant": "#bec9be",
+                    "surface-dim": "#dad7f2",
+                    "surface": "#fcf8ff",
+                    "on-secondary-fixed-variant": "#005229",
+                    "surface-container-low": "#f5f2ff",
+                    "on-error": "#ffffff",
+                    "primary-fixed": "#9bf6ba",
+                    "inverse-primary": "#80d9a0",
+                    "on-primary-fixed-variant": "#00522e",
+                    "tertiary-fixed-dim": "#bdc9c3",
+                    "surface-bright": "#fcf8ff",
+                    "tertiary-fixed": "#d9e5df",
+                    "on-secondary": "#ffffff",
+                    "on-error-container": "#93000a",
+                    "surface-container-highest": "#e2e0fb",
+                    "surface-container-high": "#e8e6ff",
+                    "on-background": "#1a1a2d",
+                    "error-container": "#ffdad6",
+                    "on-tertiary-container": "#e3f0e9",
+                    "on-secondary-fixed": "#00210d",
+                    "grey50": "#FAFAFA",
+                    "on-primary": "#ffffff",
+                    "tertiary-container": "#626e68",
+                    "secondary-fixed": "#86faaa",
+                    "secondary": "#006d39",
+                    "on-primary-fixed": "#00210f",
+                    "on-primary-container": "#abffc6",
+                    "secondary-container": "#83f7a7",
+                    "inverse-on-surface": "#f2efff",
+                    "grey400": "#9494B0",
+                    "on-secondary-container": "#00723b",
+                    "grey900": "#1A1A2E",
+                    "surface-container-lowest": "#ffffff",
+                    "primary-fixed-dim": "#80d9a0",
+                    "primary": "#006036",
+                    "surface-tint": "#006d3f",
+                    "surface-container": "#efecff",
+                    "on-tertiary-fixed": "#131e1a",
+                    "warning-light": "#FEF3C7",
+                    "error": "#DC2626",
+                    "on-surface": "#1a1a2d",
+                    "primary-container": "#1a7a4a",
+                    "tertiary": "#4a5650",
+                    "on-tertiary": "#ffffff",
+                    "outline": "#6f7a70",
+                    "warning": "#D97706",
+                    "error-light": "#FEE2E2",
+                    "on-tertiary-fixed-variant": "#3d4944",
+                    "grey200": "#E8E8EE",
+                    "background": "#fcf8ff",
+                    "inverse-surface": "#2f2f43",
+                    "on-surface-variant": "#3f4941",
+                    "secondary-fixed-dim": "#69dd90",
+                    "surface-variant": "#e2e0fb",
+                    "grey600": "#5A5A7A"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "md": "16px",
+                    "xl": "32px",
+                    "sm": "8px",
+                    "screen-margin": "20px",
+                    "xs": "4px",
+                    "xxl": "48px",
+                    "lg": "24px"
+            },
+            "fontFamily": {
+                    "headline-sm": ["Poppins"],
+                    "headline-lg": ["Poppins"],
+                    "caption": ["Inter"],
+                    "body-lg": ["Inter"],
+                    "title-sm": ["Poppins"],
+                    "label": ["Inter"],
+                    "headline-md": ["Poppins"],
+                    "body-sm": ["Inter"],
+                    "button": ["Poppins"]
+            },
+            "fontSize": {
+                    "headline-sm": ["18px", {"lineHeight": "26px", "fontWeight": "500"}],
+                    "headline-lg": ["28px", {"lineHeight": "36px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                    "caption": ["12px", {"lineHeight": "16px", "fontWeight": "400"}],
+                    "body-lg": ["15px", {"lineHeight": "22px", "fontWeight": "400"}],
+                    "title-sm": ["16px", {"lineHeight": "24px", "fontWeight": "500"}],
+                    "label": ["13px", {"lineHeight": "18px", "fontWeight": "500"}],
+                    "headline-md": ["22px", {"lineHeight": "30px", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+                    "body-sm": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                    "button": ["16px", {"lineHeight": "24px", "fontWeight": "600"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        body { font-family: 'Inter', sans-serif; background-color: #fcf8ff; }
+        .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+        .custom-scrollbar::-webkit-scrollbar { width: 0px; background: transparent; }
+        input:focus { outline: none; }
+        select:focus { outline: none; }
+        .safe-area-inset-top { padding-top: env(safe-area-inset-top); }
+        .safe-area-inset-bottom { padding-bottom: env(safe-area-inset-bottom); }
+    </style>
+</head>
+<body class="bg-surface text-on-surface overflow-x-hidden min-h-screen">
+<!-- Header -->
+<header class="fixed top-0 left-0 w-full z-50 bg-primary shadow-sm h-16 flex items-center px-screen-margin safe-area-inset-top transition-all active:scale-95">
+<button class="mr-4 text-on-primary">
+<span class="material-symbols-outlined">arrow_back</span>
+</button>
+<h1 class="font-headline-md text-headline-md font-bold text-on-primary">KONEKTA STP</h1>
+</header>
+<main class="pt-24 pb-20">
+<div class="px-screen-margin">
+<!-- Title Section -->
+<div class="text-center mb-lg">
+<h2 class="font-headline-lg text-headline-lg text-on-surface mb-2">Cria a tua conta</h2>
+<p class="font-body-sm text-body-sm text-grey600">Simples, rápido e seguro. Só precisamos do essencial.</p>
+</div>
+<!-- Social Login -->
+<div class="mb-xl">
+<button class="w-full flex items-center justify-center gap-3 bg-surface-container-lowest border border-grey200 h-12 rounded-xl font-button text-button text-on-surface shadow-sm active:scale-[0.98] transition-all">
+<svg height="18" viewbox="0 0 18 18" width="18" xmlns="http://www.w3.org/2000/svg">
+<path d="M17.64 9.2045c0-.63818-.05727-1.25182-.16364-1.84091H9v3.48136h4.84364c-.20864 1.125-.84273 2.07818-1.79591 2.71636v2.25818h2.90864c1.70182-1.56682 2.68364-3.87409 2.68364-6.615z" fill="#4285F4"></path>
+<path d="M9 18c2.43 0 4.46727-.80591 5.95636-2.18045l-2.90864-2.25818c-.80591.54-1.83682.85909-3.04773.85909-2.34409 0-4.32818-1.58318-5.03591-3.71045H.95727v2.33182C2.43818 15.9832 5.48182 18 9 18z" fill="#34A853"></path>
+<path d="M3.96409 10.71c-.18-.54-.28227-1.11273-.28227-1.71s.10227-1.17.28227-1.71V4.95818H.95727C.34773 6.17318 0 7.54773 0 9s.34773 2.82682.95727 4.04182L3.96409 10.71z" fill="#FBBC05"></path>
+<path d="M9 3.57955c1.32136 0 2.50773.45409 3.44045 1.34591l2.58136-2.58136C13.46318.89182 11.42591 0 9 0 5.48182 0 2.43818 2.01682.95727 4.95818L3.96409 7.29c.70773-2.12727 2.69182-3.71045 5.03591-3.71045z" fill="#EA4335"></path>
+</svg>
+                    Registar com Google
+                </button>
+<div class="flex items-center gap-4 my-lg">
+<div class="h-[1px] bg-grey200 flex-1"></div>
+<span class="font-caption text-caption text-grey400 uppercase tracking-widest">ou</span>
+<div class="h-[1px] bg-grey200 flex-1"></div>
+</div>
+</div>
+<!-- Profile Photo Upload -->
+<div class="flex flex-col items-center gap-2 mb-xl">
+<div class="relative group">
+<div class="w-24 h-24 rounded-full bg-surface-container border-2 border-dashed border-outline-variant flex items-center justify-center cursor-pointer active:bg-surface-container-high transition-all">
+<span class="material-symbols-outlined text-outline text-4xl group-active:scale-90 transition-transform">photo_camera</span>
+</div>
+<div class="absolute -bottom-1 -right-1 bg-primary text-on-primary rounded-full p-1 border-2 border-surface shadow-sm">
+<span class="material-symbols-outlined text-[16px]">add</span>
+</div>
+</div>
+<span class="font-label text-label text-grey600">Foto de perfil <span class="text-grey400 font-normal">(Opcional)</span></span>
+</div>
+<!-- Registration Form -->
+<form class="space-y-lg" id="registrationForm">
+<!-- Nome Completo -->
+<div class="space-y-xs">
+<label class="font-label text-label text-on-surface ml-1">Nome completo</label>
+<div class="flex items-center bg-surface-container-low border border-grey200 rounded-xl px-4 py-3 focus-within:border-primary focus-within:ring-1 focus-within:ring-primary transition-all">
+<span class="material-symbols-outlined text-grey400 mr-3 text-[20px]">person</span>
+<input class="bg-transparent w-full font-body-sm text-body-sm text-on-surface placeholder:text-grey400" placeholder="Ex: João Manuel" required="" type="text"/>
+</div>
+</div>
+<!-- Telemóvel -->
+<div class="space-y-xs">
+<label class="font-label text-label text-on-surface ml-1">Telemóvel</label>
+<div class="flex items-center bg-surface-container-low border border-grey200 rounded-xl px-4 py-3 focus-within:border-primary focus-within:ring-1 focus-within:ring-primary transition-all">
+<span class="font-body-sm text-body-sm text-grey600 mr-2 pr-3 border-r border-grey200">+239</span>
+<input class="bg-transparent w-full font-body-sm text-body-sm text-on-surface placeholder:text-grey400" pattern="9[0-9]{6}" placeholder="9xx xxx" required="" type="tel"/>
+</div>
+</div>
+<!-- Género -->
+<div class="space-y-xs">
+<label class="font-label text-label text-on-surface ml-1">Género</label>
+<div class="grid grid-cols-3 gap-3">
+<label class="cursor-pointer">
+<input class="peer hidden" name="gender" type="radio" value="masculino"/>
+<div class="py-2.5 text-center rounded-xl border border-grey200 font-body-sm text-body-sm text-on-surface-variant peer-checked:bg-primary-container peer-checked:text-on-primary-container peer-checked:border-primary-container transition-all active:scale-95">Masculino</div>
+</label>
+<label class="cursor-pointer">
+<input class="peer hidden" name="gender" type="radio" value="feminino"/>
+<div class="py-2.5 text-center rounded-xl border border-grey200 font-body-sm text-body-sm text-on-surface-variant peer-checked:bg-primary-container peer-checked:text-on-primary-container peer-checked:border-primary-container transition-all active:scale-95">Feminino</div>
+</label>
+<label class="cursor-pointer">
+<input class="peer hidden" name="gender" type="radio" value="outro"/>
+<div class="py-2.5 text-center rounded-xl border border-grey200 font-body-sm text-body-sm text-on-surface-variant peer-checked:bg-primary-container peer-checked:text-on-primary-container peer-checked:border-primary-container transition-all active:scale-95">Outro</div>
+</label>
+</div>
+</div>
+<!-- Zona/Distrito -->
+<div class="space-y-xs">
+<label class="font-label text-label text-on-surface ml-1">Zona/Distrito</label>
+<div class="relative">
+<select class="w-full bg-surface-container-low border border-grey200 rounded-xl px-4 py-3 font-body-sm text-body-sm text-on-surface appearance-none focus:border-primary focus:ring-1 focus:ring-primary transition-all">
+<option disabled="" selected="" value="">Selecionar Distrito</option>
+<option value="agua-grande">Água Grande</option>
+<option value="me-zochi">Mé-Zóchi</option>
+<option value="cantagalo">Cantagalo</option>
+<option value="caue">Caué</option>
+<option value="lemba">Lembá</option>
+<option value="lobata">Lobata</option>
+<option value="pague">Pagué (Príncipe)</option>
+</select>
+<span class="material-symbols-outlined absolute right-4 top-1/2 -translate-y-1/2 text-grey400 pointer-events-none text-[20px]">expand_more</span>
+</div>
+</div>
+<!-- Email (Opcional) -->
+<div class="space-y-xs">
+<label class="font-label text-label text-on-surface ml-1">Email <span class="text-grey400 font-normal ml-1">(Opcional)</span></label>
+<div class="flex items-center bg-surface-container-low border border-grey200 rounded-xl px-4 py-3 focus-within:border-primary focus-within:ring-1 focus-within:ring-primary transition-all">
+<span class="material-symbols-outlined text-grey400 mr-3 text-[20px]">mail</span>
+<input class="bg-transparent w-full font-body-sm text-body-sm text-on-surface placeholder:text-grey400" placeholder="exemplo@email.com" type="email"/>
+</div>
+</div>
+<!-- Senha -->
+<div class="space-y-xs">
+<label class="font-label text-label text-on-surface ml-1">Senha</label>
+<div class="flex items-center bg-surface-container-low border border-grey200 rounded-xl px-4 py-3 focus-within:border-primary focus-within:ring-1 focus-within:ring-primary transition-all">
+<span class="material-symbols-outlined text-grey400 mr-3 text-[20px]">lock</span>
+<input class="bg-transparent w-full font-body-sm text-body-sm text-on-surface placeholder:text-grey400" placeholder="••••••••" required="" type="password"/>
+</div>
+</div>
+<!-- Submit Button -->
+<div class="pt-xl pb-md">
+<button class="w-full bg-primary text-on-primary font-button text-button h-14 rounded-full shadow-lg hover:brightness-110 active:scale-[0.97] transition-all flex items-center justify-center gap-2" type="submit">
+                        Começar agora
+                        <span class="material-symbols-outlined">arrow_forward</span>
+</button>
+</div>
+</form>
+</div>
+</main>
+<!-- Footer Support -->
+<footer class="fixed bottom-0 w-full z-50 bg-surface border-t border-grey200 flex justify-around items-center px-4 py-2 safe-area-inset-bottom rounded-t-2xl shadow-[0_-4px_12px_rgba(0,0,0,0.05)]">
+<button class="flex flex-col items-center justify-center text-on-surface-variant hover:bg-surface-container-low p-2 rounded-xl transition-all w-1/3">
+<span class="material-symbols-outlined mb-1">help_outline</span>
+<span class="font-label text-caption">Ajuda</span>
+</button>
+<button class="flex flex-col items-center justify-center text-on-surface-variant hover:bg-surface-container-low p-2 rounded-xl transition-all w-1/3">
+<span class="material-symbols-outlined mb-1">support_agent</span>
+<span class="font-label text-caption">Suporte</span>
+</button>
+</footer>
+<script>
+        // Handle Form Submission
+        document.getElementById('registrationForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            // Simulating success
+            alert('Conta criada com sucesso na KONEKTA STP!');
+        });
+    </script>
+</body></html>

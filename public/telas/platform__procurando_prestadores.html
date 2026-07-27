@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>KONEKTA STP | Finding Your Professional</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&amp;family=Inter:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind Configuration -->
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "surface": "#f9f9ff",
+                    "on-tertiary-fixed": "#410005",
+                    "secondary-fixed": "#ffdea4",
+                    "on-surface-variant": "#3f4941",
+                    "surface-container-low": "#f0f3ff",
+                    "surface-bright": "#f9f9ff",
+                    "tertiary-fixed": "#ffdad7",
+                    "primary-fixed-dim": "#80d9a0",
+                    "on-primary": "#ffffff",
+                    "surface-container-high": "#dee8ff",
+                    "on-background": "#121c2c",
+                    "secondary": "#7b5900",
+                    "surface-container-highest": "#d9e3f9",
+                    "surface-container": "#e7eeff",
+                    "on-surface": "#121c2c",
+                    "on-tertiary-container": "#ffe7e5",
+                    "surface-variant": "#d9e3f9",
+                    "outline-variant": "#bec9be",
+                    "outline": "#6f7a70",
+                    "on-secondary": "#ffffff",
+                    "tertiary": "#a9001d",
+                    "primary-fixed": "#9bf6ba",
+                    "error-container": "#ffdad6",
+                    "background": "#f9f9ff",
+                    "on-primary-container": "#abffc6",
+                    "error": "#ba1a1a",
+                    "tertiary-fixed-dim": "#ffb3af",
+                    "primary": "#006036",
+                    "surface-dim": "#d0daf0",
+                    "secondary-fixed-dim": "#fabd32",
+                    "on-secondary-container": "#6e4f00",
+                    "primary-container": "#1a7a4a",
+                    "on-tertiary-fixed-variant": "#930018",
+                    "on-error": "#ffffff",
+                    "tertiary-container": "#d01f2f",
+                    "on-secondary-fixed-variant": "#5d4200",
+                    "on-primary-fixed": "#00210f",
+                    "on-secondary-fixed": "#261900",
+                    "surface-tint": "#006d3f",
+                    "inverse-primary": "#80d9a0",
+                    "surface-container-lowest": "#ffffff",
+                    "secondary-container": "#fdbf35",
+                    "on-tertiary": "#ffffff",
+                    "inverse-on-surface": "#ebf1ff",
+                    "on-primary-fixed-variant": "#00522e",
+                    "on-error-container": "#93000a",
+                    "inverse-surface": "#273141"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "unit": "4px",
+                    "container-margin": "20px",
+                    "xl": "32px",
+                    "gutter": "16px",
+                    "lg": "24px",
+                    "xs": "4px",
+                    "sm": "8px",
+                    "3xl": "64px",
+                    "md": "16px",
+                    "2xl": "48px"
+            },
+            "fontFamily": {
+                    "body-md": ["Inter"],
+                    "label-lg": ["Inter"],
+                    "body-lg": ["Inter"],
+                    "headline-md": ["Plus Jakarta Sans"],
+                    "display": ["Plus Jakarta Sans"],
+                    "label-sm": ["Inter"],
+                    "headline-lg-mobile": ["Plus Jakarta Sans"],
+                    "headline-lg": ["Plus Jakarta Sans"]
+            },
+            "fontSize": {
+                    "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                    "label-lg": ["14px", {"lineHeight": "20px", "letterSpacing": "0.01em", "fontWeight": "600"}],
+                    "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
+                    "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+                    "display": ["40px", {"lineHeight": "48px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                    "label-sm": ["12px", {"lineHeight": "16px", "fontWeight": "500"}],
+                    "headline-lg-mobile": ["24px", {"lineHeight": "32px", "fontWeight": "700"}],
+                    "headline-lg": ["32px", {"lineHeight": "40px", "fontWeight": "700"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        
+        .pulse-container {
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .pulse-ring {
+            position: absolute;
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            background: #006036;
+            opacity: 0;
+            animation: pulse-ring 3s cubic-bezier(0.215, 0.61, 0.355, 1) infinite;
+        }
+
+        @keyframes pulse-ring {
+            0% { transform: scale(0.33); opacity: 0; }
+            50% { opacity: 0.2; }
+            100% { transform: scale(2.5); opacity: 0; }
+        }
+
+        .floating {
+            animation: floating 3s ease-in-out infinite;
+        }
+
+        @keyframes floating {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+        }
+
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-surface font-body-md text-on-surface">
+<!-- TopAppBar -->
+<header class="fixed top-0 w-full z-50 flex justify-between items-center px-container-margin h-16 bg-surface shadow-sm" style="box-shadow: 0 4px 6px -1px rgba(0, 96, 54, 0.1);">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary">location_on</span>
+<span class="font-headline-md-mobile text-headline-md-mobile font-bold text-primary">KONEKTA STP</span>
+</div>
+<button class="w-10 h-10 flex items-center justify-center rounded-full hover:bg-primary-container/10 transition-colors">
+<span class="material-symbols-outlined text-primary">notifications</span>
+</button>
+</header>
+<main class="pt-24 pb-32 px-container-margin max-w-lg mx-auto min-h-screen">
+<!-- Matching Animation Section -->
+<section class="flex flex-col items-center justify-center py-8">
+<div class="pulse-container mb-16">
+<div class="pulse-ring" style="animation-delay: 0s"></div>
+<div class="pulse-ring" style="animation-delay: 1s"></div>
+<div class="pulse-ring" style="animation-delay: 2s"></div>
+<div class="relative z-10 w-24 h-24 rounded-full bg-primary flex items-center justify-center shadow-lg">
+<span class="material-symbols-outlined text-white text-4xl" style="font-variation-settings: 'FILL' 1;">person_search</span>
+</div>
+<!-- Map Pins Floating Around -->
+<div class="absolute -top-12 -left-12 floating" style="animation-delay: 0.5s">
+<span class="material-symbols-outlined text-secondary text-3xl">location_on</span>
+</div>
+<div class="absolute -bottom-8 -right-16 floating" style="animation-delay: 1.2s">
+<span class="material-symbols-outlined text-primary-container text-2xl">handyman</span>
+</div>
+</div>
+<div class="text-center">
+<h1 class="font-headline-lg-mobile text-headline-lg-mobile mb-2">Searching for professionals...</h1>
+<p class="text-on-surface-variant font-body-md px-4">We're notifying the best service providers in São Tomé who match your criteria.</p>
+</div>
+</section>
+<!-- Service Summary Bento Card -->
+<section class="grid grid-cols-2 gap-4 mb-8">
+<div class="col-span-2 glass-panel p-lg rounded-xl shadow-[0_4px_12px_rgba(0,96,54,0.06)]">
+<div class="flex justify-between items-start mb-md">
+<div>
+<span class="text-label-sm font-label-sm text-outline uppercase tracking-wider">Service Request</span>
+<h2 class="font-headline-md text-headline-md text-primary mt-1">Air Conditioning Repair</h2>
+</div>
+<div class="bg-primary-fixed-dim/20 px-3 py-1 rounded-full">
+<span class="text-primary font-label-sm">In Progress</span>
+</div>
+</div>
+<div class="flex items-center gap-3 text-on-surface-variant mb-4">
+<span class="material-symbols-outlined text-md">schedule</span>
+<span class="text-body-md font-body-md">Today, 14:00 - 16:00</span>
+</div>
+<div class="flex items-center gap-3 text-on-surface-variant">
+<span class="material-symbols-outlined text-md">location_on</span>
+<span class="text-body-md font-body-md">Água Grande, São Tomé</span>
+</div>
+</div>
+<div class="glass-panel p-md rounded-xl shadow-[0_4px_12px_rgba(0,96,54,0.06)] flex flex-col justify-center items-center text-center">
+<span class="text-label-sm font-label-sm text-outline uppercase">Estimated Price</span>
+<span class="text-headline-md font-headline-md text-primary mt-1">Db 450 - 600</span>
+</div>
+<div class="glass-panel p-md rounded-xl shadow-[0_4px_12px_rgba(0,96,54,0.06)] flex flex-col justify-center items-center text-center">
+<span class="text-label-sm font-label-sm text-outline uppercase">Response Time</span>
+<span class="text-headline-md font-headline-md text-primary mt-1">~15 mins</span>
+</div>
+</section>
+<!-- Escrow Security Section -->
+<section class="bg-primary-container/10 border border-primary/10 rounded-xl p-lg relative overflow-hidden">
+<div class="absolute -right-4 -bottom-4 opacity-10">
+<span class="material-symbols-outlined text-9xl" style="font-variation-settings: 'FILL' 1;">verified_user</span>
+</div>
+<div class="flex items-start gap-4 relative z-10">
+<div class="w-12 h-12 rounded-full bg-primary-container flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-white" style="font-variation-settings: 'FILL' 1;">shield_lock</span>
+</div>
+<div>
+<h3 class="font-headline-md text-primary mb-2">Your money is safe</h3>
+<p class="text-on-surface-variant font-body-md leading-relaxed">
+                        Payment is held in our secure escrow system. Funds are <span class="font-bold text-primary">only released</span> to the professional after you confirm the job is done to your satisfaction.
+                    </p>
+<div class="mt-4 flex items-center gap-2 text-primary font-label-lg">
+<span class="material-symbols-outlined text-sm">info</span>
+<span>Learn more about Leve-Leve Trust</span>
+</div>
+</div>
+</div>
+</section>
+<footer class="mt-8 text-center px-8">
+<p class="text-on-surface-variant text-label-sm">
+                While you wait, you can minimize the app. We'll notify you as soon as a professional accepts your request.
+            </p>
+<button class="mt-6 text-tertiary font-label-lg px-6 py-2 border border-tertiary/20 rounded-full hover:bg-tertiary/5 transition-colors">
+                Cancel Request
+            </button>
+</footer>
+</main>
+<!-- BottomNavBar -->
+<nav class="fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-4 pb-4 pt-2 bg-surface border-t border-surface-variant/30 shadow-[0_-4px_12px_0_rgba(0,96,54,0.08)]">
+<a class="flex flex-col items-center justify-center text-on-surface-variant hover:text-primary transition-all" href="#">
+<span class="material-symbols-outlined">home</span>
+<span class="font-label-sm text-label-sm">Home</span>
+</a>
+<a class="flex flex-col items-center justify-center bg-primary-container text-on-primary-container rounded-full px-4 py-1 active:scale-90 transition-transform duration-200" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">assignment</span>
+<span class="font-label-sm text-label-sm font-bold">Requests</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant hover:text-primary transition-all" href="#">
+<span class="material-symbols-outlined">account_balance_wallet</span>
+<span class="font-label-sm text-label-sm">Wallet</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant hover:text-primary transition-all" href="#">
+<span class="material-symbols-outlined">person</span>
+<span class="font-label-sm text-label-sm">Profile</span>
+</a>
+</nav>
+<script>
+        // Micro-interaction for clicking the logo
+        document.querySelector('header .font-bold').addEventListener('click', () => {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        });
+
+        // Simulating matching progress text changes
+        const phrases = [
+            "Notifying nearby professionals...",
+            "Checking provider ratings...",
+            "Analyzing response history...",
+            "Securing your connection..."
+        ];
+        let currentPhrase = 0;
+        const textElement = document.querySelector('h1');
+        
+        setInterval(() => {
+            textElement.style.opacity = 0;
+            setTimeout(() => {
+                currentPhrase = (currentPhrase + 1) % phrases.length;
+                textElement.innerText = phrases[currentPhrase];
+                textElement.style.opacity = 1;
+            }, 300);
+        }, 4000);
+    </script>
+</body></html>

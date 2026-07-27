@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+
+<html class="light" lang="pt-PT"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>KONEKTA STP - Detalhes da Fatura</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Manrope:wght@600;700;800&family=JetBrains+Mono:wght@500&family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&family=JetBrains+Mono:wght@100..900&family=Manrope:wght@100..900&display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "surface-bright": "#f8f9fa",
+                    "outline-variant": "#bec9be",
+                    "on-secondary-container": "#526478",
+                    "on-surface-variant": "#3f4941",
+                    "outline": "#6f7a70",
+                    "on-secondary-fixed": "#091d2e",
+                    "primary-fixed": "#9bf6ba",
+                    "on-tertiary-fixed": "#001d31",
+                    "on-error-container": "#93000a",
+                    "surface": "#f8f9fa",
+                    "tertiary-fixed": "#cce5ff",
+                    "on-primary": "#ffffff",
+                    "secondary-fixed": "#d1e4fb",
+                    "on-primary-fixed": "#00210f",
+                    "tertiary": "#005886",
+                    "inverse-surface": "#2e3132",
+                    "inverse-primary": "#80d9a0",
+                    "primary": "#006036",
+                    "on-tertiary-fixed-variant": "#004b73",
+                    "surface-container-low": "#f3f4f5",
+                    "primary-container": "#1a7a4a",
+                    "surface-container-high": "#e7e8e9",
+                    "error": "#ba1a1a",
+                    "secondary-fixed-dim": "#b5c8df",
+                    "tertiary-fixed-dim": "#92ccff",
+                    "surface-variant": "#e1e3e4",
+                    "on-secondary": "#ffffff",
+                    "surface-tint": "#006d3f",
+                    "tertiary-container": "#0071ab",
+                    "background": "#f8f9fa",
+                    "on-primary-container": "#abffc6",
+                    "on-tertiary": "#ffffff",
+                    "secondary": "#4e6073",
+                    "surface-dim": "#d9dadb",
+                    "surface-container-highest": "#e1e3e4",
+                    "on-error": "#ffffff",
+                    "on-surface": "#191c1d",
+                    "on-secondary-fixed-variant": "#36485b",
+                    "primary-fixed-dim": "#80d9a0",
+                    "on-primary-fixed-variant": "#00522e",
+                    "surface-container": "#edeeef",
+                    "on-background": "#191c1d",
+                    "error-container": "#ffdad6",
+                    "inverse-on-surface": "#f0f1f2",
+                    "secondary-container": "#cfe2f9",
+                    "on-tertiary-container": "#e0efff",
+                    "surface-container-lowest": "#ffffff"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.125rem",
+                    "lg": "0.25rem",
+                    "xl": "0.5rem",
+                    "full": "0.75rem"
+            },
+            "spacing": {
+                    "unit": "4px",
+                    "md": "16px",
+                    "lg": "24px",
+                    "xs": "8px",
+                    "xxs": "4px",
+                    "sm": "12px",
+                    "container-margin": "24px",
+                    "xl": "32px",
+                    "gutter": "16px"
+            },
+            "fontFamily": {
+                    "headline-sm": ["Manrope"],
+                    "body-lg": ["Inter"],
+                    "body-md": ["Inter"],
+                    "headline-md": ["Manrope"],
+                    "body-sm": ["Inter"],
+                    "label-md": ["JetBrains Mono"],
+                    "headline-lg": ["Manrope"]
+            },
+            "fontSize": {
+                    "headline-sm": ["20px", {"lineHeight": "28px", "fontWeight": "600"}],
+                    "body-lg": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                    "body-md": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                    "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+                    "body-sm": ["12px", {"lineHeight": "18px", "fontWeight": "400"}],
+                    "label-md": ["12px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "500"}],
+                    "headline-lg": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.01em", "fontWeight": "600"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        body { font-family: 'Inter', sans-serif; background-color: #f8f9fa; }
+        .invoice-canvas { max-width: 1100px; margin: 0 auto; }
+        .bento-grid { display: grid; grid-template-columns: repeat(12, 1fr); gap: 24px; }
+        .table-row-zebra:nth-child(even) { background-color: #f3f4f5; }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background text-on-background">
+<!-- TopNavBar Shell -->
+<header class="bg-surface w-full sticky top-0 z-50 border-b border-outline-variant shadow-sm transition-all duration-200 ease-in-out">
+<div class="flex justify-between items-center h-16 px-gutter max-w-full mx-auto">
+<div class="flex items-center gap-xl">
+<span class="font-headline-md text-headline-md font-bold text-primary">KONEKTA STP</span>
+<nav class="hidden md:flex gap-lg items-center">
+<a class="font-body-md text-body-md text-secondary hover:text-primary transition-colors" href="#">Services</a>
+<a class="font-body-md text-body-md text-secondary hover:text-primary transition-colors" href="#">Professionals</a>
+<a class="font-body-md text-body-md text-primary font-bold border-b-2 border-primary pb-1" href="#">Business</a>
+<a class="font-body-md text-body-md text-secondary hover:text-primary transition-colors" href="#">About</a>
+</nav>
+</div>
+<div class="flex items-center gap-md">
+<button class="font-body-md text-body-md text-secondary hover:bg-surface-container-low px-md py-xs rounded transition-all duration-200">Login</button>
+<button class="bg-primary text-on-primary font-body-md text-body-md px-md py-xs rounded-lg hover:opacity-90 transition-all duration-200">Get Started</button>
+</div>
+</div>
+</header>
+<main class="invoice-canvas px-container-margin py-xl">
+<!-- Header Actions & Title -->
+<div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-xl gap-md">
+<div>
+<nav class="flex items-center gap-xxs text-on-surface-variant font-label-md text-label-md mb-xs">
+<span class="material-symbols-outlined text-[16px]">arrow_back</span>
+<a class="hover:underline" href="#">Faturação</a>
+<span>/</span>
+<span class="text-on-surface">INV-2024-0892</span>
+</nav>
+<h1 class="font-headline-lg text-headline-lg text-on-surface">Detalhes da Fatura</h1>
+</div>
+<div class="flex gap-sm w-full md:w-auto">
+<button class="flex-1 md:flex-none flex items-center justify-center gap-xs border border-outline px-md h-10 rounded text-on-surface hover:bg-surface-container-low transition-colors font-body-md text-body-md">
+<span class="material-symbols-outlined">print</span>
+                    Imprimir
+                </button>
+<button class="flex-1 md:flex-none flex items-center justify-center gap-xs bg-primary text-on-primary px-md h-10 rounded-lg hover:opacity-95 shadow-sm transition-all font-body-md text-body-md">
+<span class="material-symbols-outlined">download</span>
+                    Descarregar PDF
+                </button>
+</div>
+</div>
+<div class="bento-grid">
+<!-- Summary Card -->
+<div class="col-span-12 lg:col-span-8 space-y-lg">
+<div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-xl shadow-sm overflow-hidden relative">
+<div class="flex flex-wrap justify-between items-start gap-lg">
+<div class="space-y-md">
+<div class="flex items-center gap-xs">
+<span class="bg-secondary-container text-on-secondary-container font-label-md text-label-md px-sm py-xxs rounded uppercase tracking-wider">Pago</span>
+<span class="text-on-surface-variant font-label-md text-label-md">Emitida em 14 de Out, 2024</span>
+</div>
+<div class="space-y-xxs">
+<p class="font-label-md text-label-md text-on-surface-variant uppercase">Número da Fatura</p>
+<p class="font-headline-md text-headline-md text-on-surface">INV-2024-0892</p>
+</div>
+</div>
+<div class="bg-primary-container/10 p-md rounded-lg border border-primary-container/20">
+<div class="flex items-center gap-sm mb-xs">
+<div class="w-10 h-10 bg-primary-container rounded flex items-center justify-center text-on-primary-container">
+<span class="material-symbols-outlined">business</span>
+</div>
+<div>
+<p class="font-body-md text-body-md font-bold text-on-surface">TechGlobal Solutions LDA</p>
+<p class="font-body-sm text-body-sm text-on-surface-variant">NIF: 509283741</p>
+</div>
+</div>
+</div>
+</div>
+<!-- Services Table -->
+<div class="mt-xl overflow-x-auto">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="border-b border-outline-variant">
+<th class="py-sm font-label-md text-label-md text-on-surface-variant uppercase">Descrição do Serviço</th>
+<th class="py-sm font-label-md text-label-md text-on-surface-variant uppercase text-right">Qtd/Horas</th>
+<th class="py-sm font-label-md text-label-md text-on-surface-variant uppercase text-right">Preço Unit.</th>
+<th class="py-sm font-label-md text-label-md text-on-surface-variant uppercase text-right">Total</th>
+</tr>
+</thead>
+<tbody class="font-body-md text-body-md">
+<tr class="table-row-zebra">
+<td class="py-md">
+<div class="font-bold">Consultoria Enterprise Cloud</div>
+<div class="text-body-sm text-on-surface-variant">Equipa de Arquitetura de Sistemas - Sprint Outubro</div>
+</td>
+<td class="py-md text-right font-label-md">160h</td>
+<td class="py-md text-right">45.00€</td>
+<td class="py-md text-right font-bold">7,200.00€</td>
+</tr>
+<tr class="table-row-zebra">
+<td class="py-md">
+<div class="font-bold">Manutenção de Infraestrutura STP</div>
+<div class="text-body-sm text-on-surface-variant">Suporte 24/7 Nível 3</div>
+</td>
+<td class="py-md text-right font-label-md">1</td>
+<td class="py-md text-right">1,250.00€</td>
+<td class="py-md text-right font-bold">1,250.00€</td>
+</tr>
+<tr class="table-row-zebra">
+<td class="py-md">
+<div class="font-bold">Licenciamento de Software Konekta</div>
+<div class="text-body-sm text-on-surface-variant">Premium Business Suite (50 utilizadores)</div>
+</td>
+<td class="py-md text-right font-label-md">50</td>
+<td class="py-md text-right">15.00€</td>
+<td class="py-md text-right font-bold">750.00€</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<!-- History / Audit Trail -->
+<div class="bg-surface rounded-xl border border-outline-variant p-lg">
+<h3 class="font-headline-sm text-headline-sm mb-md flex items-center gap-xs">
+<span class="material-symbols-outlined text-primary">history</span>
+                        Histórico do Documento
+                    </h3>
+<div class="space-y-md relative before:content-[''] before:absolute before:left-[11px] before:top-2 before:bottom-2 before:w-0.5 before:bg-outline-variant">
+<div class="flex gap-md relative">
+<div class="w-6 h-6 rounded-full bg-primary flex items-center justify-center z-10">
+<span class="material-symbols-outlined text-[14px] text-on-primary" data-weight="fill">check</span>
+</div>
+<div>
+<p class="font-body-md text-body-md font-bold">Pagamento Confirmado</p>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Processado via Transferência Bancária • 16 de Out, 09:42</p>
+</div>
+</div>
+<div class="flex gap-md relative">
+<div class="w-6 h-6 rounded-full bg-outline-variant flex items-center justify-center z-10">
+<span class="material-symbols-outlined text-[14px] text-surface">mail</span>
+</div>
+<div>
+<p class="font-body-md text-body-md">Fatura Enviada para o Cliente</p>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Email: finance@techglobal.st • 14 de Out, 18:15</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Totals & Info Sidebar -->
+<div class="col-span-12 lg:col-span-4 space-y-lg">
+<!-- Total Calculation -->
+<div class="bg-inverse-surface text-inverse-on-surface rounded-xl p-xl shadow-md">
+<h3 class="font-label-md text-label-md uppercase tracking-widest opacity-70 mb-lg">Resumo Financeiro</h3>
+<div class="space-y-md border-b border-white/10 pb-md">
+<div class="flex justify-between font-body-md text-body-md">
+<span class="opacity-80">Subtotal</span>
+<span>9,200.00€</span>
+</div>
+<div class="flex justify-between font-body-md text-body-md">
+<span class="opacity-80">Taxas de Serviço (2.5%)</span>
+<span>230.00€</span>
+</div>
+<div class="flex justify-between font-body-md text-body-md">
+<span class="opacity-80">IVA (15%)</span>
+<span>1,414.50€</span>
+</div>
+</div>
+<div class="pt-lg flex justify-between items-baseline">
+<span class="font-headline-sm text-headline-sm">Total</span>
+<span class="font-headline-lg text-headline-lg text-primary-fixed">10,844.50€</span>
+</div>
+<p class="font-body-sm text-body-sm mt-md opacity-60 italic text-center">Referência de Pagamento: KNK-STP-892-024</p>
+</div>
+<!-- Provider Info -->
+<div class="bg-surface-container-high rounded-xl p-lg border border-outline-variant">
+<h4 class="font-label-md text-label-md font-bold mb-md uppercase">Prestador de Serviços</h4>
+<div class="flex gap-md items-center mb-md">
+<div class="w-12 h-12 rounded-lg bg-primary flex items-center justify-center text-white">
+<span class="material-symbols-outlined text-[28px]">shield</span>
+</div>
+<div>
+<p class="font-body-md text-body-md font-bold">KONEKTA STP Enterprise</p>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Sede: Edifício Porto, São Tomé</p>
+</div>
+</div>
+<div class="space-y-xs font-body-sm text-body-sm">
+<div class="flex justify-between">
+<span class="text-on-surface-variant">NIF:</span>
+<span class="font-bold">500 123 456</span>
+</div>
+<div class="flex justify-between">
+<span class="text-on-surface-variant">IBAN:</span>
+<span class="font-label-md text-label-md">ST65 0001 0000 1234 5678 9012 3</span>
+</div>
+</div>
+</div>
+<!-- Quick Support Card -->
+<div class="bg-surface-bright rounded-xl p-lg border-2 border-dashed border-outline-variant flex flex-col items-center text-center">
+<span class="material-symbols-outlined text-tertiary text-[32px] mb-xs">contact_support</span>
+<p class="font-body-md text-body-md font-bold mb-xxs">Dúvidas sobre esta fatura?</p>
+<p class="font-body-sm text-body-sm text-on-surface-variant mb-md">A nossa equipa financeira está disponível para ajudar.</p>
+<button class="text-primary font-bold font-body-md text-body-md hover:underline">Contactar Suporte</button>
+</div>
+</div>
+</div>
+</main>
+<!-- Footer Shell -->
+<footer class="bg-surface-container-highest w-full py-xl mt-auto border-t border-outline-variant">
+<div class="grid grid-cols-1 md:grid-cols-4 gap-lg px-container-margin max-w-7xl mx-auto">
+<div class="col-span-1 md:col-span-1">
+<span class="font-headline-sm text-headline-sm text-primary mb-md block">KONEKTA STP</span>
+<p class="font-body-sm text-body-sm text-on-surface-variant italic">Transparência e eficiência em cada transação empresarial.</p>
+</div>
+<div class="space-y-xs">
+<p class="font-label-md text-label-md font-bold text-on-surface">Legal</p>
+<a class="block font-body-sm text-body-sm text-secondary hover:text-primary transition-colors" href="#">Terms of Service</a>
+<a class="block font-body-sm text-body-sm text-secondary hover:text-primary transition-colors" href="#">Privacy Policy</a>
+</div>
+<div class="space-y-xs">
+<p class="font-label-md text-label-md font-bold text-on-surface">Ajuda</p>
+<a class="block font-body-sm text-body-sm text-secondary hover:text-primary transition-colors" href="#">Contact Support</a>
+<a class="block font-body-sm text-body-sm text-secondary hover:text-primary transition-colors" href="#">Careers</a>
+</div>
+<div class="flex flex-col justify-between items-end md:items-end">
+<div class="flex gap-md mb-xl">
+<!-- Social Icons Placeholder -->
+<span class="material-symbols-outlined text-on-surface-variant cursor-pointer hover:text-primary">language</span>
+</div></div></div></footer></body></html>

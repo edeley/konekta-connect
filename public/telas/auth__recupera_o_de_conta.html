@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+
+<html lang="pt"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>KONEKTA STP - Recuperação de Conta</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&amp;family=Inter:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "surface-bright": "#fcf8ff",
+                    "on-error-container": "#93000a",
+                    "surface-container-highest": "#e2e0fb",
+                    "tertiary": "#4a5650",
+                    "secondary-container": "#83f7a7",
+                    "secondary-fixed": "#86faaa",
+                    "outline-variant": "#bec9be",
+                    "inverse-surface": "#2f2f43",
+                    "surface-container-low": "#f5f2ff",
+                    "on-primary-fixed": "#00210f",
+                    "on-primary-fixed-variant": "#00522e",
+                    "tertiary-fixed": "#d9e5df",
+                    "inverse-on-surface": "#f2efff",
+                    "grey200": "#E8E8EE",
+                    "warning-light": "#FEF3C7",
+                    "error-container": "#ffdad6",
+                    "on-primary-container": "#abffc6",
+                    "on-secondary-container": "#00723b",
+                    "surface": "#fcf8ff",
+                    "on-background": "#1a1a2d",
+                    "on-tertiary-fixed-variant": "#3d4944",
+                    "on-surface-variant": "#3f4941",
+                    "secondary": "#006d39",
+                    "error-light": "#FEE2E2",
+                    "surface-variant": "#e2e0fb",
+                    "warning": "#D97706",
+                    "primary-container": "#1a7a4a",
+                    "on-surface": "#1a1a2d",
+                    "tertiary-container": "#626e68",
+                    "grey400": "#9494B0",
+                    "grey50": "#FAFAFA",
+                    "on-secondary-fixed": "#00210d",
+                    "on-tertiary-container": "#e3f0e9",
+                    "surface-container-lowest": "#ffffff",
+                    "grey900": "#1A1A2E",
+                    "on-error": "#ffffff",
+                    "on-primary": "#ffffff",
+                    "outline": "#6f7a70",
+                    "tertiary-fixed-dim": "#bdc9c3",
+                    "grey600": "#5A5A7A",
+                    "grey100": "#F4F4F6",
+                    "error": "#DC2626",
+                    "primary-fixed": "#9bf6ba",
+                    "on-tertiary-fixed": "#131e1a",
+                    "secondary-fixed-dim": "#69dd90",
+                    "on-tertiary": "#ffffff",
+                    "surface-container": "#efecff",
+                    "surface-tint": "#006d3f",
+                    "background": "#fcf8ff",
+                    "surface-container-high": "#e8e6ff",
+                    "primary": "#006036",
+                    "primary-fixed-dim": "#80d9a0",
+                    "surface-dim": "#dad7f2",
+                    "on-secondary": "#ffffff",
+                    "inverse-primary": "#80d9a0",
+                    "on-secondary-fixed-variant": "#005229"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "sm": "8px",
+                    "xxl": "48px",
+                    "xs": "4px",
+                    "xl": "32px",
+                    "screen-margin": "20px",
+                    "md": "16px",
+                    "lg": "24px"
+            },
+            "fontFamily": {
+                    "caption": ["Inter"],
+                    "headline-md": ["Poppins"],
+                    "headline-lg": ["Poppins"],
+                    "body-lg": ["Inter"],
+                    "label": ["Inter"],
+                    "headline-sm": ["Poppins"],
+                    "body-sm": ["Inter"],
+                    "button": ["Poppins"],
+                    "title-sm": ["Poppins"]
+            },
+            "fontSize": {
+                    "caption": ["12px", {"lineHeight": "16px", "fontWeight": "400"}],
+                    "headline-md": ["22px", {"lineHeight": "30px", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+                    "headline-lg": ["28px", {"lineHeight": "36px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                    "body-lg": ["15px", {"lineHeight": "22px", "fontWeight": "400"}],
+                    "label": ["13px", {"lineHeight": "18px", "fontWeight": "500"}],
+                    "headline-sm": ["18px", {"lineHeight": "26px", "fontWeight": "500"}],
+                    "body-sm": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                    "button": ["16px", {"lineHeight": "24px", "fontWeight": "600"}],
+                    "title-sm": ["16px", {"lineHeight": "24px", "fontWeight": "500"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        body { font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; }
+        .step-transition { transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.4s; }
+        .strength-bar { transition: width 0.3s ease, background-color 0.3s ease; }
+        input::-webkit-outer-spin-button, input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+        .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-surface text-on-surface min-h-screen flex flex-col">
+<!-- Top App Bar -->
+<header class="flex items-center w-full px-screen-margin h-16 pt-safe fixed top-0 z-50 bg-primary shadow-sm">
+<button class="p-2 transition-all active:scale-95 text-on-primary" onclick="handleBack()">
+<span class="material-symbols-outlined">arrow_back</span>
+</button>
+<h1 class="ml-4 font-headline-md text-headline-md font-bold text-on-primary">KONEKTA STP</h1>
+</header>
+<main class="flex-1 mt-16 px-screen-margin pb-xl overflow-x-hidden relative">
+<!-- Step 1: Phone Input -->
+<section class="step-transition py-xl flex flex-col gap-lg" id="step1">
+<div class="flex flex-col gap-sm">
+<h2 class="font-headline-lg text-headline-lg text-primary">Recuperar Conta</h2>
+<p class="font-body-lg text-body-lg text-grey600">Introduza o seu número de telefone para receber um código de verificação.</p>
+</div>
+<div class="flex flex-col gap-xs">
+<label class="font-label text-label text-grey600 ml-1">Número de Telefone</label>
+<div class="relative flex items-center bg-grey100 border border-grey200 rounded-xl focus-within:border-primary focus-within:shadow-sm transition-all h-14 px-4">
+<span class="material-symbols-outlined text-grey400 mr-3">phone_iphone</span>
+<span class="text-on-surface font-body-lg mr-2">+239</span>
+<input class="bg-transparent border-none focus:ring-0 w-full font-body-lg text-on-surface outline-none" placeholder="000 000" type="tel"/>
+</div>
+</div>
+<button class="w-full h-14 bg-primary text-on-primary font-button text-button rounded-xl shadow-sm active:scale-[0.98] transition-transform mt-4" onclick="goToStep(2)">
+                Enviar Código
+            </button>
+</section>
+<!-- Step 2: OTP Input -->
+<section class="step-transition py-xl hidden absolute inset-x-screen-margin opacity-0 translate-x-10 flex flex-col gap-lg" id="step2">
+<div class="flex flex-col gap-sm">
+<h2 class="font-headline-lg text-headline-lg text-primary">Verificar SMS</h2>
+<p class="font-body-lg text-body-lg text-grey600">Enviamos um código de 4 dígitos para o seu número.</p>
+</div>
+<div class="flex justify-center gap-md py-4">
+<input class="w-16 h-16 bg-grey100 border border-grey200 rounded-xl text-center font-headline-lg text-primary focus:border-primary focus:ring-2 focus:ring-primary-fixed outline-none text-2xl transition-all otp-input" maxlength="1" type="number"/>
+<input class="w-16 h-16 bg-grey100 border border-grey200 rounded-xl text-center font-headline-lg text-primary focus:border-primary focus:ring-2 focus:ring-primary-fixed outline-none text-2xl transition-all otp-input" maxlength="1" type="number"/>
+<input class="w-16 h-16 bg-grey100 border border-grey200 rounded-xl text-center font-headline-lg text-primary focus:border-primary focus:ring-2 focus:ring-primary-fixed outline-none text-2xl transition-all otp-input" maxlength="1" type="number"/>
+<input class="w-16 h-16 bg-grey100 border border-grey200 rounded-xl text-center font-headline-lg text-primary focus:border-primary focus:ring-2 focus:ring-primary-fixed outline-none text-2xl transition-all otp-input" maxlength="1" type="number"/>
+</div>
+<div class="flex flex-col gap-md">
+<button class="w-full h-14 bg-primary text-on-primary font-button text-button rounded-xl shadow-sm active:scale-[0.98] transition-transform" onclick="goToStep(3)">
+                    Verificar
+                </button>
+<p class="text-center font-body-sm text-body-sm text-grey600">
+                    Não recebeu? <button class="text-primary font-semibold underline decoration-primary/30">Reenviar</button>
+</p>
+</div>
+</section>
+<!-- Step 3: New Password -->
+<section class="step-transition py-xl hidden absolute inset-x-screen-margin opacity-0 translate-x-10 flex flex-col gap-lg" id="step3">
+<div class="flex flex-col gap-sm">
+<h2 class="font-headline-lg text-headline-lg text-primary">Nova Palavra-passe</h2>
+<p class="font-body-lg text-body-lg text-grey600">Crie uma senha forte para proteger a sua conta.</p>
+</div>
+<div class="flex flex-col gap-md">
+<div class="flex flex-col gap-xs">
+<label class="font-label text-label text-grey600 ml-1">Nova Senha</label>
+<div class="relative flex items-center bg-grey100 border border-grey200 rounded-xl focus-within:border-primary transition-all h-14 px-4">
+<span class="material-symbols-outlined text-grey400 mr-3">lock</span>
+<input class="bg-transparent border-none focus:ring-0 w-full font-body-lg text-on-surface outline-none" id="passwordInput" oninput="updateStrength()" placeholder="••••••••" type="password"/>
+<button class="text-grey400" onclick="togglePass()">
+<span class="material-symbols-outlined" id="eyeIcon">visibility_off</span>
+</button>
+</div>
+</div>
+<!-- Strength Indicator -->
+<div class="px-1">
+<div class="flex justify-between items-center mb-2">
+<span class="font-caption text-caption text-grey600" id="strengthText">Segurança: Fraca</span>
+</div>
+<div class="w-full bg-grey200 h-1.5 rounded-full overflow-hidden">
+<div class="strength-bar h-full w-[20%] bg-error" id="strengthBar"></div>
+</div>
+</div>
+<div class="flex flex-col gap-xs mt-2">
+<label class="font-label text-label text-grey600 ml-1">Confirmar Senha</label>
+<div class="relative flex items-center bg-grey100 border border-grey200 rounded-xl focus-within:border-primary transition-all h-14 px-4">
+<span class="material-symbols-outlined text-grey400 mr-3">verified_user</span>
+<input class="bg-transparent border-none focus:ring-0 w-full font-body-lg text-on-surface outline-none" placeholder="••••••••" type="password"/>
+</div>
+</div>
+</div>
+<button class="w-full h-14 bg-primary text-on-primary font-button text-button rounded-xl shadow-sm active:scale-[0.98] transition-transform mt-4" onclick="goToStep(4)">
+                Alterar Senha
+            </button>
+</section>
+<!-- Success State -->
+<section class="step-transition py-xxl hidden absolute inset-x-screen-margin opacity-0 translate-x-10 flex flex-col items-center justify-center text-center gap-xl" id="success">
+<div class="w-24 h-24 bg-secondary-container rounded-full flex items-center justify-center animate-bounce shadow-md">
+<span class="material-symbols-outlined text-6xl text-on-secondary-container" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+</div>
+<div class="flex flex-col gap-sm">
+<h2 class="font-headline-lg text-headline-lg text-primary">Sucesso!</h2>
+<p class="font-body-lg text-body-lg text-grey600 px-4">A sua palavra-passe foi alterada com sucesso. Agora pode aceder à sua conta.</p>
+</div>
+<a class="w-full h-14 bg-primary text-on-primary flex items-center justify-center font-button text-button rounded-xl shadow-sm active:scale-[0.95] transition-transform mt-8" href="#">
+                Ir para o Login
+            </a>
+</section>
+</main>
+<!-- Bottom Help Section (Consistent Shell Element) -->
+<footer class="fixed bottom-0 w-full z-50 flex justify-around items-center px-4 py-2 pb-safe bg-surface shadow-md rounded-t-xl border-t border-grey100" id="helpFooter">
+<button class="flex flex-col items-center justify-center text-on-surface-variant p-2 hover:bg-surface-variant transition-transform active:scale-90">
+<span class="material-symbols-outlined">help_outline</span>
+<span class="font-label text-label">Help</span>
+</button>
+<button class="flex flex-col items-center justify-center text-on-surface-variant p-2 hover:bg-surface-variant transition-transform active:scale-90">
+<span class="material-symbols-outlined">support_agent</span>
+<span class="font-label text-label">Support</span>
+</button>
+</footer>
+<script>
+        let currentStep = 1;
+
+        function goToStep(step) {
+            const currentEl = document.getElementById(step === 1 ? 'step1' : step === 2 ? 'step1' : step === 3 ? 'step2' : 'step3');
+            const nextEl = document.getElementById(step === 2 ? 'step2' : step === 3 ? 'step3' : 'success');
+            
+            // Hide footer on success
+            if (step === 4) {
+                document.getElementById('helpFooter').classList.add('hidden');
+            }
+
+            // Animate transition
+            const sections = ['step1', 'step2', 'step3', 'success'];
+            sections.forEach(id => {
+                const el = document.getElementById(id);
+                if (id === sections[step - 1]) {
+                    el.classList.remove('hidden');
+                    setTimeout(() => {
+                        el.classList.remove('opacity-0', 'translate-x-10');
+                        el.classList.add('opacity-100', 'translate-x-0');
+                    }, 50);
+                } else {
+                    el.classList.add('opacity-0', 'translate-x-[-20px]');
+                    setTimeout(() => {
+                        el.classList.add('hidden');
+                    }, 400);
+                }
+            });
+            currentStep = step;
+        }
+
+        function handleBack() {
+            if (currentStep > 1 && currentStep < 4) {
+                goToStep(currentStep - 1);
+            } else {
+                // Potential redirect to login if at step 1 or 4
+                console.log('Redirect to login');
+            }
+        }
+
+        // OTP Auto-focus logic
+        const otpInputs = document.querySelectorAll('.otp-input');
+        otpInputs.forEach((input, index) => {
+            input.addEventListener('input', (e) => {
+                if (e.target.value.length === 1 && index < otpInputs.length - 1) {
+                    otpInputs[index + 1].focus();
+                }
+            });
+            input.addEventListener('keydown', (e) => {
+                if (e.key === 'Backspace' && !e.target.value && index > 0) {
+                    otpInputs[index - 1].focus();
+                }
+            });
+        });
+
+        function updateStrength() {
+            const pass = document.getElementById('passwordInput').value;
+            const bar = document.getElementById('strengthBar');
+            const text = document.getElementById('strengthText');
+            
+            if (pass.length === 0) {
+                bar.className = 'strength-bar h-full w-[0%] bg-grey200';
+                text.innerText = 'Segurança: -';
+            } else if (pass.length < 5) {
+                bar.className = 'strength-bar h-full w-[25%] bg-error';
+                text.innerText = 'Segurança: Fraca';
+            } else if (pass.length < 8) {
+                bar.className = 'strength-bar h-full w-[60%] bg-warning';
+                text.innerText = 'Segurança: Média';
+            } else {
+                bar.className = 'strength-bar h-full w-[100%] bg-secondary';
+                text.innerText = 'Segurança: Forte';
+            }
+        }
+
+        function togglePass() {
+            const input = document.getElementById('passwordInput');
+            const icon = document.getElementById('eyeIcon');
+            if (input.type === 'password') {
+                input.type = 'text';
+                icon.innerText = 'visibility';
+            } else {
+                input.type = 'password';
+                icon.innerText = 'visibility_off';
+            }
+        }
+    </script>
+</body></html>

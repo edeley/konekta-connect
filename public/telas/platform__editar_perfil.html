@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+
+<html lang="pt"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600&family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&family=Plus+Jakarta+Sans:wght@100..900&display=swap" rel="stylesheet"/>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .active-icon {
+            font-variation-settings: 'FILL' 1;
+        }
+        body {
+            background-color: #f9f9ff;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+        }
+    </style>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "surface-container-lowest": "#ffffff",
+                      "on-tertiary-container": "#ffe7e5",
+                      "secondary-container": "#fdbf35",
+                      "inverse-on-surface": "#ebf1ff",
+                      "surface-container": "#e7eeff",
+                      "on-background": "#121c2c",
+                      "error-container": "#ffdad6",
+                      "on-primary-fixed-variant": "#00522e",
+                      "primary-fixed-dim": "#80d9a0",
+                      "on-surface": "#121c2c",
+                      "on-error": "#ffffff",
+                      "secondary": "#7b5900",
+                      "on-primary-container": "#abffc6",
+                      "tertiary-container": "#d01f2f",
+                      "background": "#f9f9ff",
+                      "surface-tint": "#006d3f",
+                      "on-secondary": "#ffffff",
+                      "surface-variant": "#d9e3f9",
+                      "primary-container": "#1a7a4a",
+                      "surface-container-low": "#f0f3ff",
+                      "primary": "#006036",
+                      "inverse-surface": "#273141",
+                      "tertiary": "#a9001d",
+                      "on-primary": "#ffffff",
+                      "surface": "#f9f9ff",
+                      "outline": "#6f7a70",
+                      "on-surface-variant": "#3f4941",
+                      "surface-bright": "#f9f9ff",
+                      "outline-variant": "#bec9be"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.25rem",
+                      "lg": "0.5rem",
+                      "xl": "0.75rem",
+                      "full": "9999px"
+              },
+              "spacing": {
+                      "container-margin": "20px",
+                      "xl": "32px",
+                      "gutter": "16px",
+                      "unit": "4px",
+                      "md": "16px",
+                      "lg": "24px",
+                      "xs": "4px",
+                      "3xl": "64px",
+                      "2xl": "48px",
+                      "sm": "8px"
+              },
+              "fontFamily": {
+                      "headline-lg-mobile": ["Plus Jakarta Sans"],
+                      "body-md": ["Inter"],
+                      "headline-md": ["Plus Jakarta Sans"],
+                      "label-sm": ["Inter"],
+                      "label-lg": ["Inter"]
+              },
+              "fontSize": {
+                      "headline-lg-mobile": ["24px", {"lineHeight": "32px", "fontWeight": "700"}],
+                      "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                      "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+                      "label-sm": ["12px", {"lineHeight": "16px", "fontWeight": "500"}],
+                      "label-lg": ["14px", {"lineHeight": "20px", "letterSpacing": "0.01em", "fontWeight": "600"}]
+              }
+            },
+          }
+        }
+    </script>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="font-body-md text-on-surface">
+<!-- TopAppBar -->
+<header class="w-full top-0 sticky bg-surface dark:bg-surface-dim shadow-sm z-50 flex justify-between items-center px-container-margin py-md">
+<div class="flex items-center gap-4">
+<button class="hover:bg-surface-container-low transition-colors p-2 rounded-full active:scale-95 duration-150 text-primary" onclick="window.history.back()">
+<span class="material-symbols-outlined">arrow_back</span>
+</button>
+<h1 class="font-headline-lg-mobile text-headline-lg-mobile text-primary tracking-tight">Editar Perfil</h1>
+</div>
+<div class="w-10 h-10 rounded-full overflow-hidden border-2 border-primary-fixed-dim">
+<img class="w-full h-full object-cover" data-alt="A professional close-up portrait of a friendly Santomean man in high-quality photography style. He is wearing a clean white linen shirt against a soft-focus tropical garden background. The lighting is warm and natural, evoking a sense of trust and community. The color palette is dominated by soft whites and vibrant greens, matching a clean, professional corporate modern UI aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAASpSEyEPsDt6V6_1bbP0sQhd6PNT1XDMRXpRcKtS3bulH6g55d7jey6-AeHQHG6EYj1wBvSLofTtGElbIMarwhBp0vEiRhXg-7pY513UcnJsGaE3X_Hw_3-XsXjaH5IVUrgXz4Hg5aPbWXS09X0kwqRWDNZBF7Auo7zqiHwwo6l2yWjWWowDSmqMT7JCaG71Wjx0KgRdyMULKVHSd3iRD_glV0NiXqkPDNN364kIgQ2aNQ6D6ZtN-maaJgdry0vsROr0iIEt7CPk"/>
+</div>
+</header>
+<main class="max-w-md mx-auto px-container-margin py-lg pb-32">
+<!-- Profile Picture Section -->
+<section class="flex flex-col items-center mb-xl">
+<div class="relative group">
+<div class="w-32 h-32 rounded-full border-4 border-surface-container shadow-lg overflow-hidden relative">
+<img class="w-full h-full object-cover" data-alt="A detailed headshot of a professional service user, showing a clear, welcoming face. The shot is captured with a high-end mirrorless camera, featuring shallow depth of field. The background is a minimalist, brightly lit modern interior in São Tomé, emphasizing light-mode aesthetics and warm tropical sunlight. The primary color focus is on natural skin tones and the soft green of a potted plant nearby." id="profile-preview" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCpTQge5dsbPVsFkIvg6Nskeb1tSq0QFCVIOp84GL5TcPkMQ5s58viNF6boM0s6Hefnde1wLSv8aonYAPOU7F--VLyxcWQCtVtfcT70wbkvDOPT8i_K9O8_C5dfN-FtyYJzR82RlQ2vJ2oonUKY1nlA-AwMGwcHpDZHXad9ebctSLa9Sow6gdxYnawusq8dlTx0nvWYcTZkX7S6JiyeWJA0THOH-DKcnr8XG3fbzmrh5ZBKmp8ym_jxBSRwpG8z9sqOxpHm2aQ6KfI"/>
+<div class="absolute inset-0 bg-black/20 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer">
+<span class="material-symbols-outlined text-white text-3xl">photo_camera</span>
+</div>
+</div>
+<button class="absolute bottom-1 right-1 bg-primary text-on-primary p-2 rounded-full shadow-md active:scale-95 transition-transform">
+<span class="material-symbols-outlined text-sm">edit</span>
+</button>
+</div>
+<p class="mt-4 font-label-lg text-primary">Alterar Foto de Perfil</p>
+</section>
+<!-- Form Fields -->
+<form class="space-y-lg">
+<!-- Name Input -->
+<div class="space-y-xs">
+<label class="block font-label-lg text-on-surface-variant ml-1">Nome Completo</label>
+<div class="relative">
+<span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-outline">person</span>
+<input class="w-full h-[56px] pl-12 pr-4 rounded-xl border-outline-variant bg-white focus:border-primary focus:ring-1 focus:ring-primary transition-all font-body-md shadow-sm" placeholder="O seu nome" type="text" value="João Silva"/>
+</div>
+</div>
+<!-- Phone Input -->
+<div class="space-y-xs">
+<label class="block font-label-lg text-on-surface-variant ml-1">Número de Telefone</label>
+<div class="relative">
+<span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-outline">call</span>
+<input class="w-full h-[56px] pl-12 pr-4 rounded-xl border-outline-variant bg-white focus:border-primary focus:ring-1 focus:ring-primary transition-all font-body-md shadow-sm" placeholder="+239 --- ---" type="tel" value="+239 990 1234"/>
+</div>
+</div>
+<!-- Email (Disabled) -->
+<div class="space-y-xs opacity-70">
+<label class="block font-label-lg text-on-surface-variant ml-1">Email (Não editável)</label>
+<div class="relative">
+<span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-outline">mail</span>
+<input class="w-full h-[56px] pl-12 pr-4 rounded-xl border-outline-variant bg-surface-container-low font-body-md cursor-not-allowed" disabled="" type="email" value="joao.silva@konekta.st"/>
+</div>
+</div>
+<!-- Default Address -->
+<div class="space-y-xs">
+<label class="block font-label-lg text-on-surface-variant ml-1">Morada Padrão</label>
+<div class="relative">
+<span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-outline">location_on</span>
+<textarea class="w-full pl-12 pr-4 py-4 rounded-xl border-outline-variant bg-white focus:border-primary focus:ring-1 focus:ring-primary transition-all font-body-md shadow-sm resize-none" placeholder="Ex: Água Grande, São Tomé" rows="3">Rua da Independência, Bloco B, 2º Andar, São Tomé</textarea>
+</div>
+</div>
+<!-- Location Picker Mock -->
+<div class="p-4 rounded-xl border-2 border-dashed border-outline-variant flex items-center justify-center gap-3 text-on-surface-variant hover:border-primary hover:text-primary cursor-pointer transition-all bg-white/50">
+<span class="material-symbols-outlined">map</span>
+<span class="font-label-lg">Atualizar no mapa</span>
+</div>
+</form>
+<!-- Save Button Container -->
+<div class="fixed bottom-24 left-0 w-full px-container-margin">
+<button class="w-full max-w-md mx-auto h-[56px] bg-primary text-on-primary rounded-full font-headline-md flex items-center justify-center gap-2 shadow-lg shadow-primary/20 active:scale-95 transition-transform">
+<span class="material-symbols-outlined">save</span>
+                Guardar Alterações
+            </button>
+</div>
+</main>
+<!-- BottomNavBar (Hidden on desktop in real app, simplified here) -->
+<nav class="fixed bottom-0 left-0 w-full flex justify-around items-center h-20 px-2 pb-safe bg-surface shadow-[0_-4px_12px_rgba(0,96,54,0.08)] rounded-t-xl z-50">
+<a class="flex flex-col items-center justify-center text-on-surface-variant px-4 py-1 hover:text-primary transition-all" href="#">
+<span class="material-symbols-outlined">dashboard</span>
+<span class="font-label-sm text-label-sm">Dashboard</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant px-4 py-1 hover:text-primary transition-all" href="#">
+<span class="material-symbols-outlined">list_alt</span>
+<span class="font-label-sm text-label-sm">Pedidos</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant px-4 py-1 hover:text-primary transition-all" href="#">
+<span class="material-symbols-outlined">payments</span>
+<span class="font-label-sm text-label-sm">Pagamentos</span>
+</a>
+<a class="flex flex-col items-center justify-center bg-primary-container text-on-primary-container rounded-full px-4 py-1 active:scale-95 duration-200" href="#">
+<span class="material-symbols-outlined active-icon" style="font-variation-settings: 'FILL' 1;">person</span>
+<span class="font-label-sm text-label-sm font-bold">Perfil</span>
+</a>
+</nav>
+<!-- Micro-interaction Script -->
+<script>
+        document.querySelectorAll('input, textarea').forEach(input => {
+            input.addEventListener('focus', () => {
+                input.parentElement.querySelector('.material-symbols-outlined').style.color = '#006036';
+            });
+            input.addEventListener('blur', () => {
+                input.parentElement.querySelector('.material-symbols-outlined').style.color = '#6f7a70';
+            });
+        });
+
+        // Simple button active state visual feedback
+        const saveBtn = document.querySelector('button.bg-primary');
+        saveBtn.addEventListener('click', (e) => {
+            const originalText = saveBtn.innerHTML;
+            saveBtn.innerHTML = `<span class="material-symbols-outlined animate-spin">sync</span> A guardar...`;
+            saveBtn.classList.add('opacity-80');
+            setTimeout(() => {
+                saveBtn.innerHTML = `<span class="material-symbols-outlined">check_circle</span> Guardado!`;
+                saveBtn.classList.remove('bg-primary');
+                saveBtn.classList.add('bg-primary-container', 'text-on-primary-container');
+                setTimeout(() => {
+                    saveBtn.innerHTML = originalText;
+                    saveBtn.classList.remove('bg-primary-container', 'text-on-primary-container', 'opacity-80');
+                    saveBtn.classList.add('bg-primary');
+                }, 2000);
+            }, 1200);
+        });
+    </script>
+</body></html>

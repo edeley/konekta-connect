@@ -9,6 +9,7 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as TelasRouteImport } from './routes/telas'
 import { Route as PerfilRouteImport } from './routes/perfil'
 import { Route as PedidosRouteImport } from './routes/pedidos'
 import { Route as CarteiraRouteImport } from './routes/carteira'
@@ -19,6 +20,11 @@ import { Route as ChatIndexRouteImport } from './routes/chat.index'
 import { Route as PrestadorIdRouteImport } from './routes/prestador.$id'
 import { Route as ChatIdRouteImport } from './routes/chat.$id'
 
+const TelasRoute = TelasRouteImport.update({
+  id: '/telas',
+  path: '/telas',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const PerfilRoute = PerfilRouteImport.update({
   id: '/perfil',
   path: '/perfil',
@@ -72,6 +78,7 @@ export interface FileRoutesByFullPath {
   '/carteira': typeof CarteiraRoute
   '/pedidos': typeof PedidosRoute
   '/perfil': typeof PerfilRoute
+  '/telas': typeof TelasRoute
   '/chat/$id': typeof ChatIdRoute
   '/prestador/$id': typeof PrestadorIdRoute
   '/chat/': typeof ChatIndexRoute
@@ -83,6 +90,7 @@ export interface FileRoutesByTo {
   '/carteira': typeof CarteiraRoute
   '/pedidos': typeof PedidosRoute
   '/perfil': typeof PerfilRoute
+  '/telas': typeof TelasRoute
   '/chat/$id': typeof ChatIdRoute
   '/prestador/$id': typeof PrestadorIdRoute
   '/chat': typeof ChatIndexRoute
@@ -95,6 +103,7 @@ export interface FileRoutesById {
   '/carteira': typeof CarteiraRoute
   '/pedidos': typeof PedidosRoute
   '/perfil': typeof PerfilRoute
+  '/telas': typeof TelasRoute
   '/chat/$id': typeof ChatIdRoute
   '/prestador/$id': typeof PrestadorIdRoute
   '/chat/': typeof ChatIndexRoute
@@ -108,6 +117,7 @@ export interface FileRouteTypes {
     | '/carteira'
     | '/pedidos'
     | '/perfil'
+    | '/telas'
     | '/chat/$id'
     | '/prestador/$id'
     | '/chat/'
@@ -119,6 +129,7 @@ export interface FileRouteTypes {
     | '/carteira'
     | '/pedidos'
     | '/perfil'
+    | '/telas'
     | '/chat/$id'
     | '/prestador/$id'
     | '/chat'
@@ -130,6 +141,7 @@ export interface FileRouteTypes {
     | '/carteira'
     | '/pedidos'
     | '/perfil'
+    | '/telas'
     | '/chat/$id'
     | '/prestador/$id'
     | '/chat/'
@@ -142,6 +154,7 @@ export interface RootRouteChildren {
   CarteiraRoute: typeof CarteiraRoute
   PedidosRoute: typeof PedidosRoute
   PerfilRoute: typeof PerfilRoute
+  TelasRoute: typeof TelasRoute
   ChatIdRoute: typeof ChatIdRoute
   PrestadorIdRoute: typeof PrestadorIdRoute
   ChatIndexRoute: typeof ChatIndexRoute
@@ -149,6 +162,13 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/telas': {
+      id: '/telas'
+      path: '/telas'
+      fullPath: '/telas'
+      preLoaderRoute: typeof TelasRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/perfil': {
       id: '/perfil'
       path: '/perfil'
@@ -222,6 +242,7 @@ const rootRouteChildren: RootRouteChildren = {
   CarteiraRoute: CarteiraRoute,
   PedidosRoute: PedidosRoute,
   PerfilRoute: PerfilRoute,
+  TelasRoute: TelasRoute,
   ChatIdRoute: ChatIdRoute,
   PrestadorIdRoute: PrestadorIdRoute,
   ChatIndexRoute: ChatIndexRoute,

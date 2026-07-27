@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+
+<html lang="pt-ST"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>KONEKTA STP - Revisão do Pedido</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;family=Inter:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind Configuration -->
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "error": "#ba1a1a",
+                    "surface-container-highest": "#d9e3f9",
+                    "on-primary": "#ffffff",
+                    "on-primary-fixed": "#00210f",
+                    "surface": "#f9f9ff",
+                    "outline": "#6f7a70",
+                    "error-container": "#ffdad6",
+                    "surface-variant": "#d9e3f9",
+                    "surface-container-high": "#dee8ff",
+                    "surface-container-low": "#f0f3ff",
+                    "surface-dim": "#d0daf0",
+                    "surface-container-lowest": "#ffffff",
+                    "secondary-fixed-dim": "#fabd32",
+                    "on-tertiary": "#ffffff",
+                    "on-primary-fixed-variant": "#00522e",
+                    "inverse-primary": "#80d9a0",
+                    "on-secondary-fixed-variant": "#5d4200",
+                    "inverse-surface": "#273141",
+                    "on-background": "#121c2c",
+                    "primary-fixed-dim": "#80d9a0",
+                    "on-error-container": "#93000a",
+                    "on-error": "#ffffff",
+                    "inverse-on-surface": "#ebf1ff",
+                    "tertiary": "#a9001d",
+                    "on-primary-container": "#abffc6",
+                    "background": "#f9f9ff",
+                    "tertiary-fixed": "#ffdad7",
+                    "surface-bright": "#f9f9ff",
+                    "secondary": "#7b5900",
+                    "on-secondary-container": "#6e4f00",
+                    "on-tertiary-fixed-variant": "#930018",
+                    "primary": "#006036",
+                    "on-secondary-fixed": "#261900",
+                    "on-surface-variant": "#3f4941",
+                    "primary-fixed": "#9bf6ba",
+                    "outline-variant": "#bec9be",
+                    "on-secondary": "#ffffff",
+                    "surface-container": "#e7eeff",
+                    "secondary-fixed": "#ffdea4",
+                    "on-surface": "#121c2c",
+                    "tertiary-container": "#d01f2f",
+                    "secondary-container": "#fdbf35",
+                    "primary-container": "#1a7a4a",
+                    "surface-tint": "#006d3f",
+                    "on-tertiary-fixed": "#410005",
+                    "tertiary-fixed-dim": "#ffb3af",
+                    "on-tertiary-container": "#ffe7e5"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "gutter": "16px",
+                    "unit": "4px",
+                    "md": "16px",
+                    "sm": "8px",
+                    "2xl": "48px",
+                    "xl": "32px",
+                    "container-margin": "20px",
+                    "3xl": "64px",
+                    "xs": "4px",
+                    "lg": "24px"
+            },
+            "fontFamily": {
+                    "label-sm": ["Inter"],
+                    "display": ["Plus Jakarta Sans"],
+                    "headline-lg": ["Plus Jakarta Sans"],
+                    "body-md": ["Inter"],
+                    "headline-md": ["Plus Jakarta Sans"],
+                    "label-lg": ["Inter"],
+                    "headline-lg-mobile": ["Plus Jakarta Sans"],
+                    "body-lg": ["Inter"]
+            },
+            "fontSize": {
+                    "label-sm": ["12px", {"lineHeight": "16px", "fontWeight": "500"}],
+                    "display": ["40px", {"lineHeight": "48px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                    "headline-lg": ["32px", {"lineHeight": "40px", "fontWeight": "700"}],
+                    "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                    "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+                    "label-lg": ["14px", {"lineHeight": "20px", "letterSpacing": "0.01em", "fontWeight": "600"}],
+                    "headline-lg-mobile": ["24px", {"lineHeight": "32px", "fontWeight": "700"}],
+                    "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+      .material-symbols-outlined {
+        font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        vertical-align: middle;
+      }
+      .leve-leve-shadow {
+        box-shadow: 0 4px 20px -2px rgba(0, 96, 54, 0.08);
+      }
+      body {
+        -webkit-tap-highlight-color: transparent;
+        background-color: #f9f9ff;
+      }
+      /* Smooth transitions for interactions */
+      .btn-interaction {
+        transition: transform 150ms ease-in-out, background-color 200ms ease;
+      }
+      .btn-interaction:active {
+        transform: scale(0.96);
+      }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="font-body-md text-on-background min-h-screen pb-32">
+<!-- Top App Bar -->
+<header class="fixed top-0 w-full z-50 flex justify-between items-center px-container-margin h-16 bg-surface shadow-sm">
+<button class="p-2 -ml-2 rounded-full hover:bg-primary-container/10 transition-colors btn-interaction" onclick="history.back()">
+<span class="material-symbols-outlined text-primary">arrow_back</span>
+</button>
+<h1 class="font-headline-lg-mobile text-headline-lg-mobile font-bold text-primary">Revisão</h1>
+<div class="w-10"></div> <!-- Spacer for centering -->
+</header>
+<main class="pt-20 px-container-margin max-w-2xl mx-auto space-y-6">
+<!-- Header Section -->
+<section class="space-y-2">
+<h2 class="font-headline-md text-headline-md text-on-surface">Confirme os Detalhes</h2>
+<p class="text-on-surface-variant font-body-md">Revise as informações antes de finalizar o seu pedido de limpeza residencial.</p>
+</section>
+<!-- Service Summary Bento Card -->
+<div class="bg-surface-container-lowest rounded-xl p-lg leve-leve-shadow border border-surface-variant/20 overflow-hidden">
+<div class="flex items-center gap-md mb-lg">
+<div class="w-16 h-16 rounded-xl bg-primary-fixed flex items-center justify-center text-primary">
+<span class="material-symbols-outlined text-3xl" style="font-variation-settings: 'wght' 600;">cleaning_services</span>
+</div>
+<div>
+<h3 class="font-headline-md text-headline-md text-on-surface">Limpeza Residencial</h3>
+<span class="inline-flex items-center px-3 py-1 rounded-full bg-primary-fixed-dim/30 text-on-primary-fixed-variant font-label-sm text-label-sm">
+                        Serviço Padrão
+                    </span>
+</div>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-md border-t border-surface-variant/30 pt-lg">
+<!-- Professional -->
+<div class="flex items-start gap-md p-md bg-surface-container-low rounded-lg">
+<div class="relative">
+<img class="w-12 h-12 rounded-full object-cover border-2 border-primary-fixed" data-alt="A professional headshot of Maria dos Santos, a middle-aged Santomean woman with a warm, trustworthy smile. She is wearing a neat green polo shirt representing a service professional. The background is a soft-focus clean domestic environment with bright, tropical morning light streaming through a window. The overall aesthetic is professional, reliable, and high-quality." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAKjJ6wK-33gIuzx-zL9AQqml26tGZ7gpgZcQ37wvE-FP-ocQbNMfasOsuZbMCj1ah-J3g8P9_sNNE7bAkx6gwLzMNr49kIRWr-NA2kYWYMfKrmR6cn7Cu9PWzizrroAzK9lziZ8bRayV_PvOizqk1UO1uPr2WQskxSueZvWydaZjw31z9BEc6ELQgjClxSWQISXjCmMTQ7iXBCNVs_keSQOqcBURmXx3z2lP8TKZzmCOf8cEcZe3GvfPRr9mrqG0pZptiqP551Oyk"/>
+<div class="absolute -bottom-1 -right-1 bg-secondary text-on-secondary rounded-full p-0.5 flex items-center justify-center">
+<span class="material-symbols-outlined text-[14px]" style="font-variation-settings: 'FILL' 1;">star</span>
+</div>
+</div>
+<div>
+<p class="font-label-sm text-label-sm text-outline uppercase tracking-wider">Profissional</p>
+<p class="font-body-lg text-body-lg text-on-surface font-semibold">Maria dos Santos</p>
+<p class="text-on-surface-variant font-label-sm text-label-sm">Classificação: 4.9 (120+ serviços)</p>
+</div>
+</div>
+<!-- Schedule -->
+<div class="flex items-start gap-md p-md bg-surface-container-low rounded-lg">
+<div class="w-12 h-12 rounded-full bg-secondary-container/20 flex items-center justify-center text-secondary">
+<span class="material-symbols-outlined text-2xl">calendar_today</span>
+</div>
+<div>
+<p class="font-label-sm text-label-sm text-outline uppercase tracking-wider">Agendamento</p>
+<p class="font-body-lg text-body-lg text-on-surface font-semibold">12 de Outubro</p>
+<p class="text-on-surface-variant font-label-sm text-label-sm">Às 09:30 AM</p>
+</div>
+</div>
+</div>
+</div>
+<!-- Address Section -->
+<div class="bg-surface-container-lowest rounded-xl p-lg leve-leve-shadow border border-surface-variant/20">
+<div class="flex justify-between items-start mb-md">
+<div class="flex items-center gap-sm text-primary">
+<span class="material-symbols-outlined">location_on</span>
+<h4 class="font-label-lg text-label-lg uppercase tracking-wide">Endereço do Serviço</h4>
+</div>
+<button class="text-primary font-label-lg text-label-lg hover:underline transition-all">Alterar</button>
+</div>
+<div class="flex gap-md">
+<div class="flex-1">
+<p class="font-body-md text-on-surface leading-relaxed">
+                        Avenida Marginal 12 de Julho, Edifício Girassol, Apt 402<br/>
+                        São Tomé, São Tomé e Príncipe
+                    </p>
+</div>
+<div class="w-24 h-24 rounded-lg bg-surface-variant overflow-hidden flex-shrink-0 border border-surface-variant/50">
+<img class="w-full h-full object-cover grayscale opacity-80" data-alt="A clean, top-down map illustration of a residential area in Sao Tome city. The map uses a minimalist design style with primary green accents for parks and soft grey for streets. A clear green pin icon marks the specific location. The lighting is flat and modern, typical of high-end UI design systems." data-location="Sao Tome" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDwyL1iAq-Kn7gXWlmW5qPpW_Q9WHhru8boku9ZEpsDlAH1jT4_4p79sdq9cqf4txgrvHhzCj4DEZNsfX4yA_DGnFY2TCTbVbW-njvaOPjz-W0v6ItRDzfyQfRA8Zdb877IaJgi6lyACIxJl9mYHIlRDD6pbBOJDMxA3lIS1O_EH_2SxvaxgqKEpunIjHTnRI1Kd7QEMcjurUqVldlDniOHTbBYYUQ9tkBgV-RuaH39sjX0x82KJX7LN0u6puEiIXRmRjwYHZ7ziqE"/>
+</div>
+</div>
+</div>
+<!-- Cost Breakdown -->
+<div class="bg-surface-container-highest/30 rounded-xl p-lg border border-primary/10">
+<h4 class="font-label-lg text-label-lg uppercase tracking-wide text-primary mb-md flex items-center gap-sm">
+<span class="material-symbols-outlined">payments</span>
+                Resumo de Custos
+            </h4>
+<div class="space-y-sm">
+<div class="flex justify-between font-body-md text-on-surface-variant">
+<span>Limpeza Padrão (Base)</span>
+<span>420 STN</span>
+</div>
+<div class="flex justify-between font-body-md text-on-surface-variant">
+<span>Taxa de Serviço Konekta</span>
+<span>80 STN</span>
+</div>
+<div class="pt-md mt-md border-t border-primary/10 flex justify-between items-center">
+<span class="font-headline-md text-headline-md text-on-surface">Total</span>
+<span class="font-headline-md text-headline-md text-primary">500 STN</span>
+</div>
+</div>
+</div>
+<!-- Payment Method Hint -->
+<div class="flex items-center gap-md p-md bg-white border border-surface-variant/30 rounded-lg">
+<span class="material-symbols-outlined text-outline">account_balance_wallet</span>
+<div class="flex-1">
+<p class="font-label-lg text-label-lg text-on-surface">Pagamento via Carteira Konekta</p>
+<p class="text-label-sm text-outline">Saldo disponível: 1,250 STN</p>
+</div>
+<span class="material-symbols-outlined text-primary">check_circle</span>
+</div>
+</main>
+<!-- Bottom Action Area -->
+<footer class="fixed bottom-0 left-0 w-full z-50 bg-surface border-t border-surface-variant/30 px-container-margin pb-8 pt-4 flex flex-col gap-3 shadow-[0_-4px_12px_0_rgba(0,96,54,0.08)]">
+<button class="w-full bg-primary text-on-primary h-14 rounded-full font-label-lg text-label-lg flex items-center justify-center gap-2 btn-interaction leve-leve-shadow">
+            Confirmar e Pagar
+            <span class="material-symbols-outlined">arrow_forward</span>
+</button>
+<button class="w-full h-12 text-primary font-label-lg text-label-lg rounded-full hover:bg-primary-container/10 transition-colors btn-interaction" onclick="history.back()">
+            Voltar e Editar
+        </button>
+</footer>
+<script>
+        // Micro-interactions for button scale
+        document.querySelectorAll('.btn-interaction').forEach(button => {
+            button.addEventListener('mousedown', () => {
+                button.style.transform = 'scale(0.97)';
+            });
+            button.addEventListener('mouseup', () => {
+                button.style.transform = 'scale(1)';
+            });
+            button.addEventListener('mouseleave', () => {
+                button.style.transform = 'scale(1)';
+            });
+        });
+        
+        // Simulating the 'Confirm and Pay' action
+        const mainCta = document.querySelector('button.bg-primary');
+        mainCta.addEventListener('click', () => {
+            mainCta.innerHTML = '<span class="material-symbols-outlined animate-spin">refresh</span> Processando...';
+            mainCta.disabled = true;
+            mainCta.classList.add('opacity-80');
+            
+            setTimeout(() => {
+                mainCta.innerHTML = '<span class="material-symbols-outlined">check</span> Pagamento Confirmado';
+                mainCta.classList.replace('bg-primary', 'bg-secondary');
+            }, 1500);
+        });
+    </script>
+</body></html>
