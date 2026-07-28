@@ -22,6 +22,7 @@ import { Route as AssistenteRouteImport } from './routes/assistente'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ProIndexRouteImport } from './routes/pro.index'
 import { Route as ChatIndexRouteImport } from './routes/chat.index'
+import { Route as ProPedidosRouteImport } from './routes/pro.pedidos'
 import { Route as PrestadorIdRouteImport } from './routes/prestador.$id'
 import { Route as ChatIdRouteImport } from './routes/chat.$id'
 import { Route as Char91DotwellKnownChar93OauthProtectedResourceRouteImport } from './routes/[.well-known]/oauth-protected-resource'
@@ -93,6 +94,11 @@ const ChatIndexRoute = ChatIndexRouteImport.update({
   path: '/chat/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ProPedidosRoute = ProPedidosRouteImport.update({
+  id: '/pro/pedidos',
+  path: '/pro/pedidos',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const PrestadorIdRoute = PrestadorIdRouteImport.update({
   id: '/prestador/$id',
   path: '/prestador/$id',
@@ -138,6 +144,7 @@ export interface FileRoutesByFullPath {
   '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   '/chat/$id': typeof ChatIdRoute
   '/prestador/$id': typeof PrestadorIdRoute
+  '/pro/pedidos': typeof ProPedidosRoute
   '/chat/': typeof ChatIndexRoute
   '/pro/': typeof ProIndexRoute
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
@@ -158,6 +165,7 @@ export interface FileRoutesByTo {
   '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   '/chat/$id': typeof ChatIdRoute
   '/prestador/$id': typeof PrestadorIdRoute
+  '/pro/pedidos': typeof ProPedidosRoute
   '/chat': typeof ChatIndexRoute
   '/pro': typeof ProIndexRoute
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
@@ -179,6 +187,7 @@ export interface FileRoutesById {
   '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   '/chat/$id': typeof ChatIdRoute
   '/prestador/$id': typeof PrestadorIdRoute
+  '/pro/pedidos': typeof ProPedidosRoute
   '/chat/': typeof ChatIndexRoute
   '/pro/': typeof ProIndexRoute
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
@@ -201,6 +210,7 @@ export interface FileRouteTypes {
     | '/.well-known/oauth-protected-resource'
     | '/chat/$id'
     | '/prestador/$id'
+    | '/pro/pedidos'
     | '/chat/'
     | '/pro/'
     | '/.mcp/invoke-tool/$tool'
@@ -221,6 +231,7 @@ export interface FileRouteTypes {
     | '/.well-known/oauth-protected-resource'
     | '/chat/$id'
     | '/prestador/$id'
+    | '/pro/pedidos'
     | '/chat'
     | '/pro'
     | '/.mcp/invoke-tool/$tool'
@@ -241,6 +252,7 @@ export interface FileRouteTypes {
     | '/.well-known/oauth-protected-resource'
     | '/chat/$id'
     | '/prestador/$id'
+    | '/pro/pedidos'
     | '/chat/'
     | '/pro/'
     | '/.mcp/invoke-tool/$tool'
@@ -262,6 +274,7 @@ export interface RootRouteChildren {
   Char91DotwellKnownChar93OauthProtectedResourceRoute: typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   ChatIdRoute: typeof ChatIdRoute
   PrestadorIdRoute: typeof PrestadorIdRoute
+  ProPedidosRoute: typeof ProPedidosRoute
   ChatIndexRoute: typeof ChatIndexRoute
   ProIndexRoute: typeof ProIndexRoute
   Char91DotmcpChar93InvokeToolToolRoute: typeof Char91DotmcpChar93InvokeToolToolRoute
@@ -360,6 +373,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ChatIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/pro/pedidos': {
+      id: '/pro/pedidos'
+      path: '/pro/pedidos'
+      fullPath: '/pro/pedidos'
+      preLoaderRoute: typeof ProPedidosRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/prestador/$id': {
       id: '/prestador/$id'
       path: '/prestador/$id'
@@ -415,6 +435,7 @@ const rootRouteChildren: RootRouteChildren = {
     Char91DotwellKnownChar93OauthProtectedResourceRoute,
   ChatIdRoute: ChatIdRoute,
   PrestadorIdRoute: PrestadorIdRoute,
+  ProPedidosRoute: ProPedidosRoute,
   ChatIndexRoute: ChatIndexRoute,
   ProIndexRoute: ProIndexRoute,
   Char91DotmcpChar93InvokeToolToolRoute: Char91DotmcpChar93InvokeToolToolRoute,
