@@ -23,6 +23,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as ProIndexRouteImport } from './routes/pro.index'
 import { Route as ChatIndexRouteImport } from './routes/chat.index'
 import { Route as ProPedidosRouteImport } from './routes/pro.pedidos'
+import { Route as ProAgendaRouteImport } from './routes/pro.agenda'
 import { Route as PrestadorIdRouteImport } from './routes/prestador.$id'
 import { Route as ChatIdRouteImport } from './routes/chat.$id'
 import { Route as Char91DotwellKnownChar93OauthProtectedResourceRouteImport } from './routes/[.well-known]/oauth-protected-resource'
@@ -99,6 +100,11 @@ const ProPedidosRoute = ProPedidosRouteImport.update({
   path: '/pro/pedidos',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ProAgendaRoute = ProAgendaRouteImport.update({
+  id: '/pro/agenda',
+  path: '/pro/agenda',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const PrestadorIdRoute = PrestadorIdRouteImport.update({
   id: '/prestador/$id',
   path: '/prestador/$id',
@@ -144,6 +150,7 @@ export interface FileRoutesByFullPath {
   '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   '/chat/$id': typeof ChatIdRoute
   '/prestador/$id': typeof PrestadorIdRoute
+  '/pro/agenda': typeof ProAgendaRoute
   '/pro/pedidos': typeof ProPedidosRoute
   '/chat/': typeof ChatIndexRoute
   '/pro/': typeof ProIndexRoute
@@ -165,6 +172,7 @@ export interface FileRoutesByTo {
   '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   '/chat/$id': typeof ChatIdRoute
   '/prestador/$id': typeof PrestadorIdRoute
+  '/pro/agenda': typeof ProAgendaRoute
   '/pro/pedidos': typeof ProPedidosRoute
   '/chat': typeof ChatIndexRoute
   '/pro': typeof ProIndexRoute
@@ -187,6 +195,7 @@ export interface FileRoutesById {
   '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   '/chat/$id': typeof ChatIdRoute
   '/prestador/$id': typeof PrestadorIdRoute
+  '/pro/agenda': typeof ProAgendaRoute
   '/pro/pedidos': typeof ProPedidosRoute
   '/chat/': typeof ChatIndexRoute
   '/pro/': typeof ProIndexRoute
@@ -210,6 +219,7 @@ export interface FileRouteTypes {
     | '/.well-known/oauth-protected-resource'
     | '/chat/$id'
     | '/prestador/$id'
+    | '/pro/agenda'
     | '/pro/pedidos'
     | '/chat/'
     | '/pro/'
@@ -231,6 +241,7 @@ export interface FileRouteTypes {
     | '/.well-known/oauth-protected-resource'
     | '/chat/$id'
     | '/prestador/$id'
+    | '/pro/agenda'
     | '/pro/pedidos'
     | '/chat'
     | '/pro'
@@ -252,6 +263,7 @@ export interface FileRouteTypes {
     | '/.well-known/oauth-protected-resource'
     | '/chat/$id'
     | '/prestador/$id'
+    | '/pro/agenda'
     | '/pro/pedidos'
     | '/chat/'
     | '/pro/'
@@ -274,6 +286,7 @@ export interface RootRouteChildren {
   Char91DotwellKnownChar93OauthProtectedResourceRoute: typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   ChatIdRoute: typeof ChatIdRoute
   PrestadorIdRoute: typeof PrestadorIdRoute
+  ProAgendaRoute: typeof ProAgendaRoute
   ProPedidosRoute: typeof ProPedidosRoute
   ChatIndexRoute: typeof ChatIndexRoute
   ProIndexRoute: typeof ProIndexRoute
@@ -380,6 +393,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ProPedidosRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/pro/agenda': {
+      id: '/pro/agenda'
+      path: '/pro/agenda'
+      fullPath: '/pro/agenda'
+      preLoaderRoute: typeof ProAgendaRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/prestador/$id': {
       id: '/prestador/$id'
       path: '/prestador/$id'
@@ -435,6 +455,7 @@ const rootRouteChildren: RootRouteChildren = {
     Char91DotwellKnownChar93OauthProtectedResourceRoute,
   ChatIdRoute: ChatIdRoute,
   PrestadorIdRoute: PrestadorIdRoute,
+  ProAgendaRoute: ProAgendaRoute,
   ProPedidosRoute: ProPedidosRoute,
   ChatIndexRoute: ChatIndexRoute,
   ProIndexRoute: ProIndexRoute,
