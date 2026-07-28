@@ -302,7 +302,7 @@ export const store = {
       address: data.address,
       createdAt: Date.now(),
     };
-    set({ user });
+    set({ user, profiles: { cliente: true, prestador: false } });
     return user;
   },
 
@@ -323,8 +323,44 @@ export const store = {
       createdAt: Date.now(),
     };
     const p: ProviderProfile = { ...profile, status: "em_analise", submittedAt: Date.now() };
-    set({ user: u, providerProfile: p });
+    set({ user: u, providerProfile: p, profiles: { cliente: true, prestador: true } });
     return { user: u, profile: p };
+  },
+
+  /** Etapa 3 — ativa o perfil Prestador na MESMA conta (identidade única). */
+  enableProviderProfile(profile: Omit<ProviderProfile, "status" | "submittedAt">) {
+    if (!state.user) return null;
+    const p: ProviderProfile = { ...profile, status: "em_analise", submittedAt: Date.now() };
+    set({ providerProfile: p, profiles: { ...state.profiles, prestador: true } });
+    notify({
+      title: "Perfil de prestador enviado",
+      body: "Os seus documentos estão em análise (24–48h).",
+      tone: "info",
+      link: "/perfil",
+    });
+    return p;
+  },
+
+  approveProviderProfile() {
+    if (!state.providerProfile) return;
+    set({ providerProfile: { ...state.providerProfile, status: "aprovado" } });
+    notify({
+      title: "Perfil de prestador aprovado",
+      body: "Já pode receber pedidos no KONEKTA.",
+      tone: "success",
+      link: "/pro",
+    });
+  },
+
+  /** Alterna entre perfis sem terminar sessão. */
+  switchProfile(profile: ProfileKind) {
+    if (!state.user) return false;
+    if (!state.profiles[profile]) return false;
+    if (profile === "prestador" && state.providerProfile?.status !== "aprovado") {
+      // permitido entrar, mas em modo limitado (conta em análise)
+    }
+    set({ user: { ...state.user, role: profile } });
+    return true;
   },
 
   updateUser(patch: Partial<User>) {
@@ -338,8 +374,9 @@ export const store = {
   },
 
   signOut() {
-    set({ user: null, providerProfile: null });
+    set({ user: null, providerProfile: null, profiles: { cliente: true, prestador: false } });
   },
+
 
   createOrder(input: {
     providerId: string;
