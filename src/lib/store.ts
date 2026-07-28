@@ -94,14 +94,21 @@ export type PlatformConfig = {
   currency: string;
 };
 
+export type ProfileKind = "cliente" | "prestador";
+
+export type Profiles = { cliente: boolean; prestador: boolean };
+
 type State = {
   user: User | null;
+  profiles: Profiles;
   providerProfile: ProviderProfile | null;
   orders: Order[];
   messages: Record<string, Message[]>;
   assistantMessages: AssistantMessage[];
   balance: number;
   transactions: Transaction[];
+  providerBalance: number;
+  providerTransactions: Transaction[];
   favorites: string[];
   notifications: AppNotification[];
   flags: FeatureFlags;
@@ -110,7 +117,8 @@ type State = {
   onboarded: boolean;
 };
 
-const KEY = "konekta:v3";
+const KEY = "konekta:v4";
+
 
 const defaultFlags: FeatureFlags = {
   carteira: true,
