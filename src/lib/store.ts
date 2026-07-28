@@ -563,4 +563,35 @@ export const store = {
   updateConfig(patch: Partial<PlatformConfig>) {
     set({ config: { ...state.config, ...patch } });
   },
+  /** Ganhos do prestador — carteira independente da carteira de cliente. */
+  addEarning(label: string, amount: number) {
+    const commission = Math.round((amount * state.config.commissionPct) / 100);
+    const net = amount - commission;
+    set({
+      providerBalance: state.providerBalance + net,
+      providerTransactions: [
+        { id: `pt_${Date.now()}`, kind: "in", label, amount: net, at: Date.now() },
+        ...state.providerTransactions,
+      ],
+    });
+    return net;
+  },
+
+  requestPayout(amount: number) {
+    if (amount <= 0 || amount > state.providerBalance) return false;
+    set({
+      providerBalance: state.providerBalance - amount,
+      providerTransactions: [
+        { id: `pt_${Date.now()}`, kind: "out", label: "Levantamento solicitado", amount, at: Date.now() },
+        ...state.providerTransactions,
+      ],
+    });
+    notify({
+      title: "Levantamento solicitado",
+      body: `${amount} Db serão transferidos em 1–2 dias úteis.`,
+      tone: "info",
+      link: "/pro/ganhos",
+    });
+    return true;
+  },
 };
