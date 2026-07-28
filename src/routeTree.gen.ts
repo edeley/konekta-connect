@@ -9,6 +9,7 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as TornarPrestadorRouteImport } from './routes/tornar-prestador'
 import { Route as TelasRouteImport } from './routes/telas'
 import { Route as SplashRouteImport } from './routes/splash'
 import { Route as PerfilRouteImport } from './routes/perfil'
@@ -26,6 +27,11 @@ import { Route as Char91DotwellKnownChar93OauthProtectedResourceRouteImport } fr
 import { Route as Char91DotmcpChar93ListToolsRouteImport } from './routes/[.mcp]/list-tools'
 import { Route as Char91DotmcpChar93InvokeToolToolRouteImport } from './routes/[.mcp]/invoke-tool/$tool'
 
+const TornarPrestadorRoute = TornarPrestadorRouteImport.update({
+  id: '/tornar-prestador',
+  path: '/tornar-prestador',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const TelasRoute = TelasRouteImport.update({
   id: '/telas',
   path: '/telas',
@@ -121,6 +127,7 @@ export interface FileRoutesByFullPath {
   '/perfil': typeof PerfilRoute
   '/splash': typeof SplashRoute
   '/telas': typeof TelasRoute
+  '/tornar-prestador': typeof TornarPrestadorRoute
   '/.mcp/list-tools': typeof Char91DotmcpChar93ListToolsRoute
   '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   '/chat/$id': typeof ChatIdRoute
@@ -139,6 +146,7 @@ export interface FileRoutesByTo {
   '/perfil': typeof PerfilRoute
   '/splash': typeof SplashRoute
   '/telas': typeof TelasRoute
+  '/tornar-prestador': typeof TornarPrestadorRoute
   '/.mcp/list-tools': typeof Char91DotmcpChar93ListToolsRoute
   '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   '/chat/$id': typeof ChatIdRoute
@@ -158,6 +166,7 @@ export interface FileRoutesById {
   '/perfil': typeof PerfilRoute
   '/splash': typeof SplashRoute
   '/telas': typeof TelasRoute
+  '/tornar-prestador': typeof TornarPrestadorRoute
   '/.mcp/list-tools': typeof Char91DotmcpChar93ListToolsRoute
   '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   '/chat/$id': typeof ChatIdRoute
@@ -178,6 +187,7 @@ export interface FileRouteTypes {
     | '/perfil'
     | '/splash'
     | '/telas'
+    | '/tornar-prestador'
     | '/.mcp/list-tools'
     | '/.well-known/oauth-protected-resource'
     | '/chat/$id'
@@ -196,6 +206,7 @@ export interface FileRouteTypes {
     | '/perfil'
     | '/splash'
     | '/telas'
+    | '/tornar-prestador'
     | '/.mcp/list-tools'
     | '/.well-known/oauth-protected-resource'
     | '/chat/$id'
@@ -214,6 +225,7 @@ export interface FileRouteTypes {
     | '/perfil'
     | '/splash'
     | '/telas'
+    | '/tornar-prestador'
     | '/.mcp/list-tools'
     | '/.well-known/oauth-protected-resource'
     | '/chat/$id'
@@ -233,6 +245,7 @@ export interface RootRouteChildren {
   PerfilRoute: typeof PerfilRoute
   SplashRoute: typeof SplashRoute
   TelasRoute: typeof TelasRoute
+  TornarPrestadorRoute: typeof TornarPrestadorRoute
   Char91DotmcpChar93ListToolsRoute: typeof Char91DotmcpChar93ListToolsRoute
   Char91DotwellKnownChar93OauthProtectedResourceRoute: typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   ChatIdRoute: typeof ChatIdRoute
@@ -243,6 +256,13 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/tornar-prestador': {
+      id: '/tornar-prestador'
+      path: '/tornar-prestador'
+      fullPath: '/tornar-prestador'
+      preLoaderRoute: typeof TornarPrestadorRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/telas': {
       id: '/telas'
       path: '/telas'
@@ -369,6 +389,7 @@ const rootRouteChildren: RootRouteChildren = {
   PerfilRoute: PerfilRoute,
   SplashRoute: SplashRoute,
   TelasRoute: TelasRoute,
+  TornarPrestadorRoute: TornarPrestadorRoute,
   Char91DotmcpChar93ListToolsRoute: Char91DotmcpChar93ListToolsRoute,
   Char91DotwellKnownChar93OauthProtectedResourceRoute:
     Char91DotwellKnownChar93OauthProtectedResourceRoute,
