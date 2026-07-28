@@ -21,7 +21,7 @@ function Splash() {
 
   useEffect(() => {
     const t = setTimeout(() => {
-      if (user) navigate({ to: user.role === "admin" ? "/admin" : user.role === "prestador" ? "/pro" : "/", replace: true });
+      if (user) navigate({ to: user.role === "prestador" ? "/pro" : "/", replace: true });
       else if (onboarded) navigate({ to: "/auth", replace: true });
       else navigate({ to: "/onboarding", replace: true });
     }, 1400);

@@ -94,14 +94,21 @@ export type PlatformConfig = {
   currency: string;
 };
 
+export type ProfileKind = "cliente" | "prestador";
+
+export type Profiles = { cliente: boolean; prestador: boolean };
+
 type State = {
   user: User | null;
+  profiles: Profiles;
   providerProfile: ProviderProfile | null;
   orders: Order[];
   messages: Record<string, Message[]>;
   assistantMessages: AssistantMessage[];
   balance: number;
   transactions: Transaction[];
+  providerBalance: number;
+  providerTransactions: Transaction[];
   favorites: string[];
   notifications: AppNotification[];
   flags: FeatureFlags;
@@ -110,7 +117,8 @@ type State = {
   onboarded: boolean;
 };
 
-const KEY = "konekta:v3";
+const KEY = "konekta:v4";
+
 
 const defaultFlags: FeatureFlags = {
   carteira: true,
@@ -134,8 +142,12 @@ const defaultSettings: Settings = {
 
 const defaultState: State = {
   user: null,
+  profiles: { cliente: true, prestador: false },
   providerProfile: null,
+  providerBalance: 0,
+  providerTransactions: [],
   orders: seedOrders,
+
   messages: {
     "edmilson-varela": [
       { id: "m1", from: "them", text: "Boa tarde! Estou a caminho.", at: Date.now() - 3600_000, status: "read" },
@@ -201,6 +213,7 @@ function load(): State {
     return {
       ...defaultState,
       ...parsed,
+      profiles: { ...defaultState.profiles, ...(parsed.profiles ?? {}) },
       flags: { ...defaultFlags, ...(parsed.flags ?? {}) },
       settings: { ...defaultSettings, ...(parsed.settings ?? {}) },
       config: { ...defaultState.config, ...(parsed.config ?? {}) },
@@ -290,7 +303,7 @@ export const store = {
       address: data.address,
       createdAt: Date.now(),
     };
-    set({ user });
+    set({ user, profiles: { cliente: true, prestador: false } });
     return user;
   },
 
@@ -311,8 +324,44 @@ export const store = {
       createdAt: Date.now(),
     };
     const p: ProviderProfile = { ...profile, status: "em_analise", submittedAt: Date.now() };
-    set({ user: u, providerProfile: p });
+    set({ user: u, providerProfile: p, profiles: { cliente: true, prestador: true } });
     return { user: u, profile: p };
+  },
+
+  /** Etapa 3 — ativa o perfil Prestador na MESMA conta (identidade única). */
+  enableProviderProfile(profile: Omit<ProviderProfile, "status" | "submittedAt">) {
+    if (!state.user) return null;
+    const p: ProviderProfile = { ...profile, status: "em_analise", submittedAt: Date.now() };
+    set({ providerProfile: p, profiles: { ...state.profiles, prestador: true } });
+    notify({
+      title: "Perfil de prestador enviado",
+      body: "Os seus documentos estão em análise (24–48h).",
+      tone: "info",
+      link: "/perfil",
+    });
+    return p;
+  },
+
+  approveProviderProfile() {
+    if (!state.providerProfile) return;
+    set({ providerProfile: { ...state.providerProfile, status: "aprovado" } });
+    notify({
+      title: "Perfil de prestador aprovado",
+      body: "Já pode receber pedidos no KONEKTA.",
+      tone: "success",
+      link: "/pro",
+    });
+  },
+
+  /** Alterna entre perfis sem terminar sessão. */
+  switchProfile(profile: ProfileKind) {
+    if (!state.user) return false;
+    if (!state.profiles[profile]) return false;
+    if (profile === "prestador" && state.providerProfile?.status !== "aprovado") {
+      // permitido entrar, mas em modo limitado (conta em análise)
+    }
+    set({ user: { ...state.user, role: profile } });
+    return true;
   },
 
   updateUser(patch: Partial<User>) {
@@ -326,8 +375,9 @@ export const store = {
   },
 
   signOut() {
-    set({ user: null, providerProfile: null });
+    set({ user: null, providerProfile: null, profiles: { cliente: true, prestador: false } });
   },
+
 
   createOrder(input: {
     providerId: string;
@@ -512,5 +562,36 @@ export const store = {
 
   updateConfig(patch: Partial<PlatformConfig>) {
     set({ config: { ...state.config, ...patch } });
+  },
+  /** Ganhos do prestador — carteira independente da carteira de cliente. */
+  addEarning(label: string, amount: number) {
+    const commission = Math.round((amount * state.config.commissionPct) / 100);
+    const net = amount - commission;
+    set({
+      providerBalance: state.providerBalance + net,
+      providerTransactions: [
+        { id: `pt_${Date.now()}`, kind: "in", label, amount: net, at: Date.now() },
+        ...state.providerTransactions,
+      ],
+    });
+    return net;
+  },
+
+  requestPayout(amount: number) {
+    if (amount <= 0 || amount > state.providerBalance) return false;
+    set({
+      providerBalance: state.providerBalance - amount,
+      providerTransactions: [
+        { id: `pt_${Date.now()}`, kind: "out", label: "Levantamento solicitado", amount, at: Date.now() },
+        ...state.providerTransactions,
+      ],
+    });
+    notify({
+      title: "Levantamento solicitado",
+      body: `${amount} Db serão transferidos em 1–2 dias úteis.`,
+      tone: "info",
+      link: "/pro/ganhos",
+    });
+    return true;
   },
 };

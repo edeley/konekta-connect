@@ -9,6 +9,7 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as TornarPrestadorRouteImport } from './routes/tornar-prestador'
 import { Route as TelasRouteImport } from './routes/telas'
 import { Route as SplashRouteImport } from './routes/splash'
 import { Route as PerfilRouteImport } from './routes/perfil'
@@ -19,13 +20,22 @@ import { Route as CarteiraRouteImport } from './routes/carteira'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AssistenteRouteImport } from './routes/assistente'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as ProIndexRouteImport } from './routes/pro.index'
 import { Route as ChatIndexRouteImport } from './routes/chat.index'
+import { Route as ProPedidosRouteImport } from './routes/pro.pedidos'
+import { Route as ProGanhosRouteImport } from './routes/pro.ganhos'
+import { Route as ProAgendaRouteImport } from './routes/pro.agenda'
 import { Route as PrestadorIdRouteImport } from './routes/prestador.$id'
 import { Route as ChatIdRouteImport } from './routes/chat.$id'
 import { Route as Char91DotwellKnownChar93OauthProtectedResourceRouteImport } from './routes/[.well-known]/oauth-protected-resource'
 import { Route as Char91DotmcpChar93ListToolsRouteImport } from './routes/[.mcp]/list-tools'
 import { Route as Char91DotmcpChar93InvokeToolToolRouteImport } from './routes/[.mcp]/invoke-tool/$tool'
 
+const TornarPrestadorRoute = TornarPrestadorRouteImport.update({
+  id: '/tornar-prestador',
+  path: '/tornar-prestador',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const TelasRoute = TelasRouteImport.update({
   id: '/telas',
   path: '/telas',
@@ -76,9 +86,29 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ProIndexRoute = ProIndexRouteImport.update({
+  id: '/pro/',
+  path: '/pro/',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ChatIndexRoute = ChatIndexRouteImport.update({
   id: '/chat/',
   path: '/chat/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ProPedidosRoute = ProPedidosRouteImport.update({
+  id: '/pro/pedidos',
+  path: '/pro/pedidos',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ProGanhosRoute = ProGanhosRouteImport.update({
+  id: '/pro/ganhos',
+  path: '/pro/ganhos',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ProAgendaRoute = ProAgendaRouteImport.update({
+  id: '/pro/agenda',
+  path: '/pro/agenda',
   getParentRoute: () => rootRouteImport,
 } as any)
 const PrestadorIdRoute = PrestadorIdRouteImport.update({
@@ -121,11 +151,16 @@ export interface FileRoutesByFullPath {
   '/perfil': typeof PerfilRoute
   '/splash': typeof SplashRoute
   '/telas': typeof TelasRoute
+  '/tornar-prestador': typeof TornarPrestadorRoute
   '/.mcp/list-tools': typeof Char91DotmcpChar93ListToolsRoute
   '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   '/chat/$id': typeof ChatIdRoute
   '/prestador/$id': typeof PrestadorIdRoute
+  '/pro/agenda': typeof ProAgendaRoute
+  '/pro/ganhos': typeof ProGanhosRoute
+  '/pro/pedidos': typeof ProPedidosRoute
   '/chat/': typeof ChatIndexRoute
+  '/pro/': typeof ProIndexRoute
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
 }
 export interface FileRoutesByTo {
@@ -139,11 +174,16 @@ export interface FileRoutesByTo {
   '/perfil': typeof PerfilRoute
   '/splash': typeof SplashRoute
   '/telas': typeof TelasRoute
+  '/tornar-prestador': typeof TornarPrestadorRoute
   '/.mcp/list-tools': typeof Char91DotmcpChar93ListToolsRoute
   '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   '/chat/$id': typeof ChatIdRoute
   '/prestador/$id': typeof PrestadorIdRoute
+  '/pro/agenda': typeof ProAgendaRoute
+  '/pro/ganhos': typeof ProGanhosRoute
+  '/pro/pedidos': typeof ProPedidosRoute
   '/chat': typeof ChatIndexRoute
+  '/pro': typeof ProIndexRoute
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
 }
 export interface FileRoutesById {
@@ -158,11 +198,16 @@ export interface FileRoutesById {
   '/perfil': typeof PerfilRoute
   '/splash': typeof SplashRoute
   '/telas': typeof TelasRoute
+  '/tornar-prestador': typeof TornarPrestadorRoute
   '/.mcp/list-tools': typeof Char91DotmcpChar93ListToolsRoute
   '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   '/chat/$id': typeof ChatIdRoute
   '/prestador/$id': typeof PrestadorIdRoute
+  '/pro/agenda': typeof ProAgendaRoute
+  '/pro/ganhos': typeof ProGanhosRoute
+  '/pro/pedidos': typeof ProPedidosRoute
   '/chat/': typeof ChatIndexRoute
+  '/pro/': typeof ProIndexRoute
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
 }
 export interface FileRouteTypes {
@@ -178,11 +223,16 @@ export interface FileRouteTypes {
     | '/perfil'
     | '/splash'
     | '/telas'
+    | '/tornar-prestador'
     | '/.mcp/list-tools'
     | '/.well-known/oauth-protected-resource'
     | '/chat/$id'
     | '/prestador/$id'
+    | '/pro/agenda'
+    | '/pro/ganhos'
+    | '/pro/pedidos'
     | '/chat/'
+    | '/pro/'
     | '/.mcp/invoke-tool/$tool'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -196,11 +246,16 @@ export interface FileRouteTypes {
     | '/perfil'
     | '/splash'
     | '/telas'
+    | '/tornar-prestador'
     | '/.mcp/list-tools'
     | '/.well-known/oauth-protected-resource'
     | '/chat/$id'
     | '/prestador/$id'
+    | '/pro/agenda'
+    | '/pro/ganhos'
+    | '/pro/pedidos'
     | '/chat'
+    | '/pro'
     | '/.mcp/invoke-tool/$tool'
   id:
     | '__root__'
@@ -214,11 +269,16 @@ export interface FileRouteTypes {
     | '/perfil'
     | '/splash'
     | '/telas'
+    | '/tornar-prestador'
     | '/.mcp/list-tools'
     | '/.well-known/oauth-protected-resource'
     | '/chat/$id'
     | '/prestador/$id'
+    | '/pro/agenda'
+    | '/pro/ganhos'
+    | '/pro/pedidos'
     | '/chat/'
+    | '/pro/'
     | '/.mcp/invoke-tool/$tool'
   fileRoutesById: FileRoutesById
 }
@@ -233,16 +293,28 @@ export interface RootRouteChildren {
   PerfilRoute: typeof PerfilRoute
   SplashRoute: typeof SplashRoute
   TelasRoute: typeof TelasRoute
+  TornarPrestadorRoute: typeof TornarPrestadorRoute
   Char91DotmcpChar93ListToolsRoute: typeof Char91DotmcpChar93ListToolsRoute
   Char91DotwellKnownChar93OauthProtectedResourceRoute: typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   ChatIdRoute: typeof ChatIdRoute
   PrestadorIdRoute: typeof PrestadorIdRoute
+  ProAgendaRoute: typeof ProAgendaRoute
+  ProGanhosRoute: typeof ProGanhosRoute
+  ProPedidosRoute: typeof ProPedidosRoute
   ChatIndexRoute: typeof ChatIndexRoute
+  ProIndexRoute: typeof ProIndexRoute
   Char91DotmcpChar93InvokeToolToolRoute: typeof Char91DotmcpChar93InvokeToolToolRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/tornar-prestador': {
+      id: '/tornar-prestador'
+      path: '/tornar-prestador'
+      fullPath: '/tornar-prestador'
+      preLoaderRoute: typeof TornarPrestadorRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/telas': {
       id: '/telas'
       path: '/telas'
@@ -313,11 +385,39 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/pro/': {
+      id: '/pro/'
+      path: '/pro'
+      fullPath: '/pro/'
+      preLoaderRoute: typeof ProIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/chat/': {
       id: '/chat/'
       path: '/chat'
       fullPath: '/chat/'
       preLoaderRoute: typeof ChatIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/pro/pedidos': {
+      id: '/pro/pedidos'
+      path: '/pro/pedidos'
+      fullPath: '/pro/pedidos'
+      preLoaderRoute: typeof ProPedidosRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/pro/ganhos': {
+      id: '/pro/ganhos'
+      path: '/pro/ganhos'
+      fullPath: '/pro/ganhos'
+      preLoaderRoute: typeof ProGanhosRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/pro/agenda': {
+      id: '/pro/agenda'
+      path: '/pro/agenda'
+      fullPath: '/pro/agenda'
+      preLoaderRoute: typeof ProAgendaRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/prestador/$id': {
@@ -369,12 +469,17 @@ const rootRouteChildren: RootRouteChildren = {
   PerfilRoute: PerfilRoute,
   SplashRoute: SplashRoute,
   TelasRoute: TelasRoute,
+  TornarPrestadorRoute: TornarPrestadorRoute,
   Char91DotmcpChar93ListToolsRoute: Char91DotmcpChar93ListToolsRoute,
   Char91DotwellKnownChar93OauthProtectedResourceRoute:
     Char91DotwellKnownChar93OauthProtectedResourceRoute,
   ChatIdRoute: ChatIdRoute,
   PrestadorIdRoute: PrestadorIdRoute,
+  ProAgendaRoute: ProAgendaRoute,
+  ProGanhosRoute: ProGanhosRoute,
+  ProPedidosRoute: ProPedidosRoute,
   ChatIndexRoute: ChatIndexRoute,
+  ProIndexRoute: ProIndexRoute,
   Char91DotmcpChar93InvokeToolToolRoute: Char91DotmcpChar93InvokeToolToolRoute,
 }
 export const routeTree = rootRouteImport

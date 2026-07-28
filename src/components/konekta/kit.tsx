@@ -300,3 +300,42 @@ export function ProgressSteps({ step, total }: { step: number; total: number }) 
     </div>
   );
 }
+
+/* ------------------------------- Bottom Sheet ------------------------------ */
+
+export function BottomSheet({
+  open,
+  onClose,
+  title,
+  description,
+  children,
+}: {
+  open: boolean;
+  onClose: () => void;
+  title?: string;
+  description?: string;
+  children: ReactNode;
+}) {
+  if (!open) return null;
+  return (
+    <div className="fixed inset-0 z-[60] flex items-end justify-center">
+      <button
+        type="button"
+        aria-label="Fechar"
+        onClick={onClose}
+        className="absolute inset-0 bg-foreground/40 backdrop-blur-[2px]"
+      />
+      <div
+        role="dialog"
+        aria-modal="true"
+        className="relative w-full max-w-md rounded-t-3xl bg-card p-5 pb-8 shadow-raised"
+        style={{ animation: "k-sheet-up 260ms cubic-bezier(0.2,0,0,1) both" }}
+      >
+        <span className="mx-auto mb-4 block h-1.5 w-10 rounded-full bg-border" />
+        {title && <h2 className="text-base font-bold tracking-tight">{title}</h2>}
+        {description && <p className="mt-1 text-xs text-muted-foreground">{description}</p>}
+        <div className="mt-4 space-y-2">{children}</div>
+      </div>
+    </div>
+  );
+}
