@@ -213,6 +213,7 @@ function load(): State {
     return {
       ...defaultState,
       ...parsed,
+      profiles: { ...defaultState.profiles, ...(parsed.profiles ?? {}) },
       flags: { ...defaultFlags, ...(parsed.flags ?? {}) },
       settings: { ...defaultSettings, ...(parsed.settings ?? {}) },
       config: { ...defaultState.config, ...(parsed.config ?? {}) },
