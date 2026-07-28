@@ -142,8 +142,12 @@ const defaultSettings: Settings = {
 
 const defaultState: State = {
   user: null,
+  profiles: { cliente: true, prestador: false },
   providerProfile: null,
+  providerBalance: 0,
+  providerTransactions: [],
   orders: seedOrders,
+
   messages: {
     "edmilson-varela": [
       { id: "m1", from: "them", text: "Boa tarde! Estou a caminho.", at: Date.now() - 3600_000, status: "read" },
