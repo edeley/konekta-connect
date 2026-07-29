@@ -16,6 +16,7 @@ import { Route as PerfilRouteImport } from './routes/perfil'
 import { Route as PedidosRouteImport } from './routes/pedidos'
 import { Route as OnboardingRouteImport } from './routes/onboarding'
 import { Route as NovoPedidoRouteImport } from './routes/novo-pedido'
+import { Route as NotificacoesRouteImport } from './routes/notificacoes'
 import { Route as McpRouteImport } from './routes/mcp'
 import { Route as CarteiraRouteImport } from './routes/carteira'
 import { Route as AuthRouteImport } from './routes/auth'
@@ -67,6 +68,11 @@ const OnboardingRoute = OnboardingRouteImport.update({
 const NovoPedidoRoute = NovoPedidoRouteImport.update({
   id: '/novo-pedido',
   path: '/novo-pedido',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const NotificacoesRoute = NotificacoesRouteImport.update({
+  id: '/notificacoes',
+  path: '/notificacoes',
   getParentRoute: () => rootRouteImport,
 } as any)
 const McpRoute = McpRouteImport.update({
@@ -164,6 +170,7 @@ export interface FileRoutesByFullPath {
   '/auth': typeof AuthRoute
   '/carteira': typeof CarteiraRoute
   '/mcp': typeof McpRoute
+  '/notificacoes': typeof NotificacoesRoute
   '/novo-pedido': typeof NovoPedidoRoute
   '/onboarding': typeof OnboardingRoute
   '/pedidos': typeof PedidosRoute
@@ -190,6 +197,7 @@ export interface FileRoutesByTo {
   '/auth': typeof AuthRoute
   '/carteira': typeof CarteiraRoute
   '/mcp': typeof McpRoute
+  '/notificacoes': typeof NotificacoesRoute
   '/novo-pedido': typeof NovoPedidoRoute
   '/onboarding': typeof OnboardingRoute
   '/pedidos': typeof PedidosRoute
@@ -217,6 +225,7 @@ export interface FileRoutesById {
   '/auth': typeof AuthRoute
   '/carteira': typeof CarteiraRoute
   '/mcp': typeof McpRoute
+  '/notificacoes': typeof NotificacoesRoute
   '/novo-pedido': typeof NovoPedidoRoute
   '/onboarding': typeof OnboardingRoute
   '/pedidos': typeof PedidosRoute
@@ -245,6 +254,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/carteira'
     | '/mcp'
+    | '/notificacoes'
     | '/novo-pedido'
     | '/onboarding'
     | '/pedidos'
@@ -271,6 +281,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/carteira'
     | '/mcp'
+    | '/notificacoes'
     | '/novo-pedido'
     | '/onboarding'
     | '/pedidos'
@@ -297,6 +308,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/carteira'
     | '/mcp'
+    | '/notificacoes'
     | '/novo-pedido'
     | '/onboarding'
     | '/pedidos'
@@ -324,6 +336,7 @@ export interface RootRouteChildren {
   AuthRoute: typeof AuthRoute
   CarteiraRoute: typeof CarteiraRoute
   McpRoute: typeof McpRoute
+  NotificacoesRoute: typeof NotificacoesRoute
   NovoPedidoRoute: typeof NovoPedidoRoute
   OnboardingRoute: typeof OnboardingRoute
   PedidosRoute: typeof PedidosRoute
@@ -394,6 +407,13 @@ declare module '@tanstack/react-router' {
       path: '/novo-pedido'
       fullPath: '/novo-pedido'
       preLoaderRoute: typeof NovoPedidoRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/notificacoes': {
+      id: '/notificacoes'
+      path: '/notificacoes'
+      fullPath: '/notificacoes'
+      preLoaderRoute: typeof NotificacoesRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/mcp': {
@@ -524,6 +544,7 @@ const rootRouteChildren: RootRouteChildren = {
   AuthRoute: AuthRoute,
   CarteiraRoute: CarteiraRoute,
   McpRoute: McpRoute,
+  NotificacoesRoute: NotificacoesRoute,
   NovoPedidoRoute: NovoPedidoRoute,
   OnboardingRoute: OnboardingRoute,
   PedidosRoute: PedidosRoute,
