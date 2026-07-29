@@ -25,8 +25,8 @@ const clientTabs = [
 
 const providerTabs = [
   { to: "/pro", label: "Painel", icon: LayoutDashboard },
+  { to: "/pro/oportunidades", label: "Oportunidades", icon: Sparkles },
   { to: "/pro/pedidos", label: "Pedidos", icon: ClipboardList },
-  { to: "/pro/agenda", label: "Agenda", icon: CalendarDays },
   { to: "/pro/ganhos", label: "Ganhos", icon: TrendingUp },
   { to: "/perfil", label: "Perfil", icon: User },
 ];
