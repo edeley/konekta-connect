@@ -36,6 +36,7 @@ function Home() {
   const user = useStore((s) => s.user);
   const orders = useStore((s) => s.orders);
   const favorites = useStore((s) => s.favorites);
+  const unread = useStore((s) => s.notifications.filter((n) => !n.read).length);
   const [query, setQuery] = useState("");
   const [activeCat, setActiveCat] = useState<string | null>(null);
 
