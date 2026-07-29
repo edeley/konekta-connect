@@ -7,6 +7,7 @@ import {
   User,
   LayoutDashboard,
   CalendarDays,
+  Sparkles,
   TrendingUp,
   Users,
   Settings,
