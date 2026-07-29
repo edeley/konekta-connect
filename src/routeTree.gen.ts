@@ -24,6 +24,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as ProIndexRouteImport } from './routes/pro.index'
 import { Route as ChatIndexRouteImport } from './routes/chat.index'
 import { Route as ProPedidosRouteImport } from './routes/pro.pedidos'
+import { Route as ProOportunidadesRouteImport } from './routes/pro.oportunidades'
 import { Route as ProGanhosRouteImport } from './routes/pro.ganhos'
 import { Route as ProAgendaRouteImport } from './routes/pro.agenda'
 import { Route as PrestadorIdRouteImport } from './routes/prestador.$id'
@@ -108,6 +109,11 @@ const ProPedidosRoute = ProPedidosRouteImport.update({
   path: '/pro/pedidos',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ProOportunidadesRoute = ProOportunidadesRouteImport.update({
+  id: '/pro/oportunidades',
+  path: '/pro/oportunidades',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ProGanhosRoute = ProGanhosRouteImport.update({
   id: '/pro/ganhos',
   path: '/pro/ganhos',
@@ -172,6 +178,7 @@ export interface FileRoutesByFullPath {
   '/prestador/$id': typeof PrestadorIdRoute
   '/pro/agenda': typeof ProAgendaRoute
   '/pro/ganhos': typeof ProGanhosRoute
+  '/pro/oportunidades': typeof ProOportunidadesRoute
   '/pro/pedidos': typeof ProPedidosRoute
   '/chat/': typeof ChatIndexRoute
   '/pro/': typeof ProIndexRoute
@@ -197,6 +204,7 @@ export interface FileRoutesByTo {
   '/prestador/$id': typeof PrestadorIdRoute
   '/pro/agenda': typeof ProAgendaRoute
   '/pro/ganhos': typeof ProGanhosRoute
+  '/pro/oportunidades': typeof ProOportunidadesRoute
   '/pro/pedidos': typeof ProPedidosRoute
   '/chat': typeof ChatIndexRoute
   '/pro': typeof ProIndexRoute
@@ -223,6 +231,7 @@ export interface FileRoutesById {
   '/prestador/$id': typeof PrestadorIdRoute
   '/pro/agenda': typeof ProAgendaRoute
   '/pro/ganhos': typeof ProGanhosRoute
+  '/pro/oportunidades': typeof ProOportunidadesRoute
   '/pro/pedidos': typeof ProPedidosRoute
   '/chat/': typeof ChatIndexRoute
   '/pro/': typeof ProIndexRoute
@@ -250,6 +259,7 @@ export interface FileRouteTypes {
     | '/prestador/$id'
     | '/pro/agenda'
     | '/pro/ganhos'
+    | '/pro/oportunidades'
     | '/pro/pedidos'
     | '/chat/'
     | '/pro/'
@@ -275,6 +285,7 @@ export interface FileRouteTypes {
     | '/prestador/$id'
     | '/pro/agenda'
     | '/pro/ganhos'
+    | '/pro/oportunidades'
     | '/pro/pedidos'
     | '/chat'
     | '/pro'
@@ -300,6 +311,7 @@ export interface FileRouteTypes {
     | '/prestador/$id'
     | '/pro/agenda'
     | '/pro/ganhos'
+    | '/pro/oportunidades'
     | '/pro/pedidos'
     | '/chat/'
     | '/pro/'
@@ -326,6 +338,7 @@ export interface RootRouteChildren {
   PrestadorIdRoute: typeof PrestadorIdRoute
   ProAgendaRoute: typeof ProAgendaRoute
   ProGanhosRoute: typeof ProGanhosRoute
+  ProOportunidadesRoute: typeof ProOportunidadesRoute
   ProPedidosRoute: typeof ProPedidosRoute
   ChatIndexRoute: typeof ChatIndexRoute
   ProIndexRoute: typeof ProIndexRoute
@@ -439,6 +452,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ProPedidosRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/pro/oportunidades': {
+      id: '/pro/oportunidades'
+      path: '/pro/oportunidades'
+      fullPath: '/pro/oportunidades'
+      preLoaderRoute: typeof ProOportunidadesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/pro/ganhos': {
       id: '/pro/ganhos'
       path: '/pro/ganhos'
@@ -519,6 +539,7 @@ const rootRouteChildren: RootRouteChildren = {
   PrestadorIdRoute: PrestadorIdRoute,
   ProAgendaRoute: ProAgendaRoute,
   ProGanhosRoute: ProGanhosRoute,
+  ProOportunidadesRoute: ProOportunidadesRoute,
   ProPedidosRoute: ProPedidosRoute,
   ChatIndexRoute: ChatIndexRoute,
   ProIndexRoute: ProIndexRoute,
