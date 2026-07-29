@@ -109,6 +109,7 @@ type State = {
   profiles: Profiles;
   providerProfile: ProviderProfile | null;
   orders: Order[];
+  requests: ServiceRequest[];
   messages: Record<string, Message[]>;
   assistantMessages: AssistantMessage[];
   balance: number;
