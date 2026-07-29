@@ -65,10 +65,25 @@ function Home() {
             <MapPin size={14} className="text-ocean" />
             <span className="text-sm font-medium text-muted-foreground">São Tomé, STP</span>
           </div>
-          <button className="relative p-2 rounded-full ring-1 ring-border bg-card" aria-label="Notificações">
-            <Bell size={16} className="text-foreground" />
-            <span className="absolute top-1.5 right-1.5 size-2 bg-terracotta rounded-full ring-2 ring-card" />
-          </button>
+          <div className="flex items-center gap-2">
+            <Link
+              to="/favoritos"
+              className="grid size-9 place-items-center rounded-full bg-card ring-1 ring-border"
+              aria-label="Favoritos"
+            >
+              <Heart size={16} className="text-foreground" />
+            </Link>
+            <Link
+              to="/notificacoes"
+              className="relative grid size-9 place-items-center rounded-full bg-card ring-1 ring-border"
+              aria-label="Notificações"
+            >
+              <Bell size={16} className="text-foreground" />
+              {unread > 0 && (
+                <span className="absolute right-1.5 top-1.5 size-2 rounded-full bg-terracotta ring-2 ring-card" />
+              )}
+            </Link>
+          </div>
         </div>
 
         <div>
@@ -79,6 +94,22 @@ function Home() {
             Encontre o profissional certo para hoje
           </h1>
         </div>
+
+        <Link
+          to="/novo-pedido"
+          className="press flex items-center gap-3 rounded-2xl bg-primary p-4 text-primary-foreground shadow-soft"
+        >
+          <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-primary-foreground/15">
+            <Plus size={20} />
+          </span>
+          <span className="min-w-0">
+            <span className="block text-sm font-bold">Publicar um pedido</span>
+            <span className="block text-xs text-primary-foreground/80">
+              Receba propostas grátis de vários prestadores
+            </span>
+          </span>
+        </Link>
+
       </header>
 
       <section className="px-4 sticky top-0 z-10 bg-surface/85 backdrop-blur-md py-2">
