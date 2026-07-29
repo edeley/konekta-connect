@@ -1,5 +1,10 @@
 import { useSyncExternalStore } from "react";
-import { orders as seedOrders, type Order, type OrderStatus } from "./konekta-data";
+import {
+  orders as seedOrders,
+  providers as catalogProviders,
+  type Order,
+  type OrderStatus,
+} from "./konekta-data";
 import {
   seedRequests,
   type Proposal,
