@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
-import { Bell, MapPin, Search, Star, Truck, Heart } from "lucide-react";
+import { Bell, MapPin, Plus, Search, Star, Truck, Heart } from "lucide-react";
 import { AppShell } from "@/components/AppShell";
 import { categories, providers, getProvider, statusLabel } from "@/lib/konekta-data";
 import { store, useStore } from "@/lib/store";
