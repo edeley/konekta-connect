@@ -1,5 +1,16 @@
 import { useSyncExternalStore } from "react";
-import { orders as seedOrders, type Order, type OrderStatus } from "./konekta-data";
+import {
+  orders as seedOrders,
+  providers as catalogProviders,
+  type Order,
+  type OrderStatus,
+} from "./konekta-data";
+import {
+  seedRequests,
+  type Proposal,
+  type RequestUrgency,
+  type ServiceRequest,
+} from "./requests";
 
 // Simple localStorage-backed store with pub/sub. No backend required for the MVP.
 
@@ -103,6 +114,7 @@ type State = {
   profiles: Profiles;
   providerProfile: ProviderProfile | null;
   orders: Order[];
+  requests: ServiceRequest[];
   messages: Record<string, Message[]>;
   assistantMessages: AssistantMessage[];
   balance: number;
@@ -147,6 +159,8 @@ const defaultState: State = {
   providerBalance: 0,
   providerTransactions: [],
   orders: seedOrders,
+  requests: seedRequests,
+
 
   messages: {
     "edmilson-varela": [
@@ -267,9 +281,145 @@ function notify(n: Omit<AppNotification, "id" | "at" | "read">) {
   });
 }
 
+function seedProviderPool(categoryName: string) {
+  const same = catalogProviders.filter(
+    (p) => p.category.toLowerCase() === categoryName.toLowerCase(),
+  );
+  return same.length > 0 ? same : catalogProviders;
+}
+
 export const store = {
   get: () => state,
   notify,
+
+  /* --------- Modelo GetNinjas: pedidos abertos + propostas de prestadores -------- */
+
+  createRequest(input: {
+    categorySlug: string;
+    categoryName: string;
+    title: string;
+    description: string;
+    district: string;
+    address?: string;
+    urgency: RequestUrgency;
+    budget?: number;
+    photos?: number;
+  }) {
+    const req: ServiceRequest = {
+      id: `REQ-${Math.floor(1000 + Math.random() * 9000)}`,
+      categorySlug: input.categorySlug,
+      categoryName: input.categoryName,
+      title: input.title,
+      description: input.description,
+      district: input.district,
+      address: input.address,
+      urgency: input.urgency,
+      budget: input.budget,
+      photos: input.photos ?? 0,
+      status: "aberto",
+      clientName: state.user?.name ?? "Cliente KONEKTA",
+      createdAt: Date.now(),
+      proposals: [],
+    };
+    set({ requests: [req, ...state.requests] });
+    notify({
+      title: "Pedido publicado",
+      body: `${req.id} — os prestadores de ${req.categoryName} já podem enviar propostas.`,
+      tone: "success",
+      link: "/pedidos",
+    });
+    // Simula a chegada de propostas reais de prestadores da categoria.
+    setTimeout(() => store.simulateProposals(req.id), 2500);
+    return req;
+  },
+
+  simulateProposals(requestId: string) {
+    const req = state.requests.find((r) => r.id === requestId);
+    if (!req || req.status !== "aberto") return;
+    const pool = seedProviderPool(req.categoryName);
+    if (pool.length === 0) return;
+    const base = req.budget ?? 800;
+    const incoming: Proposal[] = pool.slice(0, 3).map((p, i) => ({
+      id: `pr_${Date.now()}_${i}`,
+      providerId: p.id,
+      providerName: p.name,
+      price: Math.max(150, Math.round((base * (0.85 + i * 0.12)) / 10) * 10),
+      message:
+        i === 0
+          ? "Tenho disponibilidade imediata e faço orçamento sem compromisso."
+          : "Trabalho com garantia e material incluído. Posso combinar o horário consigo.",
+      availability: i === 0 ? "Hoje" : "Amanhã",
+      at: Date.now() + i,
+    }));
+    set({
+      requests: state.requests.map((r) =>
+        r.id === requestId ? { ...r, proposals: [...r.proposals, ...incoming] } : r,
+      ),
+    });
+    notify({
+      title: "Novas propostas recebidas",
+      body: `${incoming.length} prestadores responderam ao pedido ${requestId}.`,
+      tone: "info",
+      link: "/pedidos",
+    });
+  },
+
+  sendProposal(
+    requestId: string,
+    input: { price: number; message: string; availability: string },
+  ) {
+    const req = state.requests.find((r) => r.id === requestId);
+    if (!req) return false;
+    const proposal: Proposal = {
+      id: `pr_${Date.now()}`,
+      providerId: state.user?.id ?? "me",
+      providerName: state.user?.name ?? "Prestador KONEKTA",
+      price: input.price,
+      message: input.message,
+      availability: input.availability,
+      at: Date.now(),
+    };
+    set({
+      requests: state.requests.map((r) =>
+        r.id === requestId ? { ...r, proposals: [...r.proposals, proposal] } : r,
+      ),
+    });
+    notify({
+      title: "Proposta enviada",
+      body: `Enviou uma proposta de ${input.price} Db para ${req.title}.`,
+      tone: "success",
+      link: "/pro/oportunidades",
+    });
+    return true;
+  },
+
+  acceptProposal(requestId: string, proposalId: string) {
+    const req = state.requests.find((r) => r.id === requestId);
+    const proposal = req?.proposals.find((p) => p.id === proposalId);
+    if (!req || !proposal) return null;
+    set({
+      requests: state.requests.map((r) =>
+        r.id === requestId ? { ...r, status: "adjudicado", acceptedProposalId: proposalId } : r,
+      ),
+    });
+    const order = store.createOrder({
+      providerId: proposal.providerId,
+      service: req.title,
+      total: proposal.price,
+      scheduledFor: proposal.availability,
+      address: req.address,
+      notes: req.description,
+      paymentMethod: "carteira",
+    });
+    return order;
+  },
+
+  closeRequest(requestId: string) {
+    set({
+      requests: state.requests.map((r) => (r.id === requestId ? { ...r, status: "fechado" } : r)),
+    });
+  },
+
 
   markOnboarded() {
     set({ onboarded: true });

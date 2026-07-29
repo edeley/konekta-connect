@@ -15,7 +15,10 @@ import { Route as SplashRouteImport } from './routes/splash'
 import { Route as PerfilRouteImport } from './routes/perfil'
 import { Route as PedidosRouteImport } from './routes/pedidos'
 import { Route as OnboardingRouteImport } from './routes/onboarding'
+import { Route as NovoPedidoRouteImport } from './routes/novo-pedido'
+import { Route as NotificacoesRouteImport } from './routes/notificacoes'
 import { Route as McpRouteImport } from './routes/mcp'
+import { Route as FavoritosRouteImport } from './routes/favoritos'
 import { Route as CarteiraRouteImport } from './routes/carteira'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AssistenteRouteImport } from './routes/assistente'
@@ -23,9 +26,11 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as ProIndexRouteImport } from './routes/pro.index'
 import { Route as ChatIndexRouteImport } from './routes/chat.index'
 import { Route as ProPedidosRouteImport } from './routes/pro.pedidos'
+import { Route as ProOportunidadesRouteImport } from './routes/pro.oportunidades'
 import { Route as ProGanhosRouteImport } from './routes/pro.ganhos'
 import { Route as ProAgendaRouteImport } from './routes/pro.agenda'
 import { Route as PrestadorIdRouteImport } from './routes/prestador.$id'
+import { Route as PedidoIdRouteImport } from './routes/pedido.$id'
 import { Route as ChatIdRouteImport } from './routes/chat.$id'
 import { Route as Char91DotwellKnownChar93OauthProtectedResourceRouteImport } from './routes/[.well-known]/oauth-protected-resource'
 import { Route as Char91DotmcpChar93ListToolsRouteImport } from './routes/[.mcp]/list-tools'
@@ -61,9 +66,24 @@ const OnboardingRoute = OnboardingRouteImport.update({
   path: '/onboarding',
   getParentRoute: () => rootRouteImport,
 } as any)
+const NovoPedidoRoute = NovoPedidoRouteImport.update({
+  id: '/novo-pedido',
+  path: '/novo-pedido',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const NotificacoesRoute = NotificacoesRouteImport.update({
+  id: '/notificacoes',
+  path: '/notificacoes',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const McpRoute = McpRouteImport.update({
   id: '/mcp',
   path: '/mcp',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const FavoritosRoute = FavoritosRouteImport.update({
+  id: '/favoritos',
+  path: '/favoritos',
   getParentRoute: () => rootRouteImport,
 } as any)
 const CarteiraRoute = CarteiraRouteImport.update({
@@ -101,6 +121,11 @@ const ProPedidosRoute = ProPedidosRouteImport.update({
   path: '/pro/pedidos',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ProOportunidadesRoute = ProOportunidadesRouteImport.update({
+  id: '/pro/oportunidades',
+  path: '/pro/oportunidades',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ProGanhosRoute = ProGanhosRouteImport.update({
   id: '/pro/ganhos',
   path: '/pro/ganhos',
@@ -114,6 +139,11 @@ const ProAgendaRoute = ProAgendaRouteImport.update({
 const PrestadorIdRoute = PrestadorIdRouteImport.update({
   id: '/prestador/$id',
   path: '/prestador/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PedidoIdRoute = PedidoIdRouteImport.update({
+  id: '/pedido/$id',
+  path: '/pedido/$id',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ChatIdRoute = ChatIdRouteImport.update({
@@ -145,7 +175,10 @@ export interface FileRoutesByFullPath {
   '/assistente': typeof AssistenteRoute
   '/auth': typeof AuthRoute
   '/carteira': typeof CarteiraRoute
+  '/favoritos': typeof FavoritosRoute
   '/mcp': typeof McpRoute
+  '/notificacoes': typeof NotificacoesRoute
+  '/novo-pedido': typeof NovoPedidoRoute
   '/onboarding': typeof OnboardingRoute
   '/pedidos': typeof PedidosRoute
   '/perfil': typeof PerfilRoute
@@ -155,9 +188,11 @@ export interface FileRoutesByFullPath {
   '/.mcp/list-tools': typeof Char91DotmcpChar93ListToolsRoute
   '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   '/chat/$id': typeof ChatIdRoute
+  '/pedido/$id': typeof PedidoIdRoute
   '/prestador/$id': typeof PrestadorIdRoute
   '/pro/agenda': typeof ProAgendaRoute
   '/pro/ganhos': typeof ProGanhosRoute
+  '/pro/oportunidades': typeof ProOportunidadesRoute
   '/pro/pedidos': typeof ProPedidosRoute
   '/chat/': typeof ChatIndexRoute
   '/pro/': typeof ProIndexRoute
@@ -168,7 +203,10 @@ export interface FileRoutesByTo {
   '/assistente': typeof AssistenteRoute
   '/auth': typeof AuthRoute
   '/carteira': typeof CarteiraRoute
+  '/favoritos': typeof FavoritosRoute
   '/mcp': typeof McpRoute
+  '/notificacoes': typeof NotificacoesRoute
+  '/novo-pedido': typeof NovoPedidoRoute
   '/onboarding': typeof OnboardingRoute
   '/pedidos': typeof PedidosRoute
   '/perfil': typeof PerfilRoute
@@ -178,9 +216,11 @@ export interface FileRoutesByTo {
   '/.mcp/list-tools': typeof Char91DotmcpChar93ListToolsRoute
   '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   '/chat/$id': typeof ChatIdRoute
+  '/pedido/$id': typeof PedidoIdRoute
   '/prestador/$id': typeof PrestadorIdRoute
   '/pro/agenda': typeof ProAgendaRoute
   '/pro/ganhos': typeof ProGanhosRoute
+  '/pro/oportunidades': typeof ProOportunidadesRoute
   '/pro/pedidos': typeof ProPedidosRoute
   '/chat': typeof ChatIndexRoute
   '/pro': typeof ProIndexRoute
@@ -192,7 +232,10 @@ export interface FileRoutesById {
   '/assistente': typeof AssistenteRoute
   '/auth': typeof AuthRoute
   '/carteira': typeof CarteiraRoute
+  '/favoritos': typeof FavoritosRoute
   '/mcp': typeof McpRoute
+  '/notificacoes': typeof NotificacoesRoute
+  '/novo-pedido': typeof NovoPedidoRoute
   '/onboarding': typeof OnboardingRoute
   '/pedidos': typeof PedidosRoute
   '/perfil': typeof PerfilRoute
@@ -202,9 +245,11 @@ export interface FileRoutesById {
   '/.mcp/list-tools': typeof Char91DotmcpChar93ListToolsRoute
   '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   '/chat/$id': typeof ChatIdRoute
+  '/pedido/$id': typeof PedidoIdRoute
   '/prestador/$id': typeof PrestadorIdRoute
   '/pro/agenda': typeof ProAgendaRoute
   '/pro/ganhos': typeof ProGanhosRoute
+  '/pro/oportunidades': typeof ProOportunidadesRoute
   '/pro/pedidos': typeof ProPedidosRoute
   '/chat/': typeof ChatIndexRoute
   '/pro/': typeof ProIndexRoute
@@ -217,7 +262,10 @@ export interface FileRouteTypes {
     | '/assistente'
     | '/auth'
     | '/carteira'
+    | '/favoritos'
     | '/mcp'
+    | '/notificacoes'
+    | '/novo-pedido'
     | '/onboarding'
     | '/pedidos'
     | '/perfil'
@@ -227,9 +275,11 @@ export interface FileRouteTypes {
     | '/.mcp/list-tools'
     | '/.well-known/oauth-protected-resource'
     | '/chat/$id'
+    | '/pedido/$id'
     | '/prestador/$id'
     | '/pro/agenda'
     | '/pro/ganhos'
+    | '/pro/oportunidades'
     | '/pro/pedidos'
     | '/chat/'
     | '/pro/'
@@ -240,7 +290,10 @@ export interface FileRouteTypes {
     | '/assistente'
     | '/auth'
     | '/carteira'
+    | '/favoritos'
     | '/mcp'
+    | '/notificacoes'
+    | '/novo-pedido'
     | '/onboarding'
     | '/pedidos'
     | '/perfil'
@@ -250,9 +303,11 @@ export interface FileRouteTypes {
     | '/.mcp/list-tools'
     | '/.well-known/oauth-protected-resource'
     | '/chat/$id'
+    | '/pedido/$id'
     | '/prestador/$id'
     | '/pro/agenda'
     | '/pro/ganhos'
+    | '/pro/oportunidades'
     | '/pro/pedidos'
     | '/chat'
     | '/pro'
@@ -263,7 +318,10 @@ export interface FileRouteTypes {
     | '/assistente'
     | '/auth'
     | '/carteira'
+    | '/favoritos'
     | '/mcp'
+    | '/notificacoes'
+    | '/novo-pedido'
     | '/onboarding'
     | '/pedidos'
     | '/perfil'
@@ -273,9 +331,11 @@ export interface FileRouteTypes {
     | '/.mcp/list-tools'
     | '/.well-known/oauth-protected-resource'
     | '/chat/$id'
+    | '/pedido/$id'
     | '/prestador/$id'
     | '/pro/agenda'
     | '/pro/ganhos'
+    | '/pro/oportunidades'
     | '/pro/pedidos'
     | '/chat/'
     | '/pro/'
@@ -287,7 +347,10 @@ export interface RootRouteChildren {
   AssistenteRoute: typeof AssistenteRoute
   AuthRoute: typeof AuthRoute
   CarteiraRoute: typeof CarteiraRoute
+  FavoritosRoute: typeof FavoritosRoute
   McpRoute: typeof McpRoute
+  NotificacoesRoute: typeof NotificacoesRoute
+  NovoPedidoRoute: typeof NovoPedidoRoute
   OnboardingRoute: typeof OnboardingRoute
   PedidosRoute: typeof PedidosRoute
   PerfilRoute: typeof PerfilRoute
@@ -297,9 +360,11 @@ export interface RootRouteChildren {
   Char91DotmcpChar93ListToolsRoute: typeof Char91DotmcpChar93ListToolsRoute
   Char91DotwellKnownChar93OauthProtectedResourceRoute: typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   ChatIdRoute: typeof ChatIdRoute
+  PedidoIdRoute: typeof PedidoIdRoute
   PrestadorIdRoute: typeof PrestadorIdRoute
   ProAgendaRoute: typeof ProAgendaRoute
   ProGanhosRoute: typeof ProGanhosRoute
+  ProOportunidadesRoute: typeof ProOportunidadesRoute
   ProPedidosRoute: typeof ProPedidosRoute
   ChatIndexRoute: typeof ChatIndexRoute
   ProIndexRoute: typeof ProIndexRoute
@@ -350,11 +415,32 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof OnboardingRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/novo-pedido': {
+      id: '/novo-pedido'
+      path: '/novo-pedido'
+      fullPath: '/novo-pedido'
+      preLoaderRoute: typeof NovoPedidoRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/notificacoes': {
+      id: '/notificacoes'
+      path: '/notificacoes'
+      fullPath: '/notificacoes'
+      preLoaderRoute: typeof NotificacoesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/mcp': {
       id: '/mcp'
       path: '/mcp'
       fullPath: '/mcp'
       preLoaderRoute: typeof McpRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/favoritos': {
+      id: '/favoritos'
+      path: '/favoritos'
+      fullPath: '/favoritos'
+      preLoaderRoute: typeof FavoritosRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/carteira': {
@@ -406,6 +492,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ProPedidosRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/pro/oportunidades': {
+      id: '/pro/oportunidades'
+      path: '/pro/oportunidades'
+      fullPath: '/pro/oportunidades'
+      preLoaderRoute: typeof ProOportunidadesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/pro/ganhos': {
       id: '/pro/ganhos'
       path: '/pro/ganhos'
@@ -425,6 +518,13 @@ declare module '@tanstack/react-router' {
       path: '/prestador/$id'
       fullPath: '/prestador/$id'
       preLoaderRoute: typeof PrestadorIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/pedido/$id': {
+      id: '/pedido/$id'
+      path: '/pedido/$id'
+      fullPath: '/pedido/$id'
+      preLoaderRoute: typeof PedidoIdRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/chat/$id': {
@@ -463,7 +563,10 @@ const rootRouteChildren: RootRouteChildren = {
   AssistenteRoute: AssistenteRoute,
   AuthRoute: AuthRoute,
   CarteiraRoute: CarteiraRoute,
+  FavoritosRoute: FavoritosRoute,
   McpRoute: McpRoute,
+  NotificacoesRoute: NotificacoesRoute,
+  NovoPedidoRoute: NovoPedidoRoute,
   OnboardingRoute: OnboardingRoute,
   PedidosRoute: PedidosRoute,
   PerfilRoute: PerfilRoute,
@@ -474,9 +577,11 @@ const rootRouteChildren: RootRouteChildren = {
   Char91DotwellKnownChar93OauthProtectedResourceRoute:
     Char91DotwellKnownChar93OauthProtectedResourceRoute,
   ChatIdRoute: ChatIdRoute,
+  PedidoIdRoute: PedidoIdRoute,
   PrestadorIdRoute: PrestadorIdRoute,
   ProAgendaRoute: ProAgendaRoute,
   ProGanhosRoute: ProGanhosRoute,
+  ProOportunidadesRoute: ProOportunidadesRoute,
   ProPedidosRoute: ProPedidosRoute,
   ChatIndexRoute: ChatIndexRoute,
   ProIndexRoute: ProIndexRoute,
