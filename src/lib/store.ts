@@ -154,6 +154,8 @@ const defaultState: State = {
   providerBalance: 0,
   providerTransactions: [],
   orders: seedOrders,
+  requests: seedRequests,
+
 
   messages: {
     "edmilson-varela": [
