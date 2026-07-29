@@ -276,6 +276,13 @@ function notify(n: Omit<AppNotification, "id" | "at" | "read">) {
   });
 }
 
+function seedProviderPool(categoryName: string) {
+  const same = catalogProviders.filter(
+    (p) => p.category.toLowerCase() === categoryName.toLowerCase(),
+  );
+  return same.length > 0 ? same : catalogProviders;
+}
+
 export const store = {
   get: () => state,
   notify,
