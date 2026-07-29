@@ -18,6 +18,7 @@ import { Route as OnboardingRouteImport } from './routes/onboarding'
 import { Route as NovoPedidoRouteImport } from './routes/novo-pedido'
 import { Route as NotificacoesRouteImport } from './routes/notificacoes'
 import { Route as McpRouteImport } from './routes/mcp'
+import { Route as FavoritosRouteImport } from './routes/favoritos'
 import { Route as CarteiraRouteImport } from './routes/carteira'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AssistenteRouteImport } from './routes/assistente'
@@ -78,6 +79,11 @@ const NotificacoesRoute = NotificacoesRouteImport.update({
 const McpRoute = McpRouteImport.update({
   id: '/mcp',
   path: '/mcp',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const FavoritosRoute = FavoritosRouteImport.update({
+  id: '/favoritos',
+  path: '/favoritos',
   getParentRoute: () => rootRouteImport,
 } as any)
 const CarteiraRoute = CarteiraRouteImport.update({
@@ -169,6 +175,7 @@ export interface FileRoutesByFullPath {
   '/assistente': typeof AssistenteRoute
   '/auth': typeof AuthRoute
   '/carteira': typeof CarteiraRoute
+  '/favoritos': typeof FavoritosRoute
   '/mcp': typeof McpRoute
   '/notificacoes': typeof NotificacoesRoute
   '/novo-pedido': typeof NovoPedidoRoute
@@ -196,6 +203,7 @@ export interface FileRoutesByTo {
   '/assistente': typeof AssistenteRoute
   '/auth': typeof AuthRoute
   '/carteira': typeof CarteiraRoute
+  '/favoritos': typeof FavoritosRoute
   '/mcp': typeof McpRoute
   '/notificacoes': typeof NotificacoesRoute
   '/novo-pedido': typeof NovoPedidoRoute
@@ -224,6 +232,7 @@ export interface FileRoutesById {
   '/assistente': typeof AssistenteRoute
   '/auth': typeof AuthRoute
   '/carteira': typeof CarteiraRoute
+  '/favoritos': typeof FavoritosRoute
   '/mcp': typeof McpRoute
   '/notificacoes': typeof NotificacoesRoute
   '/novo-pedido': typeof NovoPedidoRoute
@@ -253,6 +262,7 @@ export interface FileRouteTypes {
     | '/assistente'
     | '/auth'
     | '/carteira'
+    | '/favoritos'
     | '/mcp'
     | '/notificacoes'
     | '/novo-pedido'
@@ -280,6 +290,7 @@ export interface FileRouteTypes {
     | '/assistente'
     | '/auth'
     | '/carteira'
+    | '/favoritos'
     | '/mcp'
     | '/notificacoes'
     | '/novo-pedido'
@@ -307,6 +318,7 @@ export interface FileRouteTypes {
     | '/assistente'
     | '/auth'
     | '/carteira'
+    | '/favoritos'
     | '/mcp'
     | '/notificacoes'
     | '/novo-pedido'
@@ -335,6 +347,7 @@ export interface RootRouteChildren {
   AssistenteRoute: typeof AssistenteRoute
   AuthRoute: typeof AuthRoute
   CarteiraRoute: typeof CarteiraRoute
+  FavoritosRoute: typeof FavoritosRoute
   McpRoute: typeof McpRoute
   NotificacoesRoute: typeof NotificacoesRoute
   NovoPedidoRoute: typeof NovoPedidoRoute
@@ -421,6 +434,13 @@ declare module '@tanstack/react-router' {
       path: '/mcp'
       fullPath: '/mcp'
       preLoaderRoute: typeof McpRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/favoritos': {
+      id: '/favoritos'
+      path: '/favoritos'
+      fullPath: '/favoritos'
+      preLoaderRoute: typeof FavoritosRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/carteira': {
@@ -543,6 +563,7 @@ const rootRouteChildren: RootRouteChildren = {
   AssistenteRoute: AssistenteRoute,
   AuthRoute: AuthRoute,
   CarteiraRoute: CarteiraRoute,
+  FavoritosRoute: FavoritosRoute,
   McpRoute: McpRoute,
   NotificacoesRoute: NotificacoesRoute,
   NovoPedidoRoute: NovoPedidoRoute,
