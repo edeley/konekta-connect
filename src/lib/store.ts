@@ -1,5 +1,11 @@
 import { useSyncExternalStore } from "react";
 import { orders as seedOrders, type Order, type OrderStatus } from "./konekta-data";
+import {
+  seedRequests,
+  type Proposal,
+  type RequestUrgency,
+  type ServiceRequest,
+} from "./requests";
 
 // Simple localStorage-backed store with pub/sub. No backend required for the MVP.
 
