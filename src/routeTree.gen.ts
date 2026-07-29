@@ -27,6 +27,7 @@ import { Route as ProPedidosRouteImport } from './routes/pro.pedidos'
 import { Route as ProGanhosRouteImport } from './routes/pro.ganhos'
 import { Route as ProAgendaRouteImport } from './routes/pro.agenda'
 import { Route as PrestadorIdRouteImport } from './routes/prestador.$id'
+import { Route as PedidoIdRouteImport } from './routes/pedido.$id'
 import { Route as ChatIdRouteImport } from './routes/chat.$id'
 import { Route as Char91DotwellKnownChar93OauthProtectedResourceRouteImport } from './routes/[.well-known]/oauth-protected-resource'
 import { Route as Char91DotmcpChar93ListToolsRouteImport } from './routes/[.mcp]/list-tools'
@@ -122,6 +123,11 @@ const PrestadorIdRoute = PrestadorIdRouteImport.update({
   path: '/prestador/$id',
   getParentRoute: () => rootRouteImport,
 } as any)
+const PedidoIdRoute = PedidoIdRouteImport.update({
+  id: '/pedido/$id',
+  path: '/pedido/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ChatIdRoute = ChatIdRouteImport.update({
   id: '/chat/$id',
   path: '/chat/$id',
@@ -162,6 +168,7 @@ export interface FileRoutesByFullPath {
   '/.mcp/list-tools': typeof Char91DotmcpChar93ListToolsRoute
   '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   '/chat/$id': typeof ChatIdRoute
+  '/pedido/$id': typeof PedidoIdRoute
   '/prestador/$id': typeof PrestadorIdRoute
   '/pro/agenda': typeof ProAgendaRoute
   '/pro/ganhos': typeof ProGanhosRoute
@@ -186,6 +193,7 @@ export interface FileRoutesByTo {
   '/.mcp/list-tools': typeof Char91DotmcpChar93ListToolsRoute
   '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   '/chat/$id': typeof ChatIdRoute
+  '/pedido/$id': typeof PedidoIdRoute
   '/prestador/$id': typeof PrestadorIdRoute
   '/pro/agenda': typeof ProAgendaRoute
   '/pro/ganhos': typeof ProGanhosRoute
@@ -211,6 +219,7 @@ export interface FileRoutesById {
   '/.mcp/list-tools': typeof Char91DotmcpChar93ListToolsRoute
   '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   '/chat/$id': typeof ChatIdRoute
+  '/pedido/$id': typeof PedidoIdRoute
   '/prestador/$id': typeof PrestadorIdRoute
   '/pro/agenda': typeof ProAgendaRoute
   '/pro/ganhos': typeof ProGanhosRoute
@@ -237,6 +246,7 @@ export interface FileRouteTypes {
     | '/.mcp/list-tools'
     | '/.well-known/oauth-protected-resource'
     | '/chat/$id'
+    | '/pedido/$id'
     | '/prestador/$id'
     | '/pro/agenda'
     | '/pro/ganhos'
@@ -261,6 +271,7 @@ export interface FileRouteTypes {
     | '/.mcp/list-tools'
     | '/.well-known/oauth-protected-resource'
     | '/chat/$id'
+    | '/pedido/$id'
     | '/prestador/$id'
     | '/pro/agenda'
     | '/pro/ganhos'
@@ -285,6 +296,7 @@ export interface FileRouteTypes {
     | '/.mcp/list-tools'
     | '/.well-known/oauth-protected-resource'
     | '/chat/$id'
+    | '/pedido/$id'
     | '/prestador/$id'
     | '/pro/agenda'
     | '/pro/ganhos'
@@ -310,6 +322,7 @@ export interface RootRouteChildren {
   Char91DotmcpChar93ListToolsRoute: typeof Char91DotmcpChar93ListToolsRoute
   Char91DotwellKnownChar93OauthProtectedResourceRoute: typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   ChatIdRoute: typeof ChatIdRoute
+  PedidoIdRoute: typeof PedidoIdRoute
   PrestadorIdRoute: typeof PrestadorIdRoute
   ProAgendaRoute: typeof ProAgendaRoute
   ProGanhosRoute: typeof ProGanhosRoute
@@ -447,6 +460,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PrestadorIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/pedido/$id': {
+      id: '/pedido/$id'
+      path: '/pedido/$id'
+      fullPath: '/pedido/$id'
+      preLoaderRoute: typeof PedidoIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/chat/$id': {
       id: '/chat/$id'
       path: '/chat/$id'
@@ -495,6 +515,7 @@ const rootRouteChildren: RootRouteChildren = {
   Char91DotwellKnownChar93OauthProtectedResourceRoute:
     Char91DotwellKnownChar93OauthProtectedResourceRoute,
   ChatIdRoute: ChatIdRoute,
+  PedidoIdRoute: PedidoIdRoute,
   PrestadorIdRoute: PrestadorIdRoute,
   ProAgendaRoute: ProAgendaRoute,
   ProGanhosRoute: ProGanhosRoute,
