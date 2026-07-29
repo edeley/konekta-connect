@@ -44,7 +44,8 @@ export const Route = createFileRoute("/prestador/$id")({
 const slots = ["Hoje, 15:00", "Hoje, 17:30", "Amanhã, 09:00", "Amanhã, 14:00"];
 
 function ProviderPage() {
-  const { provider } = Route.useLoaderData();
+  const { id } = Route.useParams();
+  const provider = getProvider(id)!;
   const router = useRouter();
   const navigate = useNavigate();
   const favorites = useStore((s) => s.favorites);
