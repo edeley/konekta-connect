@@ -151,7 +151,7 @@ function SiteFooter() {
           <p className="mt-2 text-sm text-muted-foreground">
             Serviços de confiança em São Tomé e Príncipe, sem chamadas e com pagamento protegido.
           </p>
-          <p className="mt-3 inline-flex rounded-full bg-secondary/10 px-3 py-1 text-xs font-medium text-secondary">
+          <p className="mt-3 inline-flex rounded-full bg-success/10 px-3 py-1 text-xs font-medium text-success">
             🇸🇹 Feito em São Tomé e Príncipe
           </p>
         </div>
