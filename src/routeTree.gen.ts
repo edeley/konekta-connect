@@ -10,8 +10,11 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as TornarPrestadorRouteImport } from './routes/tornar-prestador'
+import { Route as TermosRouteImport } from './routes/termos'
 import { Route as TelasRouteImport } from './routes/telas'
 import { Route as SplashRouteImport } from './routes/splash'
+import { Route as SobreRouteImport } from './routes/sobre'
+import { Route as PrivacidadeRouteImport } from './routes/privacidade'
 import { Route as PerfilRouteImport } from './routes/perfil'
 import { Route as PedidosRouteImport } from './routes/pedidos'
 import { Route as OnboardingRouteImport } from './routes/onboarding'
@@ -19,9 +22,11 @@ import { Route as NovoPedidoRouteImport } from './routes/novo-pedido'
 import { Route as NotificacoesRouteImport } from './routes/notificacoes'
 import { Route as McpRouteImport } from './routes/mcp'
 import { Route as FavoritosRouteImport } from './routes/favoritos'
+import { Route as ComoFuncionaRouteImport } from './routes/como-funciona'
 import { Route as CarteiraRouteImport } from './routes/carteira'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AssistenteRouteImport } from './routes/assistente'
+import { Route as AjudaRouteImport } from './routes/ajuda'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ProIndexRouteImport } from './routes/pro.index'
 import { Route as ChatIndexRouteImport } from './routes/chat.index'
@@ -43,6 +48,11 @@ const TornarPrestadorRoute = TornarPrestadorRouteImport.update({
   path: '/tornar-prestador',
   getParentRoute: () => rootRouteImport,
 } as any)
+const TermosRoute = TermosRouteImport.update({
+  id: '/termos',
+  path: '/termos',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const TelasRoute = TelasRouteImport.update({
   id: '/telas',
   path: '/telas',
@@ -51,6 +61,16 @@ const TelasRoute = TelasRouteImport.update({
 const SplashRoute = SplashRouteImport.update({
   id: '/splash',
   path: '/splash',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SobreRoute = SobreRouteImport.update({
+  id: '/sobre',
+  path: '/sobre',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PrivacidadeRoute = PrivacidadeRouteImport.update({
+  id: '/privacidade',
+  path: '/privacidade',
   getParentRoute: () => rootRouteImport,
 } as any)
 const PerfilRoute = PerfilRouteImport.update({
@@ -88,6 +108,11 @@ const FavoritosRoute = FavoritosRouteImport.update({
   path: '/favoritos',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ComoFuncionaRoute = ComoFuncionaRouteImport.update({
+  id: '/como-funciona',
+  path: '/como-funciona',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const CarteiraRoute = CarteiraRouteImport.update({
   id: '/carteira',
   path: '/carteira',
@@ -101,6 +126,11 @@ const AuthRoute = AuthRouteImport.update({
 const AssistenteRoute = AssistenteRouteImport.update({
   id: '/assistente',
   path: '/assistente',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AjudaRoute = AjudaRouteImport.update({
+  id: '/ajuda',
+  path: '/ajuda',
   getParentRoute: () => rootRouteImport,
 } as any)
 const IndexRoute = IndexRouteImport.update({
@@ -184,9 +214,11 @@ const Char91DotmcpChar93InvokeToolToolRoute =
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/ajuda': typeof AjudaRoute
   '/assistente': typeof AssistenteRoute
   '/auth': typeof AuthRoute
   '/carteira': typeof CarteiraRoute
+  '/como-funciona': typeof ComoFuncionaRoute
   '/favoritos': typeof FavoritosRoute
   '/mcp': typeof McpRoute
   '/notificacoes': typeof NotificacoesRoute
@@ -194,8 +226,11 @@ export interface FileRoutesByFullPath {
   '/onboarding': typeof OnboardingRoute
   '/pedidos': typeof PedidosRoute
   '/perfil': typeof PerfilRoute
+  '/privacidade': typeof PrivacidadeRoute
+  '/sobre': typeof SobreRoute
   '/splash': typeof SplashRoute
   '/telas': typeof TelasRoute
+  '/termos': typeof TermosRoute
   '/tornar-prestador': typeof TornarPrestadorRoute
   '/.mcp/list-tools': typeof Char91DotmcpChar93ListToolsRoute
   '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
@@ -214,9 +249,11 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/ajuda': typeof AjudaRoute
   '/assistente': typeof AssistenteRoute
   '/auth': typeof AuthRoute
   '/carteira': typeof CarteiraRoute
+  '/como-funciona': typeof ComoFuncionaRoute
   '/favoritos': typeof FavoritosRoute
   '/mcp': typeof McpRoute
   '/notificacoes': typeof NotificacoesRoute
@@ -224,8 +261,11 @@ export interface FileRoutesByTo {
   '/onboarding': typeof OnboardingRoute
   '/pedidos': typeof PedidosRoute
   '/perfil': typeof PerfilRoute
+  '/privacidade': typeof PrivacidadeRoute
+  '/sobre': typeof SobreRoute
   '/splash': typeof SplashRoute
   '/telas': typeof TelasRoute
+  '/termos': typeof TermosRoute
   '/tornar-prestador': typeof TornarPrestadorRoute
   '/.mcp/list-tools': typeof Char91DotmcpChar93ListToolsRoute
   '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
@@ -245,9 +285,11 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/ajuda': typeof AjudaRoute
   '/assistente': typeof AssistenteRoute
   '/auth': typeof AuthRoute
   '/carteira': typeof CarteiraRoute
+  '/como-funciona': typeof ComoFuncionaRoute
   '/favoritos': typeof FavoritosRoute
   '/mcp': typeof McpRoute
   '/notificacoes': typeof NotificacoesRoute
@@ -255,8 +297,11 @@ export interface FileRoutesById {
   '/onboarding': typeof OnboardingRoute
   '/pedidos': typeof PedidosRoute
   '/perfil': typeof PerfilRoute
+  '/privacidade': typeof PrivacidadeRoute
+  '/sobre': typeof SobreRoute
   '/splash': typeof SplashRoute
   '/telas': typeof TelasRoute
+  '/termos': typeof TermosRoute
   '/tornar-prestador': typeof TornarPrestadorRoute
   '/.mcp/list-tools': typeof Char91DotmcpChar93ListToolsRoute
   '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
@@ -277,9 +322,11 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/ajuda'
     | '/assistente'
     | '/auth'
     | '/carteira'
+    | '/como-funciona'
     | '/favoritos'
     | '/mcp'
     | '/notificacoes'
@@ -287,8 +334,11 @@ export interface FileRouteTypes {
     | '/onboarding'
     | '/pedidos'
     | '/perfil'
+    | '/privacidade'
+    | '/sobre'
     | '/splash'
     | '/telas'
+    | '/termos'
     | '/tornar-prestador'
     | '/.mcp/list-tools'
     | '/.well-known/oauth-protected-resource'
@@ -307,9 +357,11 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/ajuda'
     | '/assistente'
     | '/auth'
     | '/carteira'
+    | '/como-funciona'
     | '/favoritos'
     | '/mcp'
     | '/notificacoes'
@@ -317,8 +369,11 @@ export interface FileRouteTypes {
     | '/onboarding'
     | '/pedidos'
     | '/perfil'
+    | '/privacidade'
+    | '/sobre'
     | '/splash'
     | '/telas'
+    | '/termos'
     | '/tornar-prestador'
     | '/.mcp/list-tools'
     | '/.well-known/oauth-protected-resource'
@@ -337,9 +392,11 @@ export interface FileRouteTypes {
   id:
     | '__root__'
     | '/'
+    | '/ajuda'
     | '/assistente'
     | '/auth'
     | '/carteira'
+    | '/como-funciona'
     | '/favoritos'
     | '/mcp'
     | '/notificacoes'
@@ -347,8 +404,11 @@ export interface FileRouteTypes {
     | '/onboarding'
     | '/pedidos'
     | '/perfil'
+    | '/privacidade'
+    | '/sobre'
     | '/splash'
     | '/telas'
+    | '/termos'
     | '/tornar-prestador'
     | '/.mcp/list-tools'
     | '/.well-known/oauth-protected-resource'
@@ -368,9 +428,11 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AjudaRoute: typeof AjudaRoute
   AssistenteRoute: typeof AssistenteRoute
   AuthRoute: typeof AuthRoute
   CarteiraRoute: typeof CarteiraRoute
+  ComoFuncionaRoute: typeof ComoFuncionaRoute
   FavoritosRoute: typeof FavoritosRoute
   McpRoute: typeof McpRoute
   NotificacoesRoute: typeof NotificacoesRoute
@@ -378,8 +440,11 @@ export interface RootRouteChildren {
   OnboardingRoute: typeof OnboardingRoute
   PedidosRoute: typeof PedidosRoute
   PerfilRoute: typeof PerfilRoute
+  PrivacidadeRoute: typeof PrivacidadeRoute
+  SobreRoute: typeof SobreRoute
   SplashRoute: typeof SplashRoute
   TelasRoute: typeof TelasRoute
+  TermosRoute: typeof TermosRoute
   TornarPrestadorRoute: typeof TornarPrestadorRoute
   Char91DotmcpChar93ListToolsRoute: typeof Char91DotmcpChar93ListToolsRoute
   Char91DotwellKnownChar93OauthProtectedResourceRoute: typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
@@ -406,6 +471,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof TornarPrestadorRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/termos': {
+      id: '/termos'
+      path: '/termos'
+      fullPath: '/termos'
+      preLoaderRoute: typeof TermosRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/telas': {
       id: '/telas'
       path: '/telas'
@@ -418,6 +490,20 @@ declare module '@tanstack/react-router' {
       path: '/splash'
       fullPath: '/splash'
       preLoaderRoute: typeof SplashRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/sobre': {
+      id: '/sobre'
+      path: '/sobre'
+      fullPath: '/sobre'
+      preLoaderRoute: typeof SobreRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/privacidade': {
+      id: '/privacidade'
+      path: '/privacidade'
+      fullPath: '/privacidade'
+      preLoaderRoute: typeof PrivacidadeRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/perfil': {
@@ -469,6 +555,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof FavoritosRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/como-funciona': {
+      id: '/como-funciona'
+      path: '/como-funciona'
+      fullPath: '/como-funciona'
+      preLoaderRoute: typeof ComoFuncionaRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/carteira': {
       id: '/carteira'
       path: '/carteira'
@@ -488,6 +581,13 @@ declare module '@tanstack/react-router' {
       path: '/assistente'
       fullPath: '/assistente'
       preLoaderRoute: typeof AssistenteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/ajuda': {
+      id: '/ajuda'
+      path: '/ajuda'
+      fullPath: '/ajuda'
+      preLoaderRoute: typeof AjudaRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/': {
@@ -600,9 +700,11 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AjudaRoute: AjudaRoute,
   AssistenteRoute: AssistenteRoute,
   AuthRoute: AuthRoute,
   CarteiraRoute: CarteiraRoute,
+  ComoFuncionaRoute: ComoFuncionaRoute,
   FavoritosRoute: FavoritosRoute,
   McpRoute: McpRoute,
   NotificacoesRoute: NotificacoesRoute,
@@ -610,8 +712,11 @@ const rootRouteChildren: RootRouteChildren = {
   OnboardingRoute: OnboardingRoute,
   PedidosRoute: PedidosRoute,
   PerfilRoute: PerfilRoute,
+  PrivacidadeRoute: PrivacidadeRoute,
+  SobreRoute: SobreRoute,
   SplashRoute: SplashRoute,
   TelasRoute: TelasRoute,
+  TermosRoute: TermosRoute,
   TornarPrestadorRoute: TornarPrestadorRoute,
   Char91DotmcpChar93ListToolsRoute: Char91DotmcpChar93ListToolsRoute,
   Char91DotwellKnownChar93OauthProtectedResourceRoute:
