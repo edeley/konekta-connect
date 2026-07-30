@@ -14,6 +14,7 @@ import { Route as TermosRouteImport } from './routes/termos'
 import { Route as TelasRouteImport } from './routes/telas'
 import { Route as SplashRouteImport } from './routes/splash'
 import { Route as SobreRouteImport } from './routes/sobre'
+import { Route as RegistroRouteImport } from './routes/registro'
 import { Route as PrivacidadeRouteImport } from './routes/privacidade'
 import { Route as PerfilRouteImport } from './routes/perfil'
 import { Route as PedidosRouteImport } from './routes/pedidos'
@@ -21,6 +22,7 @@ import { Route as OnboardingRouteImport } from './routes/onboarding'
 import { Route as NovoPedidoRouteImport } from './routes/novo-pedido'
 import { Route as NotificacoesRouteImport } from './routes/notificacoes'
 import { Route as McpRouteImport } from './routes/mcp'
+import { Route as LoginRouteImport } from './routes/login'
 import { Route as FavoritosRouteImport } from './routes/favoritos'
 import { Route as ComoFuncionaRouteImport } from './routes/como-funciona'
 import { Route as CarteiraRouteImport } from './routes/carteira'
@@ -31,6 +33,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as ProIndexRouteImport } from './routes/pro.index'
 import { Route as ChatIndexRouteImport } from './routes/chat.index'
 import { Route as CategoriasIndexRouteImport } from './routes/categorias.index'
+import { Route as ProfissionalIdRouteImport } from './routes/profissional.$id'
 import { Route as ProPedidosRouteImport } from './routes/pro.pedidos'
 import { Route as ProOportunidadesRouteImport } from './routes/pro.oportunidades'
 import { Route as ProGanhosRouteImport } from './routes/pro.ganhos'
@@ -68,6 +71,11 @@ const SobreRoute = SobreRouteImport.update({
   path: '/sobre',
   getParentRoute: () => rootRouteImport,
 } as any)
+const RegistroRoute = RegistroRouteImport.update({
+  id: '/registro',
+  path: '/registro',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const PrivacidadeRoute = PrivacidadeRouteImport.update({
   id: '/privacidade',
   path: '/privacidade',
@@ -101,6 +109,11 @@ const NotificacoesRoute = NotificacoesRouteImport.update({
 const McpRoute = McpRouteImport.update({
   id: '/mcp',
   path: '/mcp',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LoginRoute = LoginRouteImport.update({
+  id: '/login',
+  path: '/login',
   getParentRoute: () => rootRouteImport,
 } as any)
 const FavoritosRoute = FavoritosRouteImport.update({
@@ -151,6 +164,11 @@ const ChatIndexRoute = ChatIndexRouteImport.update({
 const CategoriasIndexRoute = CategoriasIndexRouteImport.update({
   id: '/categorias/',
   path: '/categorias/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ProfissionalIdRoute = ProfissionalIdRouteImport.update({
+  id: '/profissional/$id',
+  path: '/profissional/$id',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ProPedidosRoute = ProPedidosRouteImport.update({
@@ -220,6 +238,7 @@ export interface FileRoutesByFullPath {
   '/carteira': typeof CarteiraRoute
   '/como-funciona': typeof ComoFuncionaRoute
   '/favoritos': typeof FavoritosRoute
+  '/login': typeof LoginRoute
   '/mcp': typeof McpRoute
   '/notificacoes': typeof NotificacoesRoute
   '/novo-pedido': typeof NovoPedidoRoute
@@ -227,6 +246,7 @@ export interface FileRoutesByFullPath {
   '/pedidos': typeof PedidosRoute
   '/perfil': typeof PerfilRoute
   '/privacidade': typeof PrivacidadeRoute
+  '/registro': typeof RegistroRoute
   '/sobre': typeof SobreRoute
   '/splash': typeof SplashRoute
   '/telas': typeof TelasRoute
@@ -242,6 +262,7 @@ export interface FileRoutesByFullPath {
   '/pro/ganhos': typeof ProGanhosRoute
   '/pro/oportunidades': typeof ProOportunidadesRoute
   '/pro/pedidos': typeof ProPedidosRoute
+  '/profissional/$id': typeof ProfissionalIdRoute
   '/categorias/': typeof CategoriasIndexRoute
   '/chat/': typeof ChatIndexRoute
   '/pro/': typeof ProIndexRoute
@@ -255,6 +276,7 @@ export interface FileRoutesByTo {
   '/carteira': typeof CarteiraRoute
   '/como-funciona': typeof ComoFuncionaRoute
   '/favoritos': typeof FavoritosRoute
+  '/login': typeof LoginRoute
   '/mcp': typeof McpRoute
   '/notificacoes': typeof NotificacoesRoute
   '/novo-pedido': typeof NovoPedidoRoute
@@ -262,6 +284,7 @@ export interface FileRoutesByTo {
   '/pedidos': typeof PedidosRoute
   '/perfil': typeof PerfilRoute
   '/privacidade': typeof PrivacidadeRoute
+  '/registro': typeof RegistroRoute
   '/sobre': typeof SobreRoute
   '/splash': typeof SplashRoute
   '/telas': typeof TelasRoute
@@ -277,6 +300,7 @@ export interface FileRoutesByTo {
   '/pro/ganhos': typeof ProGanhosRoute
   '/pro/oportunidades': typeof ProOportunidadesRoute
   '/pro/pedidos': typeof ProPedidosRoute
+  '/profissional/$id': typeof ProfissionalIdRoute
   '/categorias': typeof CategoriasIndexRoute
   '/chat': typeof ChatIndexRoute
   '/pro': typeof ProIndexRoute
@@ -291,6 +315,7 @@ export interface FileRoutesById {
   '/carteira': typeof CarteiraRoute
   '/como-funciona': typeof ComoFuncionaRoute
   '/favoritos': typeof FavoritosRoute
+  '/login': typeof LoginRoute
   '/mcp': typeof McpRoute
   '/notificacoes': typeof NotificacoesRoute
   '/novo-pedido': typeof NovoPedidoRoute
@@ -298,6 +323,7 @@ export interface FileRoutesById {
   '/pedidos': typeof PedidosRoute
   '/perfil': typeof PerfilRoute
   '/privacidade': typeof PrivacidadeRoute
+  '/registro': typeof RegistroRoute
   '/sobre': typeof SobreRoute
   '/splash': typeof SplashRoute
   '/telas': typeof TelasRoute
@@ -313,6 +339,7 @@ export interface FileRoutesById {
   '/pro/ganhos': typeof ProGanhosRoute
   '/pro/oportunidades': typeof ProOportunidadesRoute
   '/pro/pedidos': typeof ProPedidosRoute
+  '/profissional/$id': typeof ProfissionalIdRoute
   '/categorias/': typeof CategoriasIndexRoute
   '/chat/': typeof ChatIndexRoute
   '/pro/': typeof ProIndexRoute
@@ -328,6 +355,7 @@ export interface FileRouteTypes {
     | '/carteira'
     | '/como-funciona'
     | '/favoritos'
+    | '/login'
     | '/mcp'
     | '/notificacoes'
     | '/novo-pedido'
@@ -335,6 +363,7 @@ export interface FileRouteTypes {
     | '/pedidos'
     | '/perfil'
     | '/privacidade'
+    | '/registro'
     | '/sobre'
     | '/splash'
     | '/telas'
@@ -350,6 +379,7 @@ export interface FileRouteTypes {
     | '/pro/ganhos'
     | '/pro/oportunidades'
     | '/pro/pedidos'
+    | '/profissional/$id'
     | '/categorias/'
     | '/chat/'
     | '/pro/'
@@ -363,6 +393,7 @@ export interface FileRouteTypes {
     | '/carteira'
     | '/como-funciona'
     | '/favoritos'
+    | '/login'
     | '/mcp'
     | '/notificacoes'
     | '/novo-pedido'
@@ -370,6 +401,7 @@ export interface FileRouteTypes {
     | '/pedidos'
     | '/perfil'
     | '/privacidade'
+    | '/registro'
     | '/sobre'
     | '/splash'
     | '/telas'
@@ -385,6 +417,7 @@ export interface FileRouteTypes {
     | '/pro/ganhos'
     | '/pro/oportunidades'
     | '/pro/pedidos'
+    | '/profissional/$id'
     | '/categorias'
     | '/chat'
     | '/pro'
@@ -398,6 +431,7 @@ export interface FileRouteTypes {
     | '/carteira'
     | '/como-funciona'
     | '/favoritos'
+    | '/login'
     | '/mcp'
     | '/notificacoes'
     | '/novo-pedido'
@@ -405,6 +439,7 @@ export interface FileRouteTypes {
     | '/pedidos'
     | '/perfil'
     | '/privacidade'
+    | '/registro'
     | '/sobre'
     | '/splash'
     | '/telas'
@@ -420,6 +455,7 @@ export interface FileRouteTypes {
     | '/pro/ganhos'
     | '/pro/oportunidades'
     | '/pro/pedidos'
+    | '/profissional/$id'
     | '/categorias/'
     | '/chat/'
     | '/pro/'
@@ -434,6 +470,7 @@ export interface RootRouteChildren {
   CarteiraRoute: typeof CarteiraRoute
   ComoFuncionaRoute: typeof ComoFuncionaRoute
   FavoritosRoute: typeof FavoritosRoute
+  LoginRoute: typeof LoginRoute
   McpRoute: typeof McpRoute
   NotificacoesRoute: typeof NotificacoesRoute
   NovoPedidoRoute: typeof NovoPedidoRoute
@@ -441,6 +478,7 @@ export interface RootRouteChildren {
   PedidosRoute: typeof PedidosRoute
   PerfilRoute: typeof PerfilRoute
   PrivacidadeRoute: typeof PrivacidadeRoute
+  RegistroRoute: typeof RegistroRoute
   SobreRoute: typeof SobreRoute
   SplashRoute: typeof SplashRoute
   TelasRoute: typeof TelasRoute
@@ -456,6 +494,7 @@ export interface RootRouteChildren {
   ProGanhosRoute: typeof ProGanhosRoute
   ProOportunidadesRoute: typeof ProOportunidadesRoute
   ProPedidosRoute: typeof ProPedidosRoute
+  ProfissionalIdRoute: typeof ProfissionalIdRoute
   CategoriasIndexRoute: typeof CategoriasIndexRoute
   ChatIndexRoute: typeof ChatIndexRoute
   ProIndexRoute: typeof ProIndexRoute
@@ -497,6 +536,13 @@ declare module '@tanstack/react-router' {
       path: '/sobre'
       fullPath: '/sobre'
       preLoaderRoute: typeof SobreRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/registro': {
+      id: '/registro'
+      path: '/registro'
+      fullPath: '/registro'
+      preLoaderRoute: typeof RegistroRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/privacidade': {
@@ -546,6 +592,13 @@ declare module '@tanstack/react-router' {
       path: '/mcp'
       fullPath: '/mcp'
       preLoaderRoute: typeof McpRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/login': {
+      id: '/login'
+      path: '/login'
+      fullPath: '/login'
+      preLoaderRoute: typeof LoginRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/favoritos': {
@@ -616,6 +669,13 @@ declare module '@tanstack/react-router' {
       path: '/categorias'
       fullPath: '/categorias/'
       preLoaderRoute: typeof CategoriasIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/profissional/$id': {
+      id: '/profissional/$id'
+      path: '/profissional/$id'
+      fullPath: '/profissional/$id'
+      preLoaderRoute: typeof ProfissionalIdRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/pro/pedidos': {
@@ -706,6 +766,7 @@ const rootRouteChildren: RootRouteChildren = {
   CarteiraRoute: CarteiraRoute,
   ComoFuncionaRoute: ComoFuncionaRoute,
   FavoritosRoute: FavoritosRoute,
+  LoginRoute: LoginRoute,
   McpRoute: McpRoute,
   NotificacoesRoute: NotificacoesRoute,
   NovoPedidoRoute: NovoPedidoRoute,
@@ -713,6 +774,7 @@ const rootRouteChildren: RootRouteChildren = {
   PedidosRoute: PedidosRoute,
   PerfilRoute: PerfilRoute,
   PrivacidadeRoute: PrivacidadeRoute,
+  RegistroRoute: RegistroRoute,
   SobreRoute: SobreRoute,
   SplashRoute: SplashRoute,
   TelasRoute: TelasRoute,
@@ -729,6 +791,7 @@ const rootRouteChildren: RootRouteChildren = {
   ProGanhosRoute: ProGanhosRoute,
   ProOportunidadesRoute: ProOportunidadesRoute,
   ProPedidosRoute: ProPedidosRoute,
+  ProfissionalIdRoute: ProfissionalIdRoute,
   CategoriasIndexRoute: CategoriasIndexRoute,
   ChatIndexRoute: ChatIndexRoute,
   ProIndexRoute: ProIndexRoute,
