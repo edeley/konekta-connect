@@ -33,6 +33,7 @@ import { Route as ProAgendaRouteImport } from './routes/pro.agenda'
 import { Route as PrestadorIdRouteImport } from './routes/prestador.$id'
 import { Route as PedidoIdRouteImport } from './routes/pedido.$id'
 import { Route as ChatIdRouteImport } from './routes/chat.$id'
+import { Route as CategoriasSlugRouteImport } from './routes/categorias.$slug'
 import { Route as Char91DotwellKnownChar93OauthProtectedResourceRouteImport } from './routes/[.well-known]/oauth-protected-resource'
 import { Route as Char91DotmcpChar93ListToolsRouteImport } from './routes/[.mcp]/list-tools'
 import { Route as Char91DotmcpChar93InvokeToolToolRouteImport } from './routes/[.mcp]/invoke-tool/$tool'
@@ -157,6 +158,11 @@ const ChatIdRoute = ChatIdRouteImport.update({
   path: '/chat/$id',
   getParentRoute: () => rootRouteImport,
 } as any)
+const CategoriasSlugRoute = CategoriasSlugRouteImport.update({
+  id: '/categorias/$slug',
+  path: '/categorias/$slug',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const Char91DotwellKnownChar93OauthProtectedResourceRoute =
   Char91DotwellKnownChar93OauthProtectedResourceRouteImport.update({
     id: '/.well-known/oauth-protected-resource',
@@ -193,6 +199,7 @@ export interface FileRoutesByFullPath {
   '/tornar-prestador': typeof TornarPrestadorRoute
   '/.mcp/list-tools': typeof Char91DotmcpChar93ListToolsRoute
   '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
+  '/categorias/$slug': typeof CategoriasSlugRoute
   '/chat/$id': typeof ChatIdRoute
   '/pedido/$id': typeof PedidoIdRoute
   '/prestador/$id': typeof PrestadorIdRoute
@@ -222,6 +229,7 @@ export interface FileRoutesByTo {
   '/tornar-prestador': typeof TornarPrestadorRoute
   '/.mcp/list-tools': typeof Char91DotmcpChar93ListToolsRoute
   '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
+  '/categorias/$slug': typeof CategoriasSlugRoute
   '/chat/$id': typeof ChatIdRoute
   '/pedido/$id': typeof PedidoIdRoute
   '/prestador/$id': typeof PrestadorIdRoute
@@ -252,6 +260,7 @@ export interface FileRoutesById {
   '/tornar-prestador': typeof TornarPrestadorRoute
   '/.mcp/list-tools': typeof Char91DotmcpChar93ListToolsRoute
   '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
+  '/categorias/$slug': typeof CategoriasSlugRoute
   '/chat/$id': typeof ChatIdRoute
   '/pedido/$id': typeof PedidoIdRoute
   '/prestador/$id': typeof PrestadorIdRoute
@@ -283,6 +292,7 @@ export interface FileRouteTypes {
     | '/tornar-prestador'
     | '/.mcp/list-tools'
     | '/.well-known/oauth-protected-resource'
+    | '/categorias/$slug'
     | '/chat/$id'
     | '/pedido/$id'
     | '/prestador/$id'
@@ -312,6 +322,7 @@ export interface FileRouteTypes {
     | '/tornar-prestador'
     | '/.mcp/list-tools'
     | '/.well-known/oauth-protected-resource'
+    | '/categorias/$slug'
     | '/chat/$id'
     | '/pedido/$id'
     | '/prestador/$id'
@@ -341,6 +352,7 @@ export interface FileRouteTypes {
     | '/tornar-prestador'
     | '/.mcp/list-tools'
     | '/.well-known/oauth-protected-resource'
+    | '/categorias/$slug'
     | '/chat/$id'
     | '/pedido/$id'
     | '/prestador/$id'
@@ -371,6 +383,7 @@ export interface RootRouteChildren {
   TornarPrestadorRoute: typeof TornarPrestadorRoute
   Char91DotmcpChar93ListToolsRoute: typeof Char91DotmcpChar93ListToolsRoute
   Char91DotwellKnownChar93OauthProtectedResourceRoute: typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
+  CategoriasSlugRoute: typeof CategoriasSlugRoute
   ChatIdRoute: typeof ChatIdRoute
   PedidoIdRoute: typeof PedidoIdRoute
   PrestadorIdRoute: typeof PrestadorIdRoute
@@ -554,6 +567,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ChatIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/categorias/$slug': {
+      id: '/categorias/$slug'
+      path: '/categorias/$slug'
+      fullPath: '/categorias/$slug'
+      preLoaderRoute: typeof CategoriasSlugRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/.well-known/oauth-protected-resource': {
       id: '/.well-known/oauth-protected-resource'
       path: '/.well-known/oauth-protected-resource'
@@ -596,6 +616,7 @@ const rootRouteChildren: RootRouteChildren = {
   Char91DotmcpChar93ListToolsRoute: Char91DotmcpChar93ListToolsRoute,
   Char91DotwellKnownChar93OauthProtectedResourceRoute:
     Char91DotwellKnownChar93OauthProtectedResourceRoute,
+  CategoriasSlugRoute: CategoriasSlugRoute,
   ChatIdRoute: ChatIdRoute,
   PedidoIdRoute: PedidoIdRoute,
   PrestadorIdRoute: PrestadorIdRoute,
