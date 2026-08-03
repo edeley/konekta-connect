@@ -9,14 +9,18 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as VerifyOtpRouteImport } from './routes/verify-otp'
 import { Route as TornarPrestadorRouteImport } from './routes/tornar-prestador'
 import { Route as TermosRouteImport } from './routes/termos'
 import { Route as TelasRouteImport } from './routes/telas'
 import { Route as SplashRouteImport } from './routes/splash'
 import { Route as SobreRouteImport } from './routes/sobre'
 import { Route as RegistroRouteImport } from './routes/registro'
+import { Route as RecoverNewPasswordRouteImport } from './routes/recover-new-password'
+import { Route as RecoverAccessRouteImport } from './routes/recover-access'
 import { Route as PrivacidadeRouteImport } from './routes/privacidade'
 import { Route as PerfilRouteImport } from './routes/perfil'
+import { Route as PendingApprovalRouteImport } from './routes/pending-approval'
 import { Route as PedidosRouteImport } from './routes/pedidos'
 import { Route as OnboardingRouteImport } from './routes/onboarding'
 import { Route as NovoPedidoRouteImport } from './routes/novo-pedido'
@@ -25,6 +29,7 @@ import { Route as McpRouteImport } from './routes/mcp'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as FavoritosRouteImport } from './routes/favoritos'
 import { Route as ComoFuncionaRouteImport } from './routes/como-funciona'
+import { Route as ChooseRoleRouteImport } from './routes/choose-role'
 import { Route as CarteiraRouteImport } from './routes/carteira'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AssistenteRouteImport } from './routes/assistente'
@@ -33,6 +38,8 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as ProIndexRouteImport } from './routes/pro.index'
 import { Route as ChatIndexRouteImport } from './routes/chat.index'
 import { Route as CategoriasIndexRouteImport } from './routes/categorias.index'
+import { Route as RegisterProviderRouteImport } from './routes/register/provider'
+import { Route as RegisterClientRouteImport } from './routes/register/client'
 import { Route as ProfissionalIdRouteImport } from './routes/profissional.$id'
 import { Route as ProPedidosRouteImport } from './routes/pro.pedidos'
 import { Route as ProOportunidadesRouteImport } from './routes/pro.oportunidades'
@@ -46,6 +53,11 @@ import { Route as Char91DotwellKnownChar93OauthProtectedResourceRouteImport } fr
 import { Route as Char91DotmcpChar93ListToolsRouteImport } from './routes/[.mcp]/list-tools'
 import { Route as Char91DotmcpChar93InvokeToolToolRouteImport } from './routes/[.mcp]/invoke-tool/$tool'
 
+const VerifyOtpRoute = VerifyOtpRouteImport.update({
+  id: '/verify-otp',
+  path: '/verify-otp',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const TornarPrestadorRoute = TornarPrestadorRouteImport.update({
   id: '/tornar-prestador',
   path: '/tornar-prestador',
@@ -76,6 +88,16 @@ const RegistroRoute = RegistroRouteImport.update({
   path: '/registro',
   getParentRoute: () => rootRouteImport,
 } as any)
+const RecoverNewPasswordRoute = RecoverNewPasswordRouteImport.update({
+  id: '/recover-new-password',
+  path: '/recover-new-password',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const RecoverAccessRoute = RecoverAccessRouteImport.update({
+  id: '/recover-access',
+  path: '/recover-access',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const PrivacidadeRoute = PrivacidadeRouteImport.update({
   id: '/privacidade',
   path: '/privacidade',
@@ -84,6 +106,11 @@ const PrivacidadeRoute = PrivacidadeRouteImport.update({
 const PerfilRoute = PerfilRouteImport.update({
   id: '/perfil',
   path: '/perfil',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PendingApprovalRoute = PendingApprovalRouteImport.update({
+  id: '/pending-approval',
+  path: '/pending-approval',
   getParentRoute: () => rootRouteImport,
 } as any)
 const PedidosRoute = PedidosRouteImport.update({
@@ -126,6 +153,11 @@ const ComoFuncionaRoute = ComoFuncionaRouteImport.update({
   path: '/como-funciona',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ChooseRoleRoute = ChooseRoleRouteImport.update({
+  id: '/choose-role',
+  path: '/choose-role',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const CarteiraRoute = CarteiraRouteImport.update({
   id: '/carteira',
   path: '/carteira',
@@ -164,6 +196,16 @@ const ChatIndexRoute = ChatIndexRouteImport.update({
 const CategoriasIndexRoute = CategoriasIndexRouteImport.update({
   id: '/categorias/',
   path: '/categorias/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const RegisterProviderRoute = RegisterProviderRouteImport.update({
+  id: '/register/provider',
+  path: '/register/provider',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const RegisterClientRoute = RegisterClientRouteImport.update({
+  id: '/register/client',
+  path: '/register/client',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ProfissionalIdRoute = ProfissionalIdRouteImport.update({
@@ -236,6 +278,7 @@ export interface FileRoutesByFullPath {
   '/assistente': typeof AssistenteRoute
   '/auth': typeof AuthRoute
   '/carteira': typeof CarteiraRoute
+  '/choose-role': typeof ChooseRoleRoute
   '/como-funciona': typeof ComoFuncionaRoute
   '/favoritos': typeof FavoritosRoute
   '/login': typeof LoginRoute
@@ -244,14 +287,18 @@ export interface FileRoutesByFullPath {
   '/novo-pedido': typeof NovoPedidoRoute
   '/onboarding': typeof OnboardingRoute
   '/pedidos': typeof PedidosRoute
+  '/pending-approval': typeof PendingApprovalRoute
   '/perfil': typeof PerfilRoute
   '/privacidade': typeof PrivacidadeRoute
+  '/recover-access': typeof RecoverAccessRoute
+  '/recover-new-password': typeof RecoverNewPasswordRoute
   '/registro': typeof RegistroRoute
   '/sobre': typeof SobreRoute
   '/splash': typeof SplashRoute
   '/telas': typeof TelasRoute
   '/termos': typeof TermosRoute
   '/tornar-prestador': typeof TornarPrestadorRoute
+  '/verify-otp': typeof VerifyOtpRoute
   '/.mcp/list-tools': typeof Char91DotmcpChar93ListToolsRoute
   '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   '/categorias/$slug': typeof CategoriasSlugRoute
@@ -263,6 +310,8 @@ export interface FileRoutesByFullPath {
   '/pro/oportunidades': typeof ProOportunidadesRoute
   '/pro/pedidos': typeof ProPedidosRoute
   '/profissional/$id': typeof ProfissionalIdRoute
+  '/register/client': typeof RegisterClientRoute
+  '/register/provider': typeof RegisterProviderRoute
   '/categorias/': typeof CategoriasIndexRoute
   '/chat/': typeof ChatIndexRoute
   '/pro/': typeof ProIndexRoute
@@ -274,6 +323,7 @@ export interface FileRoutesByTo {
   '/assistente': typeof AssistenteRoute
   '/auth': typeof AuthRoute
   '/carteira': typeof CarteiraRoute
+  '/choose-role': typeof ChooseRoleRoute
   '/como-funciona': typeof ComoFuncionaRoute
   '/favoritos': typeof FavoritosRoute
   '/login': typeof LoginRoute
@@ -282,14 +332,18 @@ export interface FileRoutesByTo {
   '/novo-pedido': typeof NovoPedidoRoute
   '/onboarding': typeof OnboardingRoute
   '/pedidos': typeof PedidosRoute
+  '/pending-approval': typeof PendingApprovalRoute
   '/perfil': typeof PerfilRoute
   '/privacidade': typeof PrivacidadeRoute
+  '/recover-access': typeof RecoverAccessRoute
+  '/recover-new-password': typeof RecoverNewPasswordRoute
   '/registro': typeof RegistroRoute
   '/sobre': typeof SobreRoute
   '/splash': typeof SplashRoute
   '/telas': typeof TelasRoute
   '/termos': typeof TermosRoute
   '/tornar-prestador': typeof TornarPrestadorRoute
+  '/verify-otp': typeof VerifyOtpRoute
   '/.mcp/list-tools': typeof Char91DotmcpChar93ListToolsRoute
   '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   '/categorias/$slug': typeof CategoriasSlugRoute
@@ -301,6 +355,8 @@ export interface FileRoutesByTo {
   '/pro/oportunidades': typeof ProOportunidadesRoute
   '/pro/pedidos': typeof ProPedidosRoute
   '/profissional/$id': typeof ProfissionalIdRoute
+  '/register/client': typeof RegisterClientRoute
+  '/register/provider': typeof RegisterProviderRoute
   '/categorias': typeof CategoriasIndexRoute
   '/chat': typeof ChatIndexRoute
   '/pro': typeof ProIndexRoute
@@ -313,6 +369,7 @@ export interface FileRoutesById {
   '/assistente': typeof AssistenteRoute
   '/auth': typeof AuthRoute
   '/carteira': typeof CarteiraRoute
+  '/choose-role': typeof ChooseRoleRoute
   '/como-funciona': typeof ComoFuncionaRoute
   '/favoritos': typeof FavoritosRoute
   '/login': typeof LoginRoute
@@ -321,14 +378,18 @@ export interface FileRoutesById {
   '/novo-pedido': typeof NovoPedidoRoute
   '/onboarding': typeof OnboardingRoute
   '/pedidos': typeof PedidosRoute
+  '/pending-approval': typeof PendingApprovalRoute
   '/perfil': typeof PerfilRoute
   '/privacidade': typeof PrivacidadeRoute
+  '/recover-access': typeof RecoverAccessRoute
+  '/recover-new-password': typeof RecoverNewPasswordRoute
   '/registro': typeof RegistroRoute
   '/sobre': typeof SobreRoute
   '/splash': typeof SplashRoute
   '/telas': typeof TelasRoute
   '/termos': typeof TermosRoute
   '/tornar-prestador': typeof TornarPrestadorRoute
+  '/verify-otp': typeof VerifyOtpRoute
   '/.mcp/list-tools': typeof Char91DotmcpChar93ListToolsRoute
   '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   '/categorias/$slug': typeof CategoriasSlugRoute
@@ -340,6 +401,8 @@ export interface FileRoutesById {
   '/pro/oportunidades': typeof ProOportunidadesRoute
   '/pro/pedidos': typeof ProPedidosRoute
   '/profissional/$id': typeof ProfissionalIdRoute
+  '/register/client': typeof RegisterClientRoute
+  '/register/provider': typeof RegisterProviderRoute
   '/categorias/': typeof CategoriasIndexRoute
   '/chat/': typeof ChatIndexRoute
   '/pro/': typeof ProIndexRoute
@@ -353,6 +416,7 @@ export interface FileRouteTypes {
     | '/assistente'
     | '/auth'
     | '/carteira'
+    | '/choose-role'
     | '/como-funciona'
     | '/favoritos'
     | '/login'
@@ -361,14 +425,18 @@ export interface FileRouteTypes {
     | '/novo-pedido'
     | '/onboarding'
     | '/pedidos'
+    | '/pending-approval'
     | '/perfil'
     | '/privacidade'
+    | '/recover-access'
+    | '/recover-new-password'
     | '/registro'
     | '/sobre'
     | '/splash'
     | '/telas'
     | '/termos'
     | '/tornar-prestador'
+    | '/verify-otp'
     | '/.mcp/list-tools'
     | '/.well-known/oauth-protected-resource'
     | '/categorias/$slug'
@@ -380,6 +448,8 @@ export interface FileRouteTypes {
     | '/pro/oportunidades'
     | '/pro/pedidos'
     | '/profissional/$id'
+    | '/register/client'
+    | '/register/provider'
     | '/categorias/'
     | '/chat/'
     | '/pro/'
@@ -391,6 +461,7 @@ export interface FileRouteTypes {
     | '/assistente'
     | '/auth'
     | '/carteira'
+    | '/choose-role'
     | '/como-funciona'
     | '/favoritos'
     | '/login'
@@ -399,14 +470,18 @@ export interface FileRouteTypes {
     | '/novo-pedido'
     | '/onboarding'
     | '/pedidos'
+    | '/pending-approval'
     | '/perfil'
     | '/privacidade'
+    | '/recover-access'
+    | '/recover-new-password'
     | '/registro'
     | '/sobre'
     | '/splash'
     | '/telas'
     | '/termos'
     | '/tornar-prestador'
+    | '/verify-otp'
     | '/.mcp/list-tools'
     | '/.well-known/oauth-protected-resource'
     | '/categorias/$slug'
@@ -418,6 +493,8 @@ export interface FileRouteTypes {
     | '/pro/oportunidades'
     | '/pro/pedidos'
     | '/profissional/$id'
+    | '/register/client'
+    | '/register/provider'
     | '/categorias'
     | '/chat'
     | '/pro'
@@ -429,6 +506,7 @@ export interface FileRouteTypes {
     | '/assistente'
     | '/auth'
     | '/carteira'
+    | '/choose-role'
     | '/como-funciona'
     | '/favoritos'
     | '/login'
@@ -437,14 +515,18 @@ export interface FileRouteTypes {
     | '/novo-pedido'
     | '/onboarding'
     | '/pedidos'
+    | '/pending-approval'
     | '/perfil'
     | '/privacidade'
+    | '/recover-access'
+    | '/recover-new-password'
     | '/registro'
     | '/sobre'
     | '/splash'
     | '/telas'
     | '/termos'
     | '/tornar-prestador'
+    | '/verify-otp'
     | '/.mcp/list-tools'
     | '/.well-known/oauth-protected-resource'
     | '/categorias/$slug'
@@ -456,6 +538,8 @@ export interface FileRouteTypes {
     | '/pro/oportunidades'
     | '/pro/pedidos'
     | '/profissional/$id'
+    | '/register/client'
+    | '/register/provider'
     | '/categorias/'
     | '/chat/'
     | '/pro/'
@@ -468,6 +552,7 @@ export interface RootRouteChildren {
   AssistenteRoute: typeof AssistenteRoute
   AuthRoute: typeof AuthRoute
   CarteiraRoute: typeof CarteiraRoute
+  ChooseRoleRoute: typeof ChooseRoleRoute
   ComoFuncionaRoute: typeof ComoFuncionaRoute
   FavoritosRoute: typeof FavoritosRoute
   LoginRoute: typeof LoginRoute
@@ -476,14 +561,18 @@ export interface RootRouteChildren {
   NovoPedidoRoute: typeof NovoPedidoRoute
   OnboardingRoute: typeof OnboardingRoute
   PedidosRoute: typeof PedidosRoute
+  PendingApprovalRoute: typeof PendingApprovalRoute
   PerfilRoute: typeof PerfilRoute
   PrivacidadeRoute: typeof PrivacidadeRoute
+  RecoverAccessRoute: typeof RecoverAccessRoute
+  RecoverNewPasswordRoute: typeof RecoverNewPasswordRoute
   RegistroRoute: typeof RegistroRoute
   SobreRoute: typeof SobreRoute
   SplashRoute: typeof SplashRoute
   TelasRoute: typeof TelasRoute
   TermosRoute: typeof TermosRoute
   TornarPrestadorRoute: typeof TornarPrestadorRoute
+  VerifyOtpRoute: typeof VerifyOtpRoute
   Char91DotmcpChar93ListToolsRoute: typeof Char91DotmcpChar93ListToolsRoute
   Char91DotwellKnownChar93OauthProtectedResourceRoute: typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   CategoriasSlugRoute: typeof CategoriasSlugRoute
@@ -495,6 +584,8 @@ export interface RootRouteChildren {
   ProOportunidadesRoute: typeof ProOportunidadesRoute
   ProPedidosRoute: typeof ProPedidosRoute
   ProfissionalIdRoute: typeof ProfissionalIdRoute
+  RegisterClientRoute: typeof RegisterClientRoute
+  RegisterProviderRoute: typeof RegisterProviderRoute
   CategoriasIndexRoute: typeof CategoriasIndexRoute
   ChatIndexRoute: typeof ChatIndexRoute
   ProIndexRoute: typeof ProIndexRoute
@@ -503,6 +594,13 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/verify-otp': {
+      id: '/verify-otp'
+      path: '/verify-otp'
+      fullPath: '/verify-otp'
+      preLoaderRoute: typeof VerifyOtpRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/tornar-prestador': {
       id: '/tornar-prestador'
       path: '/tornar-prestador'
@@ -545,6 +643,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof RegistroRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/recover-new-password': {
+      id: '/recover-new-password'
+      path: '/recover-new-password'
+      fullPath: '/recover-new-password'
+      preLoaderRoute: typeof RecoverNewPasswordRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/recover-access': {
+      id: '/recover-access'
+      path: '/recover-access'
+      fullPath: '/recover-access'
+      preLoaderRoute: typeof RecoverAccessRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/privacidade': {
       id: '/privacidade'
       path: '/privacidade'
@@ -557,6 +669,13 @@ declare module '@tanstack/react-router' {
       path: '/perfil'
       fullPath: '/perfil'
       preLoaderRoute: typeof PerfilRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/pending-approval': {
+      id: '/pending-approval'
+      path: '/pending-approval'
+      fullPath: '/pending-approval'
+      preLoaderRoute: typeof PendingApprovalRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/pedidos': {
@@ -615,6 +734,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ComoFuncionaRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/choose-role': {
+      id: '/choose-role'
+      path: '/choose-role'
+      fullPath: '/choose-role'
+      preLoaderRoute: typeof ChooseRoleRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/carteira': {
       id: '/carteira'
       path: '/carteira'
@@ -669,6 +795,20 @@ declare module '@tanstack/react-router' {
       path: '/categorias'
       fullPath: '/categorias/'
       preLoaderRoute: typeof CategoriasIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/register/provider': {
+      id: '/register/provider'
+      path: '/register/provider'
+      fullPath: '/register/provider'
+      preLoaderRoute: typeof RegisterProviderRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/register/client': {
+      id: '/register/client'
+      path: '/register/client'
+      fullPath: '/register/client'
+      preLoaderRoute: typeof RegisterClientRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/profissional/$id': {
@@ -764,6 +904,7 @@ const rootRouteChildren: RootRouteChildren = {
   AssistenteRoute: AssistenteRoute,
   AuthRoute: AuthRoute,
   CarteiraRoute: CarteiraRoute,
+  ChooseRoleRoute: ChooseRoleRoute,
   ComoFuncionaRoute: ComoFuncionaRoute,
   FavoritosRoute: FavoritosRoute,
   LoginRoute: LoginRoute,
@@ -772,14 +913,18 @@ const rootRouteChildren: RootRouteChildren = {
   NovoPedidoRoute: NovoPedidoRoute,
   OnboardingRoute: OnboardingRoute,
   PedidosRoute: PedidosRoute,
+  PendingApprovalRoute: PendingApprovalRoute,
   PerfilRoute: PerfilRoute,
   PrivacidadeRoute: PrivacidadeRoute,
+  RecoverAccessRoute: RecoverAccessRoute,
+  RecoverNewPasswordRoute: RecoverNewPasswordRoute,
   RegistroRoute: RegistroRoute,
   SobreRoute: SobreRoute,
   SplashRoute: SplashRoute,
   TelasRoute: TelasRoute,
   TermosRoute: TermosRoute,
   TornarPrestadorRoute: TornarPrestadorRoute,
+  VerifyOtpRoute: VerifyOtpRoute,
   Char91DotmcpChar93ListToolsRoute: Char91DotmcpChar93ListToolsRoute,
   Char91DotwellKnownChar93OauthProtectedResourceRoute:
     Char91DotwellKnownChar93OauthProtectedResourceRoute,
@@ -792,6 +937,8 @@ const rootRouteChildren: RootRouteChildren = {
   ProOportunidadesRoute: ProOportunidadesRoute,
   ProPedidosRoute: ProPedidosRoute,
   ProfissionalIdRoute: ProfissionalIdRoute,
+  RegisterClientRoute: RegisterClientRoute,
+  RegisterProviderRoute: RegisterProviderRoute,
   CategoriasIndexRoute: CategoriasIndexRoute,
   ChatIndexRoute: ChatIndexRoute,
   ProIndexRoute: ProIndexRoute,
@@ -800,13 +947,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
