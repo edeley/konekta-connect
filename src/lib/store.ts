@@ -235,7 +235,7 @@ const defaultState: State = {
   ],
   flags: defaultFlags,
   settings: defaultSettings,
-  config: { commissionPct: 12, minTopUp: 100, currency: "Db" },
+  config: { commissionPct: 20, minTopUp: 100, currency: "Db" },
   onboarded: false,
 };
 
