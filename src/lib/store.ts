@@ -1,4 +1,6 @@
 import { useSyncExternalStore } from "react";
+import { BLOCK_NOTICE, containsBlockedContent, quoteFromNet } from "./escrow";
+
 import {
   orders as seedOrders,
   providers as catalogProviders,
@@ -46,13 +48,32 @@ export type ProviderProfile = {
   submittedAt: number;
 };
 
+export type QuoteStatus = "pendente" | "pago" | "concluido" | "recusado";
+
+export type Quote = {
+  id: string;
+  providerId: string;
+  description: string;
+  net: number;
+  fee: number;
+  gross: number;
+  feePct: number;
+  status: QuoteStatus;
+  createdAt: number;
+  paidAt?: number;
+  completedAt?: number;
+};
+
 export type Message = {
   id: string;
   from: "me" | "them";
   text: string;
   at: number;
   status?: "sent" | "delivered" | "read";
+  kind?: "text" | "quote" | "system";
+  quote?: Quote;
 };
+
 
 export type AssistantMessage = {
   id: string;
@@ -214,7 +235,7 @@ const defaultState: State = {
   ],
   flags: defaultFlags,
   settings: defaultSettings,
-  config: { commissionPct: 12, minTopUp: 100, currency: "Db" },
+  config: { commissionPct: 20, minTopUp: 100, currency: "Db" },
   onboarded: false,
 };
 
@@ -618,10 +639,26 @@ export const store = {
     notify({ title: "Obrigado pela avaliação!", body: `Avaliou o pedido ${id} com ${stars} estrelas.`, tone: "success" });
   },
 
-  sendMessage(providerId: string, text: string) {
+  /** Chat blindado: bloqueia contactos externos antes do pagamento. */
+  sendMessage(providerId: string, text: string): "sent" | "blocked" | "empty" {
     const trimmed = text.trim();
-    if (!trimmed) return;
+    if (!trimmed) return "empty";
     const prev = state.messages[providerId] ?? [];
+    const unlocked = store.isContactUnlocked(providerId);
+
+    if (!unlocked && containsBlockedContent(trimmed)) {
+      const warn: Message = {
+        id: `m_${Date.now()}`,
+        from: "me",
+        text: BLOCK_NOTICE,
+        at: Date.now(),
+        status: "sent",
+        kind: "system",
+      };
+      set({ messages: { ...state.messages, [providerId]: [...prev, warn] } });
+      return "blocked";
+    }
+
     const msg: Message = { id: `m_${Date.now()}`, from: "me", text: trimmed, at: Date.now(), status: "sent" };
     set({ messages: { ...state.messages, [providerId]: [...prev, msg] } });
     setTimeout(() => {
@@ -649,7 +686,142 @@ export const store = {
         },
       });
     }, 2200);
+    return "sent";
   },
+
+  /* ------------------------- Orçamento + Escrow ------------------------- */
+
+  /** O prestador envia o card de orçamento oficial no chat. */
+  sendQuote(providerId: string, input: { net: number; description: string; from?: "me" | "them" }) {
+    const b = quoteFromNet(input.net, state.config.commissionPct);
+    const quote: Quote = {
+      id: `q_${Date.now()}`,
+      providerId,
+      description: input.description.trim() || "Serviço combinado no chat",
+      net: b.net,
+      fee: b.fee,
+      gross: b.gross,
+      feePct: b.feePct,
+      status: "pendente",
+      createdAt: Date.now(),
+    };
+    const prev = state.messages[providerId] ?? [];
+    const msg: Message = {
+      id: `m_${Date.now()}`,
+      from: input.from ?? "them",
+      text: quote.description,
+      at: Date.now(),
+      status: "read",
+      kind: "quote",
+      quote,
+    };
+    set({ messages: { ...state.messages, [providerId]: [...prev, msg] } });
+    notify({
+      title: "Novo orçamento recebido",
+      body: `${quote.gross.toLocaleString("pt-PT")} Db — ${quote.description}`,
+      tone: "info",
+      link: "/chat",
+    });
+    return quote;
+  },
+
+  patchQuote(providerId: string, quoteId: string, patch: Partial<Quote>) {
+    const list = state.messages[providerId] ?? [];
+    set({
+      messages: {
+        ...state.messages,
+        [providerId]: list.map((m) =>
+          m.quote?.id === quoteId ? { ...m, quote: { ...m.quote, ...patch } } : m,
+        ),
+      },
+    });
+  },
+
+  /** Cliente paga: o valor fica retido (escrow) e o contacto é desbloqueado. */
+  payQuote(providerId: string, quoteId: string) {
+    const msg = (state.messages[providerId] ?? []).find((m) => m.quote?.id === quoteId);
+    const quote = msg?.quote;
+    if (!quote || quote.status !== "pendente") return false;
+    if (state.balance < quote.gross) return false;
+    set({
+      balance: state.balance - quote.gross,
+      transactions: [
+        {
+          id: `t_${Date.now()}`,
+          kind: "out",
+          label: `Retido (escrow) — ${quote.description}`,
+          amount: quote.gross,
+          at: Date.now(),
+        },
+        ...state.transactions,
+      ],
+    });
+    store.patchQuote(providerId, quoteId, { status: "pago", paidAt: Date.now() });
+    const list = state.messages[providerId] ?? [];
+    set({
+      messages: {
+        ...state.messages,
+        [providerId]: [
+          ...list,
+          {
+            id: `m_${Date.now() + 2}`,
+            from: "them",
+            text: "Pagamento retido pela plataforma. Morada e telefone desbloqueados — contactos externos já são permitidos.",
+            at: Date.now(),
+            status: "read",
+            kind: "system",
+          },
+        ],
+      },
+    });
+    notify({
+      title: "Pagamento retido com segurança",
+      body: `${quote.gross.toLocaleString("pt-PT")} Db em escrow até confirmar a conclusão.`,
+      tone: "success",
+      link: "/carteira",
+    });
+    return true;
+  },
+
+  /** Cliente confirma conclusão: liberta o líquido para a carteira do prestador. */
+  completeQuote(providerId: string, quoteId: string) {
+    const msg = (state.messages[providerId] ?? []).find((m) => m.quote?.id === quoteId);
+    const quote = msg?.quote;
+    if (!quote || quote.status !== "pago") return false;
+    store.patchQuote(providerId, quoteId, { status: "concluido", completedAt: Date.now() });
+    set({
+      providerBalance: state.providerBalance + quote.net,
+      providerTransactions: [
+        {
+          id: `pt_${Date.now()}`,
+          kind: "in",
+          label: `Libertado do escrow — ${quote.description}`,
+          amount: quote.net,
+          at: Date.now(),
+        },
+        ...state.providerTransactions,
+      ],
+    });
+    notify({
+      title: "Serviço concluído",
+      body: `${quote.net.toLocaleString("pt-PT")} Db libertados para o prestador (taxa ${quote.feePct}%).`,
+      tone: "success",
+      link: "/pro/ganhos",
+    });
+    return true;
+  },
+
+  declineQuote(providerId: string, quoteId: string) {
+    store.patchQuote(providerId, quoteId, { status: "recusado" });
+  },
+
+  /** Contactos externos só depois do pagamento retido. */
+  isContactUnlocked(providerId: string) {
+    return (state.messages[providerId] ?? []).some(
+      (m) => m.quote && (m.quote.status === "pago" || m.quote.status === "concluido"),
+    );
+  },
+
 
   sendAssistant(text: string, reply: string) {
     const t = text.trim();

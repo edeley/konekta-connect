@@ -7,6 +7,7 @@ import { Section, KCard, StatCard, EmptyState, BottomSheet, StatusPill } from "@
 import { store, useStore } from "@/lib/store";
 import { formatDb } from "@/lib/catalog";
 import { walletStateMeta } from "@/lib/states";
+import { isPayoutDay, payoutLabel } from "@/lib/escrow";
 
 export const Route = createFileRoute("/pro/ganhos")({
   head: () => ({
@@ -32,10 +33,16 @@ function ProEarnings() {
   const state = balance <= 0 ? "sem_saldo" : "disponivel";
   const earned = txs.filter((t) => t.kind === "in").reduce((a, t) => a + t.amount, 0);
 
+  const canPayout = isPayoutDay();
+
   function payout() {
     const value = Number(amount);
     if (!value || value > balance) {
       toast.error("Valor inválido");
+      return;
+    }
+    if (!canPayout) {
+      toast.error("Levantamentos só às quintas-feiras", { description: payoutLabel() });
       return;
     }
     store.requestPayout(value);
@@ -60,10 +67,14 @@ function ProEarnings() {
           <button
             type="button"
             onClick={() => setOpen(true)}
-            className="press mt-4 min-h-12 w-full rounded-full bg-primary-foreground text-sm font-bold text-primary"
+            disabled={!canPayout || balance <= 0}
+            className="press mt-4 min-h-12 w-full rounded-full bg-primary-foreground text-sm font-bold text-primary disabled:opacity-60"
           >
             Solicitar levantamento
           </button>
+          <p className="mt-2 text-center text-[11px] opacity-80">
+            Ciclo semanal de saques · {payoutLabel()}
+          </p>
         </KCard>
       </Section>
 
@@ -106,7 +117,7 @@ function ProEarnings() {
         open={open}
         onClose={() => setOpen(false)}
         title="Solicitar levantamento"
-        description={`Disponível: ${formatDb(balance)}`}
+        description={`Disponível: ${formatDb(balance)} · ${payoutLabel()}`}
       >
         <input
           value={amount}
