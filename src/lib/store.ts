@@ -46,13 +46,32 @@ export type ProviderProfile = {
   submittedAt: number;
 };
 
+export type QuoteStatus = "pendente" | "pago" | "concluido" | "recusado";
+
+export type Quote = {
+  id: string;
+  providerId: string;
+  description: string;
+  net: number;
+  fee: number;
+  gross: number;
+  feePct: number;
+  status: QuoteStatus;
+  createdAt: number;
+  paidAt?: number;
+  completedAt?: number;
+};
+
 export type Message = {
   id: string;
   from: "me" | "them";
   text: string;
   at: number;
   status?: "sent" | "delivered" | "read";
+  kind?: "text" | "quote" | "system";
+  quote?: Quote;
 };
+
 
 export type AssistantMessage = {
   id: string;
