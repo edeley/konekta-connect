@@ -1,12 +1,7 @@
 import { useState } from "react";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { Mail } from "lucide-react";
 import { toast } from "sonner";
-import { AuthLayout } from "@/components/auth/AuthLayout";
-import { PhoneInput } from "@/components/auth/PhoneInput";
-import { LoadingButton } from "@/components/auth/LoadingButton";
-import { authFlow } from "@/lib/auth-flow";
-import { DEMO_OTP, emailSchema, maskPhone, phoneSchema } from "@/lib/auth-schemas";
+import { store } from "@/lib/store";
 
 export const Route = createFileRoute("/login")({
   head: () => ({
@@ -15,10 +10,10 @@ export const Route = createFileRoute("/login")({
       {
         name: "description",
         content:
-          "Entre na KONEKTA com o seu número +239 e receba um código de verificação. Contrate profissionais verificados em São Tomé e Príncipe.",
+          "Entre na sua conta KONEKTA com email ou telefone e contrate profissionais verificados em São Tomé e Príncipe.",
       },
       { property: "og:title", content: "Entrar na KONEKTA" },
-      { property: "og:description", content: "Autenticação rápida por telemóvel +239." },
+      { property: "og:description", content: "Acesso rápido à sua conta de cliente ou prestador." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
     ],
@@ -26,131 +21,107 @@ export const Route = createFileRoute("/login")({
   component: LoginPage,
 });
 
+export function BrandMark({ tone = "primary" }: { tone?: "primary" | "success" }) {
+  const bg = tone === "success" ? "bg-success" : "bg-primary";
+  const fg = tone === "success" ? "text-success" : "text-primary";
+  return (
+    <div className="flex items-center gap-2">
+      <span className={`grid size-9 place-items-center rounded-full ${bg} text-sm font-bold text-primary-foreground`}>
+        K
+      </span>
+      <div className="leading-tight">
+        <p className={`text-base font-extrabold tracking-tight ${fg}`}>KONEKTA STP</p>
+        <p className="text-[10px] text-muted-foreground">Conectamos quem precisa a quem sabe fazer</p>
+      </div>
+    </div>
+  );
+}
+
+export function TextField({
+  label,
+  ...props
+}: { label: string } & React.InputHTMLAttributes<HTMLInputElement>) {
+  return (
+    <label className="block space-y-1.5">
+      <span className="text-xs font-medium text-muted-foreground">{label}</span>
+      <input
+        {...props}
+        className="w-full rounded-xl bg-card px-4 py-3 text-sm ring-1 ring-border outline-none transition focus:ring-2 focus:ring-primary/50"
+      />
+    </label>
+  );
+}
+
 function LoginPage() {
   const navigate = useNavigate();
-  const [mode, setMode] = useState<"phone" | "email">("phone");
-  const [digits, setDigits] = useState("");
-  const [email, setEmail] = useState("");
-  const [error, setError] = useState<string | undefined>();
+  const [id, setId] = useState("");
+  const [pass, setPass] = useState("");
   const [loading, setLoading] = useState(false);
-
-  const full = `+239${digits}`;
-  const phoneValid = phoneSchema.safeParse(full).success;
-  const emailValid = email.length > 0 && emailSchema.safeParse(email).success;
 
   const submit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (loading) return;
-
-    if (mode === "phone") {
-      if (!phoneValid) {
-        setError("Número inválido. Use 9 dígitos começando por 9.");
-        return;
-      }
-      setError(undefined);
-      setLoading(true);
-      setTimeout(() => {
-        authFlow.setPhone(full);
-        authFlow.resetOtp();
-        setLoading(false);
-        toast.success(`Código enviado para ${maskPhone(full)}`, {
-          description: `Código de demonstração: ${DEMO_OTP}`,
-        });
-        navigate({ to: "/verify-otp" });
-      }, 900);
+    if (!id.trim() || pass.length < 6) {
+      toast.error("Preencha o email/telefone e uma senha com 6+ caracteres.");
       return;
     }
-
-    if (!emailValid) {
-      setError("Email inválido.");
-      return;
-    }
-    setError(undefined);
     setLoading(true);
     setTimeout(() => {
-      authFlow.setEmail(email);
-      authFlow.setPhone(full.length > 4 ? full : "+239900000000");
-      authFlow.resetOtp();
-      setLoading(false);
-      toast.success(`Código enviado para ${email}`, {
-        description: `Código de demonstração: ${DEMO_OTP}`,
+      const isEmail = id.includes("@");
+      store.signIn({
+        phone: isEmail ? "+239 900 0000" : id.trim(),
+        email: isEmail ? id.trim() : undefined,
+        name: "Maria Costa",
+        role: "cliente",
       });
-      navigate({ to: "/verify-otp" });
-    }, 900);
+      store.markOnboarded();
+      setLoading(false);
+      navigate({ to: "/" });
+    }, 600);
   };
 
   return (
-    <AuthLayout>
-      <div className="text-center">
-        <h1 className="text-2xl font-extrabold tracking-tight">Bem-vindo de volta</h1>
-        <p className="mt-1 text-sm text-muted-foreground">
-          {mode === "phone"
-            ? "Entre com o seu número de telemóvel"
-            : "Entre com o seu endereço de email"}
-        </p>
-      </div>
+    <div className="min-h-screen bg-surface">
+      <div className="mx-auto w-full max-w-md px-5 pb-16 pt-10">
+        <BrandMark />
 
-      <form onSubmit={submit} className="mt-8 space-y-5" noValidate>
-        {mode === "phone" ? (
-          <PhoneInput value={digits} onChange={setDigits} error={error} disabled={loading} autoFocus />
-        ) : (
-          <div className="space-y-1.5">
-            <label htmlFor="login-email" className="text-sm font-semibold">
-              Email <span className="text-destructive">*</span>
-            </label>
-            <div className="flex items-center gap-2 rounded-xl border border-border bg-card px-3 focus-within:border-primary focus-within:ring-2 focus-within:ring-ring/40">
-              <Mail size={16} className="text-muted-foreground" aria-hidden="true" />
-              <input
-                id="login-email"
-                type="email"
-                autoComplete="email"
-                placeholder="seu@email.com"
-                value={email}
-                aria-invalid={!!error}
-                onChange={(e) => setEmail(e.target.value)}
-                className="min-h-11 w-full bg-transparent text-base outline-none"
-              />
-            </div>
-            {error && (
-              <p role="alert" className="text-xs text-destructive">
-                {error}
-              </p>
-            )}
+        <h1 className="mt-8 text-3xl font-extrabold tracking-tight">Bem-vindo!</h1>
+        <p className="mt-1 text-sm text-muted-foreground">Entre na sua conta de cliente.</p>
+
+        <form onSubmit={submit} className="mt-7 space-y-4">
+          <TextField
+            label="Email ou telefone"
+            placeholder="+239 ..."
+            value={id}
+            onChange={(e) => setId(e.target.value)}
+          />
+          <TextField
+            label="Senha"
+            type="password"
+            placeholder="••••••••"
+            value={pass}
+            onChange={(e) => setPass(e.target.value)}
+          />
+          <div className="text-right">
+            <Link to="/recover-access" className="text-xs font-semibold text-primary">
+              Esqueci minha senha
+            </Link>
           </div>
-        )}
+          <button
+            type="submit"
+            disabled={loading}
+            className="press w-full rounded-xl bg-primary py-3.5 text-sm font-bold text-primary-foreground disabled:opacity-60"
+          >
+            {loading ? "A entrar..." : "Entrar"}
+          </button>
+        </form>
 
-        <LoadingButton type="submit" loading={loading} disabled={mode === "phone" ? !phoneValid : !emailValid}>
-          Enviar Código
-        </LoadingButton>
-
-        <div className="flex items-center gap-3 text-xs text-muted-foreground">
-          <span className="h-px flex-1 bg-border" />
-          ou
-          <span className="h-px flex-1 bg-border" />
-        </div>
-
-        <LoadingButton
-          variant="outline"
-          onClick={() => {
-            setError(undefined);
-            setMode(mode === "phone" ? "email" : "phone");
-          }}
-        >
-          {mode === "phone" ? "Entrar com Email" : "Entrar com Telemóvel"}
-        </LoadingButton>
-      </form>
-
-      <div className="mt-8 space-y-3 text-center text-sm">
-        <p className="text-muted-foreground">
-          Não tem conta?{" "}
-          <Link to="/choose-role" className="font-semibold text-primary hover:underline">
-            Cadastre-se
+        <p className="mt-6 text-center text-sm text-muted-foreground">
+          Ainda não tem conta?{" "}
+          <Link to="/choose-role" className="font-bold text-primary">
+            Criar conta
           </Link>
         </p>
-        <Link to="/recover-access" className="block text-xs font-semibold text-muted-foreground hover:underline">
-          Esqueceu o código? Recuperar acesso
-        </Link>
       </div>
-    </AuthLayout>
+    </div>
   );
 }

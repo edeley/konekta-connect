@@ -2,35 +2,34 @@ import { Link, useRouterState } from "@tanstack/react-router";
 import {
   Home,
   ClipboardList,
-  MessageCircle,
   Wallet,
   User,
   LayoutDashboard,
   CalendarDays,
-  Sparkles,
-  TrendingUp,
+  Search,
   Users,
   Settings,
   Banknote,
 } from "lucide-react";
+
 import type { UserRole } from "@/lib/store";
 import { cn } from "@/lib/utils";
 
 const clientTabs = [
   { to: "/", label: "Início", icon: Home },
+  { to: "/categorias", label: "Buscar", icon: Search },
   { to: "/pedidos", label: "Pedidos", icon: ClipboardList },
-  { to: "/chat", label: "Chat", icon: MessageCircle },
   { to: "/carteira", label: "Carteira", icon: Wallet },
-  { to: "/perfil", label: "Perfil", icon: User },
 ];
 
 const providerTabs = [
-  { to: "/pro", label: "Painel", icon: LayoutDashboard },
-  { to: "/pro/oportunidades", label: "Oportunidades", icon: Sparkles },
+  { to: "/pro", label: "Início", icon: LayoutDashboard },
   { to: "/pro/pedidos", label: "Pedidos", icon: ClipboardList },
-  { to: "/pro/ganhos", label: "Ganhos", icon: TrendingUp },
+  { to: "/pro/agenda", label: "Agenda", icon: CalendarDays },
+  { to: "/pro/ganhos", label: "Carteira", icon: Wallet },
   { to: "/perfil", label: "Perfil", icon: User },
 ];
+
 
 const adminTabs = [
   { to: "/admin", label: "Painel", icon: LayoutDashboard },
