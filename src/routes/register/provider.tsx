@@ -1,322 +1,166 @@
 import { useState } from "react";
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, useNavigate, useRouter } from "@tanstack/react-router";
+import { ArrowLeft, Check, FileText, Upload } from "lucide-react";
 import { toast } from "sonner";
-import { AuthLayout } from "@/components/auth/AuthLayout";
-import { LoadingButton } from "@/components/auth/LoadingButton";
-import { DistrictSelect } from "@/components/auth/DistrictSelect";
-import { FileUpload } from "@/components/auth/FileUpload";
-import { Field } from "@/components/auth/Field";
-import { authFlow, useAuthFlow } from "@/lib/auth-flow";
-import {
-  FILE_RULES,
-  GENDERS,
-  SERVICE_CATEGORIES,
-  providerProfileSchema,
-  sanitizeInput,
-} from "@/lib/auth-schemas";
 import { store } from "@/lib/store";
-import { cn } from "@/lib/utils";
+import { categories } from "@/lib/konekta-data";
+import { TextField } from "@/routes/login";
 
 export const Route = createFileRoute("/register/provider")({
   head: () => ({
     meta: [
-      { title: "Registo de prestador — KONEKTA" },
+      { title: "Registo de prestador — KONEKTA STP" },
       {
         name: "description",
         content:
-          "Ofereça os seus serviços na KONEKTA: preencha o perfil, escolha categorias e distritos de atuação e envie o BI para verificação.",
+          "Torne-se prestador na KONEKTA: envie os seus dados e documentos e comece a receber pedidos em São Tomé e Príncipe.",
       },
       { property: "og:title", content: "Registo de prestador — KONEKTA" },
-      { property: "og:description", content: "Trabalhe com clientes verificados em São Tomé e Príncipe." },
+      { property: "og:description", content: "Cadastro simples com verificação de documentos em 24h." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
     ],
   }),
-  component: RegisterProviderPage,
+  component: RegisterProvider,
 });
 
-function RegisterProviderPage() {
+const docs = [
+  { key: "id", label: "Documento de identidade", required: true },
+  { key: "residencia", label: "Comprovativo de residência", required: true },
+  { key: "certificado", label: "Certificado profissional (opcional)", required: false },
+];
+
+function RegisterProvider() {
   const navigate = useNavigate();
-  const phone = useAuthFlow((s) => s.phone);
-  const role = useAuthFlow((s) => s.role);
-  const draft = useAuthFlow((s) => s.registration);
+  const router = useRouter();
+  const [step, setStep] = useState(0);
+  const [sent, setSent] = useState<Record<string, boolean>>({});
+  const [form, setForm] = useState({
+    name: "",
+    phone: "+239 ",
+    email: "",
+    category: categories[0].name,
+    district: "São Tomé, Água Grande",
+    pass: "",
+  });
+  const set = (k: keyof typeof form) => (e: React.ChangeEvent<HTMLInputElement>) =>
+    setForm((f) => ({ ...f, [k]: e.target.value }));
 
-  const [section, setSection] = useState<"pessoais" | "profissionais">("pessoais");
-  const [fullName, setFullName] = useState(draft.fullName ?? "");
-  const [email, setEmail] = useState(draft.email ?? "");
-  const [district, setDistrict] = useState(draft.district ?? "");
-  const [zone, setZone] = useState(draft.zone ?? "");
-  const [gender, setGender] = useState(draft.gender ?? "");
-  const [bio, setBio] = useState(draft.bio ?? "");
-  const [categories, setCategories] = useState<string[]>(draft.categories ?? []);
-  const [workDistricts, setWorkDistricts] = useState<string[]>(draft.workDistricts ?? []);
-  const [idFront, setIdFront] = useState(false);
-  const [idBack, setIdBack] = useState(false);
-  const [errors, setErrors] = useState<Record<string, string>>({});
-  const [loading, setLoading] = useState(false);
-
-  const payload = {
-    fullName,
-    email,
-    district,
-    zone,
-    gender,
-    bio,
-    categories,
-    workDistricts,
-    idFront,
-    idBack,
-  };
-  const valid = providerProfileSchema.safeParse(payload).success;
-
-  const toggleCategory = (c: string) =>
-    setCategories((prev) => (prev.includes(c) ? prev.filter((x) => x !== c) : [...prev, c]));
-
-  const submit = (e: React.FormEvent) => {
+  const submitInfo = (e: React.FormEvent) => {
     e.preventDefault();
-    const parsed = providerProfileSchema.safeParse(payload);
-    if (!parsed.success) {
-      const next: Record<string, string> = {};
-      for (const issue of parsed.error.issues) next[String(issue.path[0])] = issue.message;
-      setErrors(next);
-      const personal = ["fullName", "email", "district", "zone", "gender"];
-      setSection(Object.keys(next).some((k) => personal.includes(k)) ? "pessoais" : "profissionais");
-      toast.error("Verifique os campos obrigatórios");
+    if (!form.name.trim() || form.phone.trim().length < 8 || form.pass.length < 6) {
+      toast.error("Preencha nome, telefone e uma senha com 6+ caracteres.");
       return;
     }
-    setErrors({});
-    setLoading(true);
-    authFlow.updateRegistration({ fullName, email, district, zone, gender, bio, categories, workDistricts });
-    setTimeout(() => {
-      store.registerProvider(
-        {
-          phone: phone ?? "+239900000000",
-          name: sanitizeInput(fullName),
-          email: email || undefined,
-          district,
-          gender,
-        },
-        {
-          category: categories[0],
-          yearsExperience: 1,
-          bio: sanitizeInput(bio),
-          services: [],
-          district,
-          city: sanitizeInput(zone),
-          radiusKm: 15,
-          documents: { selfieOk: true },
-        },
-      );
-      store.markOnboarded();
-      setLoading(false);
-      toast.success("Cadastro enviado para análise");
-      navigate({ to: "/pending-approval", replace: true });
-    }, 1000);
+    setStep(1);
+  };
+
+  const finish = () => {
+    if (!sent.id || !sent.residencia) {
+      toast.error("Envie o documento de identidade e o comprovativo de residência.");
+      return;
+    }
+    store.registerProvider(
+      { name: form.name.trim(), phone: form.phone.trim(), email: form.email.trim() || undefined },
+      {
+        category: form.category,
+        yearsExperience: 1,
+        bio: "",
+        services: [],
+        district: form.district,
+        city: "São Tomé",
+        radiusKm: 10,
+        documents: { selfieOk: true },
+      },
+    );
+    store.markOnboarded();
+    navigate({ to: "/pending-approval" });
   };
 
   return (
-    <AuthLayout back step={2} totalSteps={2}>
-      <h1 className="text-2xl font-extrabold tracking-tight">
-        {role === "both" ? "Conta de cliente e prestador" : "Complete o seu perfil profissional"}
-      </h1>
-      <p className="mt-1 text-sm text-muted-foreground">
-        Os documentos são verificados pela equipa KONEKTA em até 24h.
-      </p>
-
-      <div className="mt-5 grid grid-cols-2 gap-1 rounded-full bg-muted p-1">
-        {(["pessoais", "profissionais"] as const).map((s) => (
+    <div className="min-h-screen bg-surface">
+      <div className="mx-auto w-full max-w-md px-5 pb-16 pt-6">
+        <header className="flex items-center gap-3">
           <button
-            key={s}
-            type="button"
-            onClick={() => setSection(s)}
-            aria-pressed={section === s}
-            className={cn(
-              "min-h-10 rounded-full text-xs font-semibold transition-colors",
-              section === s ? "bg-card text-primary shadow-soft" : "text-muted-foreground",
-            )}
+            onClick={() => (step === 0 ? router.history.back() : setStep(0))}
+            aria-label="Voltar"
+            className="press grid size-9 place-items-center rounded-full bg-card ring-1 ring-border"
           >
-            {s === "pessoais" ? "Dados pessoais" : "Dados profissionais"}
+            <ArrowLeft size={16} />
           </button>
-        ))}
-      </div>
+          <h1 className="text-base font-semibold">
+            {step === 0 ? "Bem-vindo, prestador!" : "Envie os seus documentos"}
+          </h1>
+        </header>
 
-      <form onSubmit={submit} className="mt-6 space-y-5" noValidate>
-        {section === "pessoais" ? (
-          <>
-            <FileUpload
-              label="Foto de perfil"
-              hint="Adicionar foto"
-              circle
-              accept={FILE_RULES.profilePhoto.accept}
-              maxSize={FILE_RULES.profilePhoto.maxSize}
-              onChange={() => undefined}
-            />
-            <Field label="Nome completo" required error={errors.fullName}>
-              <input
-                value={fullName}
-                onChange={(e) => setFullName(e.target.value)}
-                placeholder="Seu nome completo"
-                autoComplete="name"
-                className="k-input"
-              />
-            </Field>
-            <Field label="Email (opcional)" error={errors.email}>
-              <input
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                type="email"
-                placeholder="seu@email.com"
-                className="k-input"
-              />
-            </Field>
-            <DistrictSelect value={district} onChange={setDistrict} required error={errors.district} />
-            <Field label="Zona / Morada" required error={errors.zone}>
-              <input
-                value={zone}
-                onChange={(e) => setZone(e.target.value)}
-                placeholder="Ex: Trindade, perto do mercado"
-                className="k-input"
-              />
-            </Field>
-            <fieldset className="space-y-2">
-              <legend className="text-sm font-semibold">
-                Sexo <span className="text-destructive">*</span>
-              </legend>
-              <div className="grid grid-cols-3 gap-2">
-                {GENDERS.map((g) => (
-                  <label
-                    key={g.value}
-                    className={cn(
-                      "press flex min-h-11 cursor-pointer items-center justify-center rounded-xl border bg-card text-sm font-medium",
-                      gender === g.value ? "border-primary bg-accent text-primary" : "border-border",
-                    )}
-                  >
-                    <input
-                      type="radio"
-                      name="gender"
-                      className="sr-only"
-                      checked={gender === g.value}
-                      onChange={() => setGender(g.value)}
-                    />
-                    {g.label}
-                  </label>
+        {step === 0 ? (
+          <form onSubmit={submitInfo} className="mt-6 space-y-4">
+            <TextField label="Nome completo" placeholder="João Silva" value={form.name} onChange={set("name")} />
+            <TextField label="Telefone" placeholder="+239 ..." value={form.phone} onChange={set("phone")} />
+            <TextField label="Email" type="email" placeholder="voce@exemplo.st" value={form.email} onChange={set("email")} />
+            <label className="block space-y-1.5">
+              <span className="text-xs font-medium text-muted-foreground">Categoria principal</span>
+              <select
+                value={form.category}
+                onChange={(e) => setForm((f) => ({ ...f, category: e.target.value }))}
+                className="w-full rounded-xl bg-card px-4 py-3 text-sm ring-1 ring-border outline-none focus:ring-2 focus:ring-success/50"
+              >
+                {categories.map((c) => (
+                  <option key={c.slug}>{c.name}</option>
                 ))}
-              </div>
-              {errors.gender && (
-                <p role="alert" className="text-xs text-destructive">
-                  {errors.gender}
-                </p>
-              )}
-            </fieldset>
-            <LoadingButton variant="outline" onClick={() => setSection("profissionais")}>
-              Continuar para dados profissionais
-            </LoadingButton>
-          </>
-        ) : (
-          <>
-            <Field
-              label="Descrição do serviço"
-              required
-              error={errors.bio}
-              hint={`${bio.length}/500 caracteres`}
+              </select>
+            </label>
+            <TextField label="Localização" value={form.district} onChange={set("district")} />
+            <TextField
+              label="Senha"
+              type="password"
+              placeholder="Mínimo 6 caracteres"
+              value={form.pass}
+              onChange={set("pass")}
+            />
+            <button
+              type="submit"
+              className="press w-full rounded-xl bg-success py-3.5 text-sm font-bold text-success-foreground"
             >
-              <textarea
-                value={bio}
-                maxLength={500}
-                rows={4}
-                onChange={(e) => setBio(e.target.value)}
-                placeholder="Descreva os seus serviços, experiência e disponibilidade..."
-                className="k-input min-h-28 resize-y py-2"
-              />
-            </Field>
-
-            <fieldset className="space-y-2">
-              <legend className="text-sm font-semibold">
-                Categorias <span className="text-destructive">*</span>
-              </legend>
-              <div className="flex flex-wrap gap-2">
-                {SERVICE_CATEGORIES.map((c) => {
-                  const on = categories.includes(c);
-                  return (
-                    <button
-                      key={c}
-                      type="button"
-                      aria-pressed={on}
-                      onClick={() => toggleCategory(c)}
-                      className={cn(
-                        "press min-h-9 rounded-full border px-3.5 text-xs font-semibold transition-colors",
-                        on
-                          ? "border-primary bg-primary text-primary-foreground"
-                          : "border-border bg-card text-muted-foreground",
-                      )}
-                    >
-                      {c}
-                    </button>
-                  );
-                })}
-              </div>
-              {errors.categories && (
-                <p role="alert" className="text-xs text-destructive">
-                  {errors.categories}
-                </p>
-              )}
-            </fieldset>
-
-            <DistrictSelect
-              multiple
-              label="Onde atua?"
-              required
-              value={workDistricts}
-              onChange={setWorkDistricts}
-              error={errors.workDistricts}
-            />
-
-            <FileUpload
-              label="BI Frente"
-              hint="Foto da frente do BI (JPG ou PNG, máx 5MB)"
-              required
-              secure
-              accept={FILE_RULES.bi.accept}
-              maxSize={FILE_RULES.bi.maxSize}
-              onChange={(f) => setIdFront(f.length > 0)}
-            />
-            {errors.idFront && (
-              <p role="alert" className="text-xs text-destructive">
-                {errors.idFront}
-              </p>
-            )}
-
-            <FileUpload
-              label="BI Verso"
-              hint="Foto do verso do BI (JPG ou PNG, máx 5MB)"
-              required
-              secure
-              accept={FILE_RULES.bi.accept}
-              maxSize={FILE_RULES.bi.maxSize}
-              onChange={(f) => setIdBack(f.length > 0)}
-            />
-            {errors.idBack && (
-              <p role="alert" className="text-xs text-destructive">
-                {errors.idBack}
-              </p>
-            )}
-
-            <FileUpload
-              label="Portfólio (opcional)"
-              hint="Fotos dos seus trabalhos — máximo 5 imagens"
-              multiple
-              maxFiles={FILE_RULES.portfolio.maxFiles}
-              accept={FILE_RULES.portfolio.accept}
-              maxSize={FILE_RULES.portfolio.maxSize}
-              onChange={() => undefined}
-            />
-
-            <LoadingButton type="submit" loading={loading} disabled={!valid}>
-              Concluir Cadastro
-            </LoadingButton>
-          </>
+              Continuar
+            </button>
+          </form>
+        ) : (
+          <div className="mt-6 space-y-3">
+            <p className="text-xs text-muted-foreground">Faremos a verificação em até 24h.</p>
+            {docs.map((d) => {
+              const done = !!sent[d.key];
+              return (
+                <div
+                  key={d.key}
+                  className="flex items-center gap-3 rounded-2xl bg-card p-4 ring-1 ring-border"
+                >
+                  <span className="grid size-9 shrink-0 place-items-center rounded-xl bg-muted text-muted-foreground">
+                    <FileText size={16} />
+                  </span>
+                  <span className="min-w-0 flex-1 text-sm">{d.label}</span>
+                  <button
+                    type="button"
+                    onClick={() => setSent((s) => ({ ...s, [d.key]: true }))}
+                    className={`press flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-semibold ${
+                      done ? "bg-success/10 text-success" : "bg-success text-success-foreground"
+                    }`}
+                  >
+                    {done ? <Check size={13} /> : <Upload size={13} />}
+                    {done ? "Enviado" : "Enviar"}
+                  </button>
+                </div>
+              );
+            })}
+            <button
+              onClick={finish}
+              className="press mt-3 w-full rounded-xl bg-success py-3.5 text-sm font-bold text-success-foreground"
+            >
+              Continuar
+            </button>
+          </div>
         )}
-      </form>
-    </AuthLayout>
+      </div>
+    </div>
   );
 }
