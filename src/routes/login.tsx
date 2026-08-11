@@ -117,7 +117,7 @@ function LoginPage() {
 
         <p className="mt-6 text-center text-sm text-muted-foreground">
           Ainda não tem conta?{" "}
-          <Link to="/choose-role" className="font-bold text-primary">
+          <Link to="/registro" className="font-bold text-primary">
             Criar conta
           </Link>
         </p>
