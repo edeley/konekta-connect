@@ -62,7 +62,7 @@ function VerifyOtpPage() {
       if (code === DEMO_OTP) {
         authFlow.resetOtp();
         toast.success("Número verificado!");
-        navigate({ to: user ? "/" : "/choose-role", replace: true });
+        navigate({ to: user ? "/" : "/registro", replace: true });
         return;
       }
       const nowBlocked = authFlow.failOtp();
