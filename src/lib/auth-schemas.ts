@@ -86,7 +86,16 @@ export const FILE_RULES = {
   bi: { accept: ["image/jpeg", "image/png"], maxSize: 5 * 1024 * 1024 },
   profilePhoto: { accept: ["image/jpeg", "image/png"], maxSize: 2 * 1024 * 1024 },
   portfolio: { accept: ["image/jpeg", "image/png"], maxSize: 3 * 1024 * 1024, maxFiles: 5 },
+  pdf: {
+    accept: [
+      "application/pdf",
+      "application/msword",
+      "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+    ],
+    maxSize: 8 * 1024 * 1024,
+  },
 } as const;
+
 
 /* --------------------------------- Helpers -------------------------------- */
 

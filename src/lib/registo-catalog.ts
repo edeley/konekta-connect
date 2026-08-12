@@ -242,22 +242,36 @@ export function pricingModelsFor(categoryIds: string[]): PricingModel[] {
   return [...set];
 }
 
+export type RequiredDocument = {
+  id: string;
+  label: string;
+  hint: string;
+  required: boolean;
+  /** 2 = precisa de frente e verso. */
+  sides: 1 | 2;
+  format: "image" | "pdf";
+};
+
 /** Documentos exigidos consoante o tipo de prestador e categorias. */
-export function requiredDocuments(kind: "individual" | "empresa", categoryIds: string[]) {
-  const docs: { id: string; label: string; hint: string; required: boolean }[] = [
+export function requiredDocuments(kind: "individual" | "empresa", categoryIds: string[]): RequiredDocument[] {
+  const docs: RequiredDocument[] = [
     {
       id: "bi",
       label: "Documento de identidade (BI ou passaporte)",
-      hint: "Fotografe a frente do documento",
+      hint: "Fotografe o documento",
       required: true,
+      sides: 2,
+      format: "image",
     },
   ];
   if (kind === "empresa") {
     docs.push({
       id: "empresa",
       label: "Registo comercial da empresa",
-      hint: "Documento de constituição ou NIF",
+      hint: "Envie o ficheiro em PDF (documento de constituição ou NIF)",
       required: true,
+      sides: 1,
+      format: "pdf",
     });
   }
   if (categoryIds.some((id) => categoryById(id)?.requiresLicense)) {
@@ -266,10 +280,13 @@ export function requiredDocuments(kind: "individual" | "empresa", categoryIds: s
       label: "Licença ou certificação profissional",
       hint: "Apenas para atividades reguladas",
       required: false,
+      sides: 1,
+      format: "pdf",
     });
   }
   return docs;
 }
+
 
 export const WEEK_DAYS = [
   { id: "seg", label: "Seg" },
