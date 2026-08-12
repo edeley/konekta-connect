@@ -120,7 +120,14 @@ export function FileUpload({
         <ul className={cn("grid gap-2", multiple ? "grid-cols-3" : "grid-cols-1")}>
           {items.map((item, i) => (
             <li key={item.url} className="relative overflow-hidden rounded-xl border border-border bg-card">
-              <img src={item.url} alt={`Pré-visualização ${i + 1}`} className="h-24 w-full object-cover" />
+              {item.file.type.startsWith("image/") ? (
+                <img src={item.url} alt={`Pré-visualização ${i + 1}`} className="h-24 w-full object-cover" />
+              ) : (
+                <div className="flex items-center gap-2 p-3 pr-10">
+                  <FileText size={18} className="shrink-0 text-primary" aria-hidden="true" />
+                  <span className="min-w-0 truncate text-xs font-semibold">{item.file.name}</span>
+                </div>
+              )}
               <button
                 type="button"
                 onClick={() => remove(i)}
@@ -133,6 +140,7 @@ export function FileUpload({
           ))}
         </ul>
       )}
+
 
       {circle && items[0] && (
         <button
