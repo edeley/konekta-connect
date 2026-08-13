@@ -322,6 +322,7 @@ export const store = {
     description: string;
     district: string;
     address?: string;
+    reference?: string;
     urgency: RequestUrgency;
     budget?: number;
     photos?: number;
@@ -334,6 +335,7 @@ export const store = {
       description: input.description,
       district: input.district,
       address: input.address,
+      reference: input.reference,
       urgency: input.urgency,
       budget: input.budget,
       photos: input.photos ?? 0,

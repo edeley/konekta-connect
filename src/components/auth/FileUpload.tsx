@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { FileImage, Loader2, ShieldCheck, Trash2, UploadCloud } from "lucide-react";
+import { FileImage, FileText, Loader2, ShieldCheck, Trash2, UploadCloud } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { validateFile } from "@/lib/auth-schemas";
 

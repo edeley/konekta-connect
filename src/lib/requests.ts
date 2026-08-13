@@ -22,6 +22,8 @@ export type ServiceRequest = {
   description: string;
   district: string;
   address?: string;
+  /** Ponto de referência / local de encontro. */
+  reference?: string;
   urgency: RequestUrgency;
   budget?: number;
   photos: number;

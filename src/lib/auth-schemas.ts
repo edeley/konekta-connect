@@ -139,7 +139,12 @@ export function validateFile(
   file: File,
   rule: { accept: readonly string[]; maxSize: number },
 ): string | null {
-  if (!rule.accept.includes(file.type)) return "Tipo não suportado. Use JPG ou PNG.";
+  if (!rule.accept.includes(file.type)) {
+    const pdfOnly = rule.accept.every((t) => !t.startsWith("image/"));
+    return pdfOnly
+      ? "Tipo não suportado. Envie um PDF ou documento Word."
+      : "Tipo não suportado. Use JPG ou PNG.";
+  }
   if (file.size > rule.maxSize)
     return `Ficheiro muito grande. Máximo ${Math.round(rule.maxSize / (1024 * 1024))}MB.`;
   return null;
