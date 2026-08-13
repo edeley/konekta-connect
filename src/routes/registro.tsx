@@ -517,71 +517,6 @@ function RegistoPage() {
                 hint="Serve para recibos e notificações. Não é obrigatório."
                 error={emailError}
               />
-              <TextField
-                label="Data de nascimento (opcional)"
-                type="date"
-                value={d.birth}
-                onChange={(v) => set({ birth: v })}
-              />
-            </AccordionSection>
-
-            <AccordionSection
-              icon={<MapPin size={17} aria-hidden="true" />}
-              title="Onde está?"
-              summary={d.district ? `${d.district}${d.locality ? ` · ${d.locality}` : ""}` : "Distrito e bairro"}
-              done={!!d.district}
-            >
-              <button
-                type="button"
-                onClick={useGps}
-                className="press flex min-h-11 w-full items-center justify-center gap-2 rounded-xl border border-border bg-surface text-sm font-semibold text-primary"
-              >
-                {gpsBusy ? <Loader2 size={15} className="animate-spin" aria-hidden="true" /> : <MapPin size={15} aria-hidden="true" />}
-                Usar a minha localização
-              </button>
-
-              <div className="space-y-1.5">
-                <label htmlFor="district" className="text-sm font-semibold">
-                  Distrito <span className="text-destructive">*</span>
-                </label>
-                <select
-                  id="district"
-                  value={d.district}
-                  onChange={(e) => set({ district: e.target.value, locality: "" })}
-                  className="min-h-12 w-full rounded-xl border border-border bg-card px-3 text-sm outline-none focus:border-primary"
-                >
-                  <option value="">Escolher distrito</option>
-                  {STP_DISTRICTS.map((x) => (
-                    <option key={x} value={x}>
-                      {x}
-                    </option>
-                  ))}
-                </select>
-                {showErrors && locationError && (
-                  <p role="alert" className="text-xs text-destructive">
-                    {locationError}
-                  </p>
-                )}
-              </div>
-
-              <div className="space-y-1.5">
-                <label htmlFor="locality" className="text-sm font-semibold">
-                  Localidade / Bairro
-                </label>
-                <input
-                  id="locality"
-                  list="localities"
-                  value={d.locality}
-                  onChange={(e) => set({ locality: e.target.value })}
-                  placeholder="Ex.: Riboque"
-                  className="min-h-12 w-full rounded-xl border border-border bg-card px-3 text-sm outline-none focus:border-primary"
-                />
-                <datalist id="localities">
-                  {(LOCALITIES[d.district] ?? []).map((x) => (
-                    <option key={x} value={x} />
-                  ))}
-                </datalist>
-              </div>
             </AccordionSection>
 
             {isProvider && (
@@ -668,51 +603,6 @@ function RegistoPage() {
                   )}
                 </AccordionSection>
 
-                {d.services.length > 0 && (
-                  <AccordionSection
-                    icon={<CreditCard size={17} aria-hidden="true" />}
-                    title="Como quer cobrar"
-                    summary={d.pricing.length ? d.pricing.map((p) => PRICING_LABELS[p]).join(", ") : "Formas de cobrança"}
-                    done={d.pricing.length > 0}
-                    optional
-                  >
-                    <p className="text-xs text-muted-foreground">
-                      Mostramos apenas o que faz sentido para os serviços que escolheu.
-                    </p>
-                    <ul className="flex flex-wrap gap-2">
-                      {pricingOptions.map((p) => {
-                        const active = d.pricing.includes(p);
-                        return (
-                          <li key={p}>
-                            <button
-                              type="button"
-                              aria-pressed={active}
-                              onClick={() =>
-                                set({
-                                  pricing: active ? d.pricing.filter((x) => x !== p) : [...d.pricing, p],
-                                })
-                              }
-                              className={cn(
-                                "rounded-full border px-3 py-2 text-xs font-semibold",
-                                active ? "border-primary bg-accent text-primary" : "border-border bg-card",
-                              )}
-                            >
-                              {PRICING_LABELS[p]}
-                            </button>
-                          </li>
-                        );
-                      })}
-                    </ul>
-                    <TextField
-                      label="Preço a partir de (Db)"
-                      type="number"
-                      value={d.priceFrom}
-                      onChange={(v) => set({ priceFrom: v })}
-                      placeholder="Ex.: 500"
-                      hint="Pode negociar cada pedido dentro do KONEKTA."
-                    />
-                  </AccordionSection>
-                )}
 
                 <AccordionSection
                   icon={<MapPin size={17} aria-hidden="true" />}
@@ -770,37 +660,19 @@ function RegistoPage() {
                 <AccordionSection
                   icon={<Clock size={17} aria-hidden="true" />}
                   title="Disponibilidade"
-                  summary={d.availabilityLater ? "Configurar depois" : `${d.days.length} dias · ${d.from}–${d.to}`}
-                  done={d.availabilityLater || d.days.length > 0}
+                  summary={d.availabilityLater ? "Configurar depois" : summarizeAvailability(d.availability)}
+                  done={d.availabilityLater || Object.values(d.availability).some((x) => x.active)}
                   optional
                 >
-                  <ul className="flex flex-wrap gap-2">
-                    {WEEK_DAYS.map((day) => {
-                      const active = d.days.includes(day.id);
-                      return (
-                        <li key={day.id}>
-                          <button
-                            type="button"
-                            aria-pressed={active}
-                            disabled={d.availabilityLater}
-                            onClick={() =>
-                              set({ days: active ? d.days.filter((x) => x !== day.id) : [...d.days, day.id] })
-                            }
-                            className={cn(
-                              "size-11 rounded-full border text-xs font-bold disabled:opacity-50",
-                              active ? "border-primary bg-accent text-primary" : "border-border bg-card",
-                            )}
-                          >
-                            {day.label}
-                          </button>
-                        </li>
-                      );
-                    })}
-                  </ul>
-                  <div className="grid grid-cols-2 gap-2">
-                    <TextField label="Das" type="time" value={d.from} onChange={(v) => set({ from: v })} />
-                    <TextField label="Até" type="time" value={d.to} onChange={(v) => set({ to: v })} />
-                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    Defina o horário de cada dia. Pode ter vários períodos (ex.: manhã 08:00–12:00 e tarde
+                    14:00–18:00) e usar “Aplicar a todos” para repetir o mesmo horário na semana.
+                  </p>
+                  <AvailabilityEditor
+                    value={d.availability}
+                    onChange={(availability) => set({ availability })}
+                    disabled={d.availabilityLater}
+                  />
                   <label className="flex items-center gap-2 text-xs font-semibold text-muted-foreground">
                     <input
                       type="checkbox"
@@ -812,49 +684,65 @@ function RegistoPage() {
                   </label>
                 </AccordionSection>
 
-                <AccordionSection
-                  icon={<ShieldCheck size={17} aria-hidden="true" />}
-                  title="Verificação"
-                  summary={d.docs.length ? `${d.docs.length} documento(s) enviado(s)` : "Documento de identidade"}
-                  done={!docsError}
-                  defaultOpen
-                >
-                  <p className="text-xs text-muted-foreground">
-                    Envie o seu documento para confirmarmos a sua identidade. Os clientes só veem um selo de
-                    verificado — nunca os seus documentos.
-                  </p>
-                  {docs.map((doc) => (
-                    <div key={doc.id} className="space-y-2">
+              </>
+            )}
+
+            <AccordionSection
+              icon={<ShieldCheck size={17} aria-hidden="true" />}
+              title="Verificação de identidade"
+              summary={docsDone ? "Documentos enviados" : "Foto do documento (frente e verso)"}
+              done={!docsError}
+              defaultOpen
+            >
+              <p className="text-xs text-muted-foreground">
+                Envie o seu documento para confirmarmos a sua identidade. Os outros utilizadores só veem um selo
+                de verificado — nunca os seus documentos.
+              </p>
+              {docs.map((doc) => {
+                const rules = doc.format === "pdf" ? FILE_RULES.pdf : FILE_RULES.bi;
+                const sides = sideIds(doc);
+                return (
+                  <div key={doc.id} className="space-y-2 rounded-xl border border-border bg-surface p-3">
+                    <p className="text-sm font-bold">
+                      {doc.label} {doc.required ? <span className="text-destructive">*</span> : "(quando aplicável)"}
+                    </p>
+                    <p className="text-[11px] text-muted-foreground">{doc.hint}</p>
+                    {sides.map((sideId, i) => (
                       <FileUpload
-                        label={doc.label + (doc.required ? "" : " (quando aplicável)")}
-                        hint={doc.hint}
-                        accept={FILE_RULES.bi.accept}
-                        maxSize={FILE_RULES.bi.maxSize}
+                        key={sideId}
+                        label={doc.sides === 2 ? (i === 0 ? "Foto da frente" : "Foto do verso") : "Ficheiro"}
+                        hint={
+                          doc.format === "pdf"
+                            ? "PDF ou documento Word (máx. 8MB)"
+                            : "Clique ou arraste a fotografia"
+                        }
+                        accept={rules.accept}
+                        maxSize={rules.maxSize}
                         required={doc.required}
                         secure
                         onChange={(files) =>
                           set({
                             docs: files.length
-                              ? [...new Set([...d.docs, doc.id])]
-                              : d.docs.filter((x) => x !== doc.id),
+                              ? [...new Set([...d.docs, sideId])]
+                              : d.docs.filter((x) => x !== sideId),
                           })
                         }
                       />
-                      {d.docs.includes(doc.id) && (
-                        <p className="flex items-center gap-1.5 text-xs font-semibold text-warning">
-                          <Clock size={13} aria-hidden="true" /> Em análise (24–48h)
-                        </p>
-                      )}
-                    </div>
-                  ))}
-                  {showErrors && docsError && (
-                    <p role="alert" className="text-xs text-destructive">
-                      {docsError}
-                    </p>
-                  )}
-                </AccordionSection>
-              </>
-            )}
+                    ))}
+                    {sides.every((s) => d.docs.includes(s)) && (
+                      <p className="flex items-center gap-1.5 text-xs font-semibold text-warning">
+                        <Clock size={13} aria-hidden="true" /> Em análise (24–48h)
+                      </p>
+                    )}
+                  </div>
+                );
+              })}
+              {showErrors && docsError && (
+                <p role="alert" className="text-xs text-destructive">
+                  {docsError}
+                </p>
+              )}
+            </AccordionSection>
 
             {isClient && (
               <AccordionSection
