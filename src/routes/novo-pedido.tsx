@@ -1,6 +1,6 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
-import { Camera, Check, MapPin, Zap } from "lucide-react";
+import { Camera, Check, MapPin, Navigation, Zap } from "lucide-react";
 import { AppShell } from "@/components/AppShell";
 import { ScreenHeader, Section, KCard, ProgressSteps } from "@/components/konekta/kit";
 import { Button } from "@/components/ui/button";
@@ -38,6 +38,7 @@ function NewRequest() {
   const [description, setDescription] = useState("");
   const [district, setDistrict] = useState(districts[0]);
   const [address, setAddress] = useState("");
+  const [reference, setReference] = useState("");
   const [urgency, setUrgency] = useState<RequestUrgency>("esta-semana");
   const [budget, setBudget] = useState("");
   const [photos, setPhotos] = useState(0);
@@ -132,10 +133,10 @@ function NewRequest() {
       )}
 
       {step === 3 && (
-        <Section title="Onde e quando?">
+        <Section title="Onde vai ser o pedido?">
           <div className="space-y-3">
             <KCard>
-              <p className="mb-2 text-xs font-semibold text-muted-foreground">Distrito</p>
+              <p className="mb-2 text-xs font-semibold text-muted-foreground">Distrito do serviço</p>
               <div className="flex flex-wrap gap-2">
                 {districts.map((d) => (
                   <button
@@ -157,10 +158,22 @@ function NewRequest() {
               <input
                 value={address}
                 onChange={(e) => setAddress(e.target.value)}
-                placeholder="Morada ou ponto de referência (opcional)"
+                placeholder="Morada onde vai ser o serviço"
                 className="w-full rounded-2xl bg-card p-4 pl-10 text-sm shadow-soft outline-none ring-primary/30 focus:ring-2"
               />
             </div>
+            <div className="relative">
+              <Navigation size={16} className="absolute left-4 top-4 text-muted-foreground" />
+              <input
+                value={reference}
+                onChange={(e) => setReference(e.target.value)}
+                placeholder="Ponto de referência ou de encontro (ex.: junto à farmácia)"
+                className="w-full rounded-2xl bg-card p-4 pl-10 text-sm shadow-soft outline-none ring-primary/30 focus:ring-2"
+              />
+            </div>
+            <p className="text-xs text-muted-foreground">
+              A morada exata só é partilhada com o prestador que escolher.
+            </p>
             <KCard>
               <p className="mb-2 text-xs font-semibold text-muted-foreground">Urgência</p>
               <div className="grid gap-2">
