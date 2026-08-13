@@ -23,6 +23,12 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { AccordionSection } from "@/components/auth/AccordionSection";
+import {
+  AvailabilityEditor,
+  DEFAULT_AVAILABILITY,
+  summarizeAvailability,
+  type Availability,
+} from "@/components/auth/AvailabilityEditor";
 import { CategorySelector, type SelectedService } from "@/components/auth/CategorySelector";
 import { FileUpload } from "@/components/auth/FileUpload";
 import { LoadingButton } from "@/components/auth/LoadingButton";
@@ -30,16 +36,12 @@ import { OTPInput } from "@/components/auth/OTPInput";
 import { BottomSheet } from "@/components/konekta/kit";
 import { FILE_RULES } from "@/lib/auth-schemas";
 import {
-  LOCALITIES,
   PAYMENT_PREFERENCES,
-  PRICING_LABELS,
   SERVICE_RADIUS,
   STP_DISTRICTS,
-  WEEK_DAYS,
   categoryById,
-  pricingModelsFor,
   requiredDocuments,
-  type PricingModel,
+  type RequiredDocument,
 } from "@/lib/registo-catalog";
 import { clearDraft, useDraftState, useOnline } from "@/lib/registo-draft";
 import { store } from "@/lib/store";
