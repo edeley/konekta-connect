@@ -83,21 +83,14 @@ type Draft = {
   verified: boolean;
   name: string;
   email: string;
-  birth: string;
-  district: string;
-  locality: string;
   providerKind: ProviderKind;
   proName: string;
   proDesc: string;
   years: string;
   services: SelectedService[];
-  pricing: PricingModel[];
-  priceFrom: string;
   workDistricts: string[];
   radius: string;
-  days: string[];
-  from: string;
-  to: string;
+  availability: Availability;
   availabilityLater: boolean;
   docs: string[];
   payment: string;
@@ -111,21 +104,14 @@ const emptyDraft: Draft = {
   verified: false,
   name: "",
   email: "",
-  birth: "",
-  district: "",
-  locality: "",
   providerKind: "individual",
   proName: "",
   proDesc: "",
   years: "",
   services: [],
-  pricing: [],
-  priceFrom: "",
   workDistricts: [],
   radius: SERVICE_RADIUS[1],
-  days: ["seg", "ter", "qua", "qui", "sex"],
-  from: "08:00",
-  to: "18:00",
+  availability: DEFAULT_AVAILABILITY,
   availabilityLater: false,
   docs: [],
   payment: "depois",
@@ -136,6 +122,11 @@ const emptyDraft: Draft = {
 function formatPhone(digits: string) {
   const d = digits.replace(/\D/g, "").slice(0, 7);
   return d.length > 3 ? `${d.slice(0, 3)} ${d.slice(3)}` : d;
+}
+
+/** Um documento com frente e verso gera dois ficheiros distintos. */
+function sideIds(doc: RequiredDocument) {
+  return doc.sides === 2 ? [`${doc.id}-frente`, `${doc.id}-verso`] : [doc.id];
 }
 
 /* --------------------------------- Página --------------------------------- */
@@ -153,7 +144,6 @@ function RegistoPage() {
   const [duplicate, setDuplicate] = useState(false);
   const [photoOpen, setPhotoOpen] = useState(false);
   const [photo, setPhoto] = useState<string | null>(null);
-  const [gpsBusy, setGpsBusy] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [showErrors, setShowErrors] = useState(false);
   const photoInput = useRef<HTMLInputElement>(null);
@@ -161,8 +151,10 @@ function RegistoPage() {
   const isProvider = d.role === "prestador" || d.role === "ambos";
   const isClient = d.role === "cliente" || d.role === "ambos";
   const categoryIds = useMemo(() => [...new Set(d.services.map((s) => s.categoryId))], [d.services]);
-  const pricingOptions = useMemo(() => pricingModelsFor(categoryIds), [categoryIds]);
-  const docs = useMemo(() => requiredDocuments(d.providerKind, categoryIds), [d.providerKind, categoryIds]);
+  const docs = useMemo(
+    () => (isProvider ? requiredDocuments(d.providerKind, categoryIds) : requiredDocuments("individual", [])),
+    [isProvider, d.providerKind, categoryIds],
+  );
 
   /* ------------------------------ Validação ------------------------------ */
 
@@ -171,23 +163,25 @@ function RegistoPage() {
     !d.email.trim() || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(d.email.trim())
       ? undefined
       : "Introduza um e-mail válido.";
-  const locationError = d.district ? undefined : "Escolha o seu distrito.";
   const servicesError = !isProvider || d.services.length ? undefined : "Escolha pelo menos um serviço.";
   const proError =
-    !isProvider || (d.providerKind === "individual" ? d.proName.trim().length >= 3 : d.proName.trim().length >= 3)
+    !isProvider || d.proName.trim().length >= 3
       ? undefined
       : d.providerKind === "empresa"
         ? "Indique o nome da empresa."
         : "Indique o seu nome profissional.";
-  const docsError =
-    !isProvider || docs.filter((x) => x.required).every((x) => d.docs.includes(x.id))
-      ? undefined
-      : "Envie o documento de identidade.";
+  const docsDone = docs
+    .filter((x) => x.required)
+    .every((x) => sideIds(x).every((s) => d.docs.includes(s)));
+  const docsError = docsDone
+    ? undefined
+    : "Envie a frente e o verso do documento de identidade (e o registo comercial em PDF, se for empresa).";
   const termsError = d.terms && d.privacy ? undefined : "Aceite os termos para continuar.";
 
-  const errors = [nameError, emailError, locationError, proError, servicesError, docsError, termsError].filter(
+  const errors = [nameError, emailError, proError, servicesError, docsError, termsError].filter(
     Boolean,
   ) as string[];
+
 
   const cta =
     d.role === "prestador"
