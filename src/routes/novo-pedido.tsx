@@ -59,6 +59,7 @@ function NewRequest() {
       description: description.trim(),
       district,
       address: address.trim() || undefined,
+      reference: reference.trim() || undefined,
       urgency,
       budget: budget ? Number(budget) : undefined,
       photos,
@@ -215,7 +216,8 @@ function NewRequest() {
             <Row label="Categoria" value={category?.name ?? "—"} />
             <Row label="Título" value={title} />
             <Row label="Descrição" value={description} />
-            <Row label="Local" value={address ? `${district} · ${address}` : district} />
+            <Row label="Local do pedido" value={address ? `${district} · ${address}` : district} />
+            <Row label="Ponto de referência" value={reference || "—"} />
             <Row label="Urgência" value={urgencyLabel[urgency]} />
             <Row label="Orçamento" value={budget ? formatDb(Number(budget)) : "Aberto a propostas"} />
             <Row label="Fotografias" value={photos > 0 ? `${photos}` : "Nenhuma"} />
