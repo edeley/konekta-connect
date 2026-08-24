@@ -51,7 +51,9 @@ function CategoriasPage() {
 
   return (
     <PublicLayout crumbs={[{ label: "Início", to: "/" }, { label: "Categorias" }]}>
-      <h1 className="text-3xl font-black tracking-tight text-foreground">Explore as nossas categorias</h1>
+      <h1 className="text-3xl font-black tracking-tight text-foreground">
+        Explore as nossas categorias
+      </h1>
       <p className="mt-2 max-w-2xl text-muted-foreground">
         Escolha uma categoria para ver os profissionais disponíveis perto de si.
       </p>
@@ -90,7 +92,10 @@ function CategoriasPage() {
                 params={{ slug: c.slug }}
                 className="press flex h-full items-start gap-3 rounded-2xl border border-border bg-card p-4 transition hover:-translate-y-0.5 hover:shadow-soft"
               >
-                <span className="grid size-11 shrink-0 place-items-center rounded-xl bg-primary/10 text-xl" aria-hidden="true">
+                <span
+                  className="grid size-11 shrink-0 place-items-center rounded-xl bg-primary/10 text-xl"
+                  aria-hidden="true"
+                >
                   {categoryEmoji[c.slug] ?? "🛠️"}
                 </span>
                 <span className="min-w-0">

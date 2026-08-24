@@ -99,7 +99,10 @@ export function OTPInput({
         ))}
       </div>
       {error && (
-        <p role="alert" className="flex items-center justify-center gap-1.5 text-xs text-destructive">
+        <p
+          role="alert"
+          className="flex items-center justify-center gap-1.5 text-xs text-destructive"
+        >
           <AlertCircle size={13} aria-hidden="true" /> {error}
         </p>
       )}

@@ -12,7 +12,12 @@ export const Route = createFileRoute("/categorias/$slug")({
   },
   head: ({ loaderData, params }) => {
     if (!loaderData) {
-      return { meta: [{ title: "Categoria indisponível — KONEKTA" }, { name: "robots", content: "noindex" }] };
+      return {
+        meta: [
+          { title: "Categoria indisponível — KONEKTA" },
+          { name: "robots", content: "noindex" },
+        ],
+      };
     }
     const title = `${loaderData.category.name} em São Tomé e Príncipe — KONEKTA`;
     const description = `Profissionais de ${loaderData.category.name.toLowerCase()} verificados em São Tomé e Príncipe. Compare preços, avaliações e agende online.`;
@@ -36,7 +41,13 @@ export const Route = createFileRoute("/categorias/$slug")({
 
 function CategoriaNaoEncontrada() {
   return (
-    <PublicLayout crumbs={[{ label: "Início", to: "/" }, { label: "Categorias", to: "/categorias" }, { label: "Não encontrada" }]}>
+    <PublicLayout
+      crumbs={[
+        { label: "Início", to: "/" },
+        { label: "Categorias", to: "/categorias" },
+        { label: "Não encontrada" },
+      ]}
+    >
       <h1 className="text-2xl font-black text-foreground">Categoria não encontrada</h1>
       <p className="mt-2 text-muted-foreground">Esta categoria não existe ou foi removida.</p>
       <Link
@@ -67,16 +78,25 @@ function CategoriaPage() {
 
   return (
     <PublicLayout
-      crumbs={[{ label: "Início", to: "/" }, { label: "Categorias", to: "/categorias" }, { label: category.name }]}
+      crumbs={[
+        { label: "Início", to: "/" },
+        { label: "Categorias", to: "/categorias" },
+        { label: category.name },
+      ]}
     >
       <div className="flex items-start gap-4">
-        <span className="grid size-14 shrink-0 place-items-center rounded-2xl bg-primary/10 text-2xl" aria-hidden="true">
+        <span
+          className="grid size-14 shrink-0 place-items-center rounded-2xl bg-primary/10 text-2xl"
+          aria-hidden="true"
+        >
           {categoryEmoji[category.slug] ?? "🛠️"}
         </span>
         <div className="min-w-0">
           <h1 className="text-3xl font-black tracking-tight text-foreground">{category.name}</h1>
           <p className="mt-1 text-muted-foreground">
-            {providers.length} {providers.length === 1 ? "profissional disponível" : "profissionais disponíveis"} em São Tomé e Príncipe.
+            {providers.length}{" "}
+            {providers.length === 1 ? "profissional disponível" : "profissionais disponíveis"} em
+            São Tomé e Príncipe.
           </p>
         </div>
       </div>
@@ -121,7 +141,9 @@ function CategoriaPage() {
             🧭
           </p>
           <h2 className="mt-3 font-semibold text-foreground">Nenhum profissional encontrado</h2>
-          <p className="mt-1 text-sm text-muted-foreground">Experimente reduzir a avaliação mínima.</p>
+          <p className="mt-1 text-sm text-muted-foreground">
+            Experimente reduzir a avaliação mínima.
+          </p>
         </div>
       ) : (
         <ul className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -145,7 +167,9 @@ function CategoriaPage() {
                 </div>
               </div>
               <p className="mt-3 line-clamp-2 text-sm text-muted-foreground">{p.bio}</p>
-              <p className="mt-3 text-sm font-semibold text-foreground">Desde {formatDb(p.priceFrom)}</p>
+              <p className="mt-3 text-sm font-semibold text-foreground">
+                Desde {formatDb(p.priceFrom)}
+              </p>
               <div className="mt-4 flex gap-2">
                 <Link
                   to="/prestador/$id"

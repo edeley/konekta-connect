@@ -51,7 +51,12 @@ export function AuthLayout({
         aria-hidden="true"
         className="pointer-events-none absolute inset-x-0 top-0 h-56 bg-gradient-to-b from-accent to-transparent"
       />
-      <div className={cn("relative mx-auto flex w-full max-w-md flex-col px-5 pb-12 pt-6 md:max-w-lg lg:max-w-xl", className)}>
+      <div
+        className={cn(
+          "relative mx-auto flex w-full max-w-md flex-col px-5 pb-12 pt-6 md:max-w-lg lg:max-w-xl",
+          className,
+        )}
+      >
         <div className="flex items-center justify-between">
           {back ? (
             <button

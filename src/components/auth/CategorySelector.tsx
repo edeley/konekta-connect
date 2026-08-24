@@ -95,12 +95,15 @@ export function CategorySelector({
     <div className="space-y-3">
       {grouped.map(([name, list]) => (
         <div key={name} className="rounded-2xl border border-border bg-surface p-3">
-          <p className="mb-2 text-xs font-bold uppercase tracking-wide text-muted-foreground">{name}</p>
+          <p className="mb-2 text-xs font-bold uppercase tracking-wide text-muted-foreground">
+            {name}
+          </p>
           <ul className="space-y-2">
             {list.map((s) => {
-              const options = s.custom || s.categoryId.startsWith("custom-")
-                ? ALL_PRICING
-                : pricingModelsFor([s.categoryId]);
+              const options =
+                s.custom || s.categoryId.startsWith("custom-")
+                  ? ALL_PRICING
+                  : pricingModelsFor([s.categoryId]);
               return (
                 <li key={keyOf(s)} className="rounded-xl border border-border bg-card p-3">
                   <div className="flex items-start gap-2">
@@ -120,10 +123,14 @@ export function CategorySelector({
 
                   <div className="mt-2 grid grid-cols-2 gap-2">
                     <div className="space-y-1">
-                      <label className="text-[11px] font-semibold text-muted-foreground">Modelo de cobrança</label>
+                      <label className="text-[11px] font-semibold text-muted-foreground">
+                        Modelo de cobrança
+                      </label>
                       <select
                         value={s.pricing ?? ""}
-                        onChange={(e) => update(s, { pricing: (e.target.value || undefined) as PricingModel })}
+                        onChange={(e) =>
+                          update(s, { pricing: (e.target.value || undefined) as PricingModel })
+                        }
                         className="min-h-11 w-full rounded-lg border border-border bg-card px-2 text-xs font-semibold outline-none focus:border-primary"
                       >
                         <option value="">Escolher…</option>
@@ -135,7 +142,9 @@ export function CategorySelector({
                       </select>
                     </div>
                     <div className="space-y-1">
-                      <label className="text-[11px] font-semibold text-muted-foreground">Preço (Db)</label>
+                      <label className="text-[11px] font-semibold text-muted-foreground">
+                        Preço (Db)
+                      </label>
                       <input
                         inputMode="numeric"
                         value={s.price ?? ""}
@@ -164,7 +173,11 @@ export function CategorySelector({
         open={open}
         onClose={close}
         title={
-          step === "cat" ? "Escolha a categoria" : step === "sub" ? "Escolha a subcategoria" : "Escolha os serviços"
+          step === "cat"
+            ? "Escolha a categoria"
+            : step === "sub"
+              ? "Escolha a subcategoria"
+              : "Escolha os serviços"
         }
         description={
           step === "cat"
@@ -244,7 +257,9 @@ export function CategorySelector({
                   className="press flex w-full items-center justify-between rounded-xl border border-border bg-card px-3 py-3 text-left text-sm font-semibold"
                 >
                   {s.name}
-                  <span className="text-[11px] text-muted-foreground">{s.services.length} serviços</span>
+                  <span className="text-[11px] text-muted-foreground">
+                    {s.services.length} serviços
+                  </span>
                 </button>
               ))}
               <div className="rounded-xl border border-dashed border-primary/50 bg-accent/40 p-3">
@@ -277,7 +292,10 @@ export function CategorySelector({
               <ul className="flex flex-wrap gap-2">
                 {(cat?.subcategories.find((x) => x.name === sub)?.services ?? []).map((service) => {
                   const picked = value.some(
-                    (v) => v.categoryName === catName && v.subcategory === subName && v.service === service,
+                    (v) =>
+                      v.categoryName === catName &&
+                      v.subcategory === subName &&
+                      v.service === service,
                   );
                   return (
                     <li key={service}>
@@ -300,7 +318,9 @@ export function CategorySelector({
                         }
                         className={cn(
                           "flex items-center gap-1.5 rounded-full border px-3 py-2 text-xs font-semibold transition-colors",
-                          picked ? "border-primary bg-accent text-primary" : "border-border bg-card",
+                          picked
+                            ? "border-primary bg-accent text-primary"
+                            : "border-border bg-card",
                         )}
                       >
                         {picked && <Check size={12} aria-hidden="true" />} {service}

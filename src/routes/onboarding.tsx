@@ -11,10 +11,14 @@ export const Route = createFileRoute("/onboarding")({
       { title: "Bem-vindo à KONEKTA — Serviços em São Tomé e Príncipe" },
       {
         name: "description",
-        content: "Descubra como pedir um serviço de confiança em menos de 60 segundos com a KONEKTA.",
+        content:
+          "Descubra como pedir um serviço de confiança em menos de 60 segundos com a KONEKTA.",
       },
       { property: "og:title", content: "Bem-vindo à KONEKTA" },
-      { property: "og:description", content: "Peça um serviço de confiança em menos de 60 segundos." },
+      {
+        property: "og:description",
+        content: "Peça um serviço de confiança em menos de 60 segundos.",
+      },
     ],
   }),
   component: Onboarding,
@@ -47,7 +51,7 @@ function Onboarding() {
 
   const finish = () => {
     store.markOnboarded();
-    navigate({ to: user ? "/" : "/auth", replace: true });
+    navigate({ to: user ? "/" : "/login", replace: true });
   };
 
   return (
@@ -60,7 +64,10 @@ function Onboarding() {
           </button>
         </div>
 
-        <div key={i} className="fade-up flex flex-1 flex-col items-center justify-center gap-6 text-center">
+        <div
+          key={i}
+          className="fade-up flex flex-1 flex-col items-center justify-center gap-6 text-center"
+        >
           <div className="grid size-28 place-items-center rounded-3xl bg-accent text-accent-foreground">
             <Icon size={44} strokeWidth={1.6} />
           </div>

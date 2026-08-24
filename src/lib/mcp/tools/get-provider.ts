@@ -6,13 +6,17 @@ import { getProvider } from "@/lib/konekta-data";
 export default defineTool({
   name: "get_provider",
   title: "Detalhes de um prestador",
-  description: "Devolve os detalhes públicos de um prestador do KONEKTA a partir do seu id, por exemplo 'edmilson-varela'.",
+  description:
+    "Devolve os detalhes públicos de um prestador do KONEKTA a partir do seu id, por exemplo 'edmilson-varela'.",
   inputSchema: { id: z.string().describe("Id do prestador.") },
   annotations: { readOnlyHint: true, idempotentHint: true, openWorldHint: false },
   handler: ({ id }) => {
     const p = getProvider(id.trim());
     if (!p) {
-      return { content: [{ type: "text" as const, text: `Prestador '${id}' não encontrado.` }], isError: true };
+      return {
+        content: [{ type: "text" as const, text: `Prestador '${id}' não encontrado.` }],
+        isError: true,
+      };
     }
     const row = {
       id: p.id,

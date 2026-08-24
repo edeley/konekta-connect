@@ -1,34 +1,92 @@
 import { createFileRoute, Link, useRouter, useNavigate } from "@tanstack/react-router";
-import { useState } from "react";
-import { ArrowLeft, Star, Shield, CheckCircle2, Heart, MessageCircle, X, Calendar } from "lucide-react";
-import { getProvider, providers } from "@/lib/konekta-data";
+import { useState, useMemo } from "react";
+import {
+  ArrowLeft,
+  Star,
+  Shield,
+  CheckCircle2,
+  Heart,
+  MessageCircle,
+  X,
+  Calendar,
+  Clock,
+  Camera,
+  MessageSquarePlus,
+  Tag,
+  Boxes,
+  Maximize2,
+  Car,
+  FileText,
+  Clock3,
+  Sun,
+  Edit2,
+  ShieldCheck,
+  Zap,
+  Award,
+  Lock,
+  Phone,
+  Compass,
+  MapPin,
+  Sparkles,
+  Layers,
+  HelpCircle,
+  Eye,
+  Sliders,
+} from "lucide-react";
+import { getProvider, providers, getProviderServicesWithPricing } from "@/lib/konekta-data";
 import { store, useStore } from "@/lib/store";
+import { getQuickDynamicSlotsSTP, useSTPClock } from "@/lib/stp-time";
+import { PortfolioGallery } from "@/components/konekta/PortfolioGallery";
+import { PortfolioManagerModal } from "@/components/konekta/PortfolioManagerModal";
+import { PortfolioBeforeAfterModal } from "@/components/konekta/PortfolioBeforeAfterModal";
+import { BookingModal } from "@/components/konekta/BookingModal";
+import { ReviewModal } from "@/components/konekta/ReviewModal";
+import { ReviewsList } from "@/components/konekta/ReviewsList";
+import { ProviderHeaderAuthority } from "@/components/konekta/ProviderHeaderAuthority";
+import { KycVerificationModule, KycStatusBanner } from "@/components/konekta/KycVerificationModule";
+import { CoverageConfigurator } from "@/components/konekta/CoverageConfigurator";
+import { ScheduleGridEditor } from "@/components/konekta/ScheduleGridEditor";
+import { getProviderContract } from "@/lib/provider-profile-data";
+import { type ProviderUIStateMode, type PortfolioBeforeAfterItem } from "@/types/provider-profile";
+import { formatDb } from "@/lib/pricing-engine";
+import { toast } from "sonner";
 
 export const Route = createFileRoute("/prestador/$id")({
   head: ({ params }) => {
     const p = getProvider(params.id);
     return {
       meta: [
-        { title: p ? `${p.name} — ${p.category} · KONEKTA` : "Prestador · KONEKTA" },
-        { name: "description", content: p?.bio ?? "Perfil de prestador de serviços na KONEKTA." },
-        { property: "og:title", content: p ? `${p.name} · KONEKTA` : "Prestador · KONEKTA" },
-        { property: "og:description", content: p?.bio ?? "Perfil de prestador na KONEKTA." },
+        { title: p ? `${p.name} — ${p.category} · KONEKTA STP` : "Prestador · KONEKTA STP" },
+        {
+          name: "description",
+          content:
+            p?.bio ??
+            "Perfil verificado de prestador de serviços na plataforma KONEKTA São Tomé e Príncipe.",
+        },
+        { property: "og:title", content: p ? `${p.name} · KONEKTA STP` : "Prestador · KONEKTA" },
+        { property: "og:description", content: p?.bio ?? "Perfil de prestador na KONEKTA STP." },
       ],
     };
   },
   notFoundComponent: () => (
-    <div className="min-h-screen grid place-items-center p-8 text-center">
-      <div>
-        <h1 className="text-xl font-semibold">Prestador não encontrado</h1>
-        <Link to="/" className="mt-4 inline-block text-terracotta font-medium">
+    <div className="min-h-screen grid place-items-center p-8 text-center bg-surface">
+      <div className="space-y-3">
+        <h1 className="text-xl font-bold text-foreground">Prestador não encontrado</h1>
+        <p className="text-xs text-muted-foreground">
+          O perfil solicitado não existe ou foi arquivado.
+        </p>
+        <Link
+          to="/"
+          className="inline-flex items-center px-4 py-2 rounded-xl bg-primary text-primary-foreground text-xs font-bold"
+        >
           Voltar ao início
         </Link>
       </div>
     </div>
   ),
   errorComponent: ({ reset }) => (
-    <div className="min-h-screen grid place-items-center p-8 text-center">
-      <button onClick={reset} className="text-terracotta font-medium">
+    <div className="min-h-screen grid place-items-center p-8 text-center bg-surface">
+      <button onClick={reset} className="text-primary font-medium">
         Tentar novamente
       </button>
     </div>
@@ -41,218 +99,336 @@ export const Route = createFileRoute("/prestador/$id")({
   component: ProviderPage,
 });
 
-const slots = ["Hoje, 15:00", "Hoje, 17:30", "Amanhã, 09:00", "Amanhã, 14:00"];
-
 function ProviderPage() {
   const { id } = Route.useParams();
-  const provider = getProvider(id)!;
+  const rawProvider = getProvider(id)!;
   const router = useRouter();
   const navigate = useNavigate();
+  const user = useStore((s) => s.user);
+  const myProviderProfile = useStore((s) => s.providerProfile);
   const favorites = useStore((s) => s.favorites);
-  const isFav = favorites.includes(provider.id);
-  const [openBook, setOpenBook] = useState(false);
-  const [service, setService] = useState(provider.services[0]);
-  const [slot, setSlot] = useState(slots[0]);
-  const [error, setError] = useState<string | null>(null);
+  const allReviews = useStore((s) => s.reviews);
+  const isFav = favorites.includes(rawProvider.id);
 
-  function handleBook() {
-    setError(null);
-    const balance = store.get().balance;
-    if (balance < provider.priceFrom) {
-      setError("Saldo insuficiente. Carregue a carteira.");
-      return;
-    }
-    store.createOrder({
-      providerId: provider.id,
-      service,
-      total: provider.priceFrom,
-      scheduledFor: slot,
+  const [viewMode, setViewMode] = useState<ProviderUIStateMode>("VIEW_MODE_PUBLIC");
+  const [openBook, setOpenBook] = useState(false);
+  const [openPortfolioModal, setOpenPortfolioModal] = useState(false);
+  const [openBeforeAfterAddModal, setOpenBeforeAfterAddModal] = useState(false);
+  const [openReviewModal, setOpenReviewModal] = useState(false);
+  const [openKycModal, setOpenKycModal] = useState(false);
+  const [selectedService, setSelectedService] = useState(rawProvider.services[0]);
+
+  const isOwner = Boolean(
+    user && user.role === "prestador" && (user.id === rawProvider.id || id === "me"),
+  );
+
+  // Contrato de dados formal do prestador
+  const contract = useMemo(() => {
+    return getProviderContract(rawProvider.id);
+  }, [rawProvider.id]);
+
+  // Calcula estatísticas reais e dinâmicas das avaliações do prestador
+  const providerReviews = useMemo(() => {
+    return allReviews.filter((r) => r.providerId === rawProvider.id);
+  }, [allReviews, rawProvider.id]);
+
+  const dynamicRating = useMemo(() => {
+    if (providerReviews.length === 0) return rawProvider.rating;
+    const sum = providerReviews.reduce((acc, r) => acc + r.rating, 0);
+    return Number((sum / providerReviews.length).toFixed(1));
+  }, [providerReviews, rawProvider.rating]);
+
+  const dynamicReviewsCount = useMemo(() => {
+    return Math.max(rawProvider.reviews, providerReviews.length);
+  }, [rawProvider.reviews, providerReviews.length]);
+
+  // Atualiza métricas no contrato
+  const liveContract = useMemo(() => {
+    return {
+      ...contract,
+      metrics: {
+        ...contract.metrics,
+        rating: dynamicRating,
+        totalReviews: dynamicReviewsCount,
+      },
+    };
+  }, [contract, dynamicRating, dynamicReviewsCount]);
+
+  const servicesWithPricing = useMemo(() => {
+    return getProviderServicesWithPricing(rawProvider);
+  }, [rawProvider]);
+
+  const handleSaveNewPortfolioItem = (item: PortfolioBeforeAfterItem) => {
+    const existing = myProviderProfile?.portfolio || [];
+    store.updateProviderProfile({
+      portfolio: [
+        ...existing,
+        {
+          id: item.id,
+          title: item.title,
+          image: item.afterImageUrl,
+          description: item.description,
+          category: item.category,
+          date: item.completedAt,
+        },
+      ],
     });
-    setOpenBook(false);
-    navigate({ to: "/pedidos" });
-  }
+  };
 
   return (
     <div className="min-h-screen bg-surface flex justify-center">
-      <div className="w-full max-w-md bg-surface pb-32">
-        <div className="relative">
-          <img src={provider.image} alt={provider.name} className="w-full aspect-[4/3] object-cover" />
+      <div className="w-full max-w-md bg-surface pb-36">
+        {/* BARRA SUPERIOR DE NAVEGAÇÃO */}
+        <div className="sticky top-0 z-30 bg-surface/90 backdrop-blur-md px-4 py-3 border-b border-border/60 flex items-center justify-between">
           <button
             onClick={() => router.history.back()}
-            className="absolute top-4 left-4 size-10 rounded-full bg-card/90 backdrop-blur ring-1 ring-border flex items-center justify-center"
+            className="size-9 rounded-2xl bg-card border border-border flex items-center justify-center text-foreground hover:bg-muted transition cursor-pointer"
             aria-label="Voltar"
           >
             <ArrowLeft size={18} />
           </button>
-          <button
-            onClick={() => store.toggleFavorite(provider.id)}
-            className="absolute top-4 right-4 size-10 rounded-full bg-card/90 backdrop-blur ring-1 ring-border flex items-center justify-center"
-            aria-label="Favoritar"
-          >
-            <Heart size={18} className={isFav ? "fill-terracotta text-terracotta" : ""} />
-          </button>
-        </div>
 
-        <div className="px-5 -mt-6 relative">
-          <div className="bg-card rounded-2xl ring-1 ring-border p-5 space-y-4">
-            <div>
-              <p className="text-[11px] font-medium text-ocean uppercase tracking-wider">{provider.category}</p>
-              <h1 className="text-xl font-semibold mt-1">{provider.name}</h1>
-              <div className="flex items-center gap-1 text-sm text-muted-foreground mt-1">
-                <Star size={14} className="fill-sun text-sun" />
-                <span className="font-medium text-foreground">{provider.rating}</span>
-                <span>· {provider.reviews} avaliações</span>
-              </div>
-            </div>
-            <p className="text-sm text-muted-foreground leading-relaxed">{provider.bio}</p>
+          <span className="text-xs font-extrabold uppercase tracking-wider text-muted-foreground">
+            {isOwner && viewMode === "VIEW_MODE_SELF" ? "Painel de Edição" : "Perfil Profissional"}
+          </span>
+
+          <div className="flex items-center gap-1.5">
+            {isOwner && (
+              <Link
+                to="/pro"
+                className="px-2.5 py-1 rounded-xl bg-primary/10 text-primary text-xs font-bold hover:bg-primary/20 transition flex items-center gap-1"
+              >
+                <Sliders size={13} />
+                <span>Painel PRO</span>
+              </Link>
+            )}
+            <button
+              onClick={() => store.toggleFavorite(rawProvider.id)}
+              className="size-9 rounded-2xl bg-card border border-border flex items-center justify-center transition cursor-pointer"
+              aria-label="Favoritar"
+            >
+              <Heart
+                size={18}
+                className={isFav ? "fill-red-500 text-red-500" : "text-muted-foreground"}
+              />
+            </button>
           </div>
         </div>
 
-        <section className="px-5 mt-6 space-y-3">
-          <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">Serviços</h2>
-          <div className="flex flex-wrap gap-2">
-            {provider.services.map((s: string) => (
-              <span key={s} className="px-3 py-1.5 bg-card ring-1 ring-border rounded-full text-sm">
-                {s}
+        <div className="p-4 space-y-5">
+          {/* BANNER DE STATUS KYC QUANDO APROVADO OU EM ANÁLISE */}
+          <KycStatusBanner
+            status={liveContract.kycStatus}
+            onOpenKycModal={() => setOpenKycModal(true)}
+          />
+
+          {/* HEADER DE AUTORIDADE COM BADGE KYC E MÉTRICAS */}
+          <ProviderHeaderAuthority
+            contract={liveContract}
+            isOwner={isOwner}
+            viewMode={viewMode}
+            onToggleViewMode={setViewMode}
+            onOpenBooking={() => setOpenBook(true)}
+            onOpenKycModal={() => setOpenKycModal(true)}
+            isFavorite={isFav}
+            onToggleFavorite={() => store.toggleFavorite(rawProvider.id)}
+          />
+
+          {/* APRESENTAÇÃO & BIOGRAFIA & CERTIFICAÇÕES */}
+          <section className="rounded-3xl border border-border/80 bg-card p-5 space-y-3 shadow-2xs">
+            <div className="flex items-center justify-between">
+              <h2 className="text-xs font-extrabold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
+                <FileText size={14} className="text-primary" /> Apresentação & Experiência
+              </h2>
+              <span className="text-[11px] font-bold text-primary">
+                {liveContract.personalInfo.yearsExperience} anos no ramo
               </span>
-            ))}
-          </div>
-        </section>
-
-        <section className="px-5 mt-6">
-          <div className="bg-ocean/10 rounded-2xl p-4 flex gap-3">
-            <Shield size={20} className="text-ocean shrink-0 mt-0.5" />
-            <div className="text-sm">
-              <p className="font-medium text-foreground">Pagamento protegido</p>
-              <p className="text-muted-foreground text-xs mt-0.5">
-                O prestador só recebe após a sua confirmação.
-              </p>
             </div>
-          </div>
-        </section>
 
-        <section className="px-5 mt-6 space-y-3">
-          <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">Últimas avaliações</h2>
-          {[
-            { name: "Ana P.", text: "Muito profissional e pontual. Recomendo!", stars: 5 },
-            { name: "Carlos M.", text: "Serviço rápido e limpo. Excelente.", stars: 5 },
-          ].map((r) => (
-            <div key={r.name} className="bg-card rounded-2xl ring-1 ring-border p-4">
-              <div className="flex items-center justify-between">
-                <span className="font-medium text-sm">{r.name}</span>
-                <div className="flex items-center gap-0.5">
-                  {Array.from({ length: r.stars }).map((_, i) => (
-                    <Star key={i} size={12} className="fill-sun text-sun" />
+            <p className="text-xs text-foreground leading-relaxed">
+              {liveContract.personalInfo.bio}
+            </p>
+
+            {/* CERTIFICAÇÕES E GARANTIAS */}
+            {liveContract.personalInfo.certifications && (
+              <div className="pt-2 border-t border-border/60 space-y-2">
+                <span className="text-[10px] font-extrabold uppercase tracking-wider text-muted-foreground">
+                  Garantias e Credenciais
+                </span>
+                <div className="space-y-1.5">
+                  {liveContract.personalInfo.certifications.map((cert, idx) => (
+                    <div key={idx} className="flex items-center gap-2 text-xs text-foreground">
+                      <ShieldCheck
+                        size={14}
+                        className="text-emerald-600 dark:text-emerald-400 shrink-0"
+                      />
+                      <span className="text-[11px]">{cert}</span>
+                    </div>
                   ))}
                 </div>
               </div>
-              <p className="text-sm text-muted-foreground mt-1.5">{r.text}</p>
-            </div>
-          ))}
-        </section>
+            )}
+          </section>
 
-        <div className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-md bg-card border-t border-border p-4">
+          {/* CATÁLOGO DE SERVIÇOS E PREÇOS */}
+          <section className="space-y-3">
+            <div className="flex items-center justify-between px-1">
+              <h2 className="text-xs font-extrabold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
+                <Boxes size={14} className="text-primary" /> Serviços & Tabela de Preços
+              </h2>
+              {isOwner && (
+                <Link
+                  to="/pro"
+                  className="text-xs font-bold text-primary hover:underline flex items-center gap-1"
+                >
+                  <Edit2 size={12} /> Gerir Catálogo
+                </Link>
+              )}
+            </div>
+
+            <div className="space-y-2">
+              {servicesWithPricing.map((s) => (
+                <div
+                  key={s.id}
+                  onClick={() => {
+                    setSelectedService(s.name);
+                    setOpenBook(true);
+                  }}
+                  className="p-3.5 bg-card border border-border/80 rounded-2xl hover:border-primary/60 transition cursor-pointer flex items-center justify-between gap-3 shadow-2xs group"
+                >
+                  <div className="min-w-0 flex-1">
+                    <p className="text-xs font-bold text-foreground group-hover:text-primary transition-colors truncate">
+                      {s.name}
+                    </p>
+                    <p className="text-[11px] text-muted-foreground line-clamp-1 mt-0.5">
+                      {s.description || "Clique para solicitar este serviço"}
+                    </p>
+                  </div>
+                  <div className="text-right shrink-0">
+                    <p className="text-xs font-black text-primary">
+                      {s.billingMethod === "orcamento" ? "Sob Orçamento" : formatDb(s.price)}
+                    </p>
+                    <p className="text-[10px] text-muted-foreground">/{s.unit || "serviço"}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </section>
+
+          {/* PORTFÓLIO DE TRABALHOS: COMPARATIVO ANTES VS DEPOIS COM SLIDER */}
+          <PortfolioGallery
+            portfolio={liveContract.portfolio}
+            providerId={rawProvider.id}
+            providerName={rawProvider.name}
+            isOwner={isOwner}
+            onAddPhotoClick={() => setOpenBeforeAfterAddModal(true)}
+          />
+
+          {/* ÁREA DE COBERTURA & RAIO DE ATENDIMENTO */}
+          <CoverageConfigurator
+            initialCoverage={liveContract.coverage}
+            isReadOnly={!isOwner || viewMode === "VIEW_MODE_PUBLIC"}
+          />
+
+          {/* HORÁRIOS DE ATENDIMENTO SEMANAL */}
+          {liveContract.schedule && (
+            <ScheduleGridEditor
+              initialSchedule={liveContract.schedule}
+              isReadOnly={!isOwner || viewMode === "VIEW_MODE_PUBLIC"}
+            />
+          )}
+
+          {/* BANNER DE PROTEÇÃO EM CUSTÓDIA KONEKTA */}
+          <section>
+            <div className="bg-primary/10 rounded-2xl p-4 flex gap-3 border border-primary/20">
+              <ShieldCheck size={22} className="text-primary shrink-0 mt-0.5" />
+              <div className="text-xs space-y-1">
+                <p className="font-bold text-foreground">Pagamento 100% em Custódia Segura</p>
+                <p className="text-muted-foreground leading-relaxed">
+                  O valor do serviço fica retido na KONEKTA STP e o prestador só recebe após a sua
+                  confirmação com o PIN de finalização.
+                </p>
+              </div>
+            </div>
+          </section>
+
+          {/* AVALIAÇÕES DETALHADAS COM FILTROS E TAGS */}
+          <ReviewsList
+            providerId={rawProvider.id}
+            providerName={rawProvider.name}
+            reviews={allReviews}
+            onOpenReviewModal={() => setOpenReviewModal(true)}
+            isOwner={isOwner}
+          />
+        </div>
+
+        {/* BARRA FIXA INFERIOR DE CONVERSÃO RÁPIDA (CLIENTE) */}
+        <div className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-md bg-card/95 backdrop-blur-md border-t border-border p-4 shadow-xl z-30">
           <div className="flex items-center justify-between gap-3">
             <div>
-              <p className="text-xs text-muted-foreground">A partir de</p>
-              <p className="text-xl font-semibold text-terracotta">{provider.priceFrom} STN</p>
+              <p className="text-[10px] font-semibold text-muted-foreground uppercase">
+                A partir de
+              </p>
+              <p className="text-lg font-black text-primary">
+                {formatDb(rawProvider.priceFrom || 350)}
+              </p>
             </div>
-            <div className="flex gap-2">
+            <div className="flex items-center gap-2 flex-1 justify-end">
               <Link
                 to="/chat/$id"
-                params={{ id: provider.id }}
-                className="size-11 rounded-xl bg-muted grid place-items-center"
-                aria-label="Mensagem"
+                params={{ id: rawProvider.id }}
+                className="size-11 rounded-2xl bg-muted border border-border/60 flex items-center justify-center text-foreground hover:bg-muted/80 transition cursor-pointer"
+                title="Mensagem"
               >
-                <MessageCircle size={16} />
+                <MessageCircle size={18} className="text-primary" />
               </Link>
               <button
+                type="button"
                 onClick={() => setOpenBook(true)}
-                className="bg-terracotta text-primary-foreground px-5 py-3 rounded-xl font-medium text-sm flex items-center gap-2"
+                className="h-11 px-5 rounded-2xl bg-primary text-primary-foreground text-xs font-bold flex items-center gap-2 shadow-md hover:bg-primary/90 transition cursor-pointer active:scale-95"
               >
                 <CheckCircle2 size={16} />
-                Criar pedido
+                <span>Solicitar Pedido</span>
               </button>
             </div>
           </div>
         </div>
 
-        {openBook && (
-          <div
-            className="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm flex items-end justify-center"
-            onClick={() => setOpenBook(false)}
-          >
-            <div
-              className="w-full max-w-md bg-card rounded-t-3xl p-5 space-y-4"
-              onClick={(e) => e.stopPropagation()}
-            >
-              <div className="flex items-center justify-between">
-                <h3 className="text-lg font-semibold">Novo pedido</h3>
-                <button onClick={() => setOpenBook(false)} className="size-8 rounded-full bg-muted grid place-items-center">
-                  <X size={16} />
-                </button>
-              </div>
+        {/* MODAL DE AGENDAMENTO / ORÇAMENTO */}
+        <BookingModal
+          open={openBook}
+          onClose={() => setOpenBook(false)}
+          provider={rawProvider}
+          initialService={selectedService}
+        />
 
-              <div>
-                <p className="text-xs font-medium text-muted-foreground mb-2">Serviço</p>
-                <div className="flex flex-wrap gap-2">
-                  {provider.services.map((s: string) => (
-                    <button
-                      key={s}
-                      onClick={() => setService(s)}
-                      className={`px-3 py-1.5 rounded-full text-sm ring-1 ${
-                        service === s
-                          ? "bg-terracotta text-primary-foreground ring-transparent"
-                          : "bg-card ring-border"
-                      }`}
-                    >
-                      {s}
-                    </button>
-                  ))}
-                </div>
-              </div>
+        {/* MODAL DE ADICIONAR TRABALHO COM ANTES E DEPOIS */}
+        <PortfolioBeforeAfterModal
+          isOpen={openBeforeAfterAddModal}
+          onClose={() => setOpenBeforeAfterAddModal(false)}
+          onSaveItem={handleSaveNewPortfolioItem}
+        />
 
-              <div>
-                <p className="text-xs font-medium text-muted-foreground mb-2">Horário</p>
-                <div className="grid grid-cols-2 gap-2">
-                  {slots.map((s: string) => (
-                    <button
-                      key={s}
-                      onClick={() => setSlot(s)}
-                      className={`px-3 py-2 rounded-xl text-sm ring-1 flex items-center gap-2 ${
-                        slot === s
-                          ? "bg-cocoa text-primary-foreground ring-transparent"
-                          : "bg-card ring-border"
-                      }`}
-                    >
-                      <Calendar size={14} />
-                      {s}
-                    </button>
-                  ))}
-                </div>
-              </div>
+        {/* MODAL DE KYC */}
+        <KycVerificationModule
+          isOpen={openKycModal}
+          onClose={() => setOpenKycModal(false)}
+          kycDocument={liveContract.kycDocuments}
+          onStatusChange={(newStatus) => {
+            toast.success(`Status de verificação KYC atualizado para ${newStatus}!`);
+          }}
+        />
 
-              <div className="flex items-center justify-between bg-muted rounded-xl px-4 py-3">
-                <span className="text-sm text-muted-foreground">Total</span>
-                <span className="text-lg font-semibold text-terracotta">{provider.priceFrom} STN</span>
-              </div>
-
-              {error && (
-                <p className="text-xs text-destructive bg-destructive/10 rounded-lg px-3 py-2">{error}</p>
-              )}
-
-              <button
-                onClick={handleBook}
-                className="w-full bg-terracotta text-primary-foreground rounded-xl py-3 font-semibold text-sm"
-              >
-                Confirmar pedido
-              </button>
-              <p className="text-[11px] text-muted-foreground text-center">
-                O valor fica retido e só é libertado ao prestador após a sua confirmação.
-              </p>
-            </div>
-          </div>
-        )}
+        {/* MODAL DE AVALIAÇÃO */}
+        <ReviewModal
+          open={openReviewModal}
+          onClose={() => setOpenReviewModal(false)}
+          providerId={rawProvider.id}
+          providerName={rawProvider.name}
+          providerImage={rawProvider.image}
+          providerCategory={rawProvider.category}
+          serviceName={selectedService}
+        />
       </div>
     </div>
   );

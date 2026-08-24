@@ -44,7 +44,7 @@ export const OTP_RESEND_SECONDS = 59;
 
 export const phoneSchema = z
   .string()
-  .regex(/^\+2399\d{8}$/, "Número inválido. Use o formato +239 9XXXXXXXX");
+  .regex(/^\+\d{1,4}\s?[\d\s-]{6,14}$/, "Número de telemóvel inválido (ex: +239 981 2345)");
 
 export const emailSchema = z.union([z.literal(""), z.string().email("Email inválido")]);
 
@@ -96,20 +96,19 @@ export const FILE_RULES = {
   },
 } as const;
 
-
 /* --------------------------------- Helpers -------------------------------- */
 
-/** Formata 9 dígitos como "9XX XXXXXX". */
+/** Formata 7 dígitos como "9XX XXXX" ou "994 4747". */
 export function formatPhoneDigits(digits: string) {
-  const d = digits.replace(/\D/g, "").slice(0, 9);
+  const d = digits.replace(/\D/g, "").slice(0, 7);
   return d.length > 3 ? `${d.slice(0, 3)} ${d.slice(3)}` : d;
 }
 
-/** Máscara para apresentação: +239 91X XXX78 */
+/** Máscara para apresentação: +239 9XX •••• */
 export function maskPhone(full: string) {
-  const d = full.replace(/\D/g, "").slice(-9);
-  if (d.length < 9) return full;
-  return `+239 ${d.slice(0, 3)} ••• ${d.slice(-2)}`;
+  const d = full.replace(/\D/g, "").slice(-7);
+  if (d.length < 7) return full;
+  return `+239 ${d.slice(0, 3)} ••••`;
 }
 
 export function maskEmail(email: string) {

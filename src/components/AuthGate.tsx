@@ -2,13 +2,7 @@ import { useEffect, useState, type ReactNode } from "react";
 import { useNavigate } from "@tanstack/react-router";
 import { useStore, type UserRole } from "@/lib/store";
 
-export function AuthGate({
-  children,
-  roles,
-}: {
-  children: ReactNode;
-  roles?: UserRole[];
-}) {
+export function AuthGate({ children, roles }: { children: ReactNode; roles?: UserRole[] }) {
   const user = useStore((s) => s.user);
   const onboarded = useStore((s) => s.onboarded);
   const navigate = useNavigate();
@@ -25,7 +19,7 @@ export function AuthGate({
       return;
     }
     if (!user) {
-      navigate({ to: "/auth", replace: true });
+      navigate({ to: "/login", replace: true });
       return;
     }
     if (roles && !roles.includes(user.role)) {

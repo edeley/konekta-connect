@@ -7,11 +7,13 @@ import {
   HeadContent,
   Scripts,
 } from "@tanstack/react-router";
-import { useEffect, type ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 
 import appCss from "../styles.css?url";
 import { Toaster } from "@/components/ui/sonner";
 import { reportLovableError } from "../lib/lovable-error-reporting";
+import { useStore } from "@/lib/store";
+import { initAlarmWatcher } from "@/lib/sync-manager";
 
 function NotFoundComponent() {
   return (
@@ -81,8 +83,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { title: "KONEKTA — Serviços em São Tomé e Príncipe" },
       {
         name: "description",
-        content:
-          "Plataforma segura para contratar profissionais em São Tomé e Príncipe.",
+        content: "Plataforma segura para contratar profissionais em São Tomé e Príncipe.",
       },
       { property: "og:title", content: "KONEKTA" },
       { property: "og:description", content: "Serviços de confiança em São Tomé e Príncipe." },
@@ -125,9 +126,54 @@ function RootShell({ children }: { children: ReactNode }) {
 
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
+  const darkMode = useStore((s) => s.settings?.darkMode || s.settings?.theme === "dark");
+
+  useEffect(() => {
+    if (typeof document !== "undefined") {
+      if (darkMode) {
+        document.documentElement.classList.add("dark");
+      } else {
+        document.documentElement.classList.remove("dark");
+      }
+    }
+  }, [darkMode]);
+
+  const [showSplash, setShowSplash] = useState(false);
+
+  useEffect(() => {
+    initAlarmWatcher();
+    if (typeof window !== "undefined") {
+      const hasSeen = sessionStorage.getItem("konekta_splash_session");
+      if (!hasSeen) {
+        setShowSplash(true);
+        const timer = setTimeout(() => {
+          sessionStorage.setItem("konekta_splash_session", "true");
+          setShowSplash(false);
+        }, 1200);
+        return () => clearTimeout(timer);
+      }
+    }
+  }, []);
 
   return (
     <QueryClientProvider client={queryClient}>
+      {showSplash && (
+        <div
+          id="konekta-app-splash"
+          className="fixed inset-0 z-9999 grid place-items-center bg-[#1D68D8] px-6 text-white select-none pointer-events-auto"
+        >
+          <div className="flex flex-col items-center gap-4 text-center max-w-xs animate-in fade-in zoom-in-95 duration-400">
+            <div className="grid size-24 place-items-center rounded-[28px] bg-white/20 text-4xl font-extrabold text-white shadow-inner backdrop-blur-xs">
+              K
+            </div>
+            <h1 className="text-3xl font-extrabold tracking-tight text-white mt-1">KONEKTA</h1>
+            <p className="text-sm text-white/90 font-medium leading-relaxed max-w-[260px]">
+              Serviços de confiança em São Tomé e Príncipe
+            </p>
+            <div className="mt-6 size-7 animate-spin rounded-full border-[2.5px] border-white/25 border-t-white" />
+          </div>
+        </div>
+      )}
       {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
       <Outlet />
       <Toaster position="top-center" richColors closeButton />

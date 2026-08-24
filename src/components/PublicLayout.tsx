@@ -56,7 +56,9 @@ function SiteHeader() {
           <span className="grid size-8 shrink-0 place-items-center rounded-xl bg-primary text-sm font-black text-primary-foreground">
             K
           </span>
-          <span className="truncate text-base font-black tracking-tight text-foreground">KONEKTA</span>
+          <span className="truncate text-base font-black tracking-tight text-foreground">
+            KONEKTA
+          </span>
         </Link>
 
         <div className="flex items-center gap-2">
@@ -74,13 +76,13 @@ function SiteHeader() {
             ))}
           </nav>
           <Link
-            to="/tornar-prestador"
+            to="/registro"
             className="hidden rounded-xl px-3 py-2 text-sm font-medium text-muted-foreground hover:text-foreground sm:block"
           >
             Sou profissional
           </Link>
           <Link
-            to="/auth"
+            to="/login"
             className="press rounded-xl bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground"
           >
             Entrar
@@ -99,7 +101,7 @@ function SiteHeader() {
 
       {open && (
         <nav aria-label="Menu móvel" className="border-t border-border bg-card px-4 py-2 md:hidden">
-          {[...navLinks, { to: "/tornar-prestador", label: "Sou profissional" } as const].map((l) => (
+          {[...navLinks, { to: "/registro", label: "Sou profissional" } as const].map((l) => (
             <Link
               key={l.to}
               to={l.to}
@@ -131,7 +133,7 @@ function SiteFooter() {
       links: [
         { to: "/ajuda", label: "Ajuda e FAQ" },
         { to: "/assistente", label: "Assistente KONEKTA" },
-        { to: "/auth", label: "Entrar / Registar" },
+        { to: "/login", label: "Entrar / Registar" },
       ],
     },
     {

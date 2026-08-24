@@ -24,29 +24,29 @@ Hoje em São Tomé e Príncipe existe muita dificuldade para encontrar profissio
 
 Normalmente as pessoas:
 
- perguntam aos amigos;
+perguntam aos amigos;
 
- procuram no Facebook;
+procuram no Facebook;
 
- procuram no WhatsApp;
+procuram no WhatsApp;
 
- procuram em grupos.
+procuram em grupos.
 
 Os problemas são:
 
- pouca confiança;
+pouca confiança;
 
- preços sem transparência;
+preços sem transparência;
 
- atrasos;
+atrasos;
 
- golpes;
+golpes;
 
- falta de garantias;
+falta de garantias;
 
- não existe histórico;
+não existe histórico;
 
- não existe suporte.
+não existe suporte.
 
 Solução
 
@@ -534,35 +534,35 @@ Arquitetura preparada para RLS do Supabase na fase de backend.
 
 Como o KONEKTA ganha dinheiro
 
- Comissão sobre serviços.
+Comissão sobre serviços.
 
- Destaque pago de prestadores.
+Destaque pago de prestadores.
 
- Planos para empresas.
+Planos para empresas.
 
- Publicidade.
+Publicidade.
 
- Serviços Premium.
+Serviços Premium.
 
- Funcionalidades financeiras futuras.
+Funcionalidades financeiras futuras.
 
 Como evitar negócios fora da plataforma
 
 O foco deve ser oferecer vantagens reais para permanecer no KONEKTA:
 
- pagamentos protegidos;
+pagamentos protegidos;
 
- histórico permanente;
+histórico permanente;
 
- reputação verificada;
+reputação verificada;
 
- avaliações;
+avaliações;
 
- suporte;
+suporte;
 
- carteira integrada;
+carteira integrada;
 
- futuras recompensas e benefícios para utilizadores ativos.
+futuras recompensas e benefícios para utilizadores ativos.
 
 Além disso, o sistema pode sinalizar padrões suspeitos (como tentativas recorrentes de contornar a plataforma) para análise administrativa, sempre respeitando a privacidade dos utilizadores.
 
@@ -628,7 +628,7 @@ Preparado para novas funcionalidades.
 
 Objetivo do MVP
 
-O MVP tem como finalidade validar o negócio rapidamente, conquistar os primeiros clientes e prestadores e começar a gerar receita. Depois disso, o KONEKTA evoluirá de forma contínua, adicionando funcionalidades como empresas, inteligência artificial, programas de fidelização, publicidade avançada, integrações financeiras e outras soluções para se tornar a principal plataforma de prestação de serviços de São Tomé e Príncipe.                                                                                                                                                               Na realidade, ainda não. O Front-end ainda pode ser melhor estruturado antes de começar a programar. Como o KONEKTA é um projeto grande e pretendes ganhar dinheiro com ele durante muitos anos, eu acrescentaria mais uma etapa antes de escrever código.
+O MVP tem como finalidade validar o negócio rapidamente, conquistar os primeiros clientes e prestadores e começar a gerar receita. Depois disso, o KONEKTA evoluirá de forma contínua, adicionando funcionalidades como empresas, inteligência artificial, programas de fidelização, publicidade avançada, integrações financeiras e outras soluções para se tornar a principal plataforma de prestação de serviços de São Tomé e Príncipe. Na realidade, ainda não. O Front-end ainda pode ser melhor estruturado antes de começar a programar. Como o KONEKTA é um projeto grande e pretendes ganhar dinheiro com ele durante muitos anos, eu acrescentaria mais uma etapa antes de escrever código.
 
 O que já está pronto
 
@@ -664,11 +664,11 @@ Antes de abrir o Android Studio para desenvolver, eu documentaria estes pontos:
 
 Criar diagramas detalhados para:
 
- Cliente
+Cliente
 
- Prestador
+Prestador
 
- Administrador
+Administrador
 
 Exemplo:
 
@@ -752,25 +752,25 @@ Criar um documento indicando todos os componentes reutilizáveis.
 
 Por exemplo:
 
- PrimaryButton
+PrimaryButton
 
- SecondaryButton
+SecondaryButton
 
- ServiceCard
+ServiceCard
 
- ProviderCard
+ProviderCard
 
- WalletCard
+WalletCard
 
- RatingWidget
+RatingWidget
 
- CustomDialog
+CustomDialog
 
- EmptyState
+EmptyState
 
- ErrorState
+ErrorState
 
- LoadingSkeleton
+LoadingSkeleton
 
 Assim, evitas criar o mesmo componente duas vezes.
 
@@ -782,39 +782,39 @@ Por exemplo:
 
 Authentication
 
- Login
+Login
 
- Registo
+Registo
 
- OTP
+OTP
 
 Cliente
 
- Home
+Home
 
- Pesquisa
+Pesquisa
 
- Pedidos
+Pedidos
 
- Chat
+Chat
 
 Prestador
 
- Dashboard
+Dashboard
 
- Agenda
+Agenda
 
- Carteira
+Carteira
 
 Admin
 
- Dashboard
+Dashboard
 
- Clientes
+Clientes
 
- Prestadores
+Prestadores
 
- Financeiro
+Financeiro
 
 5. Roadmap
 
@@ -824,71 +824,71 @@ Eu faria assim:
 
 Semana 1
 
- Estrutura do projeto
+Estrutura do projeto
 
- Tema
+Tema
 
- Componentes
+Componentes
 
- Navegação
+Navegação
 
 Semana 2
 
- Autenticação
+Autenticação
 
- Cliente
+Cliente
 
 Semana 3
 
- Pedidos
+Pedidos
 
- Carteira
+Carteira
 
- Chat
+Chat
 
 Semana 4
 
- Prestador
+Prestador
 
 Semana 5
 
- Administração
+Administração
 
 Semana 6
 
- Revisão do Front-end
+Revisão do Front-end
 
 Semana 7
 
- Integração com Supabase
+Integração com Supabase
 
 Semana 8
 
- Testes e publicação
+Testes e publicação
 
 Depois disso
 
 A ordem seria:
 
- ✅ Planeamento completo (estamos aqui)
+✅ Planeamento completo (estamos aqui)
 
- ✅ Construir todo o Front-end
+✅ Construir todo o Front-end
 
- ✅ Criar o projeto no Supabase
+✅ Criar o projeto no Supabase
 
- ✅ Modelar a base de dados
+✅ Modelar a base de dados
 
- ✅ Implementar autenticação
+✅ Implementar autenticação
 
- ✅ Integrar o Front-end com o Supabase
+✅ Integrar o Front-end com o Supabase
 
- ✅ Implementar Realtime
+✅ Implementar Realtime
 
- ✅ Testes
+✅ Testes
 
- ✅ Publicação na Google Play
+✅ Publicação na Google Play
 
- ✅ Evolução contínua do KONEKTA
+✅ Evolução contínua do KONEKTA
 
 Uma sugestão importante
 
@@ -896,33 +896,33 @@ Como pretendes que o KONEKTA seja o teu principal negócio, eu criaria um docume
 
 Esse documento reuniria absolutamente tudo num único lugar:
 
- visão e objetivos;
+visão e objetivos;
 
- modelo de negócio;
+modelo de negócio;
 
- regras da plataforma;
+regras da plataforma;
 
- fluxos completos;
+fluxos completos;
 
- monetização;
+monetização;
 
- permissões de cada utilizador;
+permissões de cada utilizador;
 
- arquitetura Flutter;
+arquitetura Flutter;
 
- estrutura de pastas;
+estrutura de pastas;
 
- Design System;
+Design System;
 
- mapa das telas;
+mapa das telas;
 
- mapa dos componentes;
+mapa dos componentes;
 
- roadmap de desenvolvimento;
+roadmap de desenvolvimento;
 
- estratégia de integração com o Supabase;
+estratégia de integração com o Supabase;
 
- plano de evolução após o MVP.
+plano de evolução após o MVP.
 
 Esse documento serviria como a "fonte única de verdade" do projeto. Sempre que adicionares uma funcionalidade nova no futuro, consultarás esse documento para garantir que o KONEKTA continua consistente e organizado, mesmo após vários anos de evolução.
 
@@ -979,25 +979,25 @@ KONEKTA MASTER DOCUMENT v1.0
 
 Esse documento seria escrito como se fosse produzido por uma equipa de arquitetura de software de uma grande empresa e incluiria:
 
- visão do produto;
+visão do produto;
 
- regras de negócio detalhadas;
+regras de negócio detalhadas;
 
- todos os fluxos (cliente, prestador e administrador);
+todos os fluxos (cliente, prestador e administrador);
 
- arquitetura Flutter;
+arquitetura Flutter;
 
- Design System;
+Design System;
 
- mapa de todas as telas;
+mapa de todas as telas;
 
- modelo de dados preparado para o Supabase;
+modelo de dados preparado para o Supabase;
 
- estratégia de monetização;
+estratégia de monetização;
 
- plano de evolução do MVP para a versão completa;
+plano de evolução do MVP para a versão completa;
 
- documentação para qualquer programador conseguir continuar o projeto.
+documentação para qualquer programador conseguir continuar o projeto.
 
 Depois, o Cursor usaria esse documento como contexto permanente durante o desenvolvimento.
 
@@ -1033,29 +1033,29 @@ Hoje em São Tomé e Príncipe existe muita dificuldade para encontrar profissio
 
 Normalmente as pessoas:
 
- perguntam aos amigos;
+perguntam aos amigos;
 
- procuram no Facebook;
+procuram no Facebook;
 
- procuram no WhatsApp;
+procuram no WhatsApp;
 
- procuram em grupos.
+procuram em grupos.
 
 Os problemas são:
 
- pouca confiança;
+pouca confiança;
 
- preços sem transparência;
+preços sem transparência;
 
- atrasos;
+atrasos;
 
- golpes;
+golpes;
 
- falta de garantias;
+falta de garantias;
 
- não existe histórico;
+não existe histórico;
 
- não existe suporte.
+não existe suporte.
 
 Solução
 
@@ -1543,35 +1543,35 @@ Arquitetura preparada para RLS do Supabase na fase de backend.
 
 Como o KONEKTA ganha dinheiro
 
- Comissão sobre serviços.
+Comissão sobre serviços.
 
- Destaque pago de prestadores.
+Destaque pago de prestadores.
 
- Planos para empresas.
+Planos para empresas.
 
- Publicidade.
+Publicidade.
 
- Serviços Premium.
+Serviços Premium.
 
- Funcionalidades financeiras futuras.
+Funcionalidades financeiras futuras.
 
 Como evitar negócios fora da plataforma
 
 O foco deve ser oferecer vantagens reais para permanecer no KONEKTA:
 
- pagamentos protegidos;
+pagamentos protegidos;
 
- histórico permanente;
+histórico permanente;
 
- reputação verificada;
+reputação verificada;
 
- avaliações;
+avaliações;
 
- suporte;
+suporte;
 
- carteira integrada;
+carteira integrada;
 
- futuras recompensas e benefícios para utilizadores ativos.
+futuras recompensas e benefícios para utilizadores ativos.
 
 Além disso, o sistema pode sinalizar padrões suspeitos (como tentativas recorrentes de contornar a plataforma) para análise administrativa, sempre respeitando a privacidade dos utilizadores.
 
@@ -1637,7 +1637,7 @@ Preparado para novas funcionalidades.
 
 Objetivo do MVP
 
-O MVP tem como finalidade validar o negócio rapidamente, conquistar os primeiros clientes e prestadores e começar a gerar receita. Depois disso, o KONEKTA evoluirá de forma contínua, adicionando funcionalidades como empresas, inteligência artificial, programas de fidelização, publicidade avançada, integrações financeiras e outras soluções para se tornar a principal plataforma de prestação de serviços de São Tomé e Príncipe.     é app mobile
+O MVP tem como finalidade validar o negócio rapidamente, conquistar os primeiros clientes e prestadores e começar a gerar receita. Depois disso, o KONEKTA evoluirá de forma contínua, adicionando funcionalidades como empresas, inteligência artificial, programas de fidelização, publicidade avançada, integrações financeiras e outras soluções para se tornar a principal plataforma de prestação de serviços de São Tomé e Príncipe. é app mobile
 
 This project was built with [Lovable](https://lovable.dev).
 

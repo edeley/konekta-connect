@@ -13,7 +13,8 @@ export const Route = createFileRoute("/sobre")({
       { property: "og:title", content: "Sobre a KONEKTA — Serviços em STP" },
       {
         property: "og:description",
-        content: "A missão, a visão e os valores da plataforma são-tomense de prestação de serviços.",
+        content:
+          "A missão, a visão e os valores da plataforma são-tomense de prestação de serviços.",
       },
       { property: "og:type", content: "website" },
       { property: "og:url", content: "https://konekta-connect.lovable.app/sobre" },
@@ -25,10 +26,22 @@ export const Route = createFileRoute("/sobre")({
 });
 
 const valores = [
-  { t: "Confiança", d: "Todos os prestadores passam por verificação de identidade antes de receber pedidos." },
-  { t: "Transparência", d: "Preços claros, sem custos escondidos e com recibo digital em cada serviço." },
-  { t: "Proximidade", d: "Feita em São Tomé, para a realidade são-tomense — incluindo redes lentas." },
-  { t: "Oportunidade", d: "Damos visibilidade a profissionais locais e ajudamos a formalizar o trabalho." },
+  {
+    t: "Confiança",
+    d: "Todos os prestadores passam por verificação de identidade antes de receber pedidos.",
+  },
+  {
+    t: "Transparência",
+    d: "Preços claros, sem custos escondidos e com recibo digital em cada serviço.",
+  },
+  {
+    t: "Proximidade",
+    d: "Feita em São Tomé, para a realidade são-tomense — incluindo redes lentas.",
+  },
+  {
+    t: "Oportunidade",
+    d: "Damos visibilidade a profissionais locais e ajudamos a formalizar o trabalho.",
+  },
 ];
 
 function SobrePage() {
@@ -36,9 +49,9 @@ function SobrePage() {
     <PublicLayout crumbs={[{ label: "Início", to: "/" }, { label: "Sobre" }]}>
       <h1 className="text-3xl font-black tracking-tight text-foreground">Sobre a KONEKTA</h1>
       <p className="mt-3 max-w-2xl text-muted-foreground">
-        A KONEKTA nasceu para resolver um problema simples: encontrar um bom profissional em São Tomé e Príncipe
-        dependia de boca-a-boca e de chamadas sem resposta. Hoje ligamos clientes e prestadores num só lugar, com
-        avaliações reais e pagamento protegido pela plataforma.
+        A KONEKTA nasceu para resolver um problema simples: encontrar um bom profissional em São
+        Tomé e Príncipe dependia de boca-a-boca e de chamadas sem resposta. Hoje ligamos clientes e
+        prestadores num só lugar, com avaliações reais e pagamento protegido pela plataforma.
       </p>
 
       <div className="mt-8 grid gap-4 sm:grid-cols-2">

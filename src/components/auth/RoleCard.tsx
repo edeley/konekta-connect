@@ -32,7 +32,14 @@ const toneMap = {
   },
 } as const;
 
-export function RoleCard({ icon: Icon, title, description, selected, onClick, tone }: RoleCardProps) {
+export function RoleCard({
+  icon: Icon,
+  title,
+  description,
+  selected,
+  onClick,
+  tone,
+}: RoleCardProps) {
   const t = toneMap[tone];
   return (
     <button

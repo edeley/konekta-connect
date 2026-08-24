@@ -23,7 +23,10 @@ export default defineTool({
     "Procura prestadores de serviços do KONEKTA por texto livre e/ou categoria, ordenados pela avaliação. Devolve nome, categoria, avaliação, preço inicial em Dobras e serviços.",
   inputSchema: {
     query: z.string().optional().describe("Texto a procurar no nome, categoria, bio ou serviços."),
-    category: z.string().optional().describe("Nome ou slug da categoria, por exemplo 'eletricista'."),
+    category: z
+      .string()
+      .optional()
+      .describe("Nome ou slug da categoria, por exemplo 'eletricista'."),
     limit: z.number().int().optional().describe("Número máximo de resultados (predefinição 10)."),
   },
   annotations: { readOnlyHint: true, idempotentHint: true, openWorldHint: false },
@@ -34,7 +37,8 @@ export default defineTool({
 
     const rows = providers
       .filter((p) => {
-        const catOk = !cat || p.category.toLowerCase().includes(cat) || cat.includes(p.category.toLowerCase());
+        const catOk =
+          !cat || p.category.toLowerCase().includes(cat) || cat.includes(p.category.toLowerCase());
         const text = `${p.name} ${p.category} ${p.bio} ${p.services.join(" ")}`.toLowerCase();
         return catOk && (!q || text.includes(q));
       })
@@ -43,7 +47,12 @@ export default defineTool({
       .map(serialize);
 
     const text = rows.length
-      ? rows.map((p) => `${p.name} — ${p.category} · ★ ${p.rating} (${p.reviews}) · a partir de ${p.priceFromDb} Db`).join("\n")
+      ? rows
+          .map(
+            (p) =>
+              `${p.name} — ${p.category} · ★ ${p.rating} (${p.reviews}) · a partir de ${p.priceFromDb} Db`,
+          )
+          .join("\n")
       : "Nenhum prestador encontrado com esses critérios.";
 
     return { content: [{ type: "text" as const, text }], structuredContent: { providers: rows } };

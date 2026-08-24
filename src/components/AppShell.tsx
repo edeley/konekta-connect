@@ -1,6 +1,6 @@
 import { useEffect, useState, type ReactNode } from "react";
-import { Link } from "@tanstack/react-router";
-import { Sparkles } from "lucide-react";
+import { Link, useRouterState } from "@tanstack/react-router";
+import { Headphones } from "lucide-react";
 import { BottomNav } from "./BottomNav";
 import { AuthGate } from "./AuthGate";
 import { OfflineBanner } from "./konekta/kit";
@@ -39,6 +39,8 @@ export function AppShell({
   const role = useStore((s) => s.user?.role ?? "cliente");
   const assistantOn = useStore((s) => s.flags.assistente);
   const online = useOnline();
+  const routerState = useRouterState();
+  const isAssistantRoute = routerState.location.pathname === "/assistente";
 
   return (
     <AuthGate roles={roles}>
@@ -53,13 +55,17 @@ export function AppShell({
           {children}
           {!hideNav && (
             <>
-              {assistantOn && !hideFab && (
+              {assistantOn && !hideFab && !isAssistantRoute && (
                 <Link
                   to="/assistente"
-                  aria-label="Abrir assistente KONEKTA"
-                  className="press fixed bottom-28 right-[max(1rem,calc(50%-13rem))] z-40 grid size-14 place-items-center rounded-2xl bg-primary text-primary-foreground shadow-raised ring-4 ring-surface"
+                  aria-label="Apoio ao Cliente KONEKTA"
+                  className="press fixed bottom-24 right-[max(1rem,calc(50%-13rem))] z-40 flex items-center gap-2 rounded-full bg-slate-900 dark:bg-white text-white dark:text-slate-900 px-3.5 py-2.5 shadow-lg border border-slate-800/20 dark:border-slate-200/20 active:scale-95 transition-all hover:opacity-90"
                 >
-                  <Sparkles size={20} />
+                  <Headphones
+                    size={17}
+                    className="text-emerald-400 dark:text-emerald-600 shrink-0"
+                  />
+                  <span className="text-xs font-bold tracking-tight">Apoio</span>
                 </Link>
               )}
               <BottomNav role={role} wide={wide} />

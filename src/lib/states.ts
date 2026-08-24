@@ -14,49 +14,50 @@ export const orderStateMeta: Record<OrderStatus, StateMeta> = {
   pendente: {
     label: "Enviado",
     tone: "warning",
-    message: "À espera que o prestador aceite o pedido.",
+    message: "À espera que o prestador confirme a aceitação do serviço.",
     actions: ["Cancelar", "Mensagem"],
   },
   aceite: {
     label: "Aceite",
     tone: "primary",
-    message: "O prestador aceitou o seu pedido.",
+    message: "O prestador aceitou o serviço e confirmou disponibilidade.",
     actions: ["Ver detalhes", "Mensagem", "Cancelar"],
   },
   "a-caminho": {
     label: "A caminho",
     tone: "primary",
-    message: "O prestador está a caminho da sua morada.",
+    message: "O prestador está em deslocação para o seu local de encontro.",
     actions: ["Acompanhar", "Mensagem"],
   },
   "em-execucao": {
     label: "Em execução",
     tone: "primary",
-    message: "O serviço está a ser executado.",
+    message: "O serviço foi iniciado pelo prestador e está a ser executado.",
     actions: ["Mensagem"],
   },
-  concluido: {
-    label: "Aguardando confirmação",
-    tone: "success",
-    message: "Confirme a conclusão para libertar o pagamento.",
-    actions: ["Confirmar", "Avaliar"],
+  "aguardando-codigo": {
+    label: "Terminado · Validar Código",
+    tone: "warning",
+    message:
+      "O prestador terminou o trabalho! Forneça o seu código secreto de 4 dígitos para validar e libertar o pagamento com 100% de segurança.",
+    actions: ["Fornecer Código", "Confirmar"],
   },
-  avaliado: {
+  concluido: {
     label: "Concluído",
     tone: "success",
-    message: "Serviço concluído e avaliado. Obrigado!",
+    message: "Código validado e pagamento em custódia liquidado para o prestador.",
+    actions: ["Avaliar"],
+  },
+  avaliado: {
+    label: "Avaliado",
+    tone: "success",
+    message: "Serviço concluído, pago e avaliado. Obrigado por usar a KONEKTA!",
     actions: ["Repetir pedido"],
   },
 };
 
 export type PaymentState =
-  | "pendente"
-  | "autorizado"
-  | "retido"
-  | "processamento"
-  | "libertado"
-  | "reembolsado"
-  | "falhado";
+  "pendente" | "autorizado" | "retido" | "processamento" | "libertado" | "reembolsado" | "falhado";
 
 export const paymentStateMeta: Record<PaymentState, { label: string; tone: Tone }> = {
   pendente: { label: "Pendente", tone: "warning" },
@@ -86,12 +87,7 @@ export const walletStateMeta: Record<WalletState, { label: string; tone: Tone }>
 };
 
 export type DocumentState =
-  | "nao_enviado"
-  | "enviado"
-  | "em_analise"
-  | "verificado"
-  | "rejeitado"
-  | "expirado";
+  "nao_enviado" | "enviado" | "em_analise" | "verificado" | "rejeitado" | "expirado";
 
 export const documentStateMeta: Record<DocumentState, { label: string; tone: Tone }> = {
   nao_enviado: { label: "Não enviado", tone: "neutral" },

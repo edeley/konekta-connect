@@ -9,7 +9,10 @@ export const Route = createFileRoute("/notificacoes")({
   head: () => ({
     meta: [
       { title: "Notificações · KONEKTA" },
-      { name: "description", content: "Acompanhe propostas, pagamentos e atualizações dos seus pedidos KONEKTA." },
+      {
+        name: "description",
+        content: "Acompanhe propostas, pagamentos e atualizações dos seus pedidos KONEKTA.",
+      },
       { property: "og:title", content: "Notificações · KONEKTA" },
       { property: "og:description", content: "Propostas, pagamentos e estados de pedidos." },
       { property: "og:type", content: "website" },
@@ -19,7 +22,12 @@ export const Route = createFileRoute("/notificacoes")({
   component: Notifications,
 });
 
-const toneMap = { info: "primary", success: "success", warning: "warning", error: "error" } as const;
+const toneMap = {
+  info: "primary",
+  success: "success",
+  warning: "warning",
+  error: "error",
+} as const;
 
 function Notifications() {
   const notifications = useStore((s) => s.notifications);
@@ -51,7 +59,11 @@ function Notifications() {
       />
       <Section>
         {notifications.length === 0 ? (
-          <EmptyState icon={<Bell size={22} />} title="Sem notificações" description="Tudo em dia por aqui." />
+          <EmptyState
+            icon={<Bell size={22} />}
+            title="Sem notificações"
+            description="Tudo em dia por aqui."
+          />
         ) : (
           <div className="space-y-3">
             {notifications.map((n) => {

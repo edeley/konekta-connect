@@ -20,6 +20,7 @@ const clientTabs = [
   { to: "/categorias", label: "Buscar", icon: Search },
   { to: "/pedidos", label: "Pedidos", icon: ClipboardList },
   { to: "/carteira", label: "Carteira", icon: Wallet },
+  { to: "/perfil", label: "Perfil", icon: User },
 ];
 
 const providerTabs = [
@@ -29,7 +30,6 @@ const providerTabs = [
   { to: "/pro/ganhos", label: "Carteira", icon: Wallet },
   { to: "/perfil", label: "Perfil", icon: User },
 ];
-
 
 const adminTabs = [
   { to: "/admin", label: "Painel", icon: LayoutDashboard },

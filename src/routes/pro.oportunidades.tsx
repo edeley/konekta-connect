@@ -1,14 +1,8 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
-import { Clock, MapPin, Search, Send } from "lucide-react";
+import { Clock, MapPin, Search, Send, Calendar } from "lucide-react";
 import { AppShell } from "@/components/AppShell";
-import {
-  Section,
-  KCard,
-  StatusPill,
-  EmptyState,
-  BottomSheet,
-} from "@/components/konekta/kit";
+import { Section, KCard, StatusPill, EmptyState, BottomSheet } from "@/components/konekta/kit";
 import { Button } from "@/components/ui/button";
 import { useStore, store } from "@/lib/store";
 import { formatDb } from "@/lib/catalog";
@@ -21,7 +15,8 @@ export const Route = createFileRoute("/pro/oportunidades")({
       { title: "Oportunidades · KONEKTA Prestador" },
       {
         name: "description",
-        content: "Veja pedidos abertos de clientes em São Tomé e Príncipe e envie a sua proposta em segundos.",
+        content:
+          "Veja pedidos abertos de clientes em São Tomé e Príncipe e envie a sua proposta em segundos.",
       },
       { property: "og:title", content: "Oportunidades · KONEKTA Prestador" },
       { property: "og:description", content: "Pedidos abertos à espera da sua proposta." },
@@ -46,7 +41,7 @@ function Leads() {
   const list = useMemo(() => {
     const q = query.trim().toLowerCase();
     return requests
-      .filter((r) => r.status === "aberto")
+      .filter((r) => r.status === "aberto" && !r.isDirect)
       .filter((r) => !onlyMine || !profile?.category || r.categoryName === profile.category)
       .filter(
         (r) =>
@@ -78,7 +73,10 @@ function Leads() {
 
       <Section>
         <div className="relative">
-          <Search size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground" />
+          <Search
+            size={16}
+            className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground"
+          />
           <input
             value={query}
             onChange={(e) => setQuery(e.target.value)}
@@ -140,23 +138,44 @@ function Leads() {
                     <span className="inline-flex items-center gap-1 rounded-full bg-muted px-2.5 py-1">
                       <MapPin size={12} /> {r.district}
                     </span>
-                    <span className="inline-flex items-center gap-1 rounded-full bg-muted px-2.5 py-1">
-                      <Clock size={12} /> {r.proposals.length} proposta(s)
-                    </span>
-                    {r.budget && (
-                      <span className="rounded-full bg-muted px-2.5 py-1">Até {formatDb(r.budget)}</span>
+                    {r.scheduleSummary ? (
+                      <span className="inline-flex items-center gap-1 rounded-full bg-primary/10 text-primary px-2.5 py-1">
+                        <Calendar size={12} /> {r.scheduleSummary}
+                      </span>
+                    ) : (
+                      <span className="inline-flex items-center gap-1 rounded-full bg-muted px-2.5 py-1">
+                        <Clock size={12} /> {r.proposals.length} proposta(s)
+                      </span>
+                    )}
+                    {r.budget ? (
+                      <span className="rounded-full bg-muted px-2.5 py-1">
+                        Base: {formatDb(r.budget)}
+                      </span>
+                    ) : (
+                      <span className="rounded-full bg-muted px-2.5 py-1">
+                        {r.proposals.length} proposta(s)
+                      </span>
                     )}
                   </div>
-                  <Button
-                    className="h-11 w-full rounded-xl font-bold"
-                    disabled={alreadySent}
-                    onClick={() => {
-                      setTarget(r);
-                      setPrice(r.budget ? String(r.budget) : "");
-                    }}
-                  >
-                    {alreadySent ? "Proposta enviada" : "Enviar proposta"}
-                  </Button>
+                  <div className="flex gap-2">
+                    <Link
+                      to="/pedido/$id"
+                      params={{ id: r.id }}
+                      className="press flex h-11 flex-1 items-center justify-center gap-1.5 rounded-xl bg-muted text-xs font-bold text-foreground hover:bg-muted/80 transition"
+                    >
+                      Ver Detalhes
+                    </Link>
+                    <Button
+                      className="h-11 flex-1 rounded-xl font-bold text-xs"
+                      disabled={alreadySent}
+                      onClick={() => {
+                        setTarget(r);
+                        setPrice(r.budget ? String(r.budget) : "");
+                      }}
+                    >
+                      {alreadySent ? "Proposta enviada" : "Enviar proposta"}
+                    </Button>
+                  </div>
                 </KCard>
               );
             })}
@@ -185,7 +204,9 @@ function Leads() {
               onClick={() => setAvailability(a)}
               className={cn(
                 "press flex-1 rounded-xl px-3 py-2 text-xs font-semibold",
-                a === availability ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground",
+                a === availability
+                  ? "bg-primary text-primary-foreground"
+                  : "bg-muted text-muted-foreground",
               )}
             >
               {a}
@@ -199,7 +220,11 @@ function Leads() {
           placeholder="Mensagem para o cliente (o que inclui, garantia, material...)"
           className="w-full rounded-2xl bg-muted/60 p-4 text-sm outline-none ring-primary/30 focus:ring-2"
         />
-        <Button className="h-12 w-full rounded-2xl text-base font-bold" disabled={!price} onClick={submit}>
+        <Button
+          className="h-12 w-full rounded-2xl text-base font-bold"
+          disabled={!price}
+          onClick={submit}
+        >
           <Send size={16} /> Enviar proposta
         </Button>
       </BottomSheet>

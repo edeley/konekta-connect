@@ -1,5 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { PublicLayout } from "@/components/PublicLayout";
+import { KonektaCalculator } from "@/components/konekta/KonektaCalculator";
 
 export const Route = createFileRoute("/como-funciona")({
   head: () => ({
@@ -25,11 +26,31 @@ export const Route = createFileRoute("/como-funciona")({
 });
 
 const passos = [
-  { t: "Criar conta", d: "Leva 30 segundos: nome, telefone e código de verificação. Sem papelada.", emoji: "📝" },
-  { t: "Publicar ou procurar", d: "Descreva o que precisa ou navegue pelas categorias e prestadores.", emoji: "🔍" },
-  { t: "Escolher o profissional", d: "Compare avaliações, preços e distância antes de decidir.", emoji: "👤" },
-  { t: "Agendar", d: "Escolha o dia e a hora. A confirmação é imediata na aplicação.", emoji: "📅" },
-  { t: "Receber o serviço", d: "Acompanhe o estado em tempo real e pague com a carteira protegida.", emoji: "✅" },
+  {
+    t: "Criar conta",
+    d: "Leva 30 segundos: nome, telefone e código de verificação. Sem papelada.",
+    emoji: "📝",
+  },
+  {
+    t: "Publicar ou procurar",
+    d: "Descreva o que precisa ou navegue pelas categorias e prestadores.",
+    emoji: "🔍",
+  },
+  {
+    t: "Escolher o profissional",
+    d: "Compare avaliações, preços e distância antes de decidir.",
+    emoji: "👤",
+  },
+  {
+    t: "Agendar",
+    d: "Escolha o dia e a hora. A confirmação é imediata na aplicação.",
+    emoji: "📅",
+  },
+  {
+    t: "Receber o serviço",
+    d: "Acompanhe o estado em tempo real e pague com a carteira protegida.",
+    emoji: "✅",
+  },
   { t: "Avaliar", d: "A sua avaliação ajuda toda a comunidade a escolher melhor.", emoji: "⭐" },
 ];
 
@@ -44,17 +65,37 @@ function ComoFuncionaPage() {
       <ol className="mt-8 space-y-4">
         {passos.map((p, i) => (
           <li key={p.t} className="flex gap-4 rounded-2xl border border-border bg-card p-5">
-            <span className="grid size-11 shrink-0 place-items-center rounded-xl bg-primary/10 text-xl" aria-hidden="true">
+            <span
+              className="grid size-11 shrink-0 place-items-center rounded-xl bg-primary/10 text-xl"
+              aria-hidden="true"
+            >
               {p.emoji}
             </span>
             <div className="min-w-0">
-              <p className="text-xs font-semibold uppercase tracking-widest text-primary">Passo {i + 1}</p>
+              <p className="text-xs font-semibold uppercase tracking-widest text-primary">
+                Passo {i + 1}
+              </p>
               <h2 className="mt-0.5 font-semibold text-foreground">{p.t}</h2>
               <p className="mt-1 text-sm text-muted-foreground">{p.d}</p>
             </div>
           </li>
         ))}
       </ol>
+
+      {/* Simulador Interativo KONEKTA */}
+      <div className="mt-8">
+        <h2 className="text-lg font-bold text-foreground mb-1">Transparência Total nos Preços</h2>
+        <p className="text-xs text-muted-foreground mb-3">
+          Veja como funciona a divisão do valor pago e a proteção de custódia em São Tomé e
+          Príncipe.
+        </p>
+        <KonektaCalculator
+          initialTotal={500}
+          editable={true}
+          isClientView={true}
+          showSubtitle={true}
+        />
+      </div>
 
       <div className="mt-10 flex flex-wrap gap-3">
         <Link
@@ -63,7 +104,10 @@ function ComoFuncionaPage() {
         >
           Experimentar agora
         </Link>
-        <Link to="/ajuda" className="press rounded-xl px-5 py-3 text-sm font-semibold text-foreground ring-1 ring-border">
+        <Link
+          to="/ajuda"
+          className="press rounded-xl px-5 py-3 text-sm font-semibold text-foreground ring-1 ring-border"
+        >
           Ver perguntas frequentes
         </Link>
       </div>

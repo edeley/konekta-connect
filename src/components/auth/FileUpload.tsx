@@ -93,7 +93,11 @@ export function FileUpload({
         {busy ? (
           <Loader2 className="animate-spin text-primary" size={22} aria-hidden="true" />
         ) : circle && items[0] ? (
-          <img src={items[0].url} alt="Pré-visualização da foto de perfil" className="size-30 rounded-full object-cover" />
+          <img
+            src={items[0].url}
+            alt="Pré-visualização da foto de perfil"
+            className="size-30 rounded-full object-cover"
+          />
         ) : (
           <>
             {circle ? (
@@ -119,9 +123,16 @@ export function FileUpload({
       {!circle && items.length > 0 && (
         <ul className={cn("grid gap-2", multiple ? "grid-cols-3" : "grid-cols-1")}>
           {items.map((item, i) => (
-            <li key={item.url} className="relative overflow-hidden rounded-xl border border-border bg-card">
+            <li
+              key={item.url}
+              className="relative overflow-hidden rounded-xl border border-border bg-card"
+            >
               {item.file.type.startsWith("image/") ? (
-                <img src={item.url} alt={`Pré-visualização ${i + 1}`} className="h-24 w-full object-cover" />
+                <img
+                  src={item.url}
+                  alt={`Pré-visualização ${i + 1}`}
+                  className="h-24 w-full object-cover"
+                />
               ) : (
                 <div className="flex items-center gap-2 p-3 pr-10">
                   <FileText size={18} className="shrink-0 text-primary" aria-hidden="true" />
@@ -141,7 +152,6 @@ export function FileUpload({
         </ul>
       )}
 
-
       {circle && items[0] && (
         <button
           type="button"
@@ -154,7 +164,8 @@ export function FileUpload({
 
       {secure && (
         <p className="flex items-center gap-1.5 text-[11px] text-muted-foreground">
-          <ShieldCheck size={12} aria-hidden="true" /> Documento seguro e privado — nunca guardado no dispositivo.
+          <ShieldCheck size={12} aria-hidden="true" /> Documento seguro e privado — nunca guardado
+          no dispositivo.
         </p>
       )}
       {error && (

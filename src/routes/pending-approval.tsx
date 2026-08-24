@@ -1,9 +1,8 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { CheckCircle2, Circle, Clock, FileSearch, LifeBuoy } from "lucide-react";
+import { Check, Clock, FileText, Settings } from "lucide-react";
 import { AuthLayout } from "@/components/auth/AuthLayout";
-import { LoadingButton } from "@/components/auth/LoadingButton";
-import { useAuthFlow } from "@/lib/auth-flow";
 import { store, useStore } from "@/lib/store";
+import { useAuthFlow } from "@/lib/auth-flow";
 
 export const Route = createFileRoute("/pending-approval")({
   head: () => ({
@@ -23,14 +22,7 @@ export const Route = createFileRoute("/pending-approval")({
   component: PendingApprovalPage,
 });
 
-const steps = [
-  { label: "Cadastro recebido", done: true },
-  { label: "Verificação de documentos", done: false, current: true },
-  { label: "Aprovação final", done: false },
-  { label: "Conta ativa", done: false },
-];
-
-function PendingApprovalPage() {
+export function PendingApprovalPage() {
   const navigate = useNavigate();
   const flowRole = useAuthFlow((s) => s.role);
   const profiles = useStore((s) => s.profiles);
@@ -43,60 +35,78 @@ function PendingApprovalPage() {
 
   return (
     <AuthLayout showLogo>
-      <div className="text-center">
-        <span className="inline-flex items-center gap-1.5 rounded-full bg-warning/12 px-3 py-1 text-xs font-bold text-warning">
+      <div className="flex flex-col items-center text-center">
+        {/* Badge Pendente */}
+        <span className="inline-flex items-center gap-1.5 rounded-full bg-amber-100/80 dark:bg-amber-950/60 px-3 py-1 text-xs font-bold text-amber-600 dark:text-amber-400">
           <Clock size={13} aria-hidden="true" /> Pendente
         </span>
-        <div className="mx-auto mt-5 grid size-20 place-items-center rounded-3xl bg-warning/10 text-warning">
-          <FileSearch size={38} aria-hidden="true" />
+
+        {/* Icon Document search */}
+        <div className="mt-5 grid size-20 place-items-center rounded-3xl bg-amber-50 dark:bg-amber-950/40 text-amber-500">
+          <FileText size={36} aria-hidden="true" />
         </div>
-        <h1 className="mt-5 text-2xl font-extrabold tracking-tight">A sua conta está em análise</h1>
-        <p className="mt-2 text-sm text-muted-foreground">
+
+        <h1 className="mt-5 text-2xl font-bold tracking-tight text-foreground">
+          A sua conta está em análise
+        </h1>
+        <p className="mt-2 max-w-xs text-xs text-muted-foreground leading-relaxed">
           Estamos a verificar os seus documentos. Este processo leva até 24h.
         </p>
       </div>
 
-      <ol className="card-soft mt-7 space-y-3 p-4">
-        {steps.map((s) => (
-          <li key={s.label} className="flex items-center gap-3 text-sm">
-            {s.done ? (
-              <CheckCircle2 size={18} className="text-success" aria-hidden="true" />
-            ) : s.current ? (
-              <Clock size={18} className="text-warning" aria-hidden="true" />
-            ) : (
-              <Circle size={18} className="text-muted-foreground/50" aria-hidden="true" />
-            )}
-            <span className={s.done || s.current ? "font-medium" : "text-muted-foreground"}>
-              {s.label}
-            </span>
-          </li>
-        ))}
-      </ol>
+      {/* Card com Stepper */}
+      <div className="mt-6 rounded-3xl border border-border/80 bg-card p-5 shadow-xs space-y-3.5">
+        <div className="flex items-center gap-3">
+          <span className="grid size-5 place-items-center rounded-full bg-success/20 text-success shrink-0">
+            <Check size={13} strokeWidth={3} />
+          </span>
+          <span className="text-sm font-bold text-foreground">Cadastro recebido</span>
+        </div>
+
+        <div className="flex items-center gap-3">
+          <span className="grid size-5 place-items-center rounded-full bg-amber-100 dark:bg-amber-950 text-amber-600 shrink-0">
+            <Clock size={12} strokeWidth={2.5} />
+          </span>
+          <span className="text-sm font-bold text-foreground">Verificação de documentos</span>
+        </div>
+
+        <div className="flex items-center gap-3">
+          <span className="size-5 rounded-full border-2 border-muted-foreground/30 shrink-0" />
+          <span className="text-sm font-medium text-muted-foreground">Aprovação final</span>
+        </div>
+
+        <div className="flex items-center gap-3">
+          <span className="size-5 rounded-full border-2 border-muted-foreground/30 shrink-0" />
+          <span className="text-sm font-medium text-muted-foreground">Conta ativa</span>
+        </div>
+      </div>
 
       <p className="mt-4 text-center text-xs text-muted-foreground">
         Receberá uma notificação quando a sua conta for aprovada.
       </p>
 
-      <div className="mt-7 space-y-3">
-        {isBoth ? (
-          <>
-            <LoadingButton onClick={exploreAsClient}>Explorar como Cliente</LoadingButton>
-            <p className="text-center text-[11px] text-muted-foreground">
-              Pode usar as funções de cliente enquanto aguarda a aprovação.
-            </p>
-          </>
-        ) : (
-          <LoadingButton variant="outline" onClick={() => navigate({ to: "/" })}>
-            Voltar ao Início
-          </LoadingButton>
-        )}
-
-        <Link
-          to="/ajuda"
-          className="flex items-center justify-center gap-1.5 text-xs font-semibold text-primary hover:underline"
+      {/* Ações */}
+      <div className="mt-6 space-y-3 text-center">
+        <button
+          type="button"
+          onClick={exploreAsClient}
+          className="w-full rounded-full bg-primary py-3.5 text-sm font-bold text-primary-foreground shadow-xs transition hover:bg-primary/90"
         >
-          <LifeBuoy size={13} aria-hidden="true" /> Precisa de ajuda? Contacte-nos
-        </Link>
+          Explorar como Cliente
+        </button>
+
+        <p className="text-[11px] text-muted-foreground px-2">
+          Pode usar as funções de cliente enquanto aguarda a aprovação.
+        </p>
+
+        <div className="pt-2">
+          <Link
+            to="/ajuda"
+            className="inline-flex items-center justify-center gap-1.5 text-xs font-semibold text-primary hover:underline"
+          >
+            <Settings size={14} aria-hidden="true" /> Precisa de ajuda? Contacte-nos
+          </Link>
+        </div>
       </div>
     </AuthLayout>
   );

@@ -10,9 +10,15 @@ export const Route = createFileRoute("/favoritos")({
   head: () => ({
     meta: [
       { title: "Favoritos · KONEKTA" },
-      { name: "description", content: "Os prestadores que guardou para contratar mais rápido no KONEKTA." },
+      {
+        name: "description",
+        content: "Os prestadores que guardou para contratar mais rápido no KONEKTA.",
+      },
       { property: "og:title", content: "Favoritos · KONEKTA" },
-      { property: "og:description", content: "Guarde profissionais de confiança e contrate em segundos." },
+      {
+        property: "og:description",
+        content: "Guarde profissionais de confiança e contrate em segundos.",
+      },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
     ],
@@ -54,8 +60,8 @@ function Favorites() {
                     <p className="truncate text-sm font-bold">{p.name}</p>
                     <p className="text-xs text-muted-foreground">{p.category}</p>
                     <p className="mt-0.5 flex items-center gap-1 text-xs text-muted-foreground">
-                      <Star size={12} className="fill-warning text-warning" /> {p.rating} · a partir de{" "}
-                      {formatDb(p.priceFrom)}
+                      <Star size={12} className="fill-warning text-warning" /> {p.rating} · a partir
+                      de {formatDb(p.priceFrom)}
                     </p>
                   </Link>
                   <button

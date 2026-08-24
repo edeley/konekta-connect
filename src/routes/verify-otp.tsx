@@ -15,7 +15,8 @@ export const Route = createFileRoute("/verify-otp")({
       { title: "Verificar código — KONEKTA" },
       {
         name: "description",
-        content: "Introduza o código de 4 dígitos enviado para o seu telemóvel +239 e conclua a entrada na KONEKTA.",
+        content:
+          "Introduza o código de 4 dígitos enviado para o seu telemóvel +239 e conclua a entrada na KONEKTA.",
       },
       { property: "og:title", content: "Verificar código — KONEKTA" },
       { property: "og:description", content: "Verificação em dois passos por SMS." },
@@ -60,9 +61,14 @@ function VerifyOtpPage() {
     setTimeout(() => {
       setLoading(false);
       if (code === DEMO_OTP) {
+        const isRecovery = Boolean(authFlow.get().recoveryTarget || authFlow.get().recoveryMethod);
         authFlow.resetOtp();
-        toast.success("Número verificado!");
-        navigate({ to: user ? "/" : "/registro", replace: true });
+        toast.success("Código verificado com sucesso!");
+        if (isRecovery) {
+          navigate({ to: "/recover-new-password", replace: true });
+        } else {
+          navigate({ to: user ? "/" : "/registro", replace: true });
+        }
         return;
       }
       const nowBlocked = authFlow.failOtp();
@@ -117,7 +123,11 @@ function VerifyOtpPage() {
           ) : seconds > 0 ? (
             <>Reenviar código em 0:{String(seconds).padStart(2, "0")}</>
           ) : (
-            <button type="button" onClick={resend} className="font-semibold text-primary hover:underline">
+            <button
+              type="button"
+              onClick={resend}
+              className="font-semibold text-primary hover:underline"
+            >
               Reenviar código
             </button>
           )}

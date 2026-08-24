@@ -77,9 +77,7 @@
               "description": "Id do prestador."
             }
           },
-          "required": [
-            "id"
-          ]
+          "required": ["id"]
         },
         "outputSchema": null
       }

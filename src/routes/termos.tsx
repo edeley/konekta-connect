@@ -7,7 +7,8 @@ export const Route = createFileRoute("/termos")({
       { title: "Termos de uso — KONEKTA" },
       {
         name: "description",
-        content: "Condições de utilização da plataforma KONEKTA para clientes e prestadores em São Tomé e Príncipe.",
+        content:
+          "Condições de utilização da plataforma KONEKTA para clientes e prestadores em São Tomé e Príncipe.",
       },
       { property: "og:title", content: "Termos de uso — KONEKTA" },
       { property: "og:description", content: "Condições de utilização da plataforma KONEKTA." },

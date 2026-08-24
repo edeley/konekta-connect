@@ -36,10 +36,14 @@ export const Route = createFileRoute("/ajuda")({
       { title: "Ajuda e perguntas frequentes — KONEKTA" },
       {
         name: "description",
-        content: "Respostas às dúvidas mais comuns sobre pedidos, pagamentos, cancelamentos e verificação na KONEKTA.",
+        content:
+          "Respostas às dúvidas mais comuns sobre pedidos, pagamentos, cancelamentos e verificação na KONEKTA.",
       },
       { property: "og:title", content: "Ajuda e perguntas frequentes — KONEKTA" },
-      { property: "og:description", content: "Centro de ajuda da plataforma KONEKTA em São Tomé e Príncipe." },
+      {
+        property: "og:description",
+        content: "Centro de ajuda da plataforma KONEKTA em São Tomé e Príncipe.",
+      },
       { property: "og:type", content: "website" },
       { property: "og:url", content: "https://konekta-connect.lovable.app/ajuda" },
       { name: "twitter:card", content: "summary_large_image" },
@@ -99,14 +103,33 @@ function AjudaPage() {
         })}
       </ul>
 
-      <div className="mt-10 rounded-2xl border border-border bg-card p-6">
-        <h2 className="font-semibold text-foreground">Não encontrou a resposta?</h2>
-        <p className="mt-1 text-sm text-muted-foreground">O assistente KONEKTA responde em português, 24/7.</p>
+      <div className="mt-10 rounded-2xl border border-border bg-card p-6 space-y-4">
+        <div>
+          <h2 className="font-semibold text-foreground">Não encontrou a resposta?</h2>
+          <p className="mt-1 text-sm text-muted-foreground">
+            A nossa equipa oficial e o assistente KONEKTA estão disponíveis para apoiar todos os
+            utilizadores.
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+          <div className="p-3.5 rounded-xl bg-muted/60 border border-border text-xs space-y-1">
+            <p className="text-[11px] font-bold text-muted-foreground uppercase">
+              WhatsApp Oficial KONEKTA
+            </p>
+            <p className="text-sm font-black text-foreground">+239 9944747</p>
+          </div>
+          <div className="p-3.5 rounded-xl bg-muted/60 border border-border text-xs space-y-1">
+            <p className="text-[11px] font-bold text-muted-foreground uppercase">E-mail Oficial</p>
+            <p className="text-sm font-black text-foreground">edeleydamiao@gmail.com</p>
+          </div>
+        </div>
+
         <Link
           to="/assistente"
-          className="press mt-4 inline-flex rounded-xl bg-primary px-4 py-3 text-sm font-semibold text-primary-foreground"
+          className="press inline-flex rounded-xl bg-primary px-4 py-3 text-sm font-semibold text-primary-foreground"
         >
-          Falar com o assistente
+          Falar com o assistente KONEKTA
         </Link>
       </div>
     </PublicLayout>

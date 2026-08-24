@@ -3,11 +3,10 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { toast } from "sonner";
 import { Eye, EyeOff, Lock } from "lucide-react";
 import { AuthLayout } from "@/components/auth/AuthLayout";
-import { LoadingButton } from "@/components/auth/LoadingButton";
-import { Field } from "@/components/auth/Field";
 import { authFlow } from "@/lib/auth-flow";
 import { z } from "zod";
 import { passwordSchema, passwordStrength } from "@/lib/auth-schemas";
+import { cn } from "@/lib/utils";
 
 const newPasswordSchema = z
   .object({ password: passwordSchema, confirm: z.string() })
@@ -15,7 +14,6 @@ const newPasswordSchema = z
     message: "As palavras-passe não coincidem",
     path: ["confirm"],
   });
-import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/recover-new-password")({
   head: () => ({
@@ -67,18 +65,26 @@ function RecoverNewPasswordPage() {
 
   return (
     <AuthLayout back showLogo>
-      <div className="text-center">
-        <div className="mx-auto grid size-16 place-items-center rounded-2xl bg-accent text-primary">
+      <div className="flex flex-col items-center text-center">
+        {/* Icon Lock in soft blue box */}
+        <div className="grid size-16 place-items-center rounded-2xl bg-sky-50 text-sky-600 dark:bg-sky-950/40 dark:text-sky-400">
           <Lock size={28} aria-hidden="true" />
         </div>
-        <h1 className="mt-4 text-2xl font-extrabold tracking-tight">Nova palavra-passe</h1>
-        <p className="mt-1 text-sm text-muted-foreground">
+
+        <h1 className="mt-5 text-2xl font-bold tracking-tight text-foreground">
+          Nova palavra-passe
+        </h1>
+        <p className="mt-1.5 max-w-xs text-xs text-muted-foreground leading-relaxed">
           Escolha uma palavra-passe segura com pelo menos 8 caracteres.
         </p>
       </div>
 
-      <form onSubmit={submit} className="mt-7 space-y-5" noValidate>
-        <Field label="Nova palavra-passe" required error={errors.password}>
+      <form onSubmit={submit} className="mt-6 space-y-4" noValidate>
+        {/* Campo Nova palavra-passe */}
+        <div className="space-y-1.5">
+          <label className="text-xs font-bold text-foreground">
+            Nova palavra-passe <span className="text-destructive">*</span>
+          </label>
           <div className="relative">
             <input
               value={password}
@@ -86,54 +92,75 @@ function RecoverNewPasswordPage() {
               type={show ? "text" : "password"}
               autoComplete="new-password"
               placeholder="••••••••"
-              className="k-input pr-11"
+              className={cn(
+                "w-full rounded-2xl border bg-card px-4 py-3 text-sm font-medium outline-none transition focus:ring-2 focus:ring-primary/40",
+                errors.password ? "border-destructive" : "border-border/80",
+              )}
             />
             <button
               type="button"
               onClick={() => setShow((v) => !v)}
               aria-label={show ? "Ocultar palavra-passe" : "Mostrar palavra-passe"}
-              className="absolute right-2 top-1/2 grid size-9 -translate-y-1/2 place-items-center rounded-lg text-muted-foreground"
+              className="absolute right-3 top-1/2 grid size-8 -translate-y-1/2 place-items-center rounded-lg text-muted-foreground hover:text-foreground"
             >
-              {show ? <EyeOff size={17} /> : <Eye size={17} />}
+              {show ? <EyeOff size={18} /> : <Eye size={18} />}
             </button>
           </div>
-        </Field>
+          {errors.password && (
+            <p className="text-xs text-destructive font-medium">{errors.password}</p>
+          )}
 
-        <div className="space-y-1.5" aria-live="polite">
-          <div className="flex gap-1">
-            {[0, 1, 2, 3].map((i) => (
-              <span
-                key={i}
-                className={cn(
-                  "h-1 flex-1 rounded-full transition-colors",
-                  i < strength.score
-                    ? strength.score <= 1
-                      ? "bg-destructive"
-                      : strength.score === 2
-                        ? "bg-warning"
-                        : "bg-success"
-                    : "bg-muted",
-                )}
-              />
-            ))}
+          {/* Password strength bar */}
+          <div className="pt-1 space-y-1" aria-live="polite">
+            <div className="flex gap-1.5">
+              {[0, 1, 2, 3].map((i) => (
+                <span
+                  key={i}
+                  className={cn(
+                    "h-1 flex-1 rounded-full transition-colors",
+                    i < strength.score
+                      ? strength.score <= 1
+                        ? "bg-destructive"
+                        : strength.score === 2
+                          ? "bg-warning"
+                          : "bg-success"
+                      : "bg-muted/60",
+                  )}
+                />
+              ))}
+            </div>
+            <p className="text-[11px] font-medium text-muted-foreground">{strength.label}</p>
           </div>
-          <p className="text-[11px] font-semibold text-muted-foreground">{strength.label}</p>
         </div>
 
-        <Field label="Confirmar palavra-passe" required error={errors.confirm}>
+        {/* Campo Confirmar palavra-passe */}
+        <div className="space-y-1.5">
+          <label className="text-xs font-bold text-foreground">
+            Confirmar palavra-passe <span className="text-destructive">*</span>
+          </label>
           <input
             value={confirm}
             onChange={(e) => setConfirm(e.target.value)}
             type={show ? "text" : "password"}
             autoComplete="new-password"
             placeholder="••••••••"
-            className="k-input"
+            className={cn(
+              "w-full rounded-2xl border bg-card px-4 py-3 text-sm font-medium outline-none transition focus:ring-2 focus:ring-primary/40",
+              errors.confirm ? "border-destructive" : "border-border/80",
+            )}
           />
-        </Field>
+          {errors.confirm && (
+            <p className="text-xs text-destructive font-medium">{errors.confirm}</p>
+          )}
+        </div>
 
-        <LoadingButton type="submit" loading={loading} disabled={!valid}>
-          Guardar palavra-passe
-        </LoadingButton>
+        <button
+          type="submit"
+          disabled={loading || !valid}
+          className="mt-2 w-full rounded-full bg-primary py-3.5 text-sm font-bold text-primary-foreground shadow-xs transition hover:bg-primary/90 disabled:opacity-50"
+        >
+          {loading ? "A guardar..." : "Guardar palavra-passe"}
+        </button>
       </form>
     </AuthLayout>
   );

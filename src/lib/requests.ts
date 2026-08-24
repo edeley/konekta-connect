@@ -25,13 +25,21 @@ export type ServiceRequest = {
   /** Ponto de referência / local de encontro. */
   reference?: string;
   urgency: RequestUrgency;
+  preferredDate?: string;
+  preferredTime?: string;
+  scheduleSummary?: string;
   budget?: number;
   photos: number;
+  photosList?: string[];
   status: RequestStatus;
   clientName: string;
   createdAt: number;
   proposals: Proposal[];
   acceptedProposalId?: string;
+  /** Pedido direto e privado com um prestador específico */
+  isDirect?: boolean;
+  directProviderId?: string;
+  directProviderName?: string;
 };
 
 export const urgencyLabel: Record<RequestUrgency, string> = {

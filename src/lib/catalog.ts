@@ -10,12 +10,54 @@ export type PopularService = {
 };
 
 export const popularServices: PopularService[] = [
-  { id: "s1", name: "Reparação elétrica urgente", category: "eletricista", from: 450, duration: "1h", emoji: "⚡" },
-  { id: "s2", name: "Desentupimento", category: "canalizador", from: 380, duration: "1h30", emoji: "🚿" },
-  { id: "s3", name: "Limpeza profunda de casa", category: "limpeza", from: 550, duration: "3h", emoji: "🧽" },
-  { id: "s4", name: "Pintura de interior", category: "pintor", from: 600, duration: "1 dia", emoji: "🎨" },
-  { id: "s5", name: "Manutenção de ar condicionado", category: "ar-condicionado", from: 500, duration: "1h", emoji: "❄️" },
-  { id: "s6", name: "Corte de relva e jardim", category: "jardinagem", from: 300, duration: "2h", emoji: "🌿" },
+  {
+    id: "s1",
+    name: "Reparação elétrica urgente",
+    category: "eletricista",
+    from: 450,
+    duration: "1h",
+    emoji: "⚡",
+  },
+  {
+    id: "s2",
+    name: "Desentupimento",
+    category: "canalizador",
+    from: 380,
+    duration: "1h30",
+    emoji: "🚿",
+  },
+  {
+    id: "s3",
+    name: "Limpeza profunda de casa",
+    category: "limpeza",
+    from: 550,
+    duration: "3h",
+    emoji: "🧽",
+  },
+  {
+    id: "s4",
+    name: "Pintura de interior",
+    category: "pintor",
+    from: 600,
+    duration: "1 dia",
+    emoji: "🎨",
+  },
+  {
+    id: "s5",
+    name: "Manutenção de ar condicionado",
+    category: "ar-condicionado",
+    from: 500,
+    duration: "1h",
+    emoji: "❄️",
+  },
+  {
+    id: "s6",
+    name: "Corte de relva e jardim",
+    category: "jardinagem",
+    from: 300,
+    duration: "2h",
+    emoji: "🌿",
+  },
 ];
 
 export type Promo = {

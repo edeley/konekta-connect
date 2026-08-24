@@ -92,7 +92,9 @@ export function AvailabilityEditor({
                   <Copy size={12} aria-hidden="true" /> Aplicar a todos
                 </button>
               ) : (
-                <span className="text-[11px] font-semibold text-muted-foreground">Indisponível</span>
+                <span className="text-[11px] font-semibold text-muted-foreground">
+                  Indisponível
+                </span>
               )}
             </div>
 

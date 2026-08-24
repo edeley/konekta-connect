@@ -36,7 +36,7 @@ export function ProfileSwitcher({ className }: { className?: string }) {
     <>
       <button
         type="button"
-        onClick={() => (dual ? setOpen(true) : navigate({ to: "/tornar-prestador" }))}
+        onClick={() => (dual ? setOpen(true) : navigate({ to: "/registro" }))}
         className={cn(
           "press flex min-h-12 items-center gap-2 rounded-full bg-accent px-4 py-2 text-accent-foreground",
           className,

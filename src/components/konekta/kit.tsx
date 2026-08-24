@@ -23,10 +23,7 @@ export function ScreenHeader({
   const router = useRouter();
   return (
     <header
-      className={cn(
-        "bg-surface/90 backdrop-blur-md px-5 pt-6 pb-4 z-30",
-        sticky && "sticky top-0",
-      )}
+      className={cn("bg-surface/90 backdrop-blur-md px-5 pt-6 pb-4 z-30", sticky && "sticky top-0")}
     >
       <div className="grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-3">
         {back ? (
@@ -85,9 +82,7 @@ export function KCard({
   as?: "div" | "li";
 }) {
   const Tag = as;
-  return (
-    <Tag className={cn("rounded-2xl bg-card p-4 shadow-soft", className)}>{children}</Tag>
-  );
+  return <Tag className={cn("rounded-2xl bg-card p-4 shadow-soft", className)}>{children}</Tag>;
 }
 
 /* --------------------------------- Feedback -------------------------------- */
@@ -231,7 +226,9 @@ export function StatCard({
       <div className="flex items-center justify-between gap-2">
         <span className="text-xs font-medium text-muted-foreground">{label}</span>
         {icon && (
-          <span className={cn("grid size-8 place-items-center rounded-full", toneMap[tone])}>{icon}</span>
+          <span className={cn("grid size-8 place-items-center rounded-full", toneMap[tone])}>
+            {icon}
+          </span>
         )}
       </div>
       <p className="mt-2 text-xl font-extrabold tracking-tight">{value}</p>
@@ -264,7 +261,9 @@ export function ListRow({
       )}
       <span className="min-w-0 flex-1 text-left">
         <span className="block truncate text-sm font-semibold">{title}</span>
-        {subtitle && <span className="block truncate text-xs text-muted-foreground">{subtitle}</span>}
+        {subtitle && (
+          <span className="block truncate text-xs text-muted-foreground">{subtitle}</span>
+        )}
       </span>
       {right}
     </>

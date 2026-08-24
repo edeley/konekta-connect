@@ -18,7 +18,13 @@ export type StpDistrict = (typeof STP_DISTRICTS)[number];
 
 /** Bairros/localidades sugeridos por distrito (autocompletar leve). */
 export const LOCALITIES: Record<string, string[]> = {
-  "Água Grande": ["Cidade de São Tomé", "Riboque", "Bairro Hospital", "Quinta de Santo António", "Pantufo"],
+  "Água Grande": [
+    "Cidade de São Tomé",
+    "Riboque",
+    "Bairro Hospital",
+    "Quinta de Santo António",
+    "Pantufo",
+  ],
   "Mé-Zóchi": ["Trindade", "Bombaim", "Madre de Deus", "Batepá"],
   Lobata: ["Guadalupe", "Conde", "Agostinho Neto", "Micoló"],
   Lembá: ["Neves", "Ponta Figo", "Santa Catarina"],
@@ -82,8 +88,18 @@ export const SERVICE_TREE: ServiceCategory[] = [
     requiresLicense: true,
     pricing: ["servico", "ponto", "hora", "visita", "orcamento"],
     subcategories: [
-      { name: "Instalação", services: ["Instalação de tomada", "Instalação de quadro elétrico", "Instalação de iluminação"] },
-      { name: "Reparação", services: ["Curto-circuito", "Substituição de disjuntor", "Reparação de tomada"] },
+      {
+        name: "Instalação",
+        services: [
+          "Instalação de tomada",
+          "Instalação de quadro elétrico",
+          "Instalação de iluminação",
+        ],
+      },
+      {
+        name: "Reparação",
+        services: ["Curto-circuito", "Substituição de disjuntor", "Reparação de tomada"],
+      },
       { name: "Energia solar", services: ["Instalação de painel solar", "Manutenção de bateria"] },
     ],
   },
@@ -93,8 +109,18 @@ export const SERVICE_TREE: ServiceCategory[] = [
     emoji: "🚰",
     pricing: ["servico", "hora", "visita", "orcamento", "mao_material"],
     subcategories: [
-      { name: "Reparação", services: ["Fuga de água", "Desentupimento", "Substituição de torneira"] },
-      { name: "Instalação", services: ["Instalação de autoclismo", "Instalação de depósito de água", "Instalação de chuveiro"] },
+      {
+        name: "Reparação",
+        services: ["Fuga de água", "Desentupimento", "Substituição de torneira"],
+      },
+      {
+        name: "Instalação",
+        services: [
+          "Instalação de autoclismo",
+          "Instalação de depósito de água",
+          "Instalação de chuveiro",
+        ],
+      },
     ],
   },
   {
@@ -113,7 +139,10 @@ export const SERVICE_TREE: ServiceCategory[] = [
     emoji: "🧱",
     pricing: ["m2", "dia", "projeto", "orcamento", "mao_material"],
     subcategories: [
-      { name: "Alvenaria", services: ["Levantamento de parede", "Reboco", "Assentamento de blocos"] },
+      {
+        name: "Alvenaria",
+        services: ["Levantamento de parede", "Reboco", "Assentamento de blocos"],
+      },
       { name: "Acabamentos", services: ["Colocação de azulejo", "Betonilha", "Tetos falsos"] },
     ],
   },
@@ -133,7 +162,10 @@ export const SERVICE_TREE: ServiceCategory[] = [
     emoji: "🪚",
     pricing: ["servico", "unidade", "dia", "projeto", "orcamento"],
     subcategories: [
-      { name: "Móveis", services: ["Fabrico de armário", "Reparação de móvel", "Montagem de móvel"] },
+      {
+        name: "Móveis",
+        services: ["Fabrico de armário", "Reparação de móvel", "Montagem de móvel"],
+      },
       { name: "Portas e janelas", services: ["Instalação de porta", "Reparação de janela"] },
     ],
   },
@@ -154,7 +186,10 @@ export const SERVICE_TREE: ServiceCategory[] = [
     pricing: ["unidade", "servico", "visita", "orcamento"],
     subcategories: [
       { name: "Instalação", services: ["Instalação de split", "Instalação de arca frigorífica"] },
-      { name: "Manutenção", services: ["Limpeza de filtro", "Carga de gás", "Reparação de frigorífico"] },
+      {
+        name: "Manutenção",
+        services: ["Limpeza de filtro", "Carga de gás", "Reparação de frigorífico"],
+      },
     ],
   },
   {
@@ -204,8 +239,14 @@ export const SERVICE_TREE: ServiceCategory[] = [
     emoji: "💻",
     pricing: ["diagnostico", "servico", "hora", "visita", "orcamento"],
     subcategories: [
-      { name: "Computadores", services: ["Formatação", "Reparação de portátil", "Remoção de vírus"] },
-      { name: "Redes", services: ["Instalação de Wi-Fi", "Configuração de router", "Câmaras de vigilância"] },
+      {
+        name: "Computadores",
+        services: ["Formatação", "Reparação de portátil", "Remoção de vírus"],
+      },
+      {
+        name: "Redes",
+        services: ["Instalação de Wi-Fi", "Configuração de router", "Câmaras de vigilância"],
+      },
     ],
   },
   {
@@ -253,7 +294,10 @@ export type RequiredDocument = {
 };
 
 /** Documentos exigidos consoante o tipo de prestador e categorias. */
-export function requiredDocuments(kind: "individual" | "empresa", categoryIds: string[]): RequiredDocument[] {
+export function requiredDocuments(
+  kind: "individual" | "empresa",
+  categoryIds: string[],
+): RequiredDocument[] {
   const docs: RequiredDocument[] = [
     {
       id: "bi",
@@ -287,7 +331,6 @@ export function requiredDocuments(kind: "individual" | "empresa", categoryIds: s
   return docs;
 }
 
-
 export const WEEK_DAYS = [
   { id: "seg", label: "Seg" },
   { id: "ter", label: "Ter" },
@@ -298,7 +341,13 @@ export const WEEK_DAYS = [
   { id: "dom", label: "Dom" },
 ] as const;
 
-export const SERVICE_RADIUS = ["5 km", "10 km", "20 km", "30 km", "Toda a região selecionada"] as const;
+export const SERVICE_RADIUS = [
+  "5 km",
+  "10 km",
+  "20 km",
+  "30 km",
+  "Toda a região selecionada",
+] as const;
 
 export const PAYMENT_PREFERENCES = [
   { id: "sao_wallet", label: "São Wallet", hint: "Pagamento móvel" },

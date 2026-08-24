@@ -7,10 +7,14 @@ export const Route = createFileRoute("/privacidade")({
       { title: "Política de privacidade — KONEKTA" },
       {
         name: "description",
-        content: "Como a KONEKTA recolhe, utiliza e protege os dados pessoais de clientes e prestadores em STP.",
+        content:
+          "Como a KONEKTA recolhe, utiliza e protege os dados pessoais de clientes e prestadores em STP.",
       },
       { property: "og:title", content: "Política de privacidade — KONEKTA" },
-      { property: "og:description", content: "Como tratamos e protegemos os seus dados na KONEKTA." },
+      {
+        property: "og:description",
+        content: "Como tratamos e protegemos os seus dados na KONEKTA.",
+      },
       { property: "og:type", content: "website" },
       { property: "og:url", content: "https://konekta-connect.lovable.app/privacidade" },
       { name: "twitter:card", content: "summary_large_image" },
@@ -50,7 +54,9 @@ const seccoes = [
 function PrivacidadePage() {
   return (
     <PublicLayout crumbs={[{ label: "Início", to: "/" }, { label: "Privacidade" }]}>
-      <h1 className="text-3xl font-black tracking-tight text-foreground">Política de privacidade</h1>
+      <h1 className="text-3xl font-black tracking-tight text-foreground">
+        Política de privacidade
+      </h1>
       <p className="mt-2 text-sm text-muted-foreground">Última atualização: julho de 2026</p>
       <div className="mt-8 space-y-6">
         {seccoes.map((s) => (
