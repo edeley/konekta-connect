@@ -82,7 +82,8 @@ function ComoFuncionaPage() {
             Como funciona a KONEKTA
           </h1>
           <p className="text-xs sm:text-sm text-muted-foreground max-w-2xl leading-relaxed">
-            Da solicitação à conclusão do serviço: transparência total, sem chamadas invasivas e com pagamento retido até sua aprovação.
+            Da solicitação à conclusão do serviço: transparência total, sem chamadas invasivas e com
+            pagamento retido até sua aprovação.
           </p>
         </div>
 
@@ -105,7 +106,9 @@ function ComoFuncionaPage() {
 
         {/* Simulador Interativo KONEKTA */}
         <div className="pt-2">
-          <h2 className="text-base font-bold text-foreground mb-1">Transparência Total nos Preços</h2>
+          <h2 className="text-base font-bold text-foreground mb-1">
+            Transparência Total nos Preços
+          </h2>
           <p className="text-xs text-muted-foreground mb-3">
             Veja como funciona a divisão do valor pago e a proteção de custódia em São Tomé e
             Príncipe.

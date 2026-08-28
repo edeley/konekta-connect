@@ -5,7 +5,8 @@
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
-  --font-sans: "Plus Jakarta Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-sans:
+    "Plus Jakarta Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   --font-display: "Cabinet Grotesk", "Plus Jakarta Sans", sans-serif;
 
   --radius-sm: 0.375rem;
@@ -43,8 +44,8 @@
   --color-info: var(--info);
   --color-brand-dark: var(--brand-dark);
 
-  --color-gold: #D97706;
-  --color-gold-light: #FEF3C7;
+  --color-gold: #d97706;
+  --color-gold-light: #fef3c7;
 
   /* Legacy aliases */
   --color-terracotta: var(--primary);
@@ -60,61 +61,61 @@
 :root {
   --radius: 0.75rem;
 
-  --surface: #F8FAFC;
-  --background: #F8FAFC;
-  --foreground: #0F172A;
+  --surface: #f8fafc;
+  --background: #f8fafc;
+  --foreground: #0f172a;
 
-  --card: #FFFFFF;
-  --card-foreground: #0F172A;
-  --popover: #FFFFFF;
-  --popover-foreground: #0F172A;
+  --card: #ffffff;
+  --card-foreground: #0f172a;
+  --popover: #ffffff;
+  --popover-foreground: #0f172a;
 
-  --primary: #0F3D2E;
-  --primary-foreground: #FFFFFF;
-  --brand-dark: #09261D;
+  --primary: #0f3d2e;
+  --primary-foreground: #ffffff;
+  --brand-dark: #09261d;
 
-  --success: #0F3D2E;
-  --success-foreground: #FFFFFF;
-  --warning: #B45309;
-  --warning-foreground: #FFFFFF;
-  --info: #0369A1;
+  --success: #0f3d2e;
+  --success-foreground: #ffffff;
+  --warning: #b45309;
+  --warning-foreground: #ffffff;
+  --info: #0369a1;
 
-  --secondary: #F1F5F9;
-  --secondary-foreground: #0F172A;
-  --muted: #F1F5F9;
+  --secondary: #f1f5f9;
+  --secondary-foreground: #0f172a;
+  --muted: #f1f5f9;
   --muted-foreground: #475569;
-  --accent: #E8F2ED;
-  --accent-foreground: #0F3D2E;
-  --destructive: #DC2626;
-  --destructive-foreground: #FFFFFF;
-  --border: #E2E8F0;
-  --input: #E2E8F0;
-  --ring: #0F3D2E;
+  --accent: #e8f2ed;
+  --accent-foreground: #0f3d2e;
+  --destructive: #dc2626;
+  --destructive-foreground: #ffffff;
+  --border: #e2e8f0;
+  --input: #e2e8f0;
+  --ring: #0f3d2e;
 }
 
 .dark {
-  --surface: #090E11;
-  --background: #090E11;
-  --foreground: #F8FAFC;
-  --card: #111A1F;
-  --card-foreground: #F8FAFC;
-  --popover: #111A1F;
-  --popover-foreground: #F8FAFC;
-  --primary: #10B981;
-  --primary-foreground: #041F16;
+  --surface: #090e11;
+  --background: #090e11;
+  --foreground: #f8fafc;
+  --card: #111a1f;
+  --card-foreground: #f8fafc;
+  --popover: #111a1f;
+  --popover-foreground: #f8fafc;
+  --primary: #10b981;
+  --primary-foreground: #041f16;
   --brand-dark: #059669;
-  --success: #10B981;
-  --warning: #F59E0B;
-  --destructive: #EF4444;
-  --secondary: #1A262E;
-  --secondary-foreground: #F8FAFC;
-  --muted: #1A262E;
-  --muted-foreground: #94A3B8;
-  --accent: #112A20;
-  --accent-foreground: #6EE7B7;
-  --border: #23353F;
-  --input: #23353F;
-  --ring: #10B981;
+  --success: #10b981;
+  --warning: #f59e0b;
+  --destructive: #ef4444;
+  --secondary: #1a262e;
+  --secondary-foreground: #f8fafc;
+  --muted: #1a262e;
+  --muted-foreground: #94a3b8;
+  --accent: #112a20;
+  --accent-foreground: #6ee7b7;
+  --border: #23353f;
+  --input: #23353f;
+  --ring: #10b981;
 }
 
 @layer base {
@@ -132,7 +133,11 @@
     letter-spacing: -0.01em;
   }
 
-  h1, h2, h3, h4, .font-display {
+  h1,
+  h2,
+  h3,
+  h4,
+  .font-display {
     font-family: var(--font-display);
     letter-spacing: -0.02em;
   }
@@ -156,7 +161,9 @@
   background: var(--color-card);
   border-radius: var(--radius-xl);
   border: 1px solid var(--color-border);
-  box-shadow: 0 1px 3px rgba(0,0,0,0.03), 0 4px 12px -2px rgba(0,0,0,0.04);
+  box-shadow:
+    0 1px 3px rgba(0, 0, 0, 0.03),
+    0 4px 12px -2px rgba(0, 0, 0, 0.04);
   transition: all 0.2s cubic-bezier(0.2, 0, 0, 1);
   &:hover {
     box-shadow: 0 4px 20px -4px rgba(14, 98, 69, 0.12);

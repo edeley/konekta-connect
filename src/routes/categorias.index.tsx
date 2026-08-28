@@ -134,8 +134,8 @@ function CategoriasPage() {
             </div>
             <h2 className="text-sm font-bold text-foreground">Nenhuma especialidade encontrada</h2>
             <p className="text-xs text-muted-foreground max-w-sm mx-auto">
-              Não encontrou a especialidade? Publique um pedido aberto com a descrição do trabalho e a
-              nossa rede notificará técnicos qualificados.
+              Não encontrou a especialidade? Publique um pedido aberto com a descrição do trabalho e
+              a nossa rede notificará técnicos qualificados.
             </p>
             <Link
               to="/novo-pedido"
@@ -177,7 +177,9 @@ function CategoriasPage() {
                       <span className="mt-2 inline-flex items-center gap-1 text-[11px] font-bold text-primary">
                         <span>
                           {c.count}{" "}
-                          {c.count === 1 ? "profissional credenciado" : "profissionais credenciados"}
+                          {c.count === 1
+                            ? "profissional credenciado"
+                            : "profissionais credenciados"}
                         </span>
                       </span>
                     </span>

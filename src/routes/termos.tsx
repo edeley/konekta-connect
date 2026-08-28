@@ -76,7 +76,9 @@ function TermosPage() {
         </div>
 
         <div className="space-y-1">
-          <h1 className="text-xl sm:text-2xl font-black tracking-tight text-foreground">Termos de uso</h1>
+          <h1 className="text-xl sm:text-2xl font-black tracking-tight text-foreground">
+            Termos de uso
+          </h1>
           <p className="text-xs text-muted-foreground">Última atualização: 2026</p>
         </div>
 

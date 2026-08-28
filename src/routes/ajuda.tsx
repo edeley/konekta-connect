@@ -92,7 +92,8 @@ function AjudaPage() {
             Como podemos ajudar?
           </h1>
           <p className="text-xs sm:text-sm text-muted-foreground max-w-2xl leading-relaxed">
-            Encontre respostas rápidas sobre pedidos, garantias e pagamentos ou fale com o apoio técnico.
+            Encontre respostas rápidas sobre pedidos, garantias e pagamentos ou fale com o apoio
+            técnico.
           </p>
         </div>
 
@@ -108,7 +109,9 @@ function AjudaPage() {
                     aria-expanded={isOpen}
                     className="flex w-full items-center justify-between gap-4 px-4 py-3.5 text-left"
                   >
-                    <span className="min-w-0 font-bold text-xs sm:text-sm text-foreground">{f.q}</span>
+                    <span className="min-w-0 font-bold text-xs sm:text-sm text-foreground">
+                      {f.q}
+                    </span>
                     <ChevronDown
                       size={16}
                       aria-hidden="true"
@@ -116,7 +119,11 @@ function AjudaPage() {
                     />
                   </button>
                 </h2>
-                {isOpen && <p className="px-4 pb-4 text-xs sm:text-sm text-muted-foreground leading-relaxed">{f.a}</p>}
+                {isOpen && (
+                  <p className="px-4 pb-4 text-xs sm:text-sm text-muted-foreground leading-relaxed">
+                    {f.a}
+                  </p>
+                )}
               </li>
             );
           })}
@@ -139,7 +146,9 @@ function AjudaPage() {
               <p className="text-xs font-black text-foreground">+239 9944747</p>
             </div>
             <div className="p-3 rounded-xl bg-surface border border-border text-xs space-y-1">
-              <p className="text-[10px] font-bold text-muted-foreground uppercase">E-mail Oficial</p>
+              <p className="text-[10px] font-bold text-muted-foreground uppercase">
+                E-mail Oficial
+              </p>
               <p className="text-xs font-black text-foreground">edeleydamiao@gmail.com</p>
             </div>
           </div>

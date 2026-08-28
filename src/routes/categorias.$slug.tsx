@@ -72,7 +72,9 @@ function CategoriaNaoEncontrada() {
     <AppShell wide={true}>
       <div className="px-4 py-8 sm:px-6 text-center space-y-3">
         <h1 className="text-2xl font-black text-foreground">Categoria não encontrada</h1>
-        <p className="text-xs text-muted-foreground">Esta categoria não existe ou foi descontinuada.</p>
+        <p className="text-xs text-muted-foreground">
+          Esta categoria não existe ou foi descontinuada.
+        </p>
         <Link
           to="/categorias"
           className="press mt-4 inline-flex rounded-xl bg-primary px-4 py-2.5 text-xs font-bold text-primary-foreground hover:bg-brand-dark"
@@ -247,7 +249,9 @@ function CategoriaPage() {
                       <span className="text-[10px] uppercase font-bold text-muted-foreground block">
                         A partir de
                       </span>
-                      <span className="text-sm font-black text-primary">{formatDb(p.priceFrom)}</span>
+                      <span className="text-sm font-black text-primary">
+                        {formatDb(p.priceFrom)}
+                      </span>
                     </div>
                     <span className="px-3 py-1.5 rounded-lg bg-primary text-white text-xs font-bold group-hover:bg-brand-dark transition-colors">
                       Ver Perfil
