@@ -708,3 +708,13 @@ export function getProviderServicesWithPricing(provider: Provider): ServiceItemD
     };
   });
 }
+
+export const STP_DISTRICTS = [
+  "Água Grande",
+  "Mé-Zóchi",
+  "Lobata",
+  "Cantagalo",
+  "Caué",
+  "Lemba",
+  "Príncipe (RAP)",
+] as const;

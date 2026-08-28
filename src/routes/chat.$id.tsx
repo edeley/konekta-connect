@@ -16,9 +16,20 @@ import {
   Calendar,
   AlertTriangle,
   Sparkles,
+  Banknote,
+  Edit3,
+  Camera,
+  Image as ImageIcon,
+  Upload,
 } from "lucide-react";
 import { getProvider } from "@/lib/konekta-data";
-import { store, useStore, type Quote, type TechnicalVisit } from "@/lib/store";
+import {
+  store,
+  useStore,
+  type Quote,
+  type TechnicalVisit,
+  type InPersonCashDeclaration,
+} from "@/lib/store";
 import { realtimeBus } from "@/lib/realtime";
 import { AuthGate } from "@/components/AuthGate";
 import { QuoteCard } from "@/components/konekta/QuoteCard";
@@ -62,6 +73,8 @@ function ChatDetail() {
   const config = useStore((s) => s.config);
   const orders = useStore((s) => s.orders);
   const role = useStore((s) => s.user?.role ?? "cliente");
+  const isProviderBlockedForDebt = useStore((s) => s.isProviderBlockedForDebt);
+  const providerDebt = useStore((s) => s.providerDebt);
   const router = useRouter();
   const [text, setText] = useState("");
   const [composerOpen, setComposerOpen] = useState(false);
@@ -85,11 +98,31 @@ function ChatDetail() {
   const [visitReason, setVisitReason] = useState("");
   const [submittingVisit, setSubmittingVisit] = useState(false);
 
+  // Modal de Declaração de Pagamento Presencial (Em Mão)
+  const [cashModalOpen, setCashModalOpen] = useState(false);
+  const [cashDeclaredAmount, setCashDeclaredAmount] = useState("");
+  const [cashServiceTitle, setCashServiceTitle] = useState("");
+
+  // Modal / Input de Correção do Cliente para Pagamento Presencial
+  const [adjustingDeclaration, setAdjustingDeclaration] = useState<InPersonCashDeclaration | null>(
+    null,
+  );
+  const [adjustedAmountInput, setAdjustedAmountInput] = useState("");
+  const [clientNotesInput, setClientNotesInput] = useState("");
+
   // Diagnostic Report modal for Pro after on-site inspection
   const [diagnosticModalOpen, setDiagnosticModalOpen] = useState(false);
   const [activeVisitId, setActiveVisitId] = useState<string | null>(null);
   const [diagnosticText, setDiagnosticText] = useState("");
   const [proposedQuoteAmount, setProposedQuoteAmount] = useState("");
+
+  // Photo / Remote Diagnostic modal state
+  const [photoModalOpen, setPhotoModalOpen] = useState(false);
+  const [selectedPhotoUrl, setSelectedPhotoUrl] = useState(
+    "https://images.unsplash.com/photo-1581092160607-ee22621dd758?w=800&auto=format&fit=crop&q=80",
+  );
+  const [photoCaption, setPhotoCaption] = useState("");
+  const [isUploadingPhoto, setIsUploadingPhoto] = useState(false);
 
   const activeTechnicalVisit = technicalVisits.find(
     (v) => v.providerId === id && v.status !== "cancelado",
@@ -106,7 +139,9 @@ function ChatDetail() {
   const unlocked = useMemo(
     () =>
       messages.some(
-        (m) => m.quote && (m.quote.status === "pago" || m.quote.status === "concluido"),
+        (m) =>
+          (m.quote && (m.quote.status === "pago" || m.quote.status === "concluido")) ||
+          m.inPersonDeclaration?.status === "confirmado_pelo_cliente",
       ),
     [messages],
   );
@@ -136,6 +171,13 @@ function ChatDetail() {
   // O Profissional envia a proposta de visita técnica no terreno para melhor orçamentação
   function handleProposeTechnicalVisit(e: React.FormEvent) {
     e.preventDefault();
+    if (!isClient && isProviderBlockedForDebt) {
+      toast.error("Conta Bloqueada por Dívida", {
+        description:
+          "Regularize a sua dívida de comissões na sua Carteira PRO para propor visitas técnicas.",
+      });
+      return;
+    }
     const fee = config.technicalVisitFee || 150;
 
     setSubmittingVisit(true);
@@ -159,6 +201,99 @@ function ChatDetail() {
         toast.error(res.message);
       }
     }, 400);
+  }
+
+  // O Profissional declara quanto cobrou ao cliente em dinheiro presencialmente
+  function handleDeclareCashPayment(e: React.FormEvent) {
+    e.preventDefault();
+    const amountVal = Number(cashDeclaredAmount);
+    if (!amountVal || amountVal <= 0) {
+      toast.error("Insira o valor recebido em mão.");
+      return;
+    }
+
+    const res = store.declareInPersonCashPayment({
+      providerId: id,
+      providerName: provider?.name || "Prestador KONEKTA",
+      clientId: "usr-client",
+      clientName: "Cliente KONEKTA",
+      serviceTitle: cashServiceTitle.trim() || "Serviço Presencial no Terreno",
+      visitId: activeTechnicalVisit?.id,
+      declaredAmount: amountVal,
+    });
+
+    if (res.ok) {
+      toast.success(res.message);
+      setCashModalOpen(false);
+      setCashDeclaredAmount("");
+      setCashServiceTitle("");
+    } else {
+      toast.error(res.message);
+    }
+  }
+
+  // O Cliente confirma o valor declarado pelo prestador
+  function handleClientConfirmCash(declarationId: string, agreed: boolean) {
+    if (agreed) {
+      const res = store.clientConfirmInPersonPayment(declarationId, { agreed: true });
+      if (res.ok) {
+        toast.success(res.message);
+      } else {
+        toast.error(res.message);
+      }
+    } else {
+      const decl = messages.find(
+        (m) => m.inPersonDeclaration?.id === declarationId,
+      )?.inPersonDeclaration;
+      if (decl) {
+        setAdjustingDeclaration(decl);
+        setAdjustedAmountInput(String(decl.declaredAmount));
+      }
+    }
+  }
+
+  // O Cliente submete o ajuste do valor real pago
+  function handleSubmitAdjustedCash(e: React.FormEvent) {
+    e.preventDefault();
+    if (!adjustingDeclaration) return;
+    const actual = Number(adjustedAmountInput);
+    if (!actual || actual <= 0) {
+      toast.error("Insira o montante efetivamente pago.");
+      return;
+    }
+
+    const res = store.clientConfirmInPersonPayment(adjustingDeclaration.id, {
+      agreed: false,
+      actualAmountPaid: actual,
+      clientNotes: clientNotesInput.trim(),
+    });
+
+    if (res.ok) {
+      toast.success(res.message);
+      setAdjustingDeclaration(null);
+      setAdjustedAmountInput("");
+      setClientNotesInput("");
+    } else {
+      toast.error(res.message);
+    }
+  }
+
+  function handleSendPhotoDiagnostic(e: React.FormEvent) {
+    e.preventDefault();
+    if (!selectedPhotoUrl) {
+      toast.error("Selecione ou anexe uma foto para diagnóstico.");
+      return;
+    }
+    setIsUploadingPhoto(true);
+    setTimeout(() => {
+      store.sendPhotoMessage(id, selectedPhotoUrl, photoCaption);
+      setIsUploadingPhoto(false);
+      setPhotoModalOpen(false);
+      setPhotoCaption("");
+      toast.success("Foto para diagnóstico enviada com sucesso!", {
+        description: "O prestador foi notificado e irá analisar a avaria.",
+      });
+    }, 600);
   }
 
   // O Cliente aceita a visita técnica e a taxa de deslocação é retida em custódia
@@ -229,6 +364,27 @@ function ChatDetail() {
             </div>
           </header>
 
+          {/* Banner de Aviso caso o Prestador esteja Bloqueado por Dívida */}
+          {!isClient && isProviderBlockedForDebt && (
+            <div className="mx-4 mt-3 p-3.5 rounded-2xl bg-destructive/15 border border-destructive/30 text-destructive text-xs space-y-1.5 animate-pulse">
+              <div className="flex items-center gap-2 font-bold">
+                <AlertTriangle size={16} />
+                <span>Conta KONEKTA PRO Suspensa por Dívida</span>
+              </div>
+              <p className="text-[11px] leading-relaxed text-foreground/90">
+                A sua dívida acumulada de comissões atingiu <strong>{providerDebt} STN</strong>{" "}
+                (limite máximo de 500 STN). Não pode enviar novos orçamentos ou propor visitas
+                enquanto não regularizar a sua conta na Carteira PRO.
+              </p>
+              <Link
+                to="/pro/ganhos"
+                className="inline-flex items-center gap-1.5 font-bold text-xs underline pt-1 text-destructive hover:opacity-80"
+              >
+                Ir para Carteira & Liquidar Dívida →
+              </Link>
+            </div>
+          )}
+
           {/* Banner de Proteção e Anti-Bypass Rigoroso */}
           <div className="px-4 mt-3 space-y-2">
             {unlocked ? (
@@ -242,8 +398,8 @@ function ChatDetail() {
                   </span>
                 </div>
                 <p className="text-foreground/80 text-[11px]">
-                  O valor pago encontra-se em custódia segura. A libertação do montante ao prestador
-                  é feita exclusivamente após a conclusão satisfatória do serviço.
+                  O valor encontra-se protegido pela garantia KONEKTA. A libertação dos fundos e
+                  avaliações ocorrem de forma mútua e segura dentro da app.
                 </p>
                 <div className="pt-1.5 border-t border-success/20 flex flex-wrap gap-2">
                   <button
@@ -343,16 +499,29 @@ function ChatDetail() {
                       </button>
                     )}
                     {activeTechnicalVisit.status === "a_caminho" && (
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setActiveVisitId(activeTechnicalVisit.id);
-                          setDiagnosticModalOpen(true);
-                        }}
-                        className="py-2.5 rounded-xl bg-emerald-600 text-white font-bold text-[11px] col-span-2 flex items-center justify-center gap-1.5 shadow-2xs transition active:scale-95 cursor-pointer"
-                      >
-                        <Check size={13} /> Concluir Diagnóstico & Emitir Orçamento
-                      </button>
+                      <div className="col-span-2 space-y-2">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setActiveVisitId(activeTechnicalVisit.id);
+                            setDiagnosticModalOpen(true);
+                          }}
+                          className="w-full py-2.5 rounded-xl bg-emerald-600 text-white font-bold text-[11px] flex items-center justify-center gap-1.5 shadow-2xs transition active:scale-95 cursor-pointer"
+                        >
+                          <Check size={13} /> Concluir Diagnóstico & Emitir Orçamento
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setCashServiceTitle(activeTechnicalVisit.serviceTitle);
+                            setCashModalOpen(true);
+                          }}
+                          className="w-full py-2 rounded-xl bg-card border border-border text-foreground font-bold text-[11px] flex items-center justify-center gap-1.5 shadow-2xs transition cursor-pointer"
+                        >
+                          <Banknote size={13} className="text-amber-600" /> Declarar Pagamento
+                          Recebido em Mão
+                        </button>
+                      </div>
                     )}
                   </div>
                 )}
@@ -395,6 +564,101 @@ function ChatDetail() {
                 );
               }
 
+              // Card Interativo de Confirmação Mútua de Pagamento Presencial (Em Mão)
+              if (m.kind === "in_person_confirmation" && m.inPersonDeclaration) {
+                const dec = m.inPersonDeclaration;
+                const isPending = dec.status === "aguardando_confirmacao";
+                const isConfirmed = dec.status === "confirmado_pelo_cliente";
+                const isAdjusted = dec.status === "ajustado_pelo_cliente";
+
+                return (
+                  <div key={m.id} className="py-2 w-full flex justify-center">
+                    <div className="w-full max-w-[94%] p-4 rounded-2xl bg-card border-2 border-amber-500/40 shadow-md space-y-3">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-1.5 text-xs font-black text-amber-900 dark:text-amber-300">
+                          <Banknote size={16} className="text-amber-600" />
+                          <span>Pagamento Presencial Declarado</span>
+                        </div>
+                        <span
+                          className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                            isConfirmed
+                              ? "bg-emerald-500/20 text-emerald-800 dark:text-emerald-300"
+                              : isAdjusted
+                                ? "bg-blue-500/20 text-blue-800 dark:text-blue-300"
+                                : "bg-amber-500/20 text-amber-900 dark:text-amber-200 animate-pulse"
+                          }`}
+                        >
+                          {isConfirmed
+                            ? "✅ Confirmado pelo Cliente"
+                            : isAdjusted
+                              ? "✏️ Ajustado pelo Cliente"
+                              : "⏳ Aguardando Confirmação"}
+                        </span>
+                      </div>
+
+                      <div className="space-y-1">
+                        <p className="text-xs font-semibold text-foreground">{dec.serviceTitle}</p>
+                        <div className="flex items-center justify-between pt-1">
+                          <span className="text-xs text-muted-foreground">Valor em Dinheiro:</span>
+                          <span className="text-base font-black text-foreground font-mono">
+                            {formatDb(dec.actualAmountPaid ?? dec.declaredAmount)}
+                          </span>
+                        </div>
+                        <div className="flex items-center justify-between text-[11px] text-muted-foreground">
+                          <span>Comissão KONEKTA ({dec.commissionPct}%):</span>
+                          <span className="font-bold text-amber-700 dark:text-amber-400">
+                            {formatDb(dec.commissionAmount)}
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* Ações do Cliente */}
+                      {isClient && isPending && (
+                        <div className="pt-2 border-t border-border space-y-2">
+                          <p className="text-[11px] text-foreground/80 leading-tight">
+                            O prestador declarou que você lhe pagou{" "}
+                            <strong>{formatDb(dec.declaredAmount)}</strong> em dinheiro. Este valor
+                            foi realmente o cobrado?
+                          </p>
+                          <div className="grid grid-cols-2 gap-2">
+                            <button
+                              type="button"
+                              onClick={() => handleClientConfirmCash(dec.id, true)}
+                              className="py-2.5 px-3 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs flex items-center justify-center gap-1.5 shadow-2xs cursor-pointer transition active:scale-95"
+                            >
+                              <Check size={14} /> Sim, Confirmo
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => handleClientConfirmCash(dec.id, false)}
+                              className="py-2.5 px-3 rounded-xl bg-muted border border-border text-foreground font-bold text-xs flex items-center justify-center gap-1.5 cursor-pointer transition active:scale-95 hover:bg-muted/80"
+                            >
+                              <Edit3 size={14} /> Não, Corrigir Valor
+                            </button>
+                          </div>
+                        </div>
+                      )}
+
+                      {!isClient && isPending && (
+                        <p className="text-[10px] text-muted-foreground italic text-center pt-1 border-t border-border">
+                          Aguardando validação do cliente. A comissão de{" "}
+                          {formatDb(dec.commissionAmount)} será debitada da sua conta KONEKTA PRO.
+                        </p>
+                      )}
+
+                      {(isConfirmed || isAdjusted) && (
+                        <div className="pt-1.5 border-t border-border flex items-center justify-between text-[10px] text-muted-foreground">
+                          <span>Garantia KONEKTA ativada para este serviço</span>
+                          <span className="font-bold text-emerald-600 dark:text-emerald-400">
+                            Auditoria 100% Ok
+                          </span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                );
+              }
+
               if (m.kind === "system") {
                 return (
                   <div key={m.id} className="py-2 w-full flex justify-center">
@@ -413,6 +677,48 @@ function ChatDetail() {
                           minute: "2-digit",
                         })}
                       </p>
+                    </div>
+                  </div>
+                );
+              }
+
+              if (m.kind === "photo" || (m.photos && m.photos.length > 0)) {
+                const isMe = m.from === "me";
+                return (
+                  <div key={m.id} className={`flex flex-col ${isMe ? "items-end" : "items-start"}`}>
+                    <div
+                      className={`max-w-[85%] sm:max-w-xs rounded-2xl overflow-hidden text-xs shadow-2xs ${
+                        isMe
+                          ? "bg-primary text-primary-foreground rounded-br-xs"
+                          : "bg-card border border-border text-foreground rounded-bl-xs"
+                      }`}
+                    >
+                      <div
+                        className="relative group cursor-pointer"
+                        onClick={() => setViewingPhoto(m.photos?.[0] || null)}
+                      >
+                        <img
+                          src={m.photos?.[0]}
+                          alt="Foto diagnóstico"
+                          className="w-full h-44 sm:h-48 object-cover hover:opacity-95 transition-opacity"
+                        />
+                        <div className="absolute top-2 left-2 px-2 py-0.5 rounded-full bg-black/65 text-white text-[10px] font-bold backdrop-blur-md flex items-center gap-1">
+                          <Camera size={11} className="text-amber-300" /> Diagnóstico STP
+                        </div>
+                      </div>
+                      <div className="p-3">
+                        <p className="leading-relaxed font-medium">{m.text}</p>
+                        <p
+                          className={`text-[9px] mt-1 text-right opacity-70 ${
+                            isMe ? "text-primary-foreground" : "text-muted-foreground"
+                          }`}
+                        >
+                          {new Date(m.at).toLocaleTimeString("pt-PT", {
+                            hour: "2-digit",
+                            minute: "2-digit",
+                          })}
+                        </p>
+                      </div>
                     </div>
                   </div>
                 );
@@ -490,22 +796,32 @@ function ChatDetail() {
                     </Link>
                   </div>
                 ) : (
-                  <div className="grid grid-cols-2 gap-2">
+                  <div className="grid grid-cols-3 gap-1.5">
                     <button
                       type="button"
                       onClick={() => setComposerOpen(true)}
-                      className="press flex min-h-10 items-center justify-center gap-1.5 rounded-xl bg-accent text-xs font-semibold text-accent-foreground hover:bg-accent/80 transition cursor-pointer"
+                      disabled={isProviderBlockedForDebt}
+                      className="press flex min-h-10 items-center justify-center gap-1 rounded-xl bg-accent text-[11px] font-semibold text-accent-foreground hover:bg-accent/80 transition cursor-pointer disabled:opacity-40"
                       title="Enviar orçamento diretamente caso fotos e dados bastem"
                     >
-                      <Tag size={13} className="text-primary" /> Orçamento Direto
+                      <Tag size={12} className="text-primary" /> Orçamento
                     </button>
                     <button
                       type="button"
                       onClick={() => setVisitModalOpen(true)}
-                      className="press flex min-h-10 items-center justify-center gap-1.5 rounded-xl bg-amber-500/15 border border-amber-500/30 text-xs font-bold text-amber-900 dark:text-amber-200 hover:bg-amber-500/25 transition cursor-pointer"
+                      disabled={isProviderBlockedForDebt}
+                      className="press flex min-h-10 items-center justify-center gap-1 rounded-xl bg-amber-500/15 border border-amber-500/30 text-[11px] font-bold text-amber-900 dark:text-amber-200 hover:bg-amber-500/25 transition cursor-pointer disabled:opacity-40"
                       title="Propor visita técnica no terreno para avaliar antes de orçar"
                     >
-                      <Car size={13} /> Propor Visita
+                      <Car size={12} /> Visita
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setCashModalOpen(true)}
+                      className="press flex min-h-10 items-center justify-center gap-1 rounded-xl bg-emerald-500/15 border border-emerald-500/30 text-[11px] font-bold text-emerald-900 dark:text-emerald-200 hover:bg-emerald-500/25 transition cursor-pointer"
+                      title="Declarar valor cobrado em mão para liquidação de comissão"
+                    >
+                      <Banknote size={12} /> Em Mão
                     </button>
                   </div>
                 )}
@@ -530,7 +846,15 @@ function ChatDetail() {
                     );
                   })()}
 
-                <form onSubmit={handleSend} className="flex gap-2">
+                <form onSubmit={handleSend} className="flex gap-2 items-center">
+                  <button
+                    type="button"
+                    onClick={() => setPhotoModalOpen(true)}
+                    className="size-11 rounded-xl bg-muted hover:bg-muted/80 text-foreground grid place-items-center cursor-pointer transition shrink-0 border border-border"
+                    title="Enviar foto para diagnóstico à distância"
+                  >
+                    <Camera size={18} />
+                  </button>
                   <input
                     value={text}
                     onChange={(e) => setText(e.target.value)}
@@ -545,7 +869,7 @@ function ChatDetail() {
                   <button
                     type="submit"
                     disabled={!text.trim()}
-                    className="size-11 rounded-xl bg-primary text-primary-foreground grid place-items-center disabled:opacity-40 cursor-pointer"
+                    className="size-11 rounded-xl bg-primary text-primary-foreground grid place-items-center disabled:opacity-40 cursor-pointer shrink-0"
                     aria-label="Enviar"
                   >
                     <Send size={16} />
@@ -556,6 +880,119 @@ function ChatDetail() {
           </div>
         </div>
       </div>
+
+      {/* Modal: Profissional Declara Pagamento Presencial (Em Mão) */}
+      <BottomSheet
+        open={cashModalOpen}
+        onClose={() => setCashModalOpen(false)}
+        title="Declarar Pagamento Presencial (Em Mão)"
+        description="Registe o montante cobrado diretamente ao cliente. A comissão KONEKTA será processada após confirmação do cliente."
+      >
+        <form onSubmit={handleDeclareCashPayment} className="space-y-3 pt-2">
+          <div className="p-3.5 rounded-2xl bg-amber-500/10 border border-amber-500/30 text-xs text-amber-900 dark:text-amber-200 space-y-1">
+            <div className="flex items-center justify-between font-bold">
+              <span>Taxa de Comissão:</span>
+              <span className="text-sm font-black text-primary">{config.commissionPct || 10}%</span>
+            </div>
+            <p className="text-[11px] text-muted-foreground">
+              O cliente receberá uma notificação no chat para confirmar o valor. Caso a sua dívida
+              de comissões atinja 500 STN, a conta é suspensa até à respetiva liquidação.
+            </p>
+          </div>
+
+          <div>
+            <label className="text-xs font-bold text-foreground block mb-1">
+              Título / Descrição do Serviço Realizado *
+            </label>
+            <input
+              type="text"
+              value={cashServiceTitle}
+              onChange={(e) => setCashServiceTitle(e.target.value)}
+              placeholder="Ex: Reparação de canalização / Deslocação técnica"
+              className="w-full h-11 px-3.5 rounded-xl bg-muted text-xs font-medium text-foreground outline-none focus:ring-2 focus:ring-primary/20"
+              required
+            />
+          </div>
+
+          <div>
+            <label className="text-xs font-bold text-foreground block mb-1">
+              Valor Cobrado ao Cliente (STN) *
+            </label>
+            <input
+              type="number"
+              min="1"
+              value={cashDeclaredAmount}
+              onChange={(e) => setCashDeclaredAmount(e.target.value)}
+              placeholder="Ex: 450"
+              className="w-full h-11 px-3.5 rounded-xl bg-muted text-xs font-bold text-foreground outline-none focus:ring-2 focus:ring-primary/20 font-mono"
+              required
+            />
+            {Number(cashDeclaredAmount) > 0 && (
+              <p className="text-[11px] text-muted-foreground mt-1">
+                Comissão da app:{" "}
+                <strong className="text-foreground">
+                  {Math.round((Number(cashDeclaredAmount) * (config.commissionPct || 10)) / 100)}{" "}
+                  STN
+                </strong>
+              </p>
+            )}
+          </div>
+
+          <button
+            type="submit"
+            className="w-full py-3.5 rounded-2xl bg-primary text-primary-foreground font-bold text-xs flex items-center justify-center gap-2 transition cursor-pointer shadow-2xs"
+          >
+            <Banknote size={16} />
+            Enviar Declaração para Confirmação do Cliente
+          </button>
+        </form>
+      </BottomSheet>
+
+      {/* Modal: Cliente Corrige / Ajusta Valor Pago Presencialmente */}
+      <BottomSheet
+        open={!!adjustingDeclaration}
+        onClose={() => setAdjustingDeclaration(null)}
+        title="Retificar Valor Pago Presencialmente"
+        description="Se o valor cobrado foi diferente do declarado pelo prestador, insira o montante exato pago."
+      >
+        <form onSubmit={handleSubmitAdjustedCash} className="space-y-3 pt-2">
+          <div>
+            <label className="text-xs font-bold text-foreground block mb-1">
+              Valor Real Pago ao Profissional (STN) *
+            </label>
+            <input
+              type="number"
+              min="1"
+              value={adjustedAmountInput}
+              onChange={(e) => setAdjustedAmountInput(e.target.value)}
+              placeholder="Ex: 350"
+              className="w-full h-11 px-3.5 rounded-xl bg-muted text-xs font-bold text-foreground outline-none focus:ring-2 focus:ring-primary/20 font-mono"
+              required
+            />
+          </div>
+
+          <div>
+            <label className="text-xs font-bold text-foreground block mb-1">
+              Observação / Justificação (opcional)
+            </label>
+            <textarea
+              value={clientNotesInput}
+              onChange={(e) => setClientNotesInput(e.target.value)}
+              rows={2}
+              placeholder="Ex: O técnico concedeu um desconto de 50 STN no material..."
+              className="w-full p-3 rounded-xl bg-muted text-xs font-medium text-foreground outline-none focus:ring-2 focus:ring-primary/20"
+            />
+          </div>
+
+          <button
+            type="submit"
+            className="w-full py-3.5 rounded-2xl bg-primary text-primary-foreground font-bold text-xs flex items-center justify-center gap-2 transition cursor-pointer shadow-2xs"
+          >
+            <Check size={16} />
+            Validar Valor Corrigido
+          </button>
+        </form>
+      </BottomSheet>
 
       {/* Modal: Profissional Propõe Visita Técnica no Terreno para Orçar */}
       <BottomSheet
@@ -740,6 +1177,125 @@ function ChatDetail() {
           }}
         />
       )}
+
+      {/* Modal: Diagnóstico à Distância / Envio de Foto */}
+      <BottomSheet
+        open={photoModalOpen}
+        onClose={() => setPhotoModalOpen(false)}
+        title="Diagnóstico à Distância (Foto da Avaria)"
+        description="Envie uma foto clara do problema para o técnico avaliar se precisa de peças ou visita antes de se deslocar no terreno."
+      >
+        <form onSubmit={handleSendPhotoDiagnostic} className="space-y-4">
+          <div>
+            <label className="text-xs font-bold text-foreground block mb-1.5">
+              Exemplos comuns de avaria ou foto personalizada
+            </label>
+            <div className="grid grid-cols-2 gap-2">
+              {[
+                {
+                  label: "Tubo / Torneira com fuga",
+                  url: "https://images.unsplash.com/photo-1585704032915-c3400ca199e7?w=800&auto=format&fit=crop&q=80",
+                },
+                {
+                  label: "Quadro elétrico / Disjuntor",
+                  url: "https://images.unsplash.com/photo-1621905251189-08b45d6a269e?w=800&auto=format&fit=crop&q=80",
+                },
+                {
+                  label: "Ar Condicionado / Climatização",
+                  url: "https://images.unsplash.com/photo-1631545806609-43c391796d19?w=800&auto=format&fit=crop&q=80",
+                },
+                {
+                  label: "Humidade / Parede / Teto",
+                  url: "https://images.unsplash.com/photo-1513694203232-719a280e022f?w=800&auto=format&fit=crop&q=80",
+                },
+              ].map((sample) => (
+                <button
+                  key={sample.url}
+                  type="button"
+                  onClick={() => setSelectedPhotoUrl(sample.url)}
+                  className={`p-2 rounded-xl border text-left flex flex-col gap-1.5 transition ${
+                    selectedPhotoUrl === sample.url
+                      ? "border-primary bg-primary/10 ring-2 ring-primary/30"
+                      : "border-border bg-card hover:bg-muted"
+                  }`}
+                >
+                  <img
+                    src={sample.url}
+                    alt={sample.label}
+                    className="w-full h-16 rounded-lg object-cover"
+                  />
+                  <span className="text-[11px] font-bold text-foreground line-clamp-1">
+                    {sample.label}
+                  </span>
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div>
+            <label className="text-xs font-bold text-foreground block mb-1">
+              Link da Imagem ou URL da Foto
+            </label>
+            <input
+              type="url"
+              value={selectedPhotoUrl}
+              onChange={(e) => setSelectedPhotoUrl(e.target.value)}
+              placeholder="https://..."
+              className="w-full h-10 px-3 rounded-xl bg-muted text-xs font-medium text-foreground outline-none focus:ring-2 focus:ring-primary/20"
+              required
+            />
+          </div>
+
+          <div>
+            <label className="text-xs font-bold text-foreground block mb-1">
+              Descrição ou Sintoma da Avaria
+            </label>
+            <textarea
+              value={photoCaption}
+              onChange={(e) => setPhotoCaption(e.target.value)}
+              rows={2}
+              placeholder="Ex: A torneira começou a pingar e verte água na base do armário..."
+              className="w-full p-2.5 rounded-xl bg-muted text-xs font-medium text-foreground outline-none focus:ring-2 focus:ring-primary/20"
+            />
+          </div>
+
+          {/* Pré-visualização da Imagem Selecionada */}
+          {selectedPhotoUrl && (
+            <div className="relative rounded-xl overflow-hidden border border-border">
+              <img
+                src={selectedPhotoUrl}
+                alt="Pré-visualização do diagnóstico"
+                className="w-full h-36 object-cover"
+              />
+              <div className="absolute bottom-2 left-2 px-2 py-0.5 rounded-md bg-black/70 text-white text-[10px] font-semibold">
+                Pré-visualização
+              </div>
+            </div>
+          )}
+
+          <div className="p-3 rounded-xl bg-blue-500/10 border border-blue-500/20 text-blue-950 dark:text-blue-200 text-xs flex items-center gap-2">
+            <Sparkles size={16} className="text-blue-600 dark:text-blue-400 shrink-0" />
+            <span className="leading-tight">
+              O diagnóstico por foto poupa tempo e custos de deslocação desnecessários entre
+              distritos em São Tomé.
+            </span>
+          </div>
+
+          <button
+            type="submit"
+            disabled={isUploadingPhoto || !selectedPhotoUrl}
+            className="w-full py-3.5 rounded-2xl bg-primary text-primary-foreground font-bold text-xs flex items-center justify-center gap-2 cursor-pointer shadow-2xs hover:opacity-95 transition disabled:opacity-50"
+          >
+            {isUploadingPhoto ? (
+              <span>A enviar foto...</span>
+            ) : (
+              <>
+                <Send size={16} /> Enviar Diagnóstico ao Prestador
+              </>
+            )}
+          </button>
+        </form>
+      </BottomSheet>
 
       {/* Modal de Avaliação pós-serviço no Chat */}
       {reviewQuote && (

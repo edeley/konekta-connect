@@ -15,10 +15,12 @@ export interface PortfolioBeforeAfterItem {
 }
 
 export interface ProviderCoverage {
-  centerLat: number;
-  centerLng: number;
-  radiusKm: number;
+  centerLat?: number;
+  centerLng?: number;
+  radiusKm?: number;
   districts: string[];
+  localities?: string[];
+  zonesByDistrict?: Record<string, string[]>;
   baseAddress?: string;
 }
 

@@ -1,5 +1,6 @@
-import { createFileRoute } from "@tanstack/react-router";
-import { PublicLayout } from "@/components/PublicLayout";
+import { createFileRoute, Link } from "@tanstack/react-router";
+import { ArrowLeft, Shield } from "lucide-react";
+import { AppShell } from "@/components/AppShell";
 
 export const Route = createFileRoute("/termos")({
   head: () => ({
@@ -24,7 +25,7 @@ export const Route = createFileRoute("/termos")({
 const seccoes = [
   {
     t: "1. Objeto",
-    d: "A KONEKTA é uma plataforma que liga clientes a prestadores de serviços independentes em São Tomé e Príncipe. A KONEKTA não executa os serviços contratados.",
+    d: "A KONEKTA é uma plataforma que liga clientes a prestadores de serviços independentes em São Tomé e Príncipe. A KONEKTA não executa diretamente os serviços contratados.",
   },
   {
     t: "2. Conta de utilizador",
@@ -48,7 +49,7 @@ const seccoes = [
   },
   {
     t: "7. Responsabilidade",
-    d: "A KONEKTA disponibiliza mecanismos de verificação e avaliação, mas a execução do serviço é da responsabilidade do prestador.",
+    d: "A KONEKTA disponibiliza mecanismos de verificação e avaliação, mas a execução do serviço é da responsabilidade técnica do prestador.",
   },
   {
     t: "8. Alterações",
@@ -58,17 +59,36 @@ const seccoes = [
 
 function TermosPage() {
   return (
-    <PublicLayout crumbs={[{ label: "Início", to: "/" }, { label: "Termos de uso" }]}>
-      <h1 className="text-3xl font-black tracking-tight text-foreground">Termos de uso</h1>
-      <p className="mt-2 text-sm text-muted-foreground">Última atualização: julho de 2026</p>
-      <div className="mt-8 space-y-6">
-        {seccoes.map((s) => (
-          <section key={s.t}>
-            <h2 className="font-semibold text-foreground">{s.t}</h2>
-            <p className="mt-1 text-sm leading-relaxed text-muted-foreground">{s.d}</p>
-          </section>
-        ))}
+    <AppShell wide={true}>
+      <div className="px-4 pt-4 sm:px-6 space-y-5">
+        <div className="flex items-center justify-between gap-3 border-b border-border pb-3">
+          <Link
+            to="/"
+            className="inline-flex items-center gap-1.5 text-xs font-bold text-muted-foreground hover:text-foreground transition-colors"
+          >
+            <ArrowLeft size={16} />
+            <span>Voltar ao Início</span>
+          </Link>
+          <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-primary/10 text-primary text-[11px] font-bold uppercase tracking-wider">
+            <Shield size={13} />
+            <span>Marco Legal STP</span>
+          </div>
+        </div>
+
+        <div className="space-y-1">
+          <h1 className="text-xl sm:text-2xl font-black tracking-tight text-foreground">Termos de uso</h1>
+          <p className="text-xs text-muted-foreground">Última atualização: 2026</p>
+        </div>
+
+        <div className="grid gap-3 sm:grid-cols-2">
+          {seccoes.map((s) => (
+            <section key={s.t} className="rounded-xl border border-border bg-card p-4">
+              <h2 className="font-bold text-sm text-foreground">{s.t}</h2>
+              <p className="mt-1 text-xs text-muted-foreground leading-relaxed">{s.d}</p>
+            </section>
+          ))}
+        </div>
       </div>
-    </PublicLayout>
+    </AppShell>
   );
 }

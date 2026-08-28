@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
-import { ChevronDown } from "lucide-react";
-import { PublicLayout } from "@/components/PublicLayout";
+import { ChevronDown, ArrowLeft, HelpCircle } from "lucide-react";
+import { AppShell } from "@/components/AppShell";
 
 const faqs = [
   {
@@ -71,67 +71,87 @@ function AjudaPage() {
   const [open, setOpen] = useState<number | null>(0);
 
   return (
-    <PublicLayout crumbs={[{ label: "Início", to: "/" }, { label: "Ajuda" }]}>
-      <h1 className="text-3xl font-black tracking-tight text-foreground">Como podemos ajudar?</h1>
-      <p className="mt-2 max-w-2xl text-muted-foreground">
-        Encontre respostas rápidas ou fale com o assistente KONEKTA a qualquer hora.
-      </p>
+    <AppShell wide={true}>
+      <div className="px-4 pt-4 sm:px-6 space-y-5">
+        <div className="flex items-center justify-between gap-3 border-b border-border pb-3">
+          <Link
+            to="/"
+            className="inline-flex items-center gap-1.5 text-xs font-bold text-muted-foreground hover:text-foreground transition-colors"
+          >
+            <ArrowLeft size={16} />
+            <span>Voltar ao Início</span>
+          </Link>
+          <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-primary/10 text-primary text-[11px] font-bold uppercase tracking-wider">
+            <HelpCircle size={13} />
+            <span>Centro de Ajuda STP</span>
+          </div>
+        </div>
 
-      <ul className="mt-8 space-y-3">
-        {faqs.map((f, i) => {
-          const isOpen = open === i;
-          return (
-            <li key={f.q} className="overflow-hidden rounded-2xl border border-border bg-card">
-              <h2>
-                <button
-                  type="button"
-                  onClick={() => setOpen(isOpen ? null : i)}
-                  aria-expanded={isOpen}
-                  className="flex w-full items-center justify-between gap-4 px-5 py-4 text-left"
-                >
-                  <span className="min-w-0 font-medium text-foreground">{f.q}</span>
-                  <ChevronDown
-                    size={18}
-                    aria-hidden="true"
-                    className={`shrink-0 text-muted-foreground transition-transform ${isOpen ? "rotate-180" : ""}`}
-                  />
-                </button>
-              </h2>
-              {isOpen && <p className="px-5 pb-5 text-sm text-muted-foreground">{f.a}</p>}
-            </li>
-          );
-        })}
-      </ul>
-
-      <div className="mt-10 rounded-2xl border border-border bg-card p-6 space-y-4">
-        <div>
-          <h2 className="font-semibold text-foreground">Não encontrou a resposta?</h2>
-          <p className="mt-1 text-sm text-muted-foreground">
-            A nossa equipa oficial e o assistente KONEKTA estão disponíveis para apoiar todos os
-            utilizadores.
+        <div className="space-y-1">
+          <h1 className="text-xl sm:text-2xl font-black tracking-tight text-foreground">
+            Como podemos ajudar?
+          </h1>
+          <p className="text-xs sm:text-sm text-muted-foreground max-w-2xl leading-relaxed">
+            Encontre respostas rápidas sobre pedidos, garantias e pagamentos ou fale com o apoio técnico.
           </p>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
-          <div className="p-3.5 rounded-xl bg-muted/60 border border-border text-xs space-y-1">
-            <p className="text-[11px] font-bold text-muted-foreground uppercase">
-              WhatsApp Oficial KONEKTA
-            </p>
-            <p className="text-sm font-black text-foreground">+239 9944747</p>
-          </div>
-          <div className="p-3.5 rounded-xl bg-muted/60 border border-border text-xs space-y-1">
-            <p className="text-[11px] font-bold text-muted-foreground uppercase">E-mail Oficial</p>
-            <p className="text-sm font-black text-foreground">edeleydamiao@gmail.com</p>
-          </div>
-        </div>
+        <ul className="space-y-3">
+          {faqs.map((f, i) => {
+            const isOpen = open === i;
+            return (
+              <li key={f.q} className="overflow-hidden rounded-xl border border-border bg-card">
+                <h2>
+                  <button
+                    type="button"
+                    onClick={() => setOpen(isOpen ? null : i)}
+                    aria-expanded={isOpen}
+                    className="flex w-full items-center justify-between gap-4 px-4 py-3.5 text-left"
+                  >
+                    <span className="min-w-0 font-bold text-xs sm:text-sm text-foreground">{f.q}</span>
+                    <ChevronDown
+                      size={16}
+                      aria-hidden="true"
+                      className={`shrink-0 text-muted-foreground transition-transform ${isOpen ? "rotate-180" : ""}`}
+                    />
+                  </button>
+                </h2>
+                {isOpen && <p className="px-4 pb-4 text-xs sm:text-sm text-muted-foreground leading-relaxed">{f.a}</p>}
+              </li>
+            );
+          })}
+        </ul>
 
-        <Link
-          to="/assistente"
-          className="press inline-flex rounded-xl bg-primary px-4 py-3 text-sm font-semibold text-primary-foreground"
-        >
-          Falar com o assistente KONEKTA
-        </Link>
+        <div className="rounded-xl border border-border bg-card p-5 space-y-4">
+          <div>
+            <h2 className="font-bold text-sm text-foreground">Não encontrou a resposta?</h2>
+            <p className="mt-1 text-xs text-muted-foreground">
+              A nossa equipa oficial e o assistente KONEKTA estão disponíveis para apoiar todos os
+              utilizadores.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div className="p-3 rounded-xl bg-surface border border-border text-xs space-y-1">
+              <p className="text-[10px] font-bold text-muted-foreground uppercase">
+                WhatsApp Oficial KONEKTA
+              </p>
+              <p className="text-xs font-black text-foreground">+239 9944747</p>
+            </div>
+            <div className="p-3 rounded-xl bg-surface border border-border text-xs space-y-1">
+              <p className="text-[10px] font-bold text-muted-foreground uppercase">E-mail Oficial</p>
+              <p className="text-xs font-black text-foreground">edeleydamiao@gmail.com</p>
+            </div>
+          </div>
+
+          <Link
+            to="/assistente"
+            className="press inline-flex rounded-xl bg-primary px-4 py-2.5 text-xs font-bold text-primary-foreground hover:bg-brand-dark transition"
+          >
+            Falar com o assistente KONEKTA
+          </Link>
+        </div>
       </div>
-    </PublicLayout>
+    </AppShell>
   );
 }

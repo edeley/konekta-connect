@@ -7,6 +7,8 @@ import {
   Award,
   Plus,
   CornerDownRight,
+  Camera,
+  X,
 } from "lucide-react";
 import { type ProviderReview } from "@/lib/store";
 
@@ -26,6 +28,7 @@ export function ReviewsList({
   isOwner = false,
 }: ReviewsListProps) {
   const [starFilter, setStarFilter] = useState<number | "all">("all");
+  const [viewingPhoto, setViewingPhoto] = useState<string | null>(null);
 
   const providerReviews = useMemo(() => {
     return reviews.filter((r) => r.providerId === providerId);
@@ -266,6 +269,32 @@ export function ReviewsList({
                 <p className="text-xs text-muted-foreground leading-relaxed">"{r.comment}"</p>
               )}
 
+              {/* Fotos do trabalho comprovadas */}
+              {r.photos && r.photos.length > 0 && (
+                <div className="pt-1">
+                  <div className="flex items-center gap-1 text-[10px] font-semibold text-muted-foreground mb-1">
+                    <Camera size={11} className="text-forest" />
+                    <span>Fotos do trabalho concluído:</span>
+                  </div>
+                  <div className="flex gap-1.5 overflow-x-auto py-0.5">
+                    {r.photos.map((p, pIdx) => (
+                      <button
+                        key={pIdx}
+                        type="button"
+                        onClick={() => setViewingPhoto(p)}
+                        className="relative rounded-xl overflow-hidden size-14 shrink-0 border border-border hover:opacity-90 transition cursor-pointer"
+                      >
+                        <img
+                          src={p}
+                          alt={`Trabalho ${pIdx + 1}`}
+                          className="w-full h-full object-cover"
+                        />
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+
               {/* Resposta do prestador (se houver) */}
               {r.reply && (
                 <div className="mt-2 p-2.5 rounded-xl bg-muted/50 border-l-2 border-terracotta space-y-0.5">
@@ -280,6 +309,32 @@ export function ReviewsList({
               )}
             </div>
           ))}
+        </div>
+      )}
+
+      {/* Visualizador de Foto da Avaliação */}
+      {viewingPhoto && (
+        <div
+          className="fixed inset-0 z-50 bg-black/90 flex flex-col items-center justify-center p-4 backdrop-blur-xs animate-in fade-in"
+          onClick={() => setViewingPhoto(null)}
+        >
+          <button
+            type="button"
+            onClick={() => setViewingPhoto(null)}
+            className="absolute top-4 right-4 size-10 rounded-full bg-white/20 text-white flex items-center justify-center hover:bg-white/30 transition cursor-pointer"
+            aria-label="Fechar foto"
+          >
+            <X size={20} />
+          </button>
+          <img
+            src={viewingPhoto}
+            alt="Foto comprovativa do trabalho"
+            className="max-w-full max-h-[85vh] rounded-2xl object-contain shadow-2xl"
+            onClick={(e) => e.stopPropagation()}
+          />
+          <p className="text-white/80 text-xs mt-3 text-center">
+            Foto do serviço prestado em São Tomé e Príncipe · Toque para fechar
+          </p>
         </div>
       )}
     </section>

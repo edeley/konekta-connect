@@ -1,5 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { PublicLayout } from "@/components/PublicLayout";
+import { ArrowLeft, Award } from "lucide-react";
+import { AppShell } from "@/components/AppShell";
 
 export const Route = createFileRoute("/sobre")({
   head: () => ({
@@ -46,51 +47,75 @@ const valores = [
 
 function SobrePage() {
   return (
-    <PublicLayout crumbs={[{ label: "Início", to: "/" }, { label: "Sobre" }]}>
-      <h1 className="text-3xl font-black tracking-tight text-foreground">Sobre a KONEKTA</h1>
-      <p className="mt-3 max-w-2xl text-muted-foreground">
-        A KONEKTA nasceu para resolver um problema simples: encontrar um bom profissional em São
-        Tomé e Príncipe dependia de boca-a-boca e de chamadas sem resposta. Hoje ligamos clientes e
-        prestadores num só lugar, com avaliações reais e pagamento protegido pela plataforma.
-      </p>
+    <AppShell wide={true}>
+      <div className="px-4 pt-4 sm:px-6 space-y-5">
+        <div className="flex items-center justify-between gap-3 border-b border-border pb-3">
+          <Link
+            to="/"
+            className="inline-flex items-center gap-1.5 text-xs font-bold text-muted-foreground hover:text-foreground transition-colors"
+          >
+            <ArrowLeft size={16} />
+            <span>Voltar ao Início</span>
+          </Link>
+          <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-primary/10 text-primary text-[11px] font-bold uppercase tracking-wider">
+            <Award size={13} />
+            <span>Missão São Tomé e Príncipe</span>
+          </div>
+        </div>
 
-      <div className="mt-8 grid gap-4 sm:grid-cols-2">
-        <section className="rounded-2xl border border-border bg-card p-5">
-          <h2 className="font-semibold text-foreground">Missão</h2>
-          <p className="mt-2 text-sm text-muted-foreground">
-            Tornar a contratação de serviços rápida, segura e acessível em todo o arquipélago.
+        <div className="space-y-1">
+          <h1 className="text-xl sm:text-2xl font-black tracking-tight text-foreground">
+            Sobre a KONEKTA
+          </h1>
+          <p className="text-xs sm:text-sm text-muted-foreground max-w-2xl leading-relaxed">
+            A KONEKTA nasceu para resolver um problema simples: encontrar um bom profissional em São
+            Tomé e Príncipe dependia de boca-a-boca e chamadas sem resposta. Hoje ligamos clientes e
+            prestadores num só lugar, com avaliações reais e pagamento protegido pela plataforma.
           </p>
-        </section>
-        <section className="rounded-2xl border border-border bg-card p-5">
-          <h2 className="font-semibold text-foreground">Visão</h2>
-          <p className="mt-2 text-sm text-muted-foreground">
-            Ser a principal plataforma de trabalho e serviços de São Tomé e Príncipe.
-          </p>
-        </section>
-      </div>
+        </div>
 
-      <h2 className="mt-10 text-xl font-bold text-foreground">Os nossos valores</h2>
-      <ul className="mt-4 grid gap-4 sm:grid-cols-2">
-        {valores.map((v) => (
-          <li key={v.t} className="rounded-2xl border border-border bg-card p-5">
-            <h3 className="font-semibold text-foreground">{v.t}</h3>
-            <p className="mt-1 text-sm text-muted-foreground">{v.d}</p>
-          </li>
-        ))}
-      </ul>
+        <div className="grid gap-3 sm:grid-cols-2">
+          <section className="rounded-xl border border-border bg-card p-4">
+            <h2 className="font-bold text-sm text-foreground">Missão</h2>
+            <p className="mt-1 text-xs text-muted-foreground leading-relaxed">
+              Tornar a contratação de serviços rápida, segura e acessível em todo o arquipélago.
+            </p>
+          </section>
+          <section className="rounded-xl border border-border bg-card p-4">
+            <h2 className="font-bold text-sm text-foreground">Visão</h2>
+            <p className="mt-1 text-xs text-muted-foreground leading-relaxed">
+              Ser a principal infraestrutura digital de trabalho e serviços de São Tomé e Príncipe.
+            </p>
+          </section>
+        </div>
 
-      <div className="mt-10 rounded-2xl bg-primary p-6 text-primary-foreground">
-        <h2 className="text-xl font-bold">Pronto para começar?</h2>
-        <p className="mt-1 text-sm text-primary-foreground/80">
-          Publique um pedido gratuito e receba propostas de profissionais verificados.
-        </p>
-        <Link
-          to="/novo-pedido"
-          className="press mt-4 inline-flex rounded-xl bg-primary-foreground px-4 py-3 text-sm font-semibold text-primary"
-        >
-          Publicar pedido
-        </Link>
+        <div className="space-y-3">
+          <h2 className="text-base font-bold text-foreground">Os nossos valores</h2>
+          <ul className="grid gap-3 sm:grid-cols-2">
+            {valores.map((v) => (
+              <li key={v.t} className="rounded-xl border border-border bg-card p-4">
+                <h3 className="font-bold text-sm text-foreground">{v.t}</h3>
+                <p className="mt-1 text-xs text-muted-foreground leading-relaxed">{v.d}</p>
+              </li>
+            ))}
+          </ul>
+        </div>
+
+        <div className="rounded-xl bg-primary p-5 text-white flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div>
+            <h2 className="text-base font-bold">Pronto para começar?</h2>
+            <p className="mt-0.5 text-xs text-white/80">
+              Publique um pedido gratuito e receba propostas de profissionais verificados.
+            </p>
+          </div>
+          <Link
+            to="/novo-pedido"
+            className="press inline-flex items-center justify-center rounded-xl bg-white px-4 py-2.5 text-xs font-bold text-primary hover:bg-slate-100 transition whitespace-nowrap"
+          >
+            Publicar Pedido
+          </Link>
+        </div>
       </div>
-    </PublicLayout>
+    </AppShell>
   );
 }

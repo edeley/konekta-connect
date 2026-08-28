@@ -4,34 +4,22 @@
  * Realidade administrativa de São Tomé e Príncipe.
  */
 
+import { STP_ALL_LOCALITIES, STP_DISTRICT_NAMES } from "./stp-locations";
+
 export const STP_DISTRICTS = [
   "Água Grande",
   "Mé-Zóchi",
   "Lobata",
-  "Lembá",
   "Cantagalo",
+  "Lembá",
   "Caué",
-  "Região Autónoma do Príncipe",
+  "Pagué (Príncipe)",
 ] as const;
 
 export type StpDistrict = (typeof STP_DISTRICTS)[number];
 
-/** Bairros/localidades sugeridos por distrito (autocompletar leve). */
-export const LOCALITIES: Record<string, string[]> = {
-  "Água Grande": [
-    "Cidade de São Tomé",
-    "Riboque",
-    "Bairro Hospital",
-    "Quinta de Santo António",
-    "Pantufo",
-  ],
-  "Mé-Zóchi": ["Trindade", "Bombaim", "Madre de Deus", "Batepá"],
-  Lobata: ["Guadalupe", "Conde", "Agostinho Neto", "Micoló"],
-  Lembá: ["Neves", "Ponta Figo", "Santa Catarina"],
-  Cantagalo: ["Santana", "Água Izé", "Ribeira Afonso"],
-  Caué: ["São João dos Angolares", "Porto Alegre", "Ribeira Peixe"],
-  "Região Autónoma do Príncipe": ["Santo António", "Sundy", "Praia Abade"],
-};
+/** Bairros/localidades completos por distrito de São Tomé e Príncipe. */
+export const LOCALITIES: Record<string, string[]> = STP_ALL_LOCALITIES;
 
 export type PricingModel =
   | "hora"

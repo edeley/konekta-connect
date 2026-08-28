@@ -445,17 +445,18 @@ function ProHome() {
           </Link>
         </section>
 
-        {/* CONFIGURADOR DA ÁREA DE COBERTURA (RAIO EM KM & DISTRITOS) */}
+        {/* CONFIGURADOR DOS LOCAIS E DISTRITOS DE ATENDIMENTO */}
         <section className="space-y-2">
           <CoverageConfigurator
             initialCoverage={{
-              centerLat: 0.336,
-              centerLng: 6.731,
-              radiusKm: providerProfile?.radiusKm || 15,
-              districts: ["Água Grande", "Mé-Zóchi", "Cantagalo", "Lobata"],
+              districts: providerProfile?.district
+                ? [providerProfile.district, "Mé-Zóchi", "Cantagalo", "Lobata"]
+                : ["Água Grande", "Mé-Zóchi", "Cantagalo", "Lobata"],
             }}
             onSave={(cov) => {
-              store.updateProviderProfile({ radiusKm: cov.radiusKm });
+              store.updateProviderProfile({
+                district: cov.districts[0] || "Água Grande",
+              });
             }}
           />
         </section>

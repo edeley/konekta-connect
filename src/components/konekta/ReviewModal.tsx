@@ -1,5 +1,14 @@
 import { useState } from "react";
-import { Star, ThumbsUp, ThumbsDown, CheckCircle2, MessageSquare, Tag } from "lucide-react";
+import {
+  Star,
+  ThumbsUp,
+  ThumbsDown,
+  CheckCircle2,
+  MessageSquare,
+  Tag,
+  Camera,
+  X,
+} from "lucide-react";
 import { BottomSheet } from "@/components/konekta/kit";
 import { store, useStore } from "@/lib/store";
 import { validateFormSafety } from "@/lib/escrow";
@@ -57,6 +66,8 @@ export function ReviewModal({
   const [comment, setComment] = useState(initialComment);
   const [selectedTags, setSelectedTags] = useState<string[]>(["Pontualidade", "Trabalho Limpo"]);
   const [recommended, setRecommended] = useState<boolean>(true);
+  const [reviewPhotos, setReviewPhotos] = useState<string[]>([]);
+  const [photoUrlInput, setPhotoUrlInput] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const activeRating = hoveredStars ?? stars;
@@ -65,6 +76,20 @@ export function ReviewModal({
     setSelectedTags((prev) =>
       prev.includes(tag) ? prev.filter((t) => t !== tag) : [...prev, tag],
     );
+  }
+
+  function addPhoto(url: string) {
+    if (!url.trim()) return;
+    if (reviewPhotos.length >= 4) {
+      toast.error("Limite máximo de 4 fotos por avaliação.");
+      return;
+    }
+    setReviewPhotos((prev) => [...prev, url.trim()]);
+    setPhotoUrlInput("");
+  }
+
+  function removePhoto(index: number) {
+    setReviewPhotos((prev) => prev.filter((_, i) => i !== index));
   }
 
   function handleSubmit(e: React.FormEvent) {
@@ -95,6 +120,7 @@ export function ReviewModal({
         recommended,
         serviceName: serviceName || "Serviço Prestado",
         district: user?.district,
+        photos: reviewPhotos,
       });
 
       toast.success("Avaliação enviada com sucesso!", {
@@ -236,6 +262,88 @@ export function ReviewModal({
             }
             return null;
           })()}
+        </div>
+
+        {/* Fotos do Trabalho Concluído */}
+        <div className="space-y-2">
+          <label className="text-xs font-semibold text-muted-foreground flex items-center justify-between">
+            <span className="flex items-center gap-1">
+              <Camera size={12} /> Fotos do trabalho (opcional)
+            </span>
+            <span className="text-[10px] text-muted-foreground">{reviewPhotos.length}/4 fotos</span>
+          </label>
+
+          {/* Fotos já adicionadas */}
+          {reviewPhotos.length > 0 && (
+            <div className="grid grid-cols-4 gap-2">
+              {reviewPhotos.map((p, idx) => (
+                <div
+                  key={idx}
+                  className="relative rounded-xl overflow-hidden aspect-square border border-border group"
+                >
+                  <img src={p} alt={`Foto ${idx + 1}`} className="w-full h-full object-cover" />
+                  <button
+                    type="button"
+                    onClick={() => removePhoto(idx)}
+                    className="absolute top-1 right-1 size-5 rounded-full bg-black/70 text-white flex items-center justify-center hover:bg-black transition"
+                    title="Remover foto"
+                  >
+                    <X size={12} />
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* Adicionar rápida de fotos de amostra ou URL */}
+          {reviewPhotos.length < 4 && (
+            <div className="space-y-1.5">
+              <div className="flex gap-2">
+                <input
+                  type="url"
+                  value={photoUrlInput}
+                  onChange={(e) => setPhotoUrlInput(e.target.value)}
+                  placeholder="Colar link da foto (URL)..."
+                  className="flex-1 rounded-xl bg-card ring-1 ring-border px-3 py-2 text-xs outline-none focus:ring-2 focus:ring-terracotta/40"
+                />
+                <button
+                  type="button"
+                  onClick={() => addPhoto(photoUrlInput)}
+                  disabled={!photoUrlInput.trim()}
+                  className="px-3 rounded-xl bg-muted border border-border text-xs font-bold text-foreground hover:bg-muted/80 disabled:opacity-50"
+                >
+                  Anexar
+                </button>
+              </div>
+
+              <div className="flex items-center gap-1.5 overflow-x-auto py-1">
+                <span className="text-[10px] text-muted-foreground shrink-0">Exemplos:</span>
+                {[
+                  {
+                    name: "Trabalho Feito",
+                    url: "https://images.unsplash.com/photo-1581092160607-ee22621dd758?w=800&auto=format&fit=crop&q=80",
+                  },
+                  {
+                    name: "Resultado Limpo",
+                    url: "https://images.unsplash.com/photo-1505798577917-a65157d3320a?w=800&auto=format&fit=crop&q=80",
+                  },
+                  {
+                    name: "Reparação OK",
+                    url: "https://images.unsplash.com/photo-1585704032915-c3400ca199e7?w=800&auto=format&fit=crop&q=80",
+                  },
+                ].map((s) => (
+                  <button
+                    key={s.name}
+                    type="button"
+                    onClick={() => addPhoto(s.url)}
+                    className="px-2 py-0.5 rounded-full bg-muted border border-border text-[10px] text-muted-foreground hover:text-foreground shrink-0"
+                  >
+                    + {s.name}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Recomendação */}

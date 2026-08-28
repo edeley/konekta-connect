@@ -1,6 +1,6 @@
 {
   "name": "Konekta Connect",
-  "description": "Plataforma de serviços e intermediação em São Tomé e Príncipe",
+  "description": "Plataforma de contratação de serviços profissionais verificados e custódia financeira em São Tomé e Príncipe.",
   "requestFramePermissions": ["camera", "geolocation"],
   "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
 }

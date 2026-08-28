@@ -29,6 +29,7 @@ export type ServiceRequest = {
   preferredTime?: string;
   scheduleSummary?: string;
   budget?: number;
+  materialStatus?: "tem_material" | "prestador_compra" | "avaliar";
   photos: number;
   photosList?: string[];
   status: RequestStatus;

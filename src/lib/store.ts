@@ -227,15 +227,63 @@ export type QuoteRequestData = {
   status: "enviado" | "respondido" | "fechado";
 };
 
+export type InPersonCashDeclaration = {
+  id: string;
+  providerId: string;
+  providerName: string;
+  clientId: string;
+  clientName: string;
+  visitId?: string;
+  orderId?: string;
+  serviceTitle: string;
+  declaredAmount: number; // Valor em STN cobrado presencialmente
+  commissionPct: number; // Ex: 10%
+  commissionAmount: number; // Valor da comissão da app em STN
+  status:
+    "aguardando_confirmacao" | "confirmado_pelo_cliente" | "ajustado_pelo_cliente" | "recusado";
+  actualAmountPaid?: number; // Se o cliente corrigiu o valor
+  clientNotes?: string;
+  declaredAt: number;
+  confirmedAt?: number;
+};
+
+export type CompanyTechnician = {
+  id: string;
+  name: string;
+  phone: string;
+  specialty: string;
+  avatar?: string;
+  active: boolean;
+  assignedOrdersCount: number;
+  totalEarnings: number;
+  rating: number;
+};
+
+export type CompanyProfile = {
+  companyName: string;
+  legalName?: string;
+  nif: string;
+  phone: string;
+  email: string;
+  bankName: string;
+  bankAccount: string;
+  district: string;
+  address?: string;
+  technicians: CompanyTechnician[];
+  commissionPlan: "comissao" | "plano_mensal";
+};
+
 export type Message = {
   id: string;
   from: "me" | "them";
   text: string;
   at: number;
   status?: "sent" | "delivered" | "read";
-  kind?: "text" | "quote" | "quote_request" | "system";
+  kind?: "text" | "quote" | "quote_request" | "system" | "in_person_confirmation" | "photo";
+  photos?: string[];
   quote?: Quote;
   quoteRequest?: QuoteRequestData;
+  inPersonDeclaration?: InPersonCashDeclaration;
 };
 
 export type AssistantMessage = {
@@ -296,6 +344,7 @@ export type PlatformConfig = {
   companyCommissionPct: number;
   technicalVisitFee: number;
   technicalVisitGuarantee: string;
+  debtBlockLimit: number; // Limite de 500 STN de dívida para suspensão
 };
 
 export type TechnicalVisit = {
@@ -315,6 +364,8 @@ export type TechnicalVisit = {
   diagnosticReport?: string;
   proposedQuote?: number;
   createdAt: number;
+  declaredCashAmount?: number;
+  cashConfirmedByClient?: boolean;
 };
 
 export type CompanyMonetization = {
@@ -337,11 +388,15 @@ type State = {
   requests: ServiceRequest[];
   technicalVisits: TechnicalVisit[];
   companyMonetization: CompanyMonetization;
+  companyProfile: CompanyProfile | null;
+  inPersonDeclarations: InPersonCashDeclaration[];
   messages: Record<string, Message[]>;
   assistantMessages: AssistantMessage[];
   balance: number;
   transactions: Transaction[];
   providerBalance: number;
+  providerDebt: number; // Dívida acumulada de comissões por liquidar
+  isProviderBlockedForDebt: boolean; // Bloqueado se dívida >= 500 STN
   providerTransactions: Transaction[];
   favorites: string[];
   notifications: AppNotification[];
@@ -391,11 +446,68 @@ export const seedTechnicalVisits: TechnicalVisit[] = [
   },
 ];
 
+export const seedCompanyProfile: CompanyProfile = {
+  companyName: "KONEKTA Obras & Serviços Lda",
+  legalName: "KONEKTA Obras & Serviços São Tomé Lda",
+  nif: "500892147",
+  phone: "+239 9944747",
+  email: "contato@konekta-stp.com",
+  bankName: "BISTP (Banco Internacional de S. Tomé e Príncipe)",
+  bankAccount: "ST53.0001.0000.1234.5678.9012.3",
+  district: "Água Grande",
+  address: "Avenida 12 de Julho, Edifício KONEKTA, São Tomé",
+  commissionPlan: "comissao",
+  technicians: [
+    {
+      id: "tech-1",
+      name: "Dércio Costa",
+      phone: "+239 9912345",
+      specialty: "Canalizador & Fugas de Água",
+      active: true,
+      assignedOrdersCount: 24,
+      totalEarnings: 18400,
+      rating: 4.9,
+    },
+    {
+      id: "tech-2",
+      name: "Edmilson Varela",
+      phone: "+239 9845678",
+      specialty: "Eletricista & Quadros Elétricos",
+      active: true,
+      assignedOrdersCount: 31,
+      totalEarnings: 26800,
+      rating: 5.0,
+    },
+    {
+      id: "tech-3",
+      name: "João Pedro Neves",
+      phone: "+239 9967890",
+      specialty: "Pintor & Revestimentos",
+      active: true,
+      assignedOrdersCount: 15,
+      totalEarnings: 12200,
+      rating: 4.8,
+    },
+    {
+      id: "tech-4",
+      name: "Maria Santos",
+      phone: "+239 9934567",
+      specialty: "Supervisora de Limpezas Profundas",
+      active: true,
+      assignedOrdersCount: 42,
+      totalEarnings: 31500,
+      rating: 4.9,
+    },
+  ],
+};
+
 const defaultState: State = {
   user: null,
   profiles: { cliente: true, prestador: false },
   providerProfile: null,
   providerBalance: 0,
+  providerDebt: 0,
+  isProviderBlockedForDebt: false,
   providerTransactions: [],
   orders: seedOrders,
   reviews: seedReviews,
@@ -406,6 +518,8 @@ const defaultState: State = {
     planActive: false,
     monthlyFee: 1500,
   },
+  companyProfile: seedCompanyProfile,
+  inPersonDeclarations: [],
 
   messages: {
     "edmilson-varela": [
@@ -519,6 +633,7 @@ const defaultState: State = {
     companyCommissionPct: 0,
     technicalVisitFee: 150,
     technicalVisitGuarantee: "Garantia de deslocação Uber-style para avaliação no terreno",
+    debtBlockLimit: 500,
   },
   onboarded: false,
 };
@@ -529,9 +644,17 @@ function load(): State {
     const raw = localStorage.getItem(KEY);
     if (!raw) return defaultState;
     const parsed = JSON.parse(raw) as Partial<State>;
+    const debt = parsed.providerDebt ?? defaultState.providerDebt ?? 0;
+    const isBlocked =
+      debt >= (parsed.config?.debtBlockLimit ?? defaultState.config.debtBlockLimit ?? 500);
+
     return {
       ...defaultState,
       ...parsed,
+      providerDebt: debt,
+      isProviderBlockedForDebt: isBlocked,
+      companyProfile: parsed.companyProfile ?? defaultState.companyProfile,
+      inPersonDeclarations: parsed.inPersonDeclarations ?? defaultState.inPersonDeclarations,
       profiles: { ...defaultState.profiles, ...(parsed.profiles ?? {}) },
       flags: { ...defaultFlags, ...(parsed.flags ?? {}) },
       settings: { ...defaultSettings, ...(parsed.settings ?? {}) },
@@ -791,6 +914,7 @@ export const store = {
     preferredTime?: string;
     scheduleSummary?: string;
     budget?: number;
+    materialStatus?: "tem_material" | "prestador_compra" | "avaliar";
     photos?: number;
     photosList?: string[];
   }) {
@@ -809,6 +933,7 @@ export const store = {
       preferredTime: input.preferredTime,
       scheduleSummary: input.scheduleSummary,
       budget: input.budget,
+      materialStatus: input.materialStatus,
       photos: photosCount,
       photosList: input.photosList ?? [],
       status: "aberto",
@@ -1491,6 +1616,54 @@ export const store = {
       realtimeAudio.play("message");
     }, 2500);
     return "sent";
+  },
+
+  /** Envio de foto/diagnóstico à distância */
+  sendPhotoMessage(providerId: string, photoUrl: string, caption?: string) {
+    const prev = state.messages[providerId] ?? [];
+    const msg: Message = {
+      id: `m_photo_${Date.now()}`,
+      from: "me",
+      text: caption?.trim() || "Foto para diagnóstico à distância da avaria",
+      at: Date.now(),
+      status: "sent",
+      kind: "photo",
+      photos: [photoUrl],
+    };
+    set({ messages: { ...state.messages, [providerId]: [...prev, msg] } });
+    realtimeAudio.play("pop");
+
+    setTimeout(() => {
+      const cur = state.messages[providerId] ?? [];
+      set({
+        messages: {
+          ...state.messages,
+          [providerId]: cur.map((m) => (m.id === msg.id ? { ...m, status: "read" as const } : m)),
+        },
+      });
+      realtimeBus.setTyping(providerId, true);
+    }, 900);
+
+    setTimeout(() => {
+      realtimeBus.setTyping(providerId, false);
+      const cur = state.messages[providerId] ?? [];
+      const reply: Message = {
+        id: `m_${Date.now() + 1}`,
+        from: "them",
+        text: "Obrigado pela foto do diagnóstico! Já analisei a avaria e consigo preparar o orçamento exato ou indicar se é necessária visita técnica.",
+        at: Date.now(),
+        status: "read",
+      };
+      set({
+        messages: {
+          ...state.messages,
+          [providerId]: [...cur, reply],
+        },
+      });
+      realtimeAudio.play("message");
+    }, 2400);
+
+    return msg;
   },
 
   /* ------------------------- Orçamento + Escrow ------------------------- */
@@ -2201,6 +2374,397 @@ export const store = {
       body: "O serviço foi removido do seu catálogo.",
       tone: "info",
       link: "/pro",
+    });
+    return true;
+  },
+
+  /* ----------------- Pagamento Presencial / Em Mão & Blindagem de Comissões ----------------- */
+
+  /**
+   * Prestador declara quanto cobrou ao cliente em dinheiro/presencialmente após visita técnica ou serviço no terreno.
+   */
+  declareInPersonCashPayment(input: {
+    providerId: string;
+    providerName: string;
+    clientId: string;
+    clientName: string;
+    visitId?: string;
+    orderId?: string;
+    serviceTitle: string;
+    declaredAmount: number;
+    notes?: string;
+  }): { ok: boolean; message: string; declaration?: InPersonCashDeclaration } {
+    if (!input.declaredAmount || input.declaredAmount <= 0) {
+      return { ok: false, message: "Insira um valor válido recebido presencialmente." };
+    }
+
+    const commissionPct = state.config.commissionPct || 10;
+    const commissionAmount = Math.round((input.declaredAmount * commissionPct) / 100);
+
+    const declId = `DEC-${Date.now()}`;
+    const decl: InPersonCashDeclaration = {
+      id: declId,
+      providerId: input.providerId,
+      providerName: input.providerName,
+      clientId: input.clientId,
+      clientName: input.clientName,
+      visitId: input.visitId,
+      orderId: input.orderId,
+      serviceTitle: input.serviceTitle,
+      declaredAmount: input.declaredAmount,
+      commissionPct,
+      commissionAmount,
+      status: "aguardando_confirmacao",
+      declaredAt: Date.now(),
+    };
+
+    // Cria mensagem interativa no chat
+    const prev = state.messages[input.providerId] ?? [];
+    const declMsg: Message = {
+      id: `m_dec_${Date.now()}`,
+      from: "them",
+      text: `💵 Declaração de Pagamento Presencial: ${input.declaredAmount} STN recebidos em dinheiro. Aguardando confirmação do cliente para validação e garantia.`,
+      at: Date.now(),
+      status: "sent",
+      kind: "in_person_confirmation",
+      inPersonDeclaration: decl,
+    };
+
+    // Se houver visita técnica associada, regista o valor
+    let updatedVisits = state.technicalVisits;
+    if (input.visitId) {
+      updatedVisits = state.technicalVisits.map((v) =>
+        v.id === input.visitId
+          ? {
+              ...v,
+              declaredCashAmount: input.declaredAmount,
+            }
+          : v,
+      );
+    }
+
+    set({
+      inPersonDeclarations: [decl, ...state.inPersonDeclarations],
+      technicalVisits: updatedVisits,
+      messages: {
+        ...state.messages,
+        [input.providerId]: [...prev, declMsg],
+      },
+    });
+
+    notify({
+      title: "Confirmação de Pagamento em Dinheiro",
+      body: `${input.providerName} declarou ter recebido ${input.declaredAmount} STN pelo serviço. Por favor confirme na app.`,
+      tone: "warning",
+      link: `/chat/${input.providerId}`,
+    });
+
+    return {
+      ok: true,
+      message: `Declaração de ${input.declaredAmount} STN enviada ao cliente para confirmação mútua.`,
+      declaration: decl,
+    };
+  },
+
+  /**
+   * Cliente confirma ou retifica o valor pago em dinheiro presencialmente.
+   * O sistema debita a comissão da carteira do prestador; se não tiver saldo, gera dívida.
+   * Se a dívida atingir 500 STN, a conta do prestador é automaticamente bloqueada.
+   */
+  clientConfirmInPersonPayment(
+    declarationId: string,
+    action: {
+      agreed: boolean;
+      actualAmountPaid?: number;
+      clientNotes?: string;
+    },
+  ): { ok: boolean; message: string } {
+    const decl = state.inPersonDeclarations.find((d) => d.id === declarationId);
+    if (!decl) {
+      return { ok: false, message: "Declaração não encontrada." };
+    }
+
+    const finalAmount = action.agreed
+      ? decl.declaredAmount
+      : action.actualAmountPaid && action.actualAmountPaid > 0
+        ? action.actualAmountPaid
+        : decl.declaredAmount;
+
+    const newStatus = action.agreed
+      ? "confirmado_pelo_cliente"
+      : action.actualAmountPaid && action.actualAmountPaid !== decl.declaredAmount
+        ? "ajustado_pelo_cliente"
+        : "recusado";
+
+    // Cálculo da comissão da plataforma (ex: 10%)
+    const commissionPct = decl.commissionPct || state.config.commissionPct || 10;
+    const finalCommission = Math.round((finalAmount * commissionPct) / 100);
+
+    // Ajuste da carteira e gestão de dívida
+    let newBalance = state.providerBalance;
+    let newDebt = state.providerDebt;
+
+    if (newBalance >= finalCommission) {
+      newBalance -= finalCommission;
+    } else {
+      const remainingUnpaid = finalCommission - newBalance;
+      newBalance = 0;
+      newDebt += remainingUnpaid;
+    }
+
+    const debtLimit = state.config.debtBlockLimit || 500;
+    const isBlocked = newDebt >= debtLimit;
+
+    // Atualiza declaração
+    const updatedDeclarations = state.inPersonDeclarations.map((d) =>
+      d.id === declarationId
+        ? {
+            ...d,
+            status: newStatus as InPersonCashDeclaration["status"],
+            actualAmountPaid: finalAmount,
+            clientNotes: action.clientNotes,
+            commissionAmount: finalCommission,
+            confirmedAt: Date.now(),
+          }
+        : d,
+    );
+
+    // Atualiza mensagens no chat
+    const prevMsgs = state.messages[decl.providerId] ?? [];
+    const updatedMsgs = prevMsgs.map((m) =>
+      m.inPersonDeclaration?.id === declarationId
+        ? {
+            ...m,
+            inPersonDeclaration: {
+              ...m.inPersonDeclaration,
+              status: newStatus as InPersonCashDeclaration["status"],
+              actualAmountPaid: finalAmount,
+              commissionAmount: finalCommission,
+              confirmedAt: Date.now(),
+            },
+          }
+        : m,
+    );
+
+    // Se houver visita técnica associada, marca como concluída e confirmada
+    let updatedVisits = state.technicalVisits;
+    if (decl.visitId) {
+      updatedVisits = state.technicalVisits.map((v) =>
+        v.id === decl.visitId
+          ? {
+              ...v,
+              status: "concluido" as const,
+              cashConfirmedByClient: true,
+              declaredCashAmount: finalAmount,
+            }
+          : v,
+      );
+    }
+
+    const providerTx: Transaction = {
+      id: `pt_comm_${Date.now()}`,
+      kind: "out",
+      label: `Comissão KONEKTA (${commissionPct}% sobre ${finalAmount} STN pago em mão)`,
+      amount: finalCommission,
+      at: Date.now(),
+    };
+
+    set({
+      inPersonDeclarations: updatedDeclarations,
+      providerBalance: newBalance,
+      providerDebt: newDebt,
+      isProviderBlockedForDebt: isBlocked,
+      providerTransactions: [providerTx, ...state.providerTransactions],
+      technicalVisits: updatedVisits,
+      messages: {
+        ...state.messages,
+        [decl.providerId]: updatedMsgs,
+      },
+    });
+
+    if (isBlocked) {
+      notify({
+        title: "⚠️ Conta de Prestador Suspensa por Dívida",
+        body: `A sua dívida de comissões atingiu ${newDebt} STN (limite máximo de ${debtLimit} STN). Recarregue a sua carteira via transferência para voltar a receber pedidos.`,
+        tone: "error",
+        link: "/pro/ganhos",
+      });
+    } else {
+      notify({
+        title: "Pagamento Presencial Confirmado",
+        body: `Valor de ${finalAmount} STN validado pelo cliente. Comissão de ${finalCommission} STN processada.`,
+        tone: "success",
+        link: `/chat/${decl.providerId}`,
+      });
+    }
+
+    return {
+      ok: true,
+      message: action.agreed
+        ? `Pagamento de ${finalAmount} STN confirmado. Comissão de ${finalCommission} STN liquidada com sucesso.`
+        : `Valor ajustado para ${finalAmount} STN pelo cliente e comissão recalculada.`,
+    };
+  },
+
+  /**
+   * Recarga de carteira do prestador com liquidação prioritária de dívidas acumuladas.
+   * Suporta transferências bancárias de STP (BISTP, BGFI, Afriland, Banco Internacional, Dobra 24).
+   */
+  topUpProviderWallet(
+    amount: number,
+    bankName = "BISTP",
+    reference?: string,
+  ): { ok: boolean; message: string } {
+    if (!amount || amount <= 0) {
+      return { ok: false, message: "Insira um montante válido para recarregar." };
+    }
+
+    let currentDebt = state.providerDebt;
+    let debtLiquidated = 0;
+    let remainingForBalance = amount;
+
+    if (currentDebt > 0) {
+      debtLiquidated = Math.min(amount, currentDebt);
+      currentDebt -= debtLiquidated;
+      remainingForBalance = amount - debtLiquidated;
+    }
+
+    const debtLimit = state.config.debtBlockLimit || 500;
+    const isStillBlocked = currentDebt >= debtLimit;
+
+    const newTransactions: Transaction[] = [];
+
+    if (debtLiquidated > 0) {
+      newTransactions.push({
+        id: `pt_debt_liq_${Date.now()}`,
+        kind: "out",
+        label: `Liquidação de dívida de comissões (${bankName} ${reference ? `· Ref: ${reference}` : ""})`,
+        amount: debtLiquidated,
+        at: Date.now(),
+      });
+    }
+
+    if (remainingForBalance > 0) {
+      newTransactions.push({
+        id: `pt_topup_${Date.now()}`,
+        kind: "in",
+        label: `Recarga de Carteira Prestador (${bankName} ${reference ? `· Ref: ${reference}` : ""})`,
+        amount: remainingForBalance,
+        at: Date.now() + 1,
+      });
+    }
+
+    set({
+      providerBalance: state.providerBalance + remainingForBalance,
+      providerDebt: currentDebt,
+      isProviderBlockedForDebt: isStillBlocked,
+      providerTransactions: [...newTransactions, ...state.providerTransactions],
+    });
+
+    const msg =
+      debtLiquidated > 0
+        ? `Recarga de ${amount} STN processada! ${debtLiquidated} STN abateram na dívida pendente. ${remainingForBalance > 0 ? `${remainingForBalance} STN adicionados ao saldo.` : ""} Conta ${isStillBlocked ? "permanece em regularização" : "100% ativa e desbloqueada"}!`
+        : `Recarga de ${amount} STN adicionada com sucesso à sua carteira KONEKTA PRO!`;
+
+    notify({
+      title: "Recarga KONEKTA PRO Confirmada",
+      body: msg,
+      tone: "success",
+      link: "/pro/ganhos",
+    });
+
+    return { ok: true, message: msg };
+  },
+
+  /* ----------------- Gestão de Perfis de Empresa & Multi-Técnicos ----------------- */
+
+  updateCompanyProfile(patch: Partial<CompanyProfile>) {
+    const cur = state.companyProfile || seedCompanyProfile;
+    set({
+      companyProfile: {
+        ...cur,
+        ...patch,
+      },
+    });
+    notify({
+      title: "Perfil da Empresa Atualizado",
+      body: "Os dados e definições da empresa foram guardados com sucesso.",
+      tone: "success",
+      link: "/pro/empresa",
+    });
+  },
+
+  addCompanyTechnician(
+    tech: Omit<CompanyTechnician, "id" | "assignedOrdersCount" | "totalEarnings" | "rating">,
+  ) {
+    const cur = state.companyProfile || seedCompanyProfile;
+    const newTech: CompanyTechnician = {
+      ...tech,
+      id: `tech-${Date.now()}`,
+      assignedOrdersCount: 0,
+      totalEarnings: 0,
+      rating: 5.0,
+    };
+    set({
+      companyProfile: {
+        ...cur,
+        technicians: [newTech, ...cur.technicians],
+      },
+    });
+    notify({
+      title: "Técnico Adicionado à Equipa",
+      body: `${tech.name} (${tech.specialty}) foi associado à conta da empresa.`,
+      tone: "success",
+      link: "/pro/empresa",
+    });
+    return newTech;
+  },
+
+  removeCompanyTechnician(id: string) {
+    const cur = state.companyProfile || seedCompanyProfile;
+    set({
+      companyProfile: {
+        ...cur,
+        technicians: cur.technicians.filter((t) => t.id !== id),
+      },
+    });
+    notify({
+      title: "Técnico Removido",
+      body: "O colaborador foi desvinculado da empresa.",
+      tone: "info",
+      link: "/pro/empresa",
+    });
+  },
+
+  toggleCompanyTechnician(id: string) {
+    const cur = state.companyProfile || seedCompanyProfile;
+    set({
+      companyProfile: {
+        ...cur,
+        technicians: cur.technicians.map((t) => (t.id === id ? { ...t, active: !t.active } : t)),
+      },
+    });
+  },
+
+  assignOrderToTechnician(orderId: string, technicianId: string) {
+    const cur = state.companyProfile || seedCompanyProfile;
+    const tech = cur.technicians.find((t) => t.id === technicianId);
+    if (!tech) return false;
+
+    set({
+      companyProfile: {
+        ...cur,
+        technicians: cur.technicians.map((t) =>
+          t.id === technicianId ? { ...t, assignedOrdersCount: t.assignedOrdersCount + 1 } : t,
+        ),
+      },
+    });
+
+    notify({
+      title: "Serviço Atribuído ao Técnico",
+      body: `O pedido ${orderId} foi delegado a ${tech.name}.`,
+      tone: "success",
+      link: "/pro/pedidos",
     });
     return true;
   },

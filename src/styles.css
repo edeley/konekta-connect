@@ -5,14 +5,15 @@
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
-  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-sans: "Plus Jakarta Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-display: "Cabinet Grotesk", "Plus Jakarta Sans", sans-serif;
 
-  --radius-sm: calc(var(--radius) - 8px);
-  --radius-md: calc(var(--radius) - 4px);
-  --radius-lg: var(--radius);
-  --radius-xl: calc(var(--radius) + 4px);
-  --radius-2xl: calc(var(--radius) + 8px);
-  --radius-3xl: calc(var(--radius) + 16px);
+  --radius-sm: 0.375rem;
+  --radius-md: 0.625rem;
+  --radius-lg: 0.875rem;
+  --radius-xl: 1rem;
+  --radius-2xl: 1.25rem;
+  --radius-3xl: 1.5rem;
 
   --color-background: var(--background);
   --color-foreground: var(--foreground);
@@ -42,75 +43,78 @@
   --color-info: var(--info);
   --color-brand-dark: var(--brand-dark);
 
-  /* Legacy aliases kept so existing screens stay consistent with the new palette */
+  --color-gold: #D97706;
+  --color-gold-light: #FEF3C7;
+
+  /* Legacy aliases */
   --color-terracotta: var(--primary);
   --color-cocoa: var(--brand-dark);
   --color-sun: var(--warning);
   --color-ocean: var(--success);
 
-  --shadow-soft: 0 1px 2px rgb(16 24 40 / 0.04), 0 8px 24px -12px rgb(16 24 40 / 0.14);
-  --shadow-raised: 0 2px 4px rgb(16 24 40 / 0.05), 0 16px 40px -16px rgb(16 24 40 / 0.22);
+  --shadow-soft: 0 1px 3px rgba(15, 23, 42, 0.04), 0 6px 16px -4px rgba(15, 23, 42, 0.06);
+  --shadow-raised: 0 4px 6px -1px rgba(15, 23, 42, 0.05), 0 12px 24px -4px rgba(15, 23, 42, 0.08);
+  --shadow-card: 0 1px 3px 0 rgba(15, 23, 42, 0.04), 0 1px 2px -1px rgba(15, 23, 42, 0.02);
 }
 
 :root {
-  --radius: 1rem;
+  --radius: 0.75rem;
 
-  --surface: #f8fafc;
-  --background: #f8fafc;
-  --foreground: #0f172a;
+  --surface: #F8FAFC;
+  --background: #F8FAFC;
+  --foreground: #0F172A;
 
-  --card: #ffffff;
-  --card-foreground: #0f172a;
-  --popover: #ffffff;
-  --popover-foreground: #0f172a;
+  --card: #FFFFFF;
+  --card-foreground: #0F172A;
+  --popover: #FFFFFF;
+  --popover-foreground: #0F172A;
 
-  --primary: #1D68D8;
-  --primary-foreground: #ffffff;
-  --brand-dark: #0F3B82;
+  --primary: #0F3D2E;
+  --primary-foreground: #FFFFFF;
+  --brand-dark: #09261D;
 
-  --success: #059669;
-  --success-foreground: #ffffff;
-  --warning: #d97706;
-  --warning-foreground: #ffffff;
-  --info: #0284c7;
+  --success: #0F3D2E;
+  --success-foreground: #FFFFFF;
+  --warning: #B45309;
+  --warning-foreground: #FFFFFF;
+  --info: #0369A1;
 
-  --secondary: #f1f5f9;
-  --secondary-foreground: #0f172a;
-  --muted: #f1f5f9;
+  --secondary: #F1F5F9;
+  --secondary-foreground: #0F172A;
+  --muted: #F1F5F9;
   --muted-foreground: #475569;
-  --accent: #EBF3FF;
-  --accent-foreground: #1D68D8;
-  --destructive: #dc2626;
-  --destructive-foreground: #ffffff;
-  --border: #e2e8f0;
-  --input: #e2e8f0;
-  --ring: #1D68D8;
+  --accent: #E8F2ED;
+  --accent-foreground: #0F3D2E;
+  --destructive: #DC2626;
+  --destructive-foreground: #FFFFFF;
+  --border: #E2E8F0;
+  --input: #E2E8F0;
+  --ring: #0F3D2E;
 }
 
-/* Dark mode prepared (not enabled by default) */
 .dark {
-  --surface: #0a1118;
-  --background: #0a1118;
-  --foreground: #f1f5f9;
-  --card: #111c26;
-  --card-foreground: #f1f5f9;
-  --popover: #111c26;
-  --popover-foreground: #f1f5f9;
-  --primary: #3B82F6;
-  --primary-foreground: #0B1E3B;
-  --brand-dark: #1D68D8;
-  --success: #34d399;
-  --warning: #fbbf24;
-  --destructive: #f87171;
-  --secondary: #162433;
-  --secondary-foreground: #f1f5f9;
-  --muted: #162433;
-  --muted-foreground: #94a3b8;
-  --accent: #172554;
-  --accent-foreground: #93C5FD;
-  --border: #1e3245;
-  --input: #1e3245;
-  --ring: #3B82F6;
+  --surface: #090E11;
+  --background: #090E11;
+  --foreground: #F8FAFC;
+  --card: #111A1F;
+  --card-foreground: #F8FAFC;
+  --popover: #111A1F;
+  --popover-foreground: #F8FAFC;
+  --primary: #10B981;
+  --primary-foreground: #041F16;
+  --brand-dark: #059669;
+  --success: #10B981;
+  --warning: #F59E0B;
+  --destructive: #EF4444;
+  --secondary: #1A262E;
+  --secondary-foreground: #F8FAFC;
+  --muted: #1A262E;
+  --muted-foreground: #94A3B8;
+  --accent: #112A20;
+  --accent-foreground: #6EE7B7;
+  --border: #23353F;
+  --input: #23353F;
+  --ring: #10B981;
 }
 
 @layer base {
@@ -125,6 +129,12 @@
     font-family: var(--font-sans);
     -webkit-font-smoothing: antialiased;
     text-rendering: optimizeLegibility;
+    letter-spacing: -0.01em;
+  }
+
+  h1, h2, h3, h4, .font-display {
+    font-family: var(--font-display);
+    letter-spacing: -0.02em;
   }
 
   .no-scrollbar::-webkit-scrollbar {
@@ -138,22 +148,35 @@
 @utility card-soft {
   background: var(--color-card);
   border-radius: var(--radius-xl);
-  box-shadow: var(--shadow-soft);
+  box-shadow: var(--shadow-card);
+  border: 1px solid var(--color-border);
+}
+
+@utility card-triider {
+  background: var(--color-card);
+  border-radius: var(--radius-xl);
+  border: 1px solid var(--color-border);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.03), 0 4px 12px -2px rgba(0,0,0,0.04);
+  transition: all 0.2s cubic-bezier(0.2, 0, 0, 1);
+  &:hover {
+    box-shadow: 0 4px 20px -4px rgba(14, 98, 69, 0.12);
+    border-color: color-mix(in oklab, var(--color-primary) 35%, var(--color-border));
+  }
 }
 
 @utility press {
   transition:
-    transform 180ms cubic-bezier(0.2, 0, 0, 1),
-    box-shadow 180ms ease;
+    transform 160ms cubic-bezier(0.2, 0, 0, 1),
+    box-shadow 160ms ease;
   &:active {
-    transform: scale(0.97);
+    transform: scale(0.98);
   }
 }
 
 @keyframes k-fade-up {
   from {
     opacity: 0;
-    transform: translateY(8px);
+    transform: translateY(6px);
   }
   to {
     opacity: 1;
@@ -162,25 +185,14 @@
 }
 
 @utility fade-up {
-  animation: k-fade-up 320ms cubic-bezier(0.2, 0, 0, 1) both;
-}
-
-@keyframes k-sheet-up {
-  from {
-    opacity: 0;
-    transform: translateY(24px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+  animation: k-fade-up 280ms cubic-bezier(0.2, 0, 0, 1) both;
 }
 
 @utility k-input {
   display: block;
   width: 100%;
-  min-height: 3rem;
-  border-radius: 0.875rem;
+  min-height: 2.875rem;
+  border-radius: 0.75rem;
   border: 1px solid var(--color-border);
   background-color: var(--color-card);
   padding-inline: 0.875rem;
@@ -188,11 +200,11 @@
   color: var(--color-foreground);
   outline: none;
   transition:
-    border-color 0.2s,
-    box-shadow 0.2s;
+    border-color 0.18s ease,
+    box-shadow 0.18s ease;
 
   &:focus-visible {
     border-color: var(--color-primary);
-    box-shadow: 0 0 0 3px color-mix(in oklab, var(--color-primary) 18%, transparent);
+    box-shadow: 0 0 0 3px color-mix(in oklab, var(--color-primary) 14%, transparent);
   }
 }

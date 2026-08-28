@@ -1,5 +1,6 @@
-import { createFileRoute } from "@tanstack/react-router";
-import { PublicLayout } from "@/components/PublicLayout";
+import { createFileRoute, Link } from "@tanstack/react-router";
+import { ArrowLeft, Lock } from "lucide-react";
+import { AppShell } from "@/components/AppShell";
 
 export const Route = createFileRoute("/privacidade")({
   head: () => ({
@@ -53,19 +54,38 @@ const seccoes = [
 
 function PrivacidadePage() {
   return (
-    <PublicLayout crumbs={[{ label: "Início", to: "/" }, { label: "Privacidade" }]}>
-      <h1 className="text-3xl font-black tracking-tight text-foreground">
-        Política de privacidade
-      </h1>
-      <p className="mt-2 text-sm text-muted-foreground">Última atualização: julho de 2026</p>
-      <div className="mt-8 space-y-6">
-        {seccoes.map((s) => (
-          <section key={s.t}>
-            <h2 className="font-semibold text-foreground">{s.t}</h2>
-            <p className="mt-1 text-sm leading-relaxed text-muted-foreground">{s.d}</p>
-          </section>
-        ))}
+    <AppShell wide={true}>
+      <div className="px-4 pt-4 sm:px-6 space-y-5">
+        <div className="flex items-center justify-between gap-3 border-b border-border pb-3">
+          <Link
+            to="/"
+            className="inline-flex items-center gap-1.5 text-xs font-bold text-muted-foreground hover:text-foreground transition-colors"
+          >
+            <ArrowLeft size={16} />
+            <span>Voltar ao Início</span>
+          </Link>
+          <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-primary/10 text-primary text-[11px] font-bold uppercase tracking-wider">
+            <Lock size={13} />
+            <span>Proteção de Dados</span>
+          </div>
+        </div>
+
+        <div className="space-y-1">
+          <h1 className="text-xl sm:text-2xl font-black tracking-tight text-foreground">
+            Política de privacidade
+          </h1>
+          <p className="text-xs text-muted-foreground">Última atualização: 2026</p>
+        </div>
+
+        <div className="grid gap-3 sm:grid-cols-2">
+          {seccoes.map((s) => (
+            <section key={s.t} className="rounded-xl border border-border bg-card p-4">
+              <h2 className="font-bold text-sm text-foreground">{s.t}</h2>
+              <p className="mt-1 text-xs text-muted-foreground leading-relaxed">{s.d}</p>
+            </section>
+          ))}
+        </div>
       </div>
-    </PublicLayout>
+    </AppShell>
   );
 }

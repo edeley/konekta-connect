@@ -912,6 +912,15 @@ function RequestOrOrderDetail() {
                   <Clock size={12} /> {urgencyLabel[request.urgency]}
                 </span>
               )}
+              {request.materialStatus && (
+                <span className="inline-flex items-center gap-1 rounded-full bg-amber-500/10 text-amber-700 dark:text-amber-300 border border-amber-500/20 px-2.5 py-1 font-bold">
+                  {request.materialStatus === "tem_material"
+                    ? "📦 Cliente tem material"
+                    : request.materialStatus === "prestador_compra"
+                      ? "🛒 Prestador compra peças"
+                      : "🔍 Avaliar materiais no local"}
+                </span>
+              )}
               {request.budget ? (
                 <span className="rounded-full bg-muted px-2.5 py-1">
                   Orçamento base: {formatDb(request.budget)}

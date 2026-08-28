@@ -283,18 +283,47 @@ const CONTACT_REQUEST_REGEXES: RegExp[] = [
 export const BLOCK_NOTICE =
   "🔒 Bloqueio de Segurança KONEKTA: Todas as negociações, visitas técnicas, orçamentos e pagamentos são realizados de forma 100% interna e protegida no KONEKTA com garantia de custódia (escrow). É estritamente proibido partilhar contactos, telefones, redes sociais ou negociar por fora para proteger a garantia do serviço e os seus fundos.";
 
+const SPELLED_DIGIT_MAP: Record<string, string> = {
+  zero: "0",
+  um: "1",
+  uma: "1",
+  dois: "2",
+  duas: "2",
+  tres: "3",
+  três: "3",
+  quatro: "4",
+  cinco: "5",
+  seis: "6",
+  meia: "6",
+  sete: "7",
+  oito: "8",
+  nove: "9",
+  dez: "10",
+  vinte: "20",
+  trinta: "30",
+  quarenta: "40",
+  cinquenta: "50",
+  cem: "100",
+  mil: "1000",
+};
+
 /** Normaliza texto removendo acentos, separadores repetitivos e decodificando leetspeak comum */
-function normalizeForAnalysis(text: string): { base: string; collapsed: string; leet: string } {
+function normalizeForAnalysis(text: string): {
+  base: string;
+  collapsed: string;
+  leet: string;
+  digitsFromWords: string;
+} {
   const base = text
     .normalize("NFD")
     .replace(/[\u0300-\u036f]/g, "")
-    .replace(/[_*~`#]/g, " ")
+    .replace(/[_*~`#|/\\]/g, " ")
     .toLowerCase();
 
   // Versão colapsando espaços entre letras únicas tipo "w h a t s a p p" ou "9 9 4 1 2 3 4"
   const collapsed = base.replace(/(\b[a-z0-9])\s+(?=[a-z0-9]\b)/gi, "$1");
 
-  // Versão traduzindo leetspeak comum: @ -> a, 0 -> o, 3 -> e, 1 -> i, 4 -> a, 5 -> s, 7 -> t
+  // Versão traduzindo leetspeak comum: @ -> a, 0 -> o, 3 -> e, 1 -> i, 4 -> a, 5 -> s, 7 -> t, 9 -> g
   const leet = base
     .replace(/@/g, "a")
     .replace(/\$/g, "s")
@@ -305,7 +334,16 @@ function normalizeForAnalysis(text: string): { base: string; collapsed: string; 
     .replace(/5/g, "s")
     .replace(/7/g, "t");
 
-  return { base, collapsed, leet };
+  // Extrai dígitos soletrados por extenso em sequência
+  const words = base.split(/[\s,.-]+/);
+  let digitsFromWords = "";
+  for (const w of words) {
+    if (SPELLED_DIGIT_MAP[w]) {
+      digitsFromWords += SPELLED_DIGIT_MAP[w];
+    }
+  }
+
+  return { base, collapsed, leet, digitsFromWords };
 }
 
 /** Analisa se o texto viola as políticas de segurança e anti-desintermediação */
@@ -325,8 +363,31 @@ export function analyzeBlockedContent(text: string): BlockAnalysis {
     };
   }
 
-  const { base, collapsed, leet } = normalizeForAnalysis(text);
+  const { base, collapsed, leet, digitsFromWords } = normalizeForAnalysis(text);
   const targets = [base, collapsed, leet];
+
+  // 1.1 Verificação de números soletrados por extenso (ex: "nove nove quatro um dois três quatro")
+  if (digitsFromWords && digitsFromWords.length >= 7) {
+    const isStp =
+      digitsFromWords.length === 7 &&
+      (digitsFromWords.startsWith("9") || digitsFromWords.startsWith("2"));
+    return {
+      blocked: true,
+      category: "phone",
+      reason: isStp
+        ? `🇸🇹 Contacto de São Tomé e Príncipe soletrado detectado (+239 · ${digitsFromWords.slice(0, 3)} ${digitsFromWords.slice(3)}). A partilha de contactos pessoais é bloqueada para sua segurança.`
+        : `Sequência numérica soletrada por extenso (${digitsFromWords}) detectada. O envio de contactos telefónicos é bloqueado.`,
+      matchedText: text.trim(),
+      country: isStp
+        ? {
+            name: "São Tomé e Príncipe",
+            code: "+239",
+            flag: "🇸🇹",
+            expectedDigits: 7,
+          }
+        : undefined,
+    };
+  }
 
   // 2. Redes sociais e mensagens externas (WhatsApp, Telegram, etc.)
   for (const t of targets) {

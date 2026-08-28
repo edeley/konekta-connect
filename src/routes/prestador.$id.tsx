@@ -324,7 +324,7 @@ function ProviderPage() {
             onAddPhotoClick={() => setOpenBeforeAfterAddModal(true)}
           />
 
-          {/* ÁREA DE COBERTURA & RAIO DE ATENDIMENTO */}
+          {/* LOCAIS E DISTRITOS DE ATENDIMENTO */}
           <CoverageConfigurator
             initialCoverage={liveContract.coverage}
             isReadOnly={!isOwner || viewMode === "VIEW_MODE_PUBLIC"}
