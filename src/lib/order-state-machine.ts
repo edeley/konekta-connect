@@ -16,7 +16,25 @@ export type OrderState =
   | "PENDING_PIN_VERIFICATION"
   | "COMPLETED"
   | "DISPUTED"
-  | "CANCELED";
+  | "CANCELED"
+  | "aguardando_visita"
+  | "orcamento_presencial_solicitado"
+  | "confirmacao_cliente"
+  | "divergencia_preco"
+  | "visita_paga_e_aprovada"
+  | "em_moderacao";
+
+export type TechnicalVisitState =
+  | "pendente"
+  | "aguardando_visita"
+  | "orcamento_presencial_solicitado"
+  | "confirmacao_cliente"
+  | "divergencia_preco"
+  | "visita_paga_e_aprovada"
+  | "em_moderacao"
+  | "a_caminho"
+  | "concluido"
+  | "cancelado";
 
 export interface OrderStateConfig {
   code: OrderState;
@@ -121,6 +139,64 @@ export const ORDER_STATE_CONFIGS: Record<OrderState, OrderStateConfig> = {
       "Pedido cancelado. Eventuais valores retidos foram estornados para a sua carteira.",
     providerDescription: "Pedido cancelado.",
     allowedTransitions: [],
+  },
+  aguardando_visita: {
+    code: "aguardando_visita",
+    labelPt: "Aguardando Visita",
+    badgeTone: "primary",
+    clientDescription:
+      "Visita técnica confirmada. O valor da deslocação está retido e o técnico tem acesso à morada.",
+    providerDescription:
+      "Visita autorizada pelo cliente! Desloque-se ao local para avaliar o serviço presencialmente.",
+    allowedTransitions: ["orcamento_presencial_solicitado", "CANCELED"],
+  },
+  orcamento_presencial_solicitado: {
+    code: "orcamento_presencial_solicitado",
+    labelPt: "Orçamento Presencial Declarado",
+    badgeTone: "warning",
+    clientDescription:
+      "O técnico avaliou o local e declarou o valor combinado. Por favor confirme se está correto.",
+    providerDescription:
+      "Declaração de valor presencial enviada ao cliente. Aguardando confirmação mútua.",
+    allowedTransitions: ["confirmacao_cliente", "visita_paga_e_aprovada", "divergencia_preco"],
+  },
+  confirmacao_cliente: {
+    code: "confirmacao_cliente",
+    labelPt: "Confirmação do Cliente",
+    badgeTone: "warning",
+    clientDescription: "Confirme se o valor declarado pelo técnico corresponde ao combinado.",
+    providerDescription: "Aguardando validação do cliente no ecrã.",
+    allowedTransitions: ["visita_paga_e_aprovada", "divergencia_preco"],
+  },
+  divergencia_preco: {
+    code: "divergencia_preco",
+    labelPt: "Divergência de Preço",
+    badgeTone: "warning",
+    clientDescription:
+      "O valor informado difere do declarado pelo prestador. A validação algorítmica foi acionada.",
+    providerDescription:
+      "O cliente indicou um valor diferente. O sistema KONEKTA está a processar a verificação de preço médio.",
+    allowedTransitions: ["visita_paga_e_aprovada", "em_moderacao"],
+  },
+  visita_paga_e_aprovada: {
+    code: "visita_paga_e_aprovada",
+    labelPt: "Visita Aprovada & Em Custódia",
+    badgeTone: "success",
+    clientDescription:
+      "Orçamento validado com sucesso! O valor está protegido em custódia e o serviço pode iniciar.",
+    providerDescription:
+      "Valor validado e garantido em custódia! Pode iniciar a execução do serviço.",
+    allowedTransitions: ["IN_PROGRESS", "COMPLETED", "DISPUTED"],
+  },
+  em_moderacao: {
+    code: "em_moderacao",
+    labelPt: "Em Moderação Antifraude",
+    badgeTone: "error",
+    clientDescription:
+      "Divergência elevada de valores. O pedido está sob revisão da equipa de suporte KONEKTA.",
+    providerDescription:
+      "Pedido congelado para auditoria da equipa KONEKTA. Entraremos em contacto brevemente.",
+    allowedTransitions: ["visita_paga_e_aprovada", "CANCELED"],
   },
 };
 

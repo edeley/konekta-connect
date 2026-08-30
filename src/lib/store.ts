@@ -14,6 +14,13 @@ import {
   type ProviderCustomService,
   calculateQuote,
 } from "./pricing-engine";
+import {
+  evaluatePriceDivergence,
+  getCategoryBenchmark,
+  calculateFinalServiceCharge,
+  type AlgorithmicValidationResult,
+  type CategoryBenchmark,
+} from "./price-benchmark";
 
 import {
   orders as seedOrders,
@@ -347,6 +354,19 @@ export type PlatformConfig = {
   debtBlockLimit: number; // Limite de 500 STN de dívida para suspensão
 };
 
+export type TechnicalVisitStatus =
+  | "pendente"
+  | "aguardando_visita"
+  | "orcamento_presencial_solicitado"
+  | "confirmacao_cliente"
+  | "divergencia_preco"
+  | "visita_paga_e_aprovada"
+  | "em_moderacao"
+  | "aceite"
+  | "a_caminho"
+  | "concluido"
+  | "cancelado";
+
 export type TechnicalVisit = {
   id: string;
   providerId: string;
@@ -355,17 +375,92 @@ export type TechnicalVisit = {
   clientName: string;
   clientPhone?: string;
   serviceTitle: string;
+  category?: string;
   district: string;
   address?: string;
   scheduledDate: string;
   scheduledTime: string;
   visitFee: number; // Valor em custódia (ex: 150 Db)
-  status: "pendente" | "aceite" | "a_caminho" | "concluido" | "cancelado";
+  status: TechnicalVisitStatus;
   diagnosticReport?: string;
   proposedQuote?: number;
   createdAt: number;
+
+  // Avaliação Presencial & Validação Algorítmica
+  declaredAmountByProvider?: number;
+  declaredAmountByClient?: number;
+  finalAgreedAmount?: number;
+  divergencePercent?: number;
+  divergenceTier?: "tier_1_auto" | "tier_2_market" | "tier_3_moderation";
+  moderationCaseId?: string;
+
+  // Abatimento da taxa de visita no serviço final
+  deductVisitFeeOnService?: boolean;
+  visitFeeDeductedAmount?: number;
+  finalComplementToPay?: number;
+
+  // Check-in no local
+  checkInAt?: number;
+  checkInLocation?: string;
+
+  // Pagamento em dinheiro presencial com OTP mútuo
   declaredCashAmount?: number;
+  cashOtp?: string;
   cashConfirmedByClient?: boolean;
+  cashConfirmedAt?: number;
+  cashReceiptDisputed?: boolean;
+};
+
+export type ModerationDispute = {
+  id: string;
+  orderId?: string;
+  visitId?: string;
+  category: string;
+  serviceTitle: string;
+  district: string;
+  createdAt: number;
+  client: {
+    id: string;
+    name: string;
+    phone: string;
+    completedOrdersCount: number;
+    infractionsCount: number;
+  };
+  provider: {
+    id: string;
+    name: string;
+    phone: string;
+    completedOrdersCount: number;
+    warningsCount: number;
+  };
+  conflict: {
+    providerDeclaredAmount: number;
+    clientDeclaredAmount: number;
+    divergenceAmount: number;
+    divergencePercent: number;
+  };
+  marketBenchmark: {
+    categoryName: string;
+    minPrice: number;
+    avgPrice: number;
+    maxPrice: number;
+    isClientWithinAverage: boolean;
+    analysisVerdict: string;
+  };
+  evidences: {
+    chatTranscript: Array<{ from: "client" | "provider" | "system"; text: string; at: number }>;
+    attachedPhotos: string[];
+    gpsCheckIn: {
+      performed: boolean;
+      time?: string;
+      location?: string;
+    };
+  };
+  status: "pendente" | "resolvido_cliente" | "resolvido_prestador" | "sancionado_prestador";
+  resolvedAt?: number;
+  resolvedBy?: string;
+  resolutionNotes?: string;
+  finalDecidedAmount?: number;
 };
 
 export type CompanyMonetization = {
@@ -387,6 +482,7 @@ type State = {
   reviews: ProviderReview[];
   requests: ServiceRequest[];
   technicalVisits: TechnicalVisit[];
+  moderationDisputes: ModerationDispute[];
   companyMonetization: CompanyMonetization;
   companyProfile: CompanyProfile | null;
   inPersonDeclarations: InPersonCashDeclaration[];
@@ -430,19 +526,118 @@ const defaultSettings: Settings = {
 
 export const seedTechnicalVisits: TechnicalVisit[] = [
   {
-    id: "VIS-901",
-    providerId: "edmilson-varela",
-    providerName: "Edmilson Varela",
+    id: "VIS-8492",
+    providerId: "dercio-costa",
+    providerName: "Dércio Costa",
     clientId: "usr-client",
     clientName: "Manuel Trindade",
-    serviceTitle: "Inspeção e diagnóstico de quadro elétrico trifásico",
+    clientPhone: "+239 9918273",
+    serviceTitle: "Fuga em coluna de água e instalação de tanque elevado",
+    category: "encanamento",
     district: "Água Grande",
     address: "Avenida 12 de Julho, perto da Praça Central",
     scheduledDate: new Date().toISOString().slice(0, 10),
     scheduledTime: "14:30",
     visitFee: 150,
-    status: "a_caminho",
+    status: "em_moderacao",
+    declaredAmountByProvider: 1500,
+    declaredAmountByClient: 800,
+    divergencePercent: 87.5,
+    divergenceTier: "tier_3_moderation",
+    moderationCaseId: "DISP-8492",
+    deductVisitFeeOnService: true,
+    visitFeeDeductedAmount: 150,
+    checkInAt: Date.now() - 3600_000,
+    checkInLocation: "Água Grande (GPS Check-in OK)",
+    createdAt: Date.now() - 7200_000,
+  },
+  {
+    id: "VIS-901",
+    providerId: "edmilson-varela",
+    providerName: "Edmilson Varela",
+    clientId: "usr-client",
+    clientName: "Manuel Trindade",
+    clientPhone: "+239 9918273",
+    serviceTitle: "Inspeção e diagnóstico de quadro elétrico trifásico",
+    category: "eletricista",
+    district: "Água Grande",
+    address: "Avenida 12 de Julho, perto da Praça Central",
+    scheduledDate: new Date().toISOString().slice(0, 10),
+    scheduledTime: "16:00",
+    visitFee: 150,
+    status: "aguardando_visita",
+    deductVisitFeeOnService: true,
+    createdAt: Date.now() - 1800_000,
+  },
+];
+
+export const seedModerationDisputes: ModerationDispute[] = [
+  {
+    id: "DISP-8492",
+    orderId: "KNK-1088",
+    visitId: "VIS-8492",
+    category: "Encanamento & Canalização",
+    serviceTitle: "Fuga em coluna de água e instalação de tanque elevado",
+    district: "Água Grande",
     createdAt: Date.now() - 3600_000,
+    client: {
+      id: "usr-client",
+      name: "Manuel Trindade",
+      phone: "+239 9918273",
+      completedOrdersCount: 12,
+      infractionsCount: 0,
+    },
+    provider: {
+      id: "dercio-costa",
+      name: "Dércio Costa",
+      phone: "+239 9912345",
+      completedOrdersCount: 45,
+      warningsCount: 1,
+    },
+    conflict: {
+      providerDeclaredAmount: 1500,
+      clientDeclaredAmount: 800,
+      divergenceAmount: 700,
+      divergencePercent: 87.5,
+    },
+    marketBenchmark: {
+      categoryName: "Canalização & Encanamento",
+      minPrice: 150,
+      avgPrice: 450,
+      maxPrice: 1200,
+      isClientWithinAverage: true,
+      analysisVerdict:
+        "O valor do cliente (800 STN) está dentro da média para obras médias em STP. O valor do prestador (1500 STN) excede o teto máximo cadastrado em +25%.",
+    },
+    evidences: {
+      chatTranscript: [
+        {
+          from: "provider",
+          text: "Boa tarde! Já cheguei ao local e avaliei o tubo principal.",
+          at: Date.now() - 4000_000,
+        },
+        {
+          from: "client",
+          text: "Combinámos cerca de 800 STN pela mão de obra com o material à minha conta.",
+          at: Date.now() - 3800_000,
+        },
+        {
+          from: "provider",
+          text: "Lancei 1500 STN na plataforma para incluir possíveis imprevistos de soldadura.",
+          at: Date.now() - 3700_000,
+        },
+      ],
+      attachedPhotos: [
+        "https://images.unsplash.com/photo-1581092160607-ee22621dd758?w=600&auto=format&fit=crop&q=80",
+        "https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=600&auto=format&fit=crop&q=80",
+      ],
+      gpsCheckIn: {
+        performed: true,
+        time: "14:05 (Check-in presencial validado)",
+        location: "Avenida 12 de Julho, Água Grande (±12m precisão)",
+      },
+    },
+    status: "pendente",
   },
 ];
 
@@ -513,6 +708,7 @@ const defaultState: State = {
   reviews: seedReviews,
   requests: seedRequests,
   technicalVisits: seedTechnicalVisits,
+  moderationDisputes: seedModerationDisputes,
   companyMonetization: {
     model: "comissao",
     planActive: false,
@@ -664,6 +860,7 @@ function load(): State {
         ...(parsed.companyMonetization ?? {}),
       },
       technicalVisits: parsed.technicalVisits ?? defaultState.technicalVisits,
+      moderationDisputes: parsed.moderationDisputes ?? defaultState.moderationDisputes,
     };
   } catch {
     return defaultState;
@@ -2010,11 +2207,13 @@ export const store = {
     providerId: string;
     providerName: string;
     serviceTitle: string;
+    category?: string;
     district: string;
     address?: string;
     scheduledDate: string;
     scheduledTime: string;
     visitFee?: number;
+    deductVisitFeeOnService?: boolean;
   }): { ok: boolean; message: string; visit?: TechnicalVisit } {
     const fee = input.visitFee || state.config.technicalVisitFee || 150;
     const visitId = `VIS-${Math.floor(1000 + Math.random() * 9000)}`;
@@ -2026,11 +2225,13 @@ export const store = {
       clientName: state.user?.name || "Cliente KONEKTA",
       clientPhone: state.user?.phone,
       serviceTitle: input.serviceTitle,
+      category: input.category,
       district: input.district,
       address: input.address,
       scheduledDate: input.scheduledDate,
       scheduledTime: input.scheduledTime,
       visitFee: fee,
+      deductVisitFeeOnService: input.deductVisitFeeOnService ?? true,
       status: "pendente",
       createdAt: Date.now(),
     };
@@ -2043,7 +2244,7 @@ export const store = {
     const chatMsg: Message = {
       id: `m_vis_${Date.now()}`,
       from: "me",
-      text: `🚗 Proposta de Visita Técnica no Terreno: Para avaliar com rigor as condições do local (${input.serviceTitle}) e elaborar um orçamento mais preciso, proponho uma visita presencial para ${input.scheduledDate} às ${input.scheduledTime}. Taxa de deslocação: ${fee} Db retida em custódia KONEKTA.`,
+      text: `🚗 Proposta de Visita Técnica no Terreno: Para avaliar com rigor as condições do local (${input.serviceTitle}) e elaborar um orçamento mais preciso, proponho uma visita presencial para ${input.scheduledDate} às ${input.scheduledTime}. Taxa de deslocação: ${fee} Db retida em custódia KONEKTA.${newVisit.deductVisitFeeOnService ? " (Taxa 100% abatida no valor do serviço final)." : ""}`,
       at: Date.now(),
       status: "sent",
       kind: "system",
@@ -2069,7 +2270,9 @@ export const store = {
     };
   },
 
-  /** O cliente aceita a proposta de visita técnica e retém a taxa de deslocação em custódia */
+  /** O cliente aceita a proposta de visita técnica e retém a taxa de deslocação em custódia.
+   * Transita para o estado 'aguardando_visita'.
+   */
   clientAcceptTechnicalVisit(visitId: string): { ok: boolean; message: string } {
     const visit = state.technicalVisits.find((v) => v.id === visitId);
     if (!visit) return { ok: false, message: "Visita não encontrada." };
@@ -2095,7 +2298,7 @@ export const store = {
         ...state.transactions,
       ],
       technicalVisits: state.technicalVisits.map((v) =>
-        v.id === visitId ? { ...v, status: "aceite" } : v,
+        v.id === visitId ? { ...v, status: "aguardando_visita" } : v,
       ),
     });
 
@@ -2103,7 +2306,7 @@ export const store = {
     const chatMsg: Message = {
       id: `m_vis_acc_${Date.now()}`,
       from: "me",
-      text: `✅ Visita técnica aceite pelo cliente! Taxa de deslocação (${fee} Db) retida em custódia segura KONEKTA. O técnico pode agora iniciar a deslocação no horário combinado.`,
+      text: `✅ Visita técnica aceite pelo cliente! Taxa de deslocação (${fee} Db) retida em custódia segura KONEKTA. Endereço e contacto desbloqueados para o técnico.`,
       at: Date.now(),
       status: "sent",
       kind: "system",
@@ -2133,6 +2336,7 @@ export const store = {
     providerId: string;
     providerName: string;
     serviceTitle: string;
+    category?: string;
     district: string;
     address?: string;
     scheduledDate: string;
@@ -2161,6 +2365,461 @@ export const store = {
       tone: "info",
       link: `/chat/${visit.providerId}`,
     });
+  },
+
+  /** Check-in presencial no local com GPS */
+  providerCheckInVisit(visitId: string, locationStr?: string): { ok: boolean; message: string } {
+    const visit = state.technicalVisits.find((v) => v.id === visitId);
+    if (!visit) return { ok: false, message: "Visita não encontrada." };
+
+    const loc = locationStr || `${visit.district} (GPS Check-in OK)`;
+    set({
+      technicalVisits: state.technicalVisits.map((v) =>
+        v.id === visitId ? { ...v, checkInAt: Date.now(), checkInLocation: loc } : v,
+      ),
+    });
+
+    const prevMsgs = state.messages[visit.providerId] ?? [];
+    const chatMsg: Message = {
+      id: `m_vis_chk_${Date.now()}`,
+      from: "them",
+      text: `📍 Check-in no local realizado por ${visit.providerName} em ${loc}. O técnico está a iniciar a avaliação técnica presencial.`,
+      at: Date.now(),
+      status: "sent",
+      kind: "system",
+    };
+
+    set({
+      messages: {
+        ...state.messages,
+        [visit.providerId]: [...prevMsgs, chatMsg],
+      },
+    });
+
+    notify({
+      title: "Técnico Chegou ao Local",
+      body: `${visit.providerName} realizou o check-in presencial em ${loc}.`,
+      tone: "info",
+      link: `/chat/${visit.providerId}`,
+    });
+
+    return { ok: true, message: `Check-in presencial registado com sucesso.` };
+  },
+
+  /**
+   * Prestador avaliou o local e lança a cobrança/orçamento presencial.
+   * Transita para o estado 'orcamento_presencial_solicitado' / 'confirmacao_cliente'.
+   */
+  providerDeclareOnSiteBudget(input: {
+    visitId: string;
+    declaredAmount: number;
+    diagnosticReport?: string;
+    deductVisitFee?: boolean;
+  }): { ok: boolean; message: string } {
+    const visit = state.technicalVisits.find((v) => v.id === input.visitId);
+    if (!visit) return { ok: false, message: "Visita não encontrada." };
+
+    if (!input.declaredAmount || input.declaredAmount <= 0) {
+      return { ok: false, message: "Insira um valor válido para o orçamento presencial." };
+    }
+
+    const deduct = input.deductVisitFee ?? visit.deductVisitFeeOnService ?? true;
+    const visitFee = visit.visitFee || 150;
+    const breakdown = calculateFinalServiceCharge({
+      totalServiceAmount: input.declaredAmount,
+      visitFeePaidInEscrow: visitFee,
+      deductVisitFee: deduct,
+    });
+
+    set({
+      technicalVisits: state.technicalVisits.map((v) =>
+        v.id === input.visitId
+          ? {
+              ...v,
+              status: "orcamento_presencial_solicitado",
+              declaredAmountByProvider: input.declaredAmount,
+              diagnosticReport: input.diagnosticReport,
+              deductVisitFeeOnService: deduct,
+              visitFeeDeductedAmount: breakdown.visitFeeDeduction,
+              finalComplementToPay: breakdown.complementToPay,
+            }
+          : v,
+      ),
+    });
+
+    const prevMsgs = state.messages[visit.providerId] ?? [];
+    const chatMsg: Message = {
+      id: `m_vis_diag_${Date.now()}`,
+      from: "them",
+      text: `📋 Proposta de Orçamento no Terreno: ${input.declaredAmount} Db.\n${input.diagnosticReport ? `Diagnóstico: "${input.diagnosticReport}"\n` : ""}${deduct ? `Taxa de visita (${visitFee} Db) já retida é abatida. Valor complementar a pagar: ${breakdown.complementToPay} Db.` : `Valor total a pagar: ${input.declaredAmount} Db.`}\n\nAguardando validação do cliente na app.`,
+      at: Date.now(),
+      status: "sent",
+      kind: "system",
+    };
+
+    set({
+      messages: {
+        ...state.messages,
+        [visit.providerId]: [...prevMsgs, chatMsg],
+      },
+    });
+
+    notify({
+      title: "Orçamento Presencial Lançado",
+      body: `${visit.providerName} lançou o orçamento de ${input.declaredAmount} Db. Por favor confirme no ecrã.`,
+      tone: "warning",
+      link: `/chat/${visit.providerId}`,
+    });
+
+    return {
+      ok: true,
+      message: `Orçamento presencial de ${input.declaredAmount} Db enviado ao cliente para validação mútua.`,
+    };
+  },
+
+  /**
+   * Cliente valida a declaração do prestador.
+   * Se concordar (agreed: true) -> 'visita_paga_e_aprovada'
+   * Se discordar (agreed: false) -> Aciona verificação algorítmica de preço médio:
+   *   - ≤ 15%: Auto-aceitação com valor do cliente ('visita_paga_e_aprovada')
+   *   - 15% < x ≤ 40%: Checagem algorítmica de preço médio STP ('visita_paga_e_aprovada' ou moderação)
+   *   - > 40%: Moderação manual congelando o pedido ('em_moderacao')
+   */
+  clientValidateOnSiteBudget(input: {
+    visitId: string;
+    agreed: boolean;
+    clientAmount?: number;
+    notes?: string;
+  }): { ok: boolean; message: string; result?: AlgorithmicValidationResult } {
+    const visit = state.technicalVisits.find((v) => v.id === input.visitId);
+    if (!visit) return { ok: false, message: "Visita não encontrada." };
+
+    const providerAmount = visit.declaredAmountByProvider || visit.proposedQuote || 150;
+    const categoryKey = visit.category || visit.serviceTitle;
+    const visitFee = visit.visitFee || 150;
+    const deduct = visit.deductVisitFeeOnService ?? true;
+
+    // Caso 1: Cliente confirma que o valor do prestador está correto
+    if (input.agreed) {
+      const breakdown = calculateFinalServiceCharge({
+        totalServiceAmount: providerAmount,
+        visitFeePaidInEscrow: visitFee,
+        deductVisitFee: deduct,
+      });
+
+      set({
+        technicalVisits: state.technicalVisits.map((v) =>
+          v.id === input.visitId
+            ? {
+                ...v,
+                status: "visita_paga_e_aprovada",
+                finalAgreedAmount: providerAmount,
+                declaredAmountByClient: providerAmount,
+                visitFeeDeductedAmount: breakdown.visitFeeDeduction,
+                finalComplementToPay: breakdown.complementToPay,
+              }
+            : v,
+        ),
+      });
+
+      const prevMsgs = state.messages[visit.providerId] ?? [];
+      const chatMsg: Message = {
+        id: `m_vis_val_${Date.now()}`,
+        from: "me",
+        text: `✅ Orçamento presencial de ${providerAmount} Db confirmado e aprovado pelo cliente!${deduct ? ` Taxa de visita (${visitFee} Db) abatida com sucesso. Valor complementar: ${breakdown.complementToPay} Db retido em custódia.` : " Valor retido em custódia segura KONEKTA."}`,
+        at: Date.now(),
+        status: "sent",
+        kind: "system",
+      };
+
+      set({
+        messages: {
+          ...state.messages,
+          [visit.providerId]: [...prevMsgs, chatMsg],
+        },
+      });
+
+      notify({
+        title: "Orçamento Validado e Aprovado",
+        body: `Valor de ${providerAmount} Db confirmado pelo cliente com garantia Escrow KONEKTA.`,
+        tone: "success",
+        link: `/chat/${visit.providerId}`,
+      });
+
+      return {
+        ok: true,
+        message: `Orçamento aprovado com sucesso (${providerAmount} Db).`,
+      };
+    }
+
+    // Caso 2: Cliente informa valor divergente
+    const clientAmount =
+      input.clientAmount && input.clientAmount > 0 ? input.clientAmount : providerAmount;
+    const evalResult = evaluatePriceDivergence({
+      providerAmount,
+      clientAmount,
+      categorySlugOrName: categoryKey,
+    });
+
+    if (evalResult.tier === "tier_1_auto" || evalResult.tier === "tier_2_market") {
+      // Auto-validação algorítmica (adota o valor do cliente)
+      const agreedAmount = evalResult.adoptedAmount;
+      const breakdown = calculateFinalServiceCharge({
+        totalServiceAmount: agreedAmount,
+        visitFeePaidInEscrow: visitFee,
+        deductVisitFee: deduct,
+      });
+
+      set({
+        technicalVisits: state.technicalVisits.map((v) =>
+          v.id === input.visitId
+            ? {
+                ...v,
+                status: "visita_paga_e_aprovada",
+                finalAgreedAmount: agreedAmount,
+                declaredAmountByClient: clientAmount,
+                divergencePercent: evalResult.divergencePercent,
+                divergenceTier: evalResult.tier,
+                visitFeeDeductedAmount: breakdown.visitFeeDeduction,
+                finalComplementToPay: breakdown.complementToPay,
+              }
+            : v,
+        ),
+      });
+
+      const prevMsgs = state.messages[visit.providerId] ?? [];
+      const chatMsg: Message = {
+        id: `m_vis_alg_${Date.now()}`,
+        from: "me",
+        text: `⚖️ ${evalResult.message}\nValor adotado: ${agreedAmount} Db.${deduct ? ` Taxa de visita (${visitFee} Db) abatida. Valor complementar: ${breakdown.complementToPay} Db.` : ""}`,
+        at: Date.now(),
+        status: "sent",
+        kind: "system",
+      };
+
+      set({
+        messages: {
+          ...state.messages,
+          [visit.providerId]: [...prevMsgs, chatMsg],
+        },
+      });
+
+      notify({
+        title: "Validação Algorítmica Aprovada",
+        body: evalResult.message,
+        tone: "info",
+        link: `/chat/${visit.providerId}`,
+      });
+
+      return {
+        ok: true,
+        message: evalResult.message,
+        result: evalResult,
+      };
+    }
+
+    // Tier 3: Divergência Crítica > 40% -> Congelar e acionar Fila de Moderação
+    const disputeId = `DISP-${Math.floor(1000 + Math.random() * 9000)}`;
+    const benchmark = getCategoryBenchmark(categoryKey);
+
+    const newDispute: ModerationDispute = {
+      id: disputeId,
+      visitId: input.visitId,
+      category: benchmark.name,
+      serviceTitle: visit.serviceTitle,
+      district: visit.district,
+      createdAt: Date.now(),
+      client: {
+        id: visit.clientId,
+        name: visit.clientName,
+        phone: visit.clientPhone || "+239 9918273",
+        completedOrdersCount: 8,
+        infractionsCount: 0,
+      },
+      provider: {
+        id: visit.providerId,
+        name: visit.providerName,
+        phone: "+239 9944747",
+        completedOrdersCount: 22,
+        warningsCount: 0,
+      },
+      conflict: {
+        providerDeclaredAmount: providerAmount,
+        clientDeclaredAmount: clientAmount,
+        divergenceAmount: Math.abs(providerAmount - clientAmount),
+        divergencePercent: evalResult.divergencePercent,
+      },
+      marketBenchmark: {
+        categoryName: benchmark.name,
+        minPrice: benchmark.minPrice,
+        avgPrice: benchmark.avgPrice,
+        maxPrice: benchmark.maxPrice,
+        isClientWithinAverage:
+          clientAmount >= benchmark.minPrice && clientAmount <= benchmark.maxPrice,
+        analysisVerdict: `Divergência de ${evalResult.divergencePercent}% excede a margem de segurança de 40%. Valor do prestador: ${providerAmount} Db. Valor do cliente: ${clientAmount} Db. Média de mercado STP: ${benchmark.avgPrice} Db.`,
+      },
+      evidences: {
+        chatTranscript: (state.messages[visit.providerId] || []).slice(-6).map((m) => ({
+          from: m.from === "me" ? "client" : "provider",
+          text: m.text,
+          at: m.at,
+        })),
+        attachedPhotos: [
+          "https://images.unsplash.com/photo-1581092160607-ee22621dd758?w=600&auto=format&fit=crop&q=80",
+        ],
+        gpsCheckIn: {
+          performed: !!visit.checkInAt,
+          time: visit.checkInAt ? new Date(visit.checkInAt).toLocaleTimeString() : undefined,
+          location: visit.checkInLocation || `${visit.district} (GPS pendente)`,
+        },
+      },
+      status: "pendente",
+    };
+
+    set({
+      technicalVisits: state.technicalVisits.map((v) =>
+        v.id === input.visitId
+          ? {
+              ...v,
+              status: "em_moderacao",
+              declaredAmountByClient: clientAmount,
+              divergencePercent: evalResult.divergencePercent,
+              divergenceTier: "tier_3_moderation",
+              moderationCaseId: disputeId,
+            }
+          : v,
+      ),
+      moderationDisputes: [newDispute, ...state.moderationDisputes],
+    });
+
+    const prevMsgs = state.messages[visit.providerId] ?? [];
+    const chatMsg: Message = {
+      id: `m_vis_mod_${Date.now()}`,
+      from: "me",
+      text: `🚨 Divergência Crítica de Preço (${evalResult.divergencePercent}%):\nPrestador declarou: ${providerAmount} Db\nCliente informou: ${clientAmount} Db\n\nO pedido foi congelado em custódia e encaminhado para o Painel de Moderação KONEKTA (Protocolo ${disputeId}). A equipa de suporte analisará os registos em até 2h.`,
+      at: Date.now(),
+      status: "sent",
+      kind: "system",
+    };
+
+    set({
+      messages: {
+        ...state.messages,
+        [visit.providerId]: [...prevMsgs, chatMsg],
+      },
+    });
+
+    notify({
+      title: "⚠️ Pedido Encaminhado para Moderação",
+      body: `Divergência de ${evalResult.divergencePercent}% entre os valores declarados. Fundos congelados com segurança.`,
+      tone: "error",
+      link: `/chat/${visit.providerId}`,
+    });
+
+    return {
+      ok: true,
+      message: `Divergência de ${evalResult.divergencePercent}% encaminhada para moderação administrativa.`,
+      result: evalResult,
+    };
+  },
+
+  /**
+   * Resolução de caso no Painel de Moderação pelo Administrador
+   */
+  resolveModerationCase(input: {
+    caseId: string;
+    decision: "client" | "provider" | "warning_sanction";
+    adminNotes?: string;
+    resolvedBy?: string;
+    finalCustomAmount?: number;
+  }): { ok: boolean; message: string } {
+    const dispute = state.moderationDisputes.find((d) => d.id === input.caseId);
+    if (!dispute) return { ok: false, message: "Caso de moderação não encontrado." };
+
+    let finalAmount = dispute.conflict.clientDeclaredAmount;
+    let newStatus: ModerationDispute["status"] = "resolvido_cliente";
+
+    if (input.decision === "provider") {
+      finalAmount = dispute.conflict.providerDeclaredAmount;
+      newStatus = "resolvido_prestador";
+    } else if (input.decision === "warning_sanction") {
+      newStatus = "sancionado_prestador";
+      finalAmount = dispute.conflict.clientDeclaredAmount;
+    }
+
+    if (input.finalCustomAmount && input.finalCustomAmount > 0) {
+      finalAmount = input.finalCustomAmount;
+    }
+
+    // Atualiza disputa
+    const updatedDisputes = state.moderationDisputes.map((d) =>
+      d.id === input.caseId
+        ? {
+            ...d,
+            status: newStatus,
+            resolvedAt: Date.now(),
+            resolvedBy: input.resolvedBy || "Administrador KONEKTA",
+            resolutionNotes: input.adminNotes,
+            finalDecidedAmount: finalAmount,
+          }
+        : d,
+    );
+
+    // Atualiza visita associada
+    let updatedVisits = state.technicalVisits;
+    if (dispute.visitId) {
+      updatedVisits = state.technicalVisits.map((v) =>
+        v.id === dispute.visitId
+          ? {
+              ...v,
+              status:
+                input.decision === "warning_sanction" ? "cancelado" : "visita_paga_e_aprovada",
+              finalAgreedAmount: finalAmount,
+            }
+          : v,
+      );
+    }
+
+    set({
+      moderationDisputes: updatedDisputes,
+      technicalVisits: updatedVisits,
+    });
+
+    const providerId = dispute.provider.id;
+    const prevMsgs = state.messages[providerId] ?? [];
+    const chatMsg: Message = {
+      id: `m_mod_res_${Date.now()}`,
+      from: "them",
+      text: `⚖️ Resolução de Moderação KONEKTA:\nDecisão: ${
+        input.decision === "client"
+          ? `Adotado o valor do cliente (${finalAmount} Db).`
+          : input.decision === "provider"
+            ? `Adotado o valor do prestador (${finalAmount} Db).`
+            : "Prestador advertido por inflação injustificada. Pedido cancelado."
+      }\nNotas do Moderador: "${input.adminNotes || "Análise efetuada com base no histórico de mercado e registos do chat."}"`,
+      at: Date.now(),
+      status: "sent",
+      kind: "system",
+    };
+
+    set({
+      messages: {
+        ...state.messages,
+        [providerId]: [...prevMsgs, chatMsg],
+      },
+    });
+
+    notify({
+      title: "Disputa de Moderação Resolvida",
+      body: `Caso ${input.caseId} encerrado com decisão: ${newStatus}.`,
+      tone: "success",
+      link: "/admin",
+    });
+
+    return {
+      ok: true,
+      message: `Disputa ${input.caseId} resolvida com sucesso (${newStatus}).`,
+    };
   },
 
   completeTechnicalVisit(visitId: string, diagnosticReport: string, proposedQuote?: number) {
@@ -2603,6 +3262,89 @@ export const store = {
       message: action.agreed
         ? `Pagamento de ${finalAmount} STN confirmado. Comissão de ${finalCommission} STN liquidada com sucesso.`
         : `Valor ajustado para ${finalAmount} STN pelo cliente e comissão recalculada.`,
+    };
+  },
+
+  /**
+   * Cliente contesta recibo de pagamento presencial emitido pelo prestador
+   */
+  clientDisputeCashReceipt(
+    declarationId: string,
+    reason: string,
+  ): { ok: boolean; message: string; disputeId?: string } {
+    const decl = state.inPersonDeclarations.find((d) => d.id === declarationId);
+    if (!decl) return { ok: false, message: "Declaração não encontrada." };
+
+    const disputeId = `DISP-${Math.floor(1000 + Math.random() * 9000)}`;
+    const newDispute: ModerationDispute = {
+      id: disputeId,
+      visitId: decl.visitId,
+      orderId: decl.orderId,
+      category: "Pagamento Presencial & Recibos",
+      serviceTitle: decl.serviceTitle,
+      district: "São Tomé",
+      createdAt: Date.now(),
+      client: {
+        id: decl.clientId,
+        name: decl.clientName,
+        phone: "+239 9918273",
+        completedOrdersCount: 5,
+        infractionsCount: 0,
+      },
+      provider: {
+        id: decl.providerId,
+        name: decl.providerName,
+        phone: "+239 9944747",
+        completedOrdersCount: 18,
+        warningsCount: 0,
+      },
+      conflict: {
+        providerDeclaredAmount: decl.declaredAmount,
+        clientDeclaredAmount: decl.actualAmountPaid || 0,
+        divergenceAmount: Math.abs(decl.declaredAmount - (decl.actualAmountPaid || 0)),
+        divergencePercent: 100,
+      },
+      marketBenchmark: {
+        categoryName: "Contestação de Recibo",
+        minPrice: 100,
+        avgPrice: decl.declaredAmount,
+        maxPrice: decl.declaredAmount * 2,
+        isClientWithinAverage: false,
+        analysisVerdict: `Cliente contestou recibo presencial de ${decl.declaredAmount} STN. Motivo: "${reason}".`,
+      },
+      evidences: {
+        chatTranscript: (state.messages[decl.providerId] || []).slice(-4).map((m) => ({
+          from: m.from === "me" ? "client" : "provider",
+          text: m.text,
+          at: m.at,
+        })),
+        attachedPhotos: [],
+        gpsCheckIn: {
+          performed: true,
+          location: "São Tomé",
+        },
+      },
+      status: "pendente",
+    };
+
+    set({
+      inPersonDeclarations: state.inPersonDeclarations.map((d) =>
+        d.id === declarationId ? { ...d, status: "recusado" } : d,
+      ),
+      moderationDisputes: [newDispute, ...state.moderationDisputes],
+    });
+
+    notify({
+      title: "Recibo Contestado",
+      body: `A contestação foi registada e encaminhada para a Moderação KONEKTA (Protocolo ${disputeId}).`,
+      tone: "warning",
+      link: `/chat/${decl.providerId}`,
+    });
+
+    return {
+      ok: true,
+      message: `Recibo contestado e caso ${disputeId} criado na Moderação.`,
+      disputeId,
     };
   },
 

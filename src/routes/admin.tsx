@@ -17,11 +17,19 @@ import {
   ArrowLeft,
   Briefcase,
   Layers,
+  Scale,
+  Gavel,
+  AlertOctagon,
+  Compass,
+  FileCheck,
+  Check,
+  X,
 } from "lucide-react";
 import { AppShell } from "@/components/AppShell";
 import { Section, KCard, StatusPill } from "@/components/konekta/kit";
-import { store, useStore } from "@/lib/store";
+import { store, useStore, type ModerationDispute } from "@/lib/store";
 import { formatDb } from "@/lib/catalog";
+import { getCategoryBenchmark } from "@/lib/price-benchmark";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/admin")({
@@ -41,8 +49,16 @@ export const Route = createFileRoute("/admin")({
 export default function AdminPage() {
   const config = useStore((s) => s.config);
   const technicalVisits = useStore((s) => s.technicalVisits);
+  const moderationDisputes = useStore((s) => s.moderationDisputes);
   const orders = useStore((s) => s.orders);
   const companyMonetization = useStore((s) => s.companyMonetization);
+
+  const [disputeFilter, setDisputeFilter] = useState<"todos" | "pendentes" | "resolvidos">(
+    "pendentes",
+  );
+  const [activeResolvingId, setActiveResolvingId] = useState<string | null>(null);
+  const [resolutionNotes, setResolutionNotes] = useState("");
+  const [customArbitratedAmount, setCustomArbitratedAmount] = useState("");
 
   // Form states for editable config
   const [whatsapp, setWhatsapp] = useState(config.officialWhatsapp || "+239 9944747");
@@ -343,6 +359,287 @@ export default function AdminPage() {
             Guardar Configurações da Plataforma
           </button>
         </form>
+      </Section>
+
+      {/* Painel de Moderação & Disputas de Preço (Visitas Técnicas & Blindagem Escrow) */}
+      <Section>
+        <div className="flex items-center justify-between mb-3">
+          <div className="flex items-center gap-1.5">
+            <Scale size={16} className="text-red-600 dark:text-red-400" />
+            <h2 className="text-sm font-bold text-foreground">
+              Moderação & Disputas de Preço (Escrow)
+            </h2>
+          </div>
+          <div className="flex items-center gap-1 bg-muted/70 p-1 rounded-xl">
+            {(["todos", "pendentes", "resolvidos"] as const).map((filter) => (
+              <button
+                key={filter}
+                type="button"
+                onClick={() => setDisputeFilter(filter)}
+                className={`px-2.5 py-1 rounded-lg text-[10px] font-bold capitalize transition ${
+                  disputeFilter === filter
+                    ? "bg-primary text-primary-foreground shadow-2xs"
+                    : "text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                {filter}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {(() => {
+          const filteredDisputes = moderationDisputes.filter((d) => {
+            if (disputeFilter === "pendentes")
+              return d.status === "pendente" || d.status === "em_analise";
+            if (disputeFilter === "resolvidos")
+              return d.status === "resolvido" || d.status === "sancionado";
+            return true;
+          });
+
+          if (filteredDisputes.length === 0) {
+            return (
+              <div className="p-6 rounded-2xl bg-card border border-border text-center">
+                <p className="text-xs text-muted-foreground">
+                  Nenhuma disputa de moderação{" "}
+                  {disputeFilter === "todos" ? "registada" : disputeFilter} no momento.
+                </p>
+              </div>
+            );
+          }
+
+          return (
+            <div className="space-y-3">
+              {filteredDisputes.map((dispute) => {
+                const isResolving = activeResolvingId === dispute.id;
+
+                return (
+                  <KCard
+                    key={dispute.id}
+                    className={`border shadow-2xs space-y-3 ${
+                      dispute.status === "pendente" || dispute.status === "em_analise"
+                        ? "border-red-500/40 bg-red-500/5"
+                        : "border-border/80"
+                    }`}
+                  >
+                    <div className="flex items-start justify-between gap-2">
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <span className="text-[10px] font-mono font-bold bg-muted px-2 py-0.5 rounded-md text-foreground">
+                            {dispute.id}
+                          </span>
+                          <span
+                            className={`text-[9px] font-bold px-2 py-0.5 rounded-full ${
+                              dispute.status === "pendente"
+                                ? "bg-red-500/20 text-red-800 dark:text-red-300"
+                                : dispute.status === "sancionado"
+                                  ? "bg-purple-500/20 text-purple-800 dark:text-purple-300"
+                                  : "bg-emerald-500/20 text-emerald-800 dark:text-emerald-300"
+                            }`}
+                          >
+                            {dispute.status === "pendente"
+                              ? "🚨 Divergência >40% (Congelado)"
+                              : dispute.status === "sancionado"
+                                ? "⛔ Prestador Sancionado"
+                                : "✅ Resolvido"}
+                          </span>
+                        </div>
+                        <h3 className="text-xs font-bold text-foreground mt-1">
+                          {dispute.serviceTitle}
+                        </h3>
+                        <p className="text-[11px] text-muted-foreground">
+                          Cliente: <strong>{dispute.clientName}</strong> · Prestador:{" "}
+                          <strong>{dispute.providerName}</strong> ({dispute.district})
+                        </p>
+                      </div>
+
+                      <div className="text-right">
+                        <span className="text-[10px] font-bold text-red-800 dark:text-red-300 block">
+                          Divergência
+                        </span>
+                        <span className="text-base font-black font-mono text-red-800 dark:text-red-300">
+                          {dispute.divergencePercent.toFixed(1)}%
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Comparação dos Valores & Benchmark */}
+                    <div className="grid grid-cols-3 gap-2 p-2.5 rounded-xl bg-card border border-border text-center text-xs">
+                      <div>
+                        <span className="text-[9px] text-muted-foreground uppercase font-bold block">
+                          Prestador Declarou
+                        </span>
+                        <span className="font-black text-foreground">
+                          {formatDb(dispute.providerAmount)}
+                        </span>
+                      </div>
+                      <div>
+                        <span className="text-[9px] text-muted-foreground uppercase font-bold block">
+                          Cliente Informou
+                        </span>
+                        <span className="font-black text-primary">
+                          {formatDb(dispute.clientAmount)}
+                        </span>
+                      </div>
+                      <div>
+                        <span className="text-[9px] text-muted-foreground uppercase font-bold block">
+                          Média STP Categoria
+                        </span>
+                        <span className="font-black text-emerald-800 dark:text-emerald-300">
+                          {formatDb(dispute.benchmarkAverage)}
+                        </span>
+                      </div>
+                    </div>
+
+                    {dispute.clientNotes && (
+                      <p className="text-[11px] text-muted-foreground italic bg-muted/40 p-2 rounded-lg">
+                        &quot;{dispute.clientNotes}&quot;
+                      </p>
+                    )}
+
+                    {dispute.status === "resolvido" || dispute.status === "sancionado" ? (
+                      <div className="p-2.5 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-xs space-y-1">
+                        <div className="flex items-center justify-between font-bold text-emerald-800 dark:text-emerald-300">
+                          <span>Resolução Aplicada:</span>
+                          <span className="capitalize">{dispute.resolution}</span>
+                        </div>
+                        {dispute.resolvedAmount && (
+                          <div className="flex items-center justify-between text-[11px]">
+                            <span>Valor Fixado em Custódia:</span>
+                            <strong className="text-foreground">
+                              {formatDb(dispute.resolvedAmount)}
+                            </strong>
+                          </div>
+                        )}
+                        {dispute.moderatorNotes && (
+                          <p className="text-[10px] text-muted-foreground">
+                            Nota do moderador: {dispute.moderatorNotes}
+                          </p>
+                        )}
+                      </div>
+                    ) : (
+                      <div className="space-y-2 pt-1 border-t border-border/60">
+                        {!isResolving ? (
+                          <div className="grid grid-cols-2 gap-2">
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setActiveResolvingId(dispute.id);
+                                setCustomArbitratedAmount(String(dispute.benchmarkAverage));
+                              }}
+                              className="py-2 px-2.5 rounded-xl bg-primary text-primary-foreground font-bold text-[11px] flex items-center justify-center gap-1.5 shadow-2xs cursor-pointer active:scale-98 transition"
+                            >
+                              <Gavel size={13} /> Arbitrar Decisão Admin
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                const res = store.resolveModerationCase({
+                                  disputeId: dispute.id,
+                                  resolution: "accept_client",
+                                  resolvedAmount: dispute.clientAmount,
+                                  moderatorNotes: "Adotado valor informado pelo cliente.",
+                                });
+                                if (res.ok) toast.success(res.message);
+                              }}
+                              className="py-2 px-2.5 rounded-xl bg-emerald-600 text-white font-bold text-[11px] flex items-center justify-center gap-1.5 shadow-2xs cursor-pointer active:scale-98 transition"
+                            >
+                              <Check size={13} /> Adotar Valor do Cliente (
+                              {formatDb(dispute.clientAmount)})
+                            </button>
+                          </div>
+                        ) : (
+                          <div className="p-3 rounded-xl bg-muted/60 border border-border space-y-2.5">
+                            <div className="flex items-center justify-between">
+                              <span className="text-xs font-bold text-foreground">
+                                Decisão do Moderador
+                              </span>
+                              <button
+                                type="button"
+                                onClick={() => setActiveResolvingId(null)}
+                                className="text-muted-foreground hover:text-foreground text-xs"
+                              >
+                                Cancelar
+                              </button>
+                            </div>
+
+                            <div>
+                              <label className="text-[10px] font-bold text-muted-foreground uppercase block mb-1">
+                                Fixar Valor Final de Custódia (Db)
+                              </label>
+                              <input
+                                type="number"
+                                value={customArbitratedAmount}
+                                onChange={(e) => setCustomArbitratedAmount(e.target.value)}
+                                className="w-full h-9 px-3 rounded-lg bg-card border border-border text-xs font-bold text-foreground"
+                              />
+                            </div>
+
+                            <div>
+                              <label className="text-[10px] font-bold text-muted-foreground uppercase block mb-1">
+                                Justificação / Parecer do Moderador
+                              </label>
+                              <textarea
+                                value={resolutionNotes}
+                                onChange={(e) => setResolutionNotes(e.target.value)}
+                                rows={2}
+                                placeholder="Indique a fundamentação da decisão..."
+                                className="w-full p-2 rounded-lg bg-card border border-border text-xs text-foreground"
+                              />
+                            </div>
+
+                            <div className="grid grid-cols-2 gap-2 pt-1">
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  const res = store.resolveModerationCase({
+                                    disputeId: dispute.id,
+                                    resolution: "custom_arbitrated",
+                                    resolvedAmount:
+                                      Number(customArbitratedAmount) || dispute.benchmarkAverage,
+                                    moderatorNotes:
+                                      resolutionNotes ||
+                                      "Arbitrado com base no padrão médio da ilha.",
+                                  });
+                                  if (res.ok) {
+                                    toast.success(res.message);
+                                    setActiveResolvingId(null);
+                                  }
+                                }}
+                                className="py-2 rounded-xl bg-primary text-primary-foreground font-bold text-xs flex items-center justify-center gap-1 shadow-2xs"
+                              >
+                                <Check size={13} /> Aplicar Valor Arbitrado
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  const res = store.resolveModerationCase({
+                                    disputeId: dispute.id,
+                                    resolution: "sanction_provider",
+                                    moderatorNotes:
+                                      resolutionNotes ||
+                                      "Sancionado por inflação abusiva de preço.",
+                                  });
+                                  if (res.ok) {
+                                    toast.success(res.message);
+                                    setActiveResolvingId(null);
+                                  }
+                                }}
+                                className="py-2 rounded-xl bg-red-600 text-white font-bold text-xs flex items-center justify-center gap-1 shadow-2xs"
+                              >
+                                <AlertOctagon size={13} /> Sancionar Prestador
+                              </button>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </KCard>
+                );
+              })}
+            </div>
+          );
+        })()}
       </Section>
 
       {/* Gestão das Visitas Técnicas no Terreno (Uber-style) */}

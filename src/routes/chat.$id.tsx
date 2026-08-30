@@ -21,6 +21,9 @@ import {
   Camera,
   Image as ImageIcon,
   Upload,
+  Scale,
+  Compass,
+  CheckCircle,
 } from "lucide-react";
 import { getProvider } from "@/lib/konekta-data";
 import {
@@ -30,6 +33,12 @@ import {
   type TechnicalVisit,
   type InPersonCashDeclaration,
 } from "@/lib/store";
+import {
+  calculateFinalServiceCharge,
+  evaluatePriceDivergence,
+  getCategoryBenchmark,
+  type AlgorithmicValidationResult,
+} from "@/lib/price-benchmark";
 import { realtimeBus } from "@/lib/realtime";
 import { AuthGate } from "@/components/AuthGate";
 import { QuoteCard } from "@/components/konekta/QuoteCard";
@@ -96,7 +105,19 @@ function ChatDetail() {
   const [visitDistrict, setVisitDistrict] = useState("Água Grande");
   const [visitAddress, setVisitAddress] = useState("");
   const [visitReason, setVisitReason] = useState("");
+  const [visitDeductFee, setVisitDeductFee] = useState(true);
   const [submittingVisit, setSubmittingVisit] = useState(false);
+
+  // Modal de Declaração de Orçamento no Terreno (Prestador lança após avaliação)
+  const [onSiteBudgetModalOpen, setOnSiteBudgetModalOpen] = useState(false);
+  const [onSiteAmount, setOnSiteAmount] = useState("");
+  const [onSiteDiagnostic, setOnSiteDiagnostic] = useState("");
+  const [onSiteDeductVisitFee, setOnSiteDeductVisitFee] = useState(true);
+
+  // Modal de Validação / Ajuste do Orçamento Presencial pelo Cliente
+  const [clientValidationModalOpen, setClientValidationModalOpen] = useState(false);
+  const [clientAgreedAmountInput, setClientAgreedAmountInput] = useState("");
+  const [clientValidationNotes, setClientValidationNotes] = useState("");
 
   // Modal de Declaração de Pagamento Presencial (Em Mão)
   const [cashModalOpen, setCashModalOpen] = useState(false);
@@ -126,6 +147,13 @@ function ChatDetail() {
 
   const activeTechnicalVisit = technicalVisits.find(
     (v) => v.providerId === id && v.status !== "cancelado",
+  );
+
+  const moderationDisputes = useStore((s) => s.moderationDisputes);
+  const activeDispute = moderationDisputes.find(
+    (d) =>
+      d.visitId === activeTechnicalVisit?.id ||
+      (activeTechnicalVisit?.moderationCaseId && d.id === activeTechnicalVisit.moderationCaseId),
   );
 
   useEffect(() => {
@@ -186,11 +214,13 @@ function ChatDetail() {
         providerId: id,
         providerName: provider?.name || "Prestador KONEKTA",
         serviceTitle: visitReason.trim() || "Avaliação técnica no terreno para orçamento",
+        category: provider?.category,
         district: visitDistrict,
         address: visitAddress.trim(),
         scheduledDate: visitDate,
         scheduledTime: visitTime,
         visitFee: fee,
+        deductVisitFeeOnService: visitDeductFee,
       });
 
       setSubmittingVisit(false);
@@ -201,6 +231,94 @@ function ChatDetail() {
         toast.error(res.message);
       }
     }, 400);
+  }
+
+  // Check-in presencial no terreno pelo Prestador
+  function handleProviderCheckIn(visitId: string) {
+    const loc = `${activeTechnicalVisit?.district || "São Tomé"} (GPS validado)`;
+    const res = store.providerCheckInVisit(visitId, loc);
+    if (res.ok) {
+      toast.success("Check-in presencial registado com sucesso!", {
+        description: "Localização validada. Pode iniciar o diagnóstico técnico.",
+      });
+    } else {
+      toast.error(res.message);
+    }
+  }
+
+  // Prestador lança o orçamento no terreno
+  function handleProviderSubmitOnSiteBudget(e: React.FormEvent) {
+    e.preventDefault();
+    if (!activeTechnicalVisit) return;
+    const amountVal = Number(onSiteAmount);
+    if (!amountVal || amountVal <= 0) {
+      toast.error("Insira o valor do orçamento presencial.");
+      return;
+    }
+
+    const res = store.providerDeclareOnSiteBudget({
+      visitId: activeTechnicalVisit.id,
+      declaredAmount: amountVal,
+      diagnosticReport: onSiteDiagnostic.trim(),
+      deductVisitFee: onSiteDeductVisitFee,
+    });
+
+    if (res.ok) {
+      toast.success(res.message);
+      setOnSiteBudgetModalOpen(false);
+      setOnSiteAmount("");
+      setOnSiteDiagnostic("");
+    } else {
+      toast.error(res.message);
+    }
+  }
+
+  // Cliente valida o orçamento presencial
+  function handleClientValidateBudget(agreed: boolean, customAmount?: number) {
+    if (!activeTechnicalVisit) return;
+
+    if (agreed) {
+      const res = store.clientValidateOnSiteBudget({
+        visitId: activeTechnicalVisit.id,
+        agreed: true,
+      });
+      if (res.ok) {
+        toast.success(res.message);
+      } else {
+        toast.error(res.message);
+      }
+    } else {
+      if (customAmount !== undefined) {
+        const res = store.clientValidateOnSiteBudget({
+          visitId: activeTechnicalVisit.id,
+          agreed: false,
+          clientAmount: customAmount,
+          notes: clientValidationNotes,
+        });
+
+        if (res.ok) {
+          if (res.result?.tier === "tier_3_moderation") {
+            toast.error("Divergência Crítica (>40%)", {
+              description:
+                "O pedido foi congelado e encaminhado para o Painel de Moderação KONEKTA.",
+              duration: 6000,
+            });
+          } else {
+            toast.success(res.message);
+          }
+          setClientValidationModalOpen(false);
+          setClientAgreedAmountInput("");
+          setClientValidationNotes("");
+        } else {
+          toast.error(res.message);
+        }
+      } else {
+        setClientAgreedAmountInput(
+          String(activeTechnicalVisit.declaredAmountByProvider || activeTechnicalVisit.visitFee),
+        );
+        setClientValidationModalOpen(true);
+      }
+    }
   }
 
   // O Profissional declara quanto cobrou ao cliente em dinheiro presencialmente
@@ -433,42 +551,202 @@ function ChatDetail() {
               </div>
             )}
 
-            {/* Card de Visita Técnica no Terreno (Uber STP) */}
+            {/* Card de Visita Técnica no Terreno (Uber STP & Validação em Duas Camadas) */}
             {activeTechnicalVisit && (
-              <div className="rounded-2xl bg-amber-500/10 border border-amber-500/30 p-3 text-xs space-y-2">
+              <div className="rounded-2xl bg-amber-500/10 border border-amber-500/30 p-3.5 text-xs space-y-2.5 shadow-2xs">
                 <div className="flex items-center justify-between">
                   <span className="font-bold text-amber-900 dark:text-amber-300 flex items-center gap-1.5">
                     <Car size={14} /> Visita Técnica no Terreno
                   </span>
-                  <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-900 dark:text-amber-200">
+                  <span
+                    className={`text-[10px] font-bold px-2.5 py-0.5 rounded-full ${
+                      activeTechnicalVisit.status === "visita_paga_e_aprovada"
+                        ? "bg-emerald-500/20 text-emerald-800 dark:text-emerald-300"
+                        : activeTechnicalVisit.status === "em_moderacao"
+                          ? "bg-red-500/20 text-red-800 dark:text-red-300"
+                          : activeTechnicalVisit.status === "orcamento_presencial_solicitado" ||
+                              activeTechnicalVisit.status === "confirmacao_cliente"
+                            ? "bg-blue-500/20 text-blue-800 dark:text-blue-300"
+                            : activeTechnicalVisit.status === "a_caminho"
+                              ? "bg-purple-500/20 text-purple-800 dark:text-purple-300"
+                              : "bg-amber-500/20 text-amber-900 dark:text-amber-200"
+                    }`}
+                  >
                     {activeTechnicalVisit.status === "pendente"
                       ? "⏳ Proposta Pendente"
-                      : activeTechnicalVisit.status === "aceite"
-                        ? "✅ Visita Confirmada"
+                      : activeTechnicalVisit.status === "aguardando_visita" ||
+                          activeTechnicalVisit.status === "aceite"
+                        ? "✅ Visita Confirmada (Custódia)"
                         : activeTechnicalVisit.status === "a_caminho"
                           ? "🚗 Técnico a Caminho"
-                          : "🏁 Concluída"}
+                          : activeTechnicalVisit.status === "orcamento_presencial_solicitado" ||
+                              activeTechnicalVisit.status === "confirmacao_cliente"
+                            ? "📋 Orçamento Lançado"
+                            : activeTechnicalVisit.status === "divergencia_preco"
+                              ? "⚠️ Divergência em Análise"
+                              : activeTechnicalVisit.status === "visita_paga_e_aprovada"
+                                ? "✨ Orçamento Aprovado"
+                                : activeTechnicalVisit.status === "em_moderacao"
+                                  ? "🚨 Em Moderação Admin"
+                                  : "🏁 Concluída"}
                   </span>
                 </div>
 
-                <p className="text-[11px] text-foreground/80">
-                  <strong>{activeTechnicalVisit.serviceTitle}</strong> ·{" "}
-                  {activeTechnicalVisit.scheduledDate} às {activeTechnicalVisit.scheduledTime}
-                </p>
+                <div>
+                  <p className="text-xs font-bold text-foreground">
+                    {activeTechnicalVisit.serviceTitle}
+                  </p>
+                  <p className="text-[11px] text-muted-foreground mt-0.5">
+                    📍 {activeTechnicalVisit.district} · 📅 {activeTechnicalVisit.scheduledDate} às{" "}
+                    {activeTechnicalVisit.scheduledTime}
+                  </p>
+                </div>
 
-                <div className="flex items-center justify-between text-[11px] pt-1 border-t border-amber-500/20">
-                  <span className="text-muted-foreground">Taxa de deslocação (custódia):</span>
-                  <strong className="text-emerald-800 dark:text-emerald-300 font-bold">
+                {/* Badge de Check-in GPS */}
+                <div className="flex items-center justify-between text-[11px] pt-1.5 border-t border-amber-500/20">
+                  <span className="text-muted-foreground flex items-center gap-1">
+                    <Compass size={12} className="text-primary" /> Presença no Terreno:
+                  </span>
+                  <span
+                    className={`font-semibold ${
+                      activeTechnicalVisit.checkedIn
+                        ? "text-emerald-800 dark:text-emerald-300"
+                        : "text-amber-800 dark:text-amber-300"
+                    }`}
+                  >
+                    {activeTechnicalVisit.checkedIn
+                      ? "📍 Check-in GPS Validado"
+                      : "⏳ Aguardando Chegada"}
+                  </span>
+                </div>
+
+                {/* Taxa de Deslocação e Abatimento */}
+                <div className="flex items-center justify-between text-[11px]">
+                  <span className="text-muted-foreground">Taxa de deslocação (retida):</span>
+                  <strong className="text-foreground font-bold">
                     {formatDb(activeTechnicalVisit.visitFee)}
                   </strong>
                 </div>
 
+                {activeTechnicalVisit.deductVisitFeeOnService && (
+                  <p className="text-[10px] text-emerald-800 dark:text-emerald-300 font-medium bg-emerald-500/10 px-2 py-1 rounded-lg">
+                    ✨ Taxa de visita 100% abatida caso o serviço orçado seja aprovado.
+                  </p>
+                )}
+
+                {/* ALERTA DE MODERAÇÃO ADMINISTRATIVA (>40% divergência) */}
+                {activeTechnicalVisit.status === "em_moderacao" && (
+                  <div className="p-3 rounded-xl bg-red-500/10 border border-red-500/30 text-red-900 dark:text-red-200 text-xs space-y-1.5">
+                    <div className="flex items-center gap-1.5 font-bold text-red-800 dark:text-red-300">
+                      <ShieldAlert size={15} /> Caso em Análise pelo Painel de Moderação
+                    </div>
+                    <p className="text-[11px] text-red-950/80 dark:text-red-200/80 leading-relaxed">
+                      Protocolo:{" "}
+                      <strong>{activeTechnicalVisit.moderationCaseId || "MOD-STP"}</strong>. Foi
+                      identificada uma divergência crítica entre os valores informados pelo
+                      prestador ({formatDb(activeTechnicalVisit.declaredAmountByProvider || 0)}) e
+                      pelo cliente ({formatDb(activeTechnicalVisit.clientConfirmedAmount || 0)}).
+                    </p>
+                    <p className="text-[10px] font-semibold text-red-900 dark:text-red-300">
+                      🔒 Os fundos permanecem congelados em custódia segura até parecer da equipa
+                      KONEKTA.
+                    </p>
+                  </div>
+                )}
+
+                {/* FLUXO: ORÇAMENTO PRESENCIAL LANÇADO - AÇÕES DO CLIENTE */}
+                {isClient &&
+                  (activeTechnicalVisit.status === "orcamento_presencial_solicitado" ||
+                    activeTechnicalVisit.status === "confirmacao_cliente") && (
+                    <div className="pt-2 border-t border-amber-500/20 space-y-2">
+                      <div className="p-2.5 rounded-xl bg-card border border-border/80">
+                        <div className="flex items-center justify-between">
+                          <span className="text-[11px] text-muted-foreground">
+                            Orçamento Presencial Lançado:
+                          </span>
+                          <span className="text-sm font-black text-primary">
+                            {formatDb(activeTechnicalVisit.declaredAmountByProvider || 0)}
+                          </span>
+                        </div>
+                        {activeTechnicalVisit.diagnosticReport && (
+                          <p className="text-[11px] text-muted-foreground mt-1 italic">
+                            &quot;{activeTechnicalVisit.diagnosticReport}&quot;
+                          </p>
+                        )}
+                        {activeTechnicalVisit.deductVisitFeeOnService && (
+                          <div className="flex items-center justify-between text-[11px] pt-1 mt-1 border-t border-border/40 text-emerald-800 dark:text-emerald-300 font-semibold">
+                            <span>Taxa de visita abatida:</span>
+                            <span>- {formatDb(activeTechnicalVisit.visitFee)}</span>
+                          </div>
+                        )}
+                        <div className="flex items-center justify-between text-xs font-bold pt-1 text-foreground">
+                          <span>Complemento em Custódia:</span>
+                          <span>
+                            {formatDb(
+                              Math.max(
+                                0,
+                                (activeTechnicalVisit.declaredAmountByProvider || 0) -
+                                  (activeTechnicalVisit.deductVisitFeeOnService
+                                    ? activeTechnicalVisit.visitFee
+                                    : 0),
+                              ),
+                            )}
+                          </span>
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-2">
+                        <button
+                          type="button"
+                          onClick={() => handleClientValidateBudget(true)}
+                          className="py-2.5 px-2 rounded-xl bg-primary text-primary-foreground font-bold text-[11px] flex items-center justify-center gap-1 shadow-2xs transition active:scale-95 cursor-pointer text-center"
+                        >
+                          <Check size={13} /> Confirmar & Pagar
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handleClientValidateBudget(false)}
+                          className="py-2.5 px-2 rounded-xl bg-card border border-border text-foreground font-bold text-[11px] flex items-center justify-center gap-1 transition active:scale-95 cursor-pointer text-center"
+                        >
+                          <Scale size={13} className="text-amber-600" /> Corrigir Valor
+                        </button>
+                      </div>
+                    </div>
+                  )}
+
+                {/* FLUXO: ORÇAMENTO APROVADO & PAGO */}
+                {activeTechnicalVisit.status === "visita_paga_e_aprovada" && (
+                  <div className="p-2.5 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-950 dark:text-emerald-200 text-[11px] space-y-1">
+                    <div className="flex items-center gap-1 font-bold text-emerald-800 dark:text-emerald-300">
+                      <CheckCircle size={14} /> Orçamento Validado & Bloqueado em Custódia
+                    </div>
+                    <p>
+                      O montante total está 100% garantido pelo KONEKTA Escrow. O profissional pode
+                      concluir o serviço.
+                    </p>
+                    {!isClient && (
+                      <button
+                        type="button"
+                        onClick={() =>
+                          store.completeTechnicalVisit(
+                            activeTechnicalVisit.id,
+                            "Serviço presencial executado com sucesso.",
+                          )
+                        }
+                        className="w-full mt-1.5 py-2 rounded-xl bg-emerald-600 text-white font-bold text-xs flex items-center justify-center gap-1 cursor-pointer shadow-2xs"
+                      >
+                        <Check size={14} /> Finalizar e Libertar Pagamento
+                      </button>
+                    )}
+                  </div>
+                )}
+
                 {/* Ações do Cliente quando a proposta está pendente */}
                 {isClient && activeTechnicalVisit.status === "pendente" && (
-                  <div className="pt-2 space-y-1.5">
+                  <div className="pt-2 space-y-1.5 border-t border-amber-500/20">
                     <p className="text-[11px] text-amber-800 dark:text-amber-300">
-                      O profissional propôs uma visita presencial para inspecionar o local e fazer
-                      um orçamento exato.
+                      O profissional propôs uma visita presencial para inspecionar o local e emitir
+                      o orçamento definitivo.
                     </p>
                     <button
                       type="button"
@@ -482,49 +760,76 @@ function ChatDetail() {
                 )}
 
                 {/* Ações do Prestador na Visita Técnica */}
-                {!isClient && activeTechnicalVisit.status !== "concluido" && (
-                  <div className="grid grid-cols-2 gap-2 pt-1">
-                    {activeTechnicalVisit.status === "pendente" && (
-                      <p className="col-span-2 text-[11px] text-muted-foreground italic text-center py-1">
-                        Aguardando confirmação e bloqueio da taxa pelo cliente...
-                      </p>
-                    )}
-                    {activeTechnicalVisit.status === "aceite" && (
-                      <button
-                        type="button"
-                        onClick={() => store.startTechnicalVisit(activeTechnicalVisit.id)}
-                        className="py-2.5 rounded-xl bg-amber-600 text-white font-bold text-[11px] col-span-2 flex items-center justify-center gap-1.5 shadow-2xs transition active:scale-95 cursor-pointer"
-                      >
-                        <Car size={13} /> Iniciar Deslocação (A Caminho - Uber STP)
-                      </button>
-                    )}
-                    {activeTechnicalVisit.status === "a_caminho" && (
-                      <div className="col-span-2 space-y-2">
+                {!isClient &&
+                  activeTechnicalVisit.status !== "concluido" &&
+                  activeTechnicalVisit.status !== "em_moderacao" &&
+                  activeTechnicalVisit.status !== "visita_paga_e_aprovada" && (
+                    <div className="space-y-2 pt-1 border-t border-amber-500/20">
+                      {activeTechnicalVisit.status === "pendente" && (
+                        <p className="text-[11px] text-muted-foreground italic text-center py-1">
+                          Aguardando confirmação e bloqueio da taxa pelo cliente...
+                        </p>
+                      )}
+
+                      {(activeTechnicalVisit.status === "aceite" ||
+                        activeTechnicalVisit.status === "aguardando_visita") && (
                         <button
                           type="button"
-                          onClick={() => {
-                            setActiveVisitId(activeTechnicalVisit.id);
-                            setDiagnosticModalOpen(true);
-                          }}
-                          className="w-full py-2.5 rounded-xl bg-emerald-600 text-white font-bold text-[11px] flex items-center justify-center gap-1.5 shadow-2xs transition active:scale-95 cursor-pointer"
+                          onClick={() => store.startTechnicalVisit(activeTechnicalVisit.id)}
+                          className="w-full py-2.5 rounded-xl bg-amber-600 text-white font-bold text-xs flex items-center justify-center gap-1.5 shadow-2xs transition active:scale-95 cursor-pointer"
                         >
-                          <Check size={13} /> Concluir Diagnóstico & Emitir Orçamento
+                          <Car size={14} /> Iniciar Deslocação (A Caminho - Uber STP)
                         </button>
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setCashServiceTitle(activeTechnicalVisit.serviceTitle);
-                            setCashModalOpen(true);
-                          }}
-                          className="w-full py-2 rounded-xl bg-card border border-border text-foreground font-bold text-[11px] flex items-center justify-center gap-1.5 shadow-2xs transition cursor-pointer"
-                        >
-                          <Banknote size={13} className="text-amber-600" /> Declarar Pagamento
-                          Recebido em Mão
-                        </button>
-                      </div>
-                    )}
-                  </div>
-                )}
+                      )}
+
+                      {activeTechnicalVisit.status === "a_caminho" && (
+                        <div className="space-y-2">
+                          {!activeTechnicalVisit.checkedIn && (
+                            <button
+                              type="button"
+                              onClick={() => handleProviderCheckIn(activeTechnicalVisit.id)}
+                              className="w-full py-2.5 rounded-xl bg-blue-600 text-white font-bold text-xs flex items-center justify-center gap-1.5 shadow-2xs transition active:scale-95 cursor-pointer"
+                            >
+                              <MapPin size={14} /> Fazer Check-in GPS no Local
+                            </button>
+                          )}
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setOnSiteAmount("");
+                              setOnSiteDiagnostic("");
+                              setOnSiteBudgetModalOpen(true);
+                            }}
+                            className="w-full py-2.5 rounded-xl bg-emerald-600 text-white font-bold text-xs flex items-center justify-center gap-1.5 shadow-2xs transition active:scale-95 cursor-pointer"
+                          >
+                            <FileText size={14} /> Lançar Orçamento no Terreno
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setCashServiceTitle(activeTechnicalVisit.serviceTitle);
+                              setCashModalOpen(true);
+                            }}
+                            className="w-full py-2 rounded-xl bg-card border border-border text-foreground font-bold text-[11px] flex items-center justify-center gap-1.5 shadow-2xs transition cursor-pointer"
+                          >
+                            <Banknote size={13} className="text-amber-600" /> Declarar Pagamento
+                            Recebido em Mão
+                          </button>
+                        </div>
+                      )}
+
+                      {(activeTechnicalVisit.status === "orcamento_presencial_solicitado" ||
+                        activeTechnicalVisit.status === "confirmacao_cliente") && (
+                        <div className="p-2 rounded-xl bg-blue-500/10 text-blue-900 dark:text-blue-200 text-[11px] text-center font-medium">
+                          Orçamento de{" "}
+                          <strong>
+                            {formatDb(activeTechnicalVisit.declaredAmountByProvider || 0)}
+                          </strong>{" "}
+                          enviado. Aguardando validação do cliente no app.
+                        </div>
+                      )}
+                    </div>
+                  )}
               </div>
             )}
           </div>
@@ -880,6 +1185,215 @@ function ChatDetail() {
           </div>
         </div>
       </div>
+
+      {/* Modal: Prestador Lança Orçamento no Terreno após Avaliação */}
+      <BottomSheet
+        open={onSiteBudgetModalOpen}
+        onClose={() => setOnSiteBudgetModalOpen(false)}
+        title="Lançar Orçamento Presencial no Terreno"
+        description="Indique o valor final orçado após inspecionar o local. O cliente validará no app e o valor ficará retido em custódia (Escrow)."
+      >
+        <form onSubmit={handleProviderSubmitOnSiteBudget} className="space-y-3 pt-2">
+          {activeTechnicalVisit && (
+            <div className="p-3 rounded-2xl bg-amber-500/10 border border-amber-500/30 text-xs space-y-1.5">
+              <div className="flex items-center justify-between font-bold text-amber-900 dark:text-amber-200">
+                <span>Serviço Inspecionado:</span>
+                <span>{activeTechnicalVisit.serviceTitle}</span>
+              </div>
+              <div className="flex items-center justify-between text-[11px] text-muted-foreground">
+                <span>Taxa de deslocação já retida:</span>
+                <strong className="text-foreground">
+                  {formatDb(activeTechnicalVisit.visitFee)}
+                </strong>
+              </div>
+            </div>
+          )}
+
+          <div>
+            <label className="text-xs font-bold text-foreground block mb-1">
+              Valor Total do Serviço Presencial (STN / Db) *
+            </label>
+            <input
+              type="number"
+              min="1"
+              value={onSiteAmount}
+              onChange={(e) => setOnSiteAmount(e.target.value)}
+              placeholder="Ex: 850"
+              className="w-full h-11 px-3.5 rounded-xl bg-muted text-xs font-bold text-foreground outline-none focus:ring-2 focus:ring-primary/20 font-mono"
+              required
+            />
+          </div>
+
+          <div>
+            <label className="text-xs font-bold text-foreground block mb-1">
+              Diagnóstico Técnico / Discriminação do Trabalho
+            </label>
+            <textarea
+              value={onSiteDiagnostic}
+              onChange={(e) => setOnSiteDiagnostic(e.target.value)}
+              rows={3}
+              placeholder="Ex: Substituição de válvula de corte + reparação do tubo condutor e teste de estanqueidade..."
+              className="w-full p-3 rounded-xl bg-muted text-xs font-medium text-foreground outline-none focus:ring-2 focus:ring-primary/20"
+            />
+          </div>
+
+          <div className="flex items-center justify-between p-3 rounded-xl bg-muted/60 border border-border text-xs">
+            <div>
+              <span className="font-bold text-foreground block">Abater Taxa de Visita</span>
+              <span className="text-[10px] text-muted-foreground">
+                Descontar os {formatDb(activeTechnicalVisit?.visitFee || 150)} já pagos no valor
+                final
+              </span>
+            </div>
+            <input
+              type="checkbox"
+              checked={onSiteDeductVisitFee}
+              onChange={(e) => setOnSiteDeductVisitFee(e.target.checked)}
+              className="size-4 text-primary rounded"
+            />
+          </div>
+
+          {Number(onSiteAmount) > 0 && activeTechnicalVisit && (
+            <div className="p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-[11px] space-y-1">
+              <div className="flex items-center justify-between text-muted-foreground">
+                <span>Valor Bruto:</span>
+                <span>{formatDb(Number(onSiteAmount))}</span>
+              </div>
+              {onSiteDeductVisitFee && (
+                <div className="flex items-center justify-between text-emerald-800 dark:text-emerald-300 font-medium">
+                  <span>Dedução da visita:</span>
+                  <span>- {formatDb(activeTechnicalVisit.visitFee)}</span>
+                </div>
+              )}
+              <div className="flex items-center justify-between font-bold text-foreground pt-1 border-t border-emerald-500/20">
+                <span>Complemento a reter do cliente:</span>
+                <span className="text-primary font-black">
+                  {formatDb(
+                    Math.max(
+                      0,
+                      Number(onSiteAmount) -
+                        (onSiteDeductVisitFee ? activeTechnicalVisit.visitFee : 0),
+                    ),
+                  )}
+                </span>
+              </div>
+            </div>
+          )}
+
+          <button
+            type="submit"
+            className="w-full py-3.5 rounded-2xl bg-primary text-primary-foreground font-bold text-xs flex items-center justify-center gap-2 transition cursor-pointer shadow-2xs"
+          >
+            <Send size={15} />
+            Submeter Orçamento para Validação do Cliente
+          </button>
+        </form>
+      </BottomSheet>
+
+      {/* Modal: Cliente Valida Orçamento Presencial / Informa Divergência */}
+      <BottomSheet
+        open={clientValidationModalOpen}
+        onClose={() => setClientValidationModalOpen(false)}
+        title="Validação do Orçamento Presencial"
+        description="Se acordou um montante diferente com o prestador no terreno, declare-o aqui para validação algorítmica e proteção KONEKTA."
+      >
+        <div className="space-y-3.5 pt-2">
+          {activeTechnicalVisit && (
+            <div className="p-3 rounded-xl bg-muted/60 border border-border text-xs space-y-1">
+              <div className="flex items-center justify-between">
+                <span className="text-muted-foreground">Valor declarado pelo prestador:</span>
+                <strong className="text-foreground">
+                  {formatDb(activeTechnicalVisit.declaredAmountByProvider || 0)}
+                </strong>
+              </div>
+              <div className="flex items-center justify-between text-[11px] text-muted-foreground">
+                <span>Taxa de deslocação já retida:</span>
+                <span>{formatDb(activeTechnicalVisit.visitFee)}</span>
+              </div>
+            </div>
+          )}
+
+          <div>
+            <label className="text-xs font-bold text-foreground block mb-1">
+              Valor Acordado no Terreno (STN / Db) *
+            </label>
+            <input
+              type="number"
+              min="1"
+              value={clientAgreedAmountInput}
+              onChange={(e) => setClientAgreedAmountInput(e.target.value)}
+              placeholder="Ex: 750"
+              className="w-full h-11 px-3.5 rounded-xl bg-muted text-xs font-bold text-foreground outline-none focus:ring-2 focus:ring-primary/20 font-mono"
+              required
+            />
+          </div>
+
+          <div>
+            <label className="text-xs font-bold text-foreground block mb-1">
+              Justificação da Diferença / Observações (opcional)
+            </label>
+            <textarea
+              value={clientValidationNotes}
+              onChange={(e) => setClientValidationNotes(e.target.value)}
+              rows={2}
+              placeholder="Ex: Foi acordado fazer apenas a substituição sem a pintura final..."
+              className="w-full p-3 rounded-xl bg-muted text-xs font-medium text-foreground outline-none focus:ring-2 focus:ring-primary/20"
+            />
+          </div>
+
+          {/* Análise Algorítmica em Tempo Real */}
+          {activeTechnicalVisit &&
+            Number(clientAgreedAmountInput) > 0 &&
+            (() => {
+              const providerVal = activeTechnicalVisit.declaredAmountByProvider || 0;
+              const clientVal = Number(clientAgreedAmountInput);
+              const benchmark = getCategoryBenchmark(activeTechnicalVisit.category);
+              const preview = evaluatePriceDivergence({
+                declaredByProvider: providerVal,
+                confirmedByClient: clientVal,
+                benchmarkAverage: benchmark.averagePrice,
+                category: activeTechnicalVisit.category,
+              });
+
+              return (
+                <div
+                  className={`p-3 rounded-xl text-xs space-y-1.5 border ${
+                    preview.tier === "tier_1_auto"
+                      ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-950 dark:text-emerald-200"
+                      : preview.tier === "tier_2_benchmark"
+                        ? "bg-blue-500/10 border-blue-500/30 text-blue-950 dark:text-blue-200"
+                        : "bg-red-500/10 border-red-500/30 text-red-950 dark:text-red-200"
+                  }`}
+                >
+                  <div className="flex items-center justify-between font-bold">
+                    <span>Divergência Calculada:</span>
+                    <span className="font-mono text-sm">
+                      {preview.divergencePercent.toFixed(1)}%
+                    </span>
+                  </div>
+                  <p className="text-[11px] leading-relaxed">
+                    {preview.tier === "tier_1_auto" &&
+                      "✅ Divergência ≤ 15%: Aceitação automática do valor informado pelo cliente e ajuste de custódia."}
+                    {preview.tier === "tier_2_benchmark" &&
+                      `🔍 Divergência entre 15% e 40%: Verificação algorítmica face à média de mercado em São Tomé (${formatDb(benchmark.averagePrice)}).`}
+                    {preview.tier === "tier_3_moderation" &&
+                      "🚨 Divergência crítica (> 40%): O pedido será congelado em custódia e encaminhado para o Painel de Moderação Administrativa KONEKTA."}
+                  </p>
+                </div>
+              );
+            })()}
+
+          <button
+            type="button"
+            onClick={() => handleClientValidateBudget(false, Number(clientAgreedAmountInput))}
+            disabled={!Number(clientAgreedAmountInput)}
+            className="w-full py-3.5 rounded-2xl bg-primary text-primary-foreground font-bold text-xs flex items-center justify-center gap-2 transition cursor-pointer shadow-2xs disabled:opacity-40"
+          >
+            <Scale size={15} />
+            Submeter Validação de Orçamento
+          </button>
+        </div>
+      </BottomSheet>
 
       {/* Modal: Profissional Declara Pagamento Presencial (Em Mão) */}
       <BottomSheet
