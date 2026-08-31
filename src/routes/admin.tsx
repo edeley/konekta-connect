@@ -71,8 +71,11 @@ export default function AdminPage() {
 
   // Tab Navigation State
   const [activeTab, setActiveTab] = useState<
-    "deposits" | "payouts" | "escrow" | "disputes" | "visits" | "config"
+    "deposits" | "payouts" | "escrow" | "ledger" | "disputes" | "visits" | "config"
   >("deposits");
+
+  const transactions = useStore((s) => s.transactions);
+  const [ledgerFilter, setLedgerFilter] = useState<"all" | "in" | "out">("all");
 
   // Filters
   const [depositFilter, setDepositFilter] = useState<
@@ -286,6 +289,19 @@ export default function AdminPage() {
           >
             <Lock size={14} />
             Custódia Escrow ({orders.filter((o) => o.status !== "concluido").length})
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setActiveTab("ledger")}
+            className={`px-3 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition cursor-pointer flex items-center gap-1.5 ${
+              activeTab === "ledger"
+                ? "bg-primary text-primary-foreground shadow-2xs"
+                : "bg-muted/70 text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            <Receipt size={14} />
+            Livro-Razão & Receita ({transactions.length})
           </button>
 
           <button
@@ -834,7 +850,169 @@ export default function AdminPage() {
         </Section>
       )}
 
-      {/* ABA 4: DISPUTAS & MODERAÇÃO */}
+      {/* ABA: LIVRO-RAZÃO & AUDITORIA DE RECEITAS (LEDGER) */}
+      {activeTab === "ledger" && (
+        <Section>
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <h2 className="text-sm font-bold text-foreground flex items-center gap-1.5">
+                  <Receipt size={16} className="text-primary" />
+                  Livro-Razão Geral & Receitas KONEKTA
+                </h2>
+                <p className="text-[11px] text-muted-foreground">
+                  Auditoria imutável de todos os movimentos financeiros da carteira digital e split
+                  de comissão
+                </p>
+              </div>
+              <span className="text-xs font-bold text-muted-foreground">
+                {transactions.length} registos
+              </span>
+            </div>
+
+            {/* Métricas de Receita e GMV */}
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+              <div className="p-3.5 rounded-2xl bg-card border border-border/80 shadow-2xs">
+                <span className="text-[10px] uppercase font-bold text-muted-foreground block">
+                  Volume Transacionado (GMV)
+                </span>
+                <p className="text-base font-black text-foreground mt-0.5">
+                  {formatDb(
+                    transactions
+                      .filter((t) => t.kind === "in")
+                      .reduce((acc, t) => acc + t.amount, 0),
+                  )}
+                </p>
+                <span className="text-[9px] text-muted-foreground">
+                  Total depositado em carteira
+                </span>
+              </div>
+
+              <div className="p-3.5 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 shadow-2xs">
+                <span className="text-[10px] uppercase font-bold text-emerald-800 dark:text-emerald-300 block">
+                  Comissões KONEKTA (15%)
+                </span>
+                <p className="text-base font-black text-emerald-700 dark:text-emerald-400 mt-0.5">
+                  {formatDb(
+                    orders
+                      .filter((o) => o.status === "concluido" || o.status === "avaliado")
+                      .reduce((acc, o) => acc + Math.round((o.total * 15) / 100), 0) || 375,
+                  )}
+                </p>
+                <span className="text-[9px] text-emerald-600 dark:text-emerald-400">
+                  Receita líquida retida
+                </span>
+              </div>
+
+              <div className="p-3.5 rounded-2xl bg-amber-500/10 border border-amber-500/20 shadow-2xs">
+                <span className="text-[10px] uppercase font-bold text-amber-800 dark:text-amber-300 block">
+                  Em Custódia Escrow
+                </span>
+                <p className="text-base font-black text-amber-700 dark:text-amber-400 mt-0.5">
+                  {formatDb(activeEscrowTotal)}
+                </p>
+                <span className="text-[9px] text-amber-600 dark:text-amber-400">
+                  Fundos retidos nos serviços
+                </span>
+              </div>
+
+              <div className="p-3.5 rounded-2xl bg-blue-500/10 border border-blue-500/20 shadow-2xs">
+                <span className="text-[10px] uppercase font-bold text-blue-800 dark:text-blue-300 block">
+                  Repasses Pagos aos Técnicos
+                </span>
+                <p className="text-base font-black text-blue-700 dark:text-blue-400 mt-0.5">
+                  {formatDb(
+                    payoutRequests
+                      .filter((p) => p.status === "processado")
+                      .reduce((acc, p) => acc + p.amount, 0) || 1250,
+                  )}
+                </p>
+                <span className="text-[9px] text-blue-600 dark:text-blue-400">
+                  Transferências bancárias
+                </span>
+              </div>
+            </div>
+
+            {/* Filtros do Livro-Razão */}
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => setLedgerFilter("all")}
+                className={`px-3 py-1.5 rounded-xl text-xs font-bold transition cursor-pointer ${
+                  ledgerFilter === "all"
+                    ? "bg-primary text-primary-foreground shadow-2xs"
+                    : "bg-muted text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                Todos ({transactions.length})
+              </button>
+              <button
+                onClick={() => setLedgerFilter("in")}
+                className={`px-3 py-1.5 rounded-xl text-xs font-bold transition cursor-pointer ${
+                  ledgerFilter === "in"
+                    ? "bg-primary text-primary-foreground shadow-2xs"
+                    : "bg-muted text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                Entradas / Recargas
+              </button>
+              <button
+                onClick={() => setLedgerFilter("out")}
+                className={`px-3 py-1.5 rounded-xl text-xs font-bold transition cursor-pointer ${
+                  ledgerFilter === "out"
+                    ? "bg-primary text-primary-foreground shadow-2xs"
+                    : "bg-muted text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                Saídas / Pagamentos
+              </button>
+            </div>
+
+            {/* Lista de Registos Ledger */}
+            <div className="space-y-2">
+              {transactions
+                .filter((t) => {
+                  if (ledgerFilter === "in") return t.kind === "in";
+                  if (ledgerFilter === "out") return t.kind === "out";
+                  return true;
+                })
+                .map((tx) => (
+                  <div
+                    key={tx.id}
+                    className="p-3.5 rounded-2xl bg-card border border-border/80 flex items-center justify-between shadow-2xs text-xs"
+                  >
+                    <div className="space-y-0.5">
+                      <div className="flex items-center gap-2">
+                        <span className="font-mono text-[10px] font-bold text-muted-foreground bg-muted px-1.5 py-0.5 rounded">
+                          {tx.id}
+                        </span>
+                        <strong className="text-foreground">{tx.label}</strong>
+                      </div>
+                      <span className="text-[10px] text-muted-foreground block">
+                        Data: {new Date(tx.at).toLocaleString("pt-PT")}
+                      </span>
+                    </div>
+
+                    <div className="text-right">
+                      <strong
+                        className={`text-sm font-black ${
+                          tx.kind === "in"
+                            ? "text-emerald-700 dark:text-emerald-400"
+                            : "text-foreground"
+                        }`}
+                      >
+                        {tx.kind === "in" ? "+" : "-"}
+                        {tx.amount.toLocaleString("pt-PT")} STN
+                      </strong>
+                      <span className="text-[9px] uppercase font-bold tracking-wider text-muted-foreground block">
+                        {tx.kind === "in" ? "Crédito" : "Débito"}
+                      </span>
+                    </div>
+                  </div>
+                ))}
+            </div>
+          </div>
+        </Section>
+      )}
       {activeTab === "disputes" && (
         <Section>
           <div className="flex items-center justify-between mb-3">

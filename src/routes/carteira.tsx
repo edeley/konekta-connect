@@ -19,8 +19,15 @@ import {
   ShieldCheck,
   Award,
   Sparkles,
-  QrCode,
   Lock,
+  ChevronRight,
+  KeyRound,
+  FileText,
+  Info,
+  Layers,
+  Eye,
+  EyeOff,
+  Filter,
 } from "lucide-react";
 import { AppShell } from "@/components/AppShell";
 import { store, useStore } from "@/lib/store";
@@ -31,17 +38,17 @@ import { SmsOtpVerificationModal } from "@/components/konekta/SmsOtpVerification
 export const Route = createFileRoute("/carteira")({
   head: () => ({
     meta: [
-      { title: "Carteira & Pagamentos Dobra 24 · KONEKTA STP" },
+      { title: "Carteira Digital & Custódia Escrow · KONEKTA STP" },
       {
         name: "description",
         content:
-          "Gerir saldo, recargas por Dobra 24, BISTP e pagamentos protegidos por custódia em São Tomé e Príncipe.",
+          "Gerir saldo disponível, retenção de pagamentos em custódia segura, recargas por Dobra 24 e bancos locais em São Tomé e Príncipe.",
       },
-      { property: "og:title", content: "Carteira Dobra 24 · KONEKTA STP" },
+      { property: "og:title", content: "Carteira Digital Closed-Loop · KONEKTA STP" },
       {
         property: "og:description",
         content:
-          "Pagamentos protegidos e transparentes em Dobras (STN) para clientes e profissionais.",
+          "Pagamentos 100% protegidos por custódia e validação OTP em Dobras (STN) para clientes e profissionais.",
       },
     ],
   }),
@@ -86,17 +93,21 @@ function WalletPage() {
   const transactions = useStore((s) => s.transactions);
   const orders = useStore((s) => s.orders);
   const user = useStore((s) => s.user);
+  const depositRequests = useStore((s) => s.depositRequests || []);
 
   const [showTopUp, setShowTopUp] = useState(false);
   const [showWithdraw, setShowWithdraw] = useState(false);
   const [showHelp, setShowHelp] = useState(false);
+  const [showFlowGuide, setShowFlowGuide] = useState(false);
   const [copiedNib, setCopiedNib] = useState(false);
+  const [txFilter, setTxFilter] = useState<"all" | "in" | "out" | "escrow">("all");
+  const [selectedTx, setSelectedTx] = useState<(typeof transactions)[0] | null>(null);
 
   // Top-Up Form State
   const [topUpMethod, setTopUpMethod] = useState<"dobra24" | "transferencia" | "agente">("dobra24");
   const [topUpAmount, setTopUpAmount] = useState("500");
   const [dobra24Phone, setDobra24Phone] = useState(user?.phone || "+239 99");
-  const [dobra24VoucherCode, setDobra24VoucherCode] = useState("");
+  const [transferProofRef, setTransferProofRef] = useState("");
   const [isProcessingTopUp, setIsProcessingTopUp] = useState(false);
 
   // Withdraw Form State
@@ -107,12 +118,17 @@ function WalletPage() {
   const [showWithdrawOtp, setShowWithdrawOtp] = useState(false);
 
   // Calculate active escrow in orders
-  const escrowAmount = orders
-    .filter((o) => ["pendente", "aceite", "a-caminho", "em-execucao"].includes(o.status))
-    .reduce((sum, o) => sum + o.total, 0);
+  const activeEscrowOrders = orders.filter((o) =>
+    ["pendente", "aceite", "a-caminho", "em-execucao", "aguardando-codigo"].includes(o.status),
+  );
 
-  // Completed orders covered by the 30-day warranty
-  const guaranteedOrders = orders.filter((o) => ["concluido", "avaliado"].includes(o.status));
+  const escrowAmount = activeEscrowOrders.reduce((sum, o) => sum + o.total, 0);
+  const totalWalletValue = balance + escrowAmount;
+
+  // Meus depósitos pendentes
+  const myPendingDeposits = depositRequests.filter(
+    (d) => d.userId === user?.id && d.status === "pendente_aprovacao",
+  );
 
   function handleCopyNib() {
     navigator.clipboard?.writeText("0001.0000.12345678901.23");
@@ -152,19 +168,20 @@ function WalletPage() {
       bankOrProviderName: methodNames[topUpMethod] || "Dobra 24 STP",
       referenceOrPhone:
         topUpMethod === "dobra24"
-          ? dobra24Phone || dobra24VoucherCode || `DB24-${Date.now().toString().slice(-6)}`
-          : `TRF-${Date.now().toString().slice(-6)}`,
+          ? dobra24Phone || `DB24-${Date.now().toString().slice(-6)}`
+          : transferProofRef.trim() || `TRF-${Date.now().toString().slice(-6)}`,
       notes: "Carregamento de carteira digital do cliente",
     });
 
     setIsProcessingTopUp(false);
     setShowTopUp(false);
     setTopUpAmount("");
+    setTransferProofRef("");
 
     if (res.ok) {
       toast.success("Comprovativo de Carregamento Submetido!", {
         description:
-          "O seu pedido de recarga foi enviado para validação administrativa e será creditado após confirmação bancária.",
+          "O seu pedido de recarga foi registado no sistema e o saldo será creditado assim que validado pelo administrador.",
       });
     } else {
       toast.error(res.message);
@@ -207,13 +224,36 @@ function WalletPage() {
     }
   }
 
+  // Filtragem de transações
+  const filteredTxs = transactions.filter((t) => {
+    if (txFilter === "in") return t.kind === "in";
+    if (txFilter === "out") return t.kind === "out";
+    if (txFilter === "escrow") {
+      const label = t.label.toLowerCase();
+      return (
+        label.includes("custódia") ||
+        label.includes("custodia") ||
+        label.includes("retenção") ||
+        label.includes("pagamento")
+      );
+    }
+    return true;
+  });
+
   return (
     <AppShell>
       <header className="pt-7 pb-3 px-5 flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-black tracking-tight text-foreground">Carteira KONEKTA</h1>
+          <div className="flex items-center gap-2">
+            <span className="text-[10px] uppercase tracking-wider font-extrabold px-2 py-0.5 rounded-full bg-primary/10 text-primary">
+              Carteira Digital Closed-Loop
+            </span>
+          </div>
+          <h1 className="text-2xl font-black tracking-tight text-foreground mt-1">
+            Carteira KONEKTA
+          </h1>
           <p className="text-xs text-muted-foreground font-medium">
-            Pagamentos por Dobra 24 e bancos locais em São Tomé e Príncipe
+            Pagamentos por Dobra 24 e bancos locais com Custódia Escrow em São Tomé
           </p>
         </div>
         <button
@@ -225,42 +265,136 @@ function WalletPage() {
         </button>
       </header>
 
-      {/* Card Principal da Carteira Estilo Triider */}
-      <section className="px-5 mt-2">
-        <div className="bg-gradient-to-br from-primary via-emerald-800 to-teal-900 text-primary-foreground rounded-3xl p-5.5 relative overflow-hidden shadow-md">
+      {/* BANNER DO FLUXO CLOSED-LOOP EM 5 ETAPAS */}
+      <section className="px-5 mt-1">
+        <div className="bg-card border border-primary/25 rounded-2xl p-4 shadow-2xs space-y-3">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <div className="size-8 rounded-xl bg-primary/10 text-primary grid place-items-center">
+                <ShieldCheck size={18} />
+              </div>
+              <div>
+                <h3 className="text-xs font-bold text-foreground">Como Funciona a Custódia</h3>
+                <p className="text-[10px] text-muted-foreground">
+                  O cliente nunca paga diretamente ao técnico
+                </p>
+              </div>
+            </div>
+            <button
+              onClick={() => setShowFlowGuide(!showFlowGuide)}
+              className="text-[11px] font-bold text-primary hover:underline cursor-pointer"
+            >
+              {showFlowGuide ? "Ocultar" : "Ver 5 Etapas"}
+            </button>
+          </div>
+
+          {showFlowGuide && (
+            <div className="grid grid-cols-1 sm:grid-cols-5 gap-2 pt-2 border-t border-border/80 text-[11px] animate-fadeIn">
+              <div className="p-2.5 rounded-xl bg-muted/50 space-y-1">
+                <span className="font-extrabold text-primary block">1. Carregamento</span>
+                <p className="text-muted-foreground text-[10px]">
+                  Transfere por Dobra 24 ou BISTP/BGFI. Saldo entra disponível no app.
+                </p>
+              </div>
+              <div className="p-2.5 rounded-xl bg-muted/50 space-y-1">
+                <span className="font-extrabold text-amber-600 dark:text-amber-400 block">
+                  2. Bloqueio Escrow
+                </span>
+                <p className="text-muted-foreground text-[10px]">
+                  Ao aceitar a proposta, o valor fica congelado em custódia segura.
+                </p>
+              </div>
+              <div className="p-2.5 rounded-xl bg-muted/50 space-y-1">
+                <span className="font-extrabold text-blue-600 dark:text-blue-400 block">
+                  3. Execução & PIN
+                </span>
+                <p className="text-muted-foreground text-[10px]">
+                  O técnico executa o trabalho e solicita o código OTP de 4 dígitos.
+                </p>
+              </div>
+              <div className="p-2.5 rounded-xl bg-muted/50 space-y-1">
+                <span className="font-extrabold text-emerald-600 dark:text-emerald-400 block">
+                  4. Split Automático
+                </span>
+                <p className="text-muted-foreground text-[10px]">
+                  Validação do PIN credita 85% ao prestador e 15% taxa KONEKTA.
+                </p>
+              </div>
+              <div className="p-2.5 rounded-xl bg-muted/50 space-y-1">
+                <span className="font-extrabold text-purple-600 dark:text-purple-400 block">
+                  5. Saque Bancário
+                </span>
+                <p className="text-muted-foreground text-[10px]">
+                  O prestador resgata o saldo para a sua conta bancária ou Dobra 24.
+                </p>
+              </div>
+            </div>
+          )}
+        </div>
+      </section>
+
+      {/* CARD PRINCIPAL DE SALDO & CUSTÓDIA */}
+      <section className="px-5 mt-4">
+        <div className="bg-gradient-to-br from-primary via-emerald-800 to-teal-950 text-primary-foreground rounded-3xl p-5.5 relative overflow-hidden shadow-md space-y-4">
           <div className="flex items-center justify-between">
             <span className="text-[11px] uppercase tracking-widest text-primary-foreground/75 font-bold">
-              Saldo Disponível
+              Resumo da Carteira
             </span>
             <span className="inline-flex items-center gap-1 text-[10px] bg-white/20 backdrop-blur-md px-2.5 py-1 rounded-full font-bold text-white shadow-2xs">
               <ShieldCheck size={12} className="text-amber-300" />
-              100% Protegido
+              100% Protegido em STP
             </span>
           </div>
 
-          <div className="mt-2.5 flex items-baseline gap-2">
-            <p className="text-4xl font-black tracking-tight">{balance.toLocaleString("pt-PT")}</p>
-            <span className="text-lg font-bold text-primary-foreground/80">STN (Dobras)</span>
-          </div>
-
-          {escrowAmount > 0 && (
-            <div className="mt-3 py-2 px-3 rounded-xl bg-black/25 backdrop-blur-xs text-xs flex items-center justify-between border border-white/10">
-              <span className="text-primary-foreground/90 flex items-center gap-1.5 font-medium">
-                <Clock size={13} className="text-amber-300" />
-                Em custódia (serviços ativos):
+          <div className="grid grid-cols-2 gap-3 pt-1">
+            {/* Saldo Disponível */}
+            <div className="p-3 rounded-2xl bg-white/10 backdrop-blur-xs border border-white/10 space-y-1">
+              <span className="text-[10px] text-primary-foreground/80 font-bold uppercase tracking-wider block">
+                Saldo Disponível
               </span>
-              <span className="font-bold text-amber-300">
-                {escrowAmount.toLocaleString("pt-PT")} STN
+              <div className="flex items-baseline gap-1.5">
+                <p className="text-2xl font-black tracking-tight">
+                  {balance.toLocaleString("pt-PT")}
+                </p>
+                <span className="text-xs font-bold text-primary-foreground/80">STN</span>
+              </div>
+              <span className="text-[9px] text-emerald-200 block">Livre para contratação</span>
+            </div>
+
+            {/* Saldo Bloqueado em Custódia */}
+            <div className="p-3 rounded-2xl bg-amber-400/15 backdrop-blur-xs border border-amber-400/25 space-y-1">
+              <span className="text-[10px] text-amber-200 font-bold uppercase tracking-wider block flex items-center gap-1">
+                <Lock size={10} /> Em Custódia
+              </span>
+              <div className="flex items-baseline gap-1.5">
+                <p className="text-2xl font-black tracking-tight text-amber-300">
+                  {escrowAmount.toLocaleString("pt-PT")}
+                </p>
+                <span className="text-xs font-bold text-amber-200">STN</span>
+              </div>
+              <span className="text-[9px] text-amber-200/90 block">
+                {activeEscrowOrders.length} serviço(s) ativo(s)
               </span>
             </div>
-          )}
+          </div>
 
-          <div className="mt-5 flex gap-2.5 relative">
+          {/* Total Geral */}
+          <div className="pt-2 border-t border-white/15 flex items-center justify-between text-xs">
+            <span className="text-primary-foreground/80 font-medium">
+              Total na Carteira (Disponível + Retido):
+            </span>
+            <strong className="text-sm font-black text-white">
+              {totalWalletValue.toLocaleString("pt-PT")} STN
+            </strong>
+          </div>
+
+          {/* Botões de Ação */}
+          <div className="pt-2 flex gap-2.5">
             <button
               onClick={() => setShowTopUp(true)}
               className="flex-1 bg-white text-primary rounded-xl py-3 text-xs font-black flex items-center justify-center gap-1.5 shadow-sm active:scale-98 transition-transform cursor-pointer"
             >
-              <Plus size={16} /> Carregar Saldo
+              <Plus size={16} /> Carregar Carteira
             </button>
             <button
               onClick={() => setShowWithdraw(true)}
@@ -273,7 +407,73 @@ function WalletPage() {
         </div>
       </section>
 
-      {/* Destaque Dobra 24 para STP (40% sem banco) */}
+      {/* AVISO DE RECARGAS PENDENTES DE APROVAÇÃO PELO ADMIN */}
+      {myPendingDeposits.length > 0 && (
+        <section className="px-5 mt-4">
+          <div className="p-3.5 rounded-2xl bg-amber-500/10 border border-amber-500/30 text-amber-900 dark:text-amber-200 text-xs space-y-1.5">
+            <div className="flex items-center gap-2 font-bold">
+              <Clock size={16} className="text-amber-600 dark:text-amber-400" />
+              <span>{myPendingDeposits.length} Carregamento(s) em Validação Bancária</span>
+            </div>
+            <p className="text-[11px] text-muted-foreground leading-relaxed">
+              O seu comprovativo foi submetido. Assim que a administração confirmar a transferência,
+              o saldo será creditado automaticamente.
+            </p>
+          </div>
+        </section>
+      )}
+
+      {/* SERVIÇOS EM CUSTÓDIA ATIVA (COM CÓDIGO OTP) */}
+      {activeEscrowOrders.length > 0 && (
+        <section className="px-5 mt-5 space-y-2.5">
+          <div className="flex items-center justify-between">
+            <h2 className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
+              <Lock size={13} className="text-amber-600" />
+              Serviços com Custódia Ativa ({activeEscrowOrders.length})
+            </h2>
+          </div>
+
+          <div className="space-y-2">
+            {activeEscrowOrders.map((ord) => (
+              <div
+                key={ord.id}
+                className="bg-card border border-amber-500/30 rounded-2xl p-3.5 shadow-2xs space-y-2"
+              >
+                <div className="flex items-center justify-between">
+                  <div>
+                    <span className="text-[10px] font-mono font-bold text-muted-foreground uppercase">
+                      {ord.id}
+                    </span>
+                    <h4 className="text-xs font-bold text-foreground">{ord.service}</h4>
+                  </div>
+                  <span className="text-xs font-black text-amber-600 dark:text-amber-400">
+                    {ord.total.toLocaleString("pt-PT")} STN
+                  </span>
+                </div>
+
+                <div className="p-2.5 rounded-xl bg-muted/60 flex items-center justify-between text-xs">
+                  <div className="flex items-center gap-2">
+                    <KeyRound size={16} className="text-primary shrink-0" />
+                    <div>
+                      <span className="text-[10px] text-muted-foreground block">
+                        O seu Código OTP de Conclusão:
+                      </span>
+                      <strong className="text-sm font-mono tracking-widest text-primary font-black">
+                        {ord.completionCode || "5821"}
+                      </strong>
+                    </div>
+                  </div>
+                  <span className="text-[10px] text-muted-foreground text-right">
+                    Forneça apenas ao terminar o serviço
+                  </span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
+
+      {/* DESTAQUE DOBRA 24 STP */}
       <section className="px-5 mt-4">
         <div className="bg-card border border-primary/20 rounded-2xl p-4 shadow-2xs space-y-2">
           <div className="flex items-center justify-between">
@@ -299,56 +499,71 @@ function WalletPage() {
         </div>
       </section>
 
-      {/* Painel de Garantia de 30/60 Dias Pós-Serviço */}
-      <section className="px-5 mt-4">
-        <div className="bg-card border border-border rounded-2xl p-4 shadow-2xs space-y-3">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <div className="size-8 rounded-xl bg-emerald-500/10 text-emerald-700 grid place-items-center">
-                <Award size={18} />
-              </div>
-              <div>
-                <h3 className="text-xs font-bold text-foreground">Garantia KONEKTA de 30 Dias</h3>
-                <p className="text-[10px] text-muted-foreground">
-                  Proteção pós-serviço em todos os trabalhos concluídos
-                </p>
-              </div>
-            </div>
-            <span className="text-[10px] font-bold text-primary bg-primary/10 px-2 py-0.5 rounded-full">
-              Ativa
-            </span>
-          </div>
-
-          <div className="bg-muted/50 rounded-xl p-3 text-[11px] text-muted-foreground space-y-1">
-            <p>
-              🛡️ <strong>Como funciona a garantia:</strong> Se a avaria persistir ou o trabalho
-              apresentar defeito dentro de 30 dias, o profissional regressa sem custos adicionais de
-              mão de obra.
-            </p>
-          </div>
-        </div>
-      </section>
-
-      {/* Histórico de Transações */}
-      <section className="px-5 mt-6 pb-8 space-y-2.5">
+      {/* EXTRATO DE MOVIMENTOS COM FILTROS */}
+      <section className="px-5 mt-6 pb-12 space-y-3">
         <div className="flex items-center justify-between">
           <h2 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
-            Extrato de Movimentos
+            Livro-Razão & Movimentos
           </h2>
           <span className="text-[11px] text-muted-foreground font-medium">
-            {transactions.length} transações
+            {filteredTxs.length} registo(s)
           </span>
         </div>
 
-        {transactions.length === 0 ? (
+        {/* Filtros */}
+        <div className="flex items-center gap-1.5 overflow-x-auto pb-1 no-scrollbar">
+          <button
+            onClick={() => setTxFilter("all")}
+            className={`px-3 py-1.5 rounded-xl text-xs font-bold transition cursor-pointer ${
+              txFilter === "all"
+                ? "bg-primary text-primary-foreground"
+                : "bg-muted text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            Todos
+          </button>
+          <button
+            onClick={() => setTxFilter("in")}
+            className={`px-3 py-1.5 rounded-xl text-xs font-bold transition cursor-pointer ${
+              txFilter === "in"
+                ? "bg-primary text-primary-foreground"
+                : "bg-muted text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            Recargas (+)
+          </button>
+          <button
+            onClick={() => setTxFilter("out")}
+            className={`px-3 py-1.5 rounded-xl text-xs font-bold transition cursor-pointer ${
+              txFilter === "out"
+                ? "bg-primary text-primary-foreground"
+                : "bg-muted text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            Pagamentos (-)
+          </button>
+          <button
+            onClick={() => setTxFilter("escrow")}
+            className={`px-3 py-1.5 rounded-xl text-xs font-bold transition cursor-pointer ${
+              txFilter === "escrow"
+                ? "bg-primary text-primary-foreground"
+                : "bg-muted text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            Custódia Escrow
+          </button>
+        </div>
+
+        {filteredTxs.length === 0 ? (
           <div className="rounded-2xl bg-card border border-border p-6 text-center text-xs text-muted-foreground">
-            Sem transações registadas até ao momento.
+            Sem transações registadas nesta categoria.
           </div>
         ) : (
-          transactions.map((t) => (
+          filteredTxs.map((t) => (
             <div
               key={t.id}
-              className="flex items-center gap-3 bg-card border border-border/80 rounded-2xl p-3.5 shadow-2xs"
+              onClick={() => setSelectedTx(t)}
+              className="flex items-center gap-3 bg-card border border-border/80 hover:border-primary/40 rounded-2xl p-3.5 shadow-2xs transition cursor-pointer"
             >
               <div
                 className={`size-9 rounded-xl flex items-center justify-center shrink-0 ${
@@ -361,7 +576,14 @@ function WalletPage() {
               </div>
               <div className="flex-1 min-w-0">
                 <p className="text-xs font-bold text-foreground truncate">{t.label}</p>
-                <p className="text-[10px] text-muted-foreground font-medium">{formatDate(t.at)}</p>
+                <div className="flex items-center gap-2 mt-0.5">
+                  <span className="text-[10px] text-muted-foreground font-medium">
+                    {formatDate(t.at)}
+                  </span>
+                  <span className="text-[9px] font-mono text-muted-foreground px-1.5 py-0.2 rounded bg-muted">
+                    {t.id}
+                  </span>
+                </div>
               </div>
               <span
                 className={`text-xs font-black shrink-0 ${
@@ -376,7 +598,77 @@ function WalletPage() {
         )}
       </section>
 
-      {/* Modal de Carregamento Dobra 24 & Bancos */}
+      {/* MODAL DE DETALHE DA TRANSAÇÃO */}
+      {selectedTx && (
+        <div
+          className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4"
+          onClick={() => setSelectedTx(null)}
+        >
+          <div
+            className="w-full max-w-sm bg-card rounded-3xl p-5 space-y-3.5 border border-border shadow-xl text-xs"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between border-b border-border pb-2.5">
+              <span className="font-bold text-sm text-foreground flex items-center gap-1.5">
+                <FileText size={16} className="text-primary" />
+                Comprovativo de Movimento
+              </span>
+              <button
+                onClick={() => setSelectedTx(null)}
+                className="size-7 rounded-full bg-muted grid place-items-center text-muted-foreground"
+              >
+                <X size={14} />
+              </button>
+            </div>
+
+            <div className="p-3 rounded-2xl bg-muted/50 space-y-2">
+              <div className="flex justify-between">
+                <span className="text-muted-foreground">ID do Registo:</span>
+                <strong className="font-mono text-foreground">{selectedTx.id}</strong>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-muted-foreground">Descrição:</span>
+                <strong className="text-foreground text-right">{selectedTx.label}</strong>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-muted-foreground">Montante:</span>
+                <strong
+                  className={
+                    selectedTx.kind === "in"
+                      ? "text-emerald-600 font-black"
+                      : "text-foreground font-black"
+                  }
+                >
+                  {selectedTx.kind === "in" ? "+" : "-"}
+                  {selectedTx.amount.toLocaleString("pt-PT")} STN
+                </strong>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-muted-foreground">Data e Hora:</span>
+                <span className="text-foreground font-medium">{formatDate(selectedTx.at)}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-muted-foreground">Tipo de Movimento:</span>
+                <span className="px-2 py-0.5 rounded-md bg-primary/10 text-primary font-bold text-[10px] uppercase">
+                  {selectedTx.kind === "in" ? "Crédito em Carteira" : "Débito / Custódia"}
+                </span>
+              </div>
+            </div>
+
+            <button
+              onClick={() => {
+                toast.success("Comprovativo descarregado com sucesso!");
+                setSelectedTx(null);
+              }}
+              className="w-full bg-primary text-primary-foreground rounded-xl py-2.5 font-bold text-xs shadow-sm hover:opacity-95 cursor-pointer"
+            >
+              Descarregar Recibo Digital
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL DE CARREGAMENTO DOBRA 24 & BANCOS */}
       {showTopUp && (
         <div
           className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-end sm:items-center justify-center p-0 sm:p-4"
@@ -495,6 +787,18 @@ function WalletPage() {
                     )}
                   </button>
                 </div>
+                <div>
+                  <label className="text-[10px] font-bold text-foreground block mb-1">
+                    Nº de Comprovativo / Referência de Transferência
+                  </label>
+                  <input
+                    type="text"
+                    value={transferProofRef}
+                    onChange={(e) => setTransferProofRef(e.target.value)}
+                    placeholder="Ex: TRF-982173 ou Nome do Titular"
+                    className="w-full h-9 px-3 rounded-xl bg-card border border-border text-xs font-mono"
+                  />
+                </div>
                 <p>
                   <strong>Beneficiário:</strong> Konekta Serviços Lda · BISTP / BGFI Bank
                 </p>
@@ -573,7 +877,7 @@ function WalletPage() {
                   <>
                     <CheckCircle2 size={16} />
                     <span>
-                      Confirmar Carregamento (
+                      Submeter Carregamento (
                       {topUpAmount ? `${Number(topUpAmount).toLocaleString("pt-PT")} STN` : ""})
                     </span>
                   </>
@@ -584,7 +888,7 @@ function WalletPage() {
         </div>
       )}
 
-      {/* Modal de Levantamento */}
+      {/* MODAL DE LEVANTAMENTO */}
       {showWithdraw && (
         <div
           className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-end sm:items-center justify-center p-0 sm:p-4"
@@ -682,7 +986,7 @@ function WalletPage() {
         </div>
       )}
 
-      {/* Modal de Ajuda / Segurança */}
+      {/* MODAL DE AJUDA & SEGURANÇA */}
       {showHelp && (
         <div
           className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4"
@@ -711,7 +1015,7 @@ function WalletPage() {
             </p>
             <p>
               3. <strong>Garantia 30 Dias:</strong> Se algo falhar, o técnico é obrigado a corrigir
-              o problema.
+              o problema sem custos extras de mão de obra.
             </p>
           </div>
         </div>
