@@ -244,20 +244,14 @@ export function QuoteCard({
           <button
             type="button"
             onClick={onPay}
-            disabled={insufficient}
-            className="press flex min-h-12 w-full items-center justify-center gap-2 rounded-2xl bg-success text-sm font-bold text-primary-foreground disabled:opacity-50 shadow-md"
+            className="press flex min-h-12 w-full items-center justify-center gap-2 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-sm font-bold text-white shadow-md cursor-pointer transition"
           >
-            <Wallet size={16} /> Pagar e Reservar ({formatDb(quote.gross)})
+            <Lock size={16} /> Aceitar e Pagar ({formatDb(quote.gross)})
           </button>
-          {insufficient && (
-            <p className="text-center text-[11px] text-destructive font-medium">
-              Saldo insuficiente ({formatDb(balance)}) — carregue a carteira para reservar.
-            </p>
-          )}
           <button
             type="button"
             onClick={onDecline}
-            className="press min-h-9 w-full rounded-2xl text-xs font-semibold text-muted-foreground hover:bg-muted/50"
+            className="press min-h-9 w-full rounded-2xl text-xs font-semibold text-muted-foreground hover:bg-muted/50 cursor-pointer"
           >
             Recusar proposta
           </button>

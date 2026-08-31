@@ -534,3 +534,198 @@ export function calculateQuote(input: QuoteCalculationInput): QuoteCalculationRe
 export function formatDb(value: number): string {
   return `${Math.round(value || 0).toLocaleString("pt-PT")} Db`;
 }
+
+/* -------------------------------------------------------------------------- */
+/* TABELA DE REFERÊNCIA DE PREÇO MÉDIO & MOTOR ANTIFRAUDE DE VISITAS TÉCNICAS */
+/* -------------------------------------------------------------------------- */
+
+export type MarketPriceBenchmark = {
+  categoryKey: string;
+  categoryName: string;
+  min: number;
+  avg: number;
+  max: number;
+};
+
+export const CATEGORY_PRICE_BENCHMARKS: Record<string, MarketPriceBenchmark> = {
+  encanamento: {
+    categoryKey: "encanamento",
+    categoryName: "Canalização & Encanamento",
+    min: 400,
+    avg: 900,
+    max: 1300,
+  },
+  canalizacao: {
+    categoryKey: "canalizacao",
+    categoryName: "Canalização & Encanamento",
+    min: 400,
+    avg: 900,
+    max: 1300,
+  },
+  eletricidade: {
+    categoryKey: "eletricidade",
+    categoryName: "Eletricidade & Instalações",
+    min: 300,
+    avg: 850,
+    max: 1500,
+  },
+  pintura: {
+    categoryKey: "pintura",
+    categoryName: "Pintura & Acabamentos",
+    min: 500,
+    avg: 1200,
+    max: 2500,
+  },
+  climatizacao: {
+    categoryKey: "climatizacao",
+    categoryName: "Climatização & Frio",
+    min: 450,
+    avg: 1100,
+    max: 2200,
+  },
+  ar_condicionado: {
+    categoryKey: "ar_condicionado",
+    categoryName: "Climatização & Frio",
+    min: 450,
+    avg: 1100,
+    max: 2200,
+  },
+  alvenaria: {
+    categoryKey: "alvenaria",
+    categoryName: "Alvenaria & Construção",
+    min: 600,
+    avg: 1400,
+    max: 3000,
+  },
+  obras: {
+    categoryKey: "obras",
+    categoryName: "Obras & Reformas",
+    min: 600,
+    avg: 1400,
+    max: 3000,
+  },
+  carpintaria: {
+    categoryKey: "carpintaria",
+    categoryName: "Carpintaria & Marcenaria",
+    min: 350,
+    avg: 950,
+    max: 1800,
+  },
+  limpeza: {
+    categoryKey: "limpeza",
+    categoryName: "Limpeza & Higienização",
+    min: 250,
+    avg: 600,
+    max: 1200,
+  },
+  mecanica: {
+    categoryKey: "mecanica",
+    categoryName: "Mecânica & Auto",
+    min: 500,
+    avg: 1300,
+    max: 2800,
+  },
+  geral: {
+    categoryKey: "geral",
+    categoryName: "Serviços Gerais & Manutenção",
+    min: 200,
+    avg: 800,
+    max: 2000,
+  },
+};
+
+export function getCategoryBenchmark(category = "geral"): MarketPriceBenchmark {
+  const norm = category.toLowerCase().replace(/[^a-z0-9]/g, "_");
+  for (const [key, b] of Object.entries(CATEGORY_PRICE_BENCHMARKS)) {
+    if (norm.includes(key) || key.includes(norm)) return b;
+  }
+  return CATEGORY_PRICE_BENCHMARKS.geral;
+}
+
+export type DivergenceAnalysisResult = {
+  variationRatio: number;
+  variationPct: number;
+  level: "level_1" | "level_2" | "level_3";
+  decision: "ajuste_direto" | "media_mercado" | "painel_moderacao";
+  finalAmountAdopted?: number;
+  isClientWithinBenchmark: boolean;
+  statusText: string;
+  explanation: string;
+  benchmark: MarketPriceBenchmark;
+};
+
+/**
+ * Avaliação algorítmica de divergência de preços em três níveis:
+ * - Nível 1 (Variação <= 15%): Pequeno Ajuste -> Aprovação Automática com valor do cliente
+ * - Nível 2 (15% < Variação <= 40%): Médio Impacto -> Algoritmo de Média de Mercado (+/-30% da média)
+ * - Nível 3 (Variação > 40% ou Extremo): Alto Risco -> Bloqueio & Painel de Moderação Manual
+ */
+export function evaluateVisitPriceDivergence(
+  providerDeclared: number,
+  clientDeclared: number,
+  category = "geral",
+): DivergenceAnalysisResult {
+  const benchmark = getCategoryBenchmark(category);
+  const baseDenominator = Math.max(1, clientDeclared);
+  const diff = Math.abs(providerDeclared - clientDeclared);
+  const variationRatio = diff / baseDenominator;
+  const variationPct = Math.round(variationRatio * 1000) / 10;
+
+  // Tolerância de mercado para nível 2: [Média - 30%, Média + 30%]
+  const minTolerance = benchmark.avg * 0.7;
+  const maxTolerance = benchmark.avg * 1.3;
+  const isClientWithinBenchmark = clientDeclared >= minTolerance && clientDeclared <= maxTolerance;
+
+  if (variationRatio <= 0.15) {
+    return {
+      variationRatio,
+      variationPct,
+      level: "level_1",
+      decision: "ajuste_direto",
+      finalAmountAdopted: clientDeclared,
+      isClientWithinBenchmark,
+      statusText: "Ajuste direto aprovado automaticamente (variação <= 15%).",
+      explanation: `Divergência pequena de ${variationPct}%. O sistema adotou o valor confirmado pelo cliente (${formatDb(clientDeclared)}) e notificou o prestador.`,
+      benchmark,
+    };
+  }
+
+  if (variationRatio <= 0.4) {
+    if (isClientWithinBenchmark) {
+      return {
+        variationRatio,
+        variationPct,
+        level: "level_2",
+        decision: "media_mercado",
+        finalAmountAdopted: clientDeclared,
+        isClientWithinBenchmark: true,
+        statusText: `Valor do cliente (${formatDb(clientDeclared)}) está DENTRO da média esperada da categoria.`,
+        explanation: `Variação média de ${variationPct}%. Como o valor do cliente (${formatDb(clientDeclared)}) está na faixa de mercado (${formatDb(benchmark.min)} a ${formatDb(benchmark.max)}), o orçamento foi ajustado.`,
+        benchmark,
+      };
+    } else {
+      return {
+        variationRatio,
+        variationPct,
+        level: "level_3",
+        decision: "painel_moderacao",
+        isClientWithinBenchmark: false,
+        statusText: `Variação de ${variationPct}% fora da média típica. Enviado para Moderação.`,
+        explanation: `O valor do cliente (${formatDb(clientDeclared)}) difere da média histórica (${formatDb(benchmark.avg)}). Processo pausado para verificação.`,
+        benchmark,
+      };
+    }
+  }
+
+  // Nível 3: Variação > 40% (Alto Risco de Evasão / Fraude)
+  return {
+    variationRatio,
+    variationPct,
+    level: "level_3",
+    decision: "painel_moderacao",
+    isClientWithinBenchmark,
+    statusText: `Alerta de Risco Elevado (${variationPct}% de divergência). Transação congelada em Moderação.`,
+    explanation: `Divergência alta (> 40%) entre o prestador (${formatDb(providerDeclared)}) e o cliente (${formatDb(clientDeclared)}). O caso foi registrado na fila de disputas para arbitragem da equipe KONEKTA.`,
+    benchmark,
+  };
+}

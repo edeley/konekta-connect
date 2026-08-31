@@ -1,206 +1,255 @@
-import React, { useState, useEffect } from "react";
-import { Calculator, Banknote, BadgePercent, Wallet, ShieldCheck, Sparkles } from "lucide-react";
-import { formatDb } from "@/lib/pricing-engine";
-import { useStore } from "@/lib/store";
+import { useState } from "react";
+import { ShieldCheck, ArrowRight, Sparkles, CheckCircle2, User, Wrench, Lock } from "lucide-react";
+import { formatDb } from "@/lib/catalog";
+import { cn } from "@/lib/utils";
 
-export interface KonektaCalculatorProps {
+interface KonektaCalculatorProps {
   initialTotal?: number;
-  initialNet?: number;
-  baseAmount?: number;
-  baseLabel?: string;
-  feePct?: number;
   editable?: boolean;
-  onChange?: (values: { total: number; fee: number; net: number; feePct: number }) => void;
-  showSubtitle?: boolean;
-  subtitleText?: string;
-  className?: string;
   isClientView?: boolean;
+  showSubtitle?: boolean;
+  className?: string;
 }
 
 export function KonektaCalculator({
-  initialTotal,
-  initialNet,
-  baseAmount,
-  baseLabel,
-  feePct: customFeePct,
+  initialTotal = 500,
   editable = true,
-  onChange,
+  isClientView: initialClientView = true,
   showSubtitle = true,
-  subtitleText = "Garantia de Custódia Integrada",
-  className = "",
-  isClientView = false,
+  className,
 }: KonektaCalculatorProps) {
-  const storeFeePct = useStore((s) => s.config.commissionPct);
-  const feePct = customFeePct ?? storeFeePct ?? 20;
+  const [amount, setAmount] = useState<number>(initialTotal);
+  const [isClientMode, setIsClientMode] = useState<boolean>(initialClientView);
 
-  // Estado interno para o valor total cobrado ao cliente (o cliente paga o total, a taxa é retirada do prestador)
-  const [totalInput, setTotalInput] = useState<string>(() => {
-    if (initialTotal !== undefined && initialTotal > 0) return String(initialTotal);
-    if (baseAmount !== undefined && baseAmount > 0) return String(baseAmount);
-    if (initialNet !== undefined && initialNet > 0) {
-      return String(initialNet);
-    }
-    return "500";
-  });
+  // Platform Escrow Protection:
+  // Client pays: Base amount + 5% Escrow Protection Fee
+  // Provider gets: Base amount - 10% Platform Commission
+  // Both sides enjoy guaranteed payment and dispute mediation
+  const escrowFeePercent = 5;
+  const providerCommissionPercent = 10;
 
-  // Atualiza se mudar as props externas
-  useEffect(() => {
-    if (initialTotal !== undefined && initialTotal > 0) {
-      setTotalInput(String(initialTotal));
-    } else if (baseAmount !== undefined && baseAmount > 0) {
-      setTotalInput(String(baseAmount));
-    } else if (initialNet !== undefined && initialNet > 0) {
-      setTotalInput(String(initialNet));
-    }
-  }, [initialTotal, baseAmount, initialNet, feePct]);
+  const escrowProtectionFee = Math.round((amount * escrowFeePercent) / 100);
+  const clientTotalPayment = amount + escrowProtectionFee;
 
-  const totalNumber = Math.max(0, Number(totalInput) || 0);
-  const feeNumber = Math.round((totalNumber * feePct) / 100);
-  const netNumber = Math.max(0, totalNumber - feeNumber);
+  const providerCommission = Math.round((amount * providerCommissionPercent) / 100);
+  const providerNetPayout = amount - providerCommission;
 
-  const handleTotalChange = (valStr: string) => {
-    setTotalInput(valStr);
-    const num = Math.max(0, Number(valStr) || 0);
-    const fee = Math.round((num * feePct) / 100);
-    const net = Math.max(0, num - fee);
-    onChange?.({ total: num, fee, net, feePct });
-  };
-
-  const handleQuickPreset = (presetTotal: number) => {
-    handleTotalChange(String(presetTotal));
-  };
+  const presets = [
+    { label: "Pequena Reparação", value: 150 },
+    { label: "Eletricidade / Fuga", value: 500 },
+    { label: "Instalação de AC", value: 1200 },
+    { label: "Pintura / Remodelação", value: 3000 },
+  ];
 
   return (
     <div
-      className={`rounded-3xl bg-slate-50/80 dark:bg-card/90 border border-slate-200/80 dark:border-border p-4 sm:p-5 shadow-sm space-y-3.5 transition-all ${className}`}
-    >
-      {/* Cabeçalho da Calculadora */}
-      <div className="flex items-center justify-between gap-2 pb-1 border-b border-border/60">
-        <div className="flex items-center gap-2">
-          <div className="size-7 rounded-xl bg-sky-500/10 text-sky-600 dark:text-sky-400 grid place-items-center">
-            <Calculator size={16} />
-          </div>
-          <span className="text-sm font-bold text-sky-700 dark:text-sky-400 tracking-tight">
-            Calculadora KONEKTA
-          </span>
-        </div>
-
-        {showSubtitle && (
-          <span className="text-xs text-muted-foreground font-medium hidden sm:inline-block">
-            {subtitleText}
-          </span>
-        )}
-      </div>
-
-      {/* Linha Opcional: Detalhe da Base de Cálculo */}
-      {baseLabel && (
-        <div className="flex items-center justify-between gap-3 text-xs sm:text-sm text-slate-700 dark:text-foreground/90 font-medium px-1">
-          <span className="truncate">{baseLabel}:</span>
-          <span className="font-bold shrink-0 font-mono">
-            {formatDb(baseAmount ?? totalNumber)}
-          </span>
-        </div>
+      id="konekta-price-calculator"
+      className={cn(
+        "rounded-3xl border border-border/80 bg-card p-5 sm:p-6 shadow-soft space-y-5",
+        className,
       )}
-
-      {/* Linha 1: Valor Total Cobrado ao Cliente */}
-      <div className="flex items-center justify-between gap-3 pt-1">
-        <div className="flex items-center gap-2 min-w-0">
-          <span className="text-xs sm:text-sm font-bold text-slate-900 dark:text-foreground truncate">
-            Valor Total Cobrado ao Cliente:
-          </span>
-        </div>
-
-        <div className="flex items-center gap-2 shrink-0">
-          <div className="text-sky-600 dark:text-sky-400">
-            <Banknote size={20} strokeWidth={2.2} />
+    >
+      {/* Header & Mode Switcher */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-border/60 pb-4">
+        <div>
+          <div className="flex items-center gap-2">
+            <span className="grid size-7 place-items-center rounded-lg bg-primary/10 text-primary">
+              <Sparkles size={15} />
+            </span>
+            <h3 className="text-base font-black text-foreground">Simulador de Preços & Custódia</h3>
           </div>
-
-          {editable ? (
-            <div className="relative flex items-center">
-              <input
-                type="number"
-                min="0"
-                step="25"
-                value={totalInput}
-                onChange={(e) => handleTotalChange(e.target.value)}
-                placeholder="500"
-                className="w-28 sm:w-32 h-10 px-2.5 text-right font-black text-base sm:text-lg text-sky-700 dark:text-sky-300 bg-card rounded-xl border-2 border-sky-400 dark:border-sky-500 focus:outline-hidden focus:ring-2 focus:ring-sky-400/30 transition shadow-2xs font-mono"
-              />
-              <span className="ml-1.5 text-xs font-bold text-sky-700 dark:text-sky-300">Db</span>
-            </div>
-          ) : (
-            <div className="h-10 px-3 flex items-center justify-end rounded-xl border-2 border-sky-400 dark:border-sky-500 bg-sky-50/50 dark:bg-sky-950/20 text-sky-700 dark:text-sky-300 font-black text-base sm:text-lg font-mono">
-              {totalNumber} Db
-            </div>
+          {showSubtitle && (
+            <p className="text-xs text-muted-foreground mt-1">
+              Entenda como cada Dobra (Db) é protegida em garantia até a aprovação final.
+            </p>
           )}
         </div>
-      </div>
 
-      {/* Linha 2: Taxa KONEKTA (Descontada do Prestador) */}
-      <div className="flex items-center justify-between gap-3 text-xs sm:text-sm text-slate-600 dark:text-muted-foreground px-1">
-        <div className="flex items-center gap-2">
-          <span>Taxa KONEKTA ({feePct}%):</span>
-        </div>
-
-        <div className="flex items-center gap-2 shrink-0 font-semibold font-mono">
-          <div className="text-slate-400 dark:text-muted-foreground">
-            <BadgePercent size={18} strokeWidth={2} />
-          </div>
-          <span className="w-24 text-right text-slate-600 dark:text-slate-400">
-            -{feeNumber} Db
-          </span>
-        </div>
-      </div>
-
-      {/* Linha 3: Destaque em Verde - Você Recebe (Líquido na Carteira) */}
-      <div className="rounded-2xl bg-emerald-100/90 dark:bg-emerald-950/40 border border-emerald-300/80 dark:border-emerald-800/60 p-3.5 flex items-center justify-between gap-3 shadow-2xs">
-        <div className="flex items-center gap-2 min-w-0">
-          <span className="text-xs sm:text-sm font-bold text-emerald-950 dark:text-emerald-200">
-            {isClientView ? "Valor Entregue ao Prestador:" : "Você Recebe (Líquido na Carteira):"}
-          </span>
-        </div>
-
-        <div className="flex items-center gap-2.5 shrink-0">
-          <div className="text-emerald-600 dark:text-emerald-400">
-            <Wallet size={20} strokeWidth={2.3} />
-          </div>
-          <span className="text-lg sm:text-xl font-black text-emerald-700 dark:text-emerald-400 font-mono">
-            {netNumber} Db
-          </span>
+        {/* View Toggle: Cliente vs Prestador */}
+        <div className="inline-flex p-1 rounded-xl bg-muted/60 border border-border/50 self-start sm:self-center">
+          <button
+            type="button"
+            onClick={() => setIsClientMode(true)}
+            className={cn(
+              "flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition",
+              isClientMode
+                ? "bg-card text-foreground shadow-xs border border-border/60"
+                : "text-muted-foreground hover:text-foreground",
+            )}
+          >
+            <User size={13} />
+            <span>Visão do Cliente</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => setIsClientMode(false)}
+            className={cn(
+              "flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition",
+              !isClientMode
+                ? "bg-card text-foreground shadow-xs border border-border/60"
+                : "text-muted-foreground hover:text-foreground",
+            )}
+          >
+            <Wrench size={13} />
+            <span>Visão do Prestador</span>
+          </button>
         </div>
       </div>
 
-      {/* Atalhos Rápidos para Facilitar o Cálculo */}
+      {/* Preset Buttons */}
       {editable && (
-        <div className="flex items-center justify-between gap-1 pt-1 overflow-x-auto">
-          <span className="text-[10px] font-semibold text-muted-foreground shrink-0 flex items-center gap-1">
-            <Sparkles size={11} className="text-sky-500" /> Valores frequentes:
-          </span>
-          <div className="flex items-center gap-1.5">
-            {[100, 250, 500, 750, 1000, 1500, 2500].map((preset) => (
+        <div className="space-y-2">
+          <label className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground block">
+            Exemplos de Serviços em São Tomé:
+          </label>
+          <div className="flex flex-wrap gap-2">
+            {presets.map((p) => (
               <button
-                key={preset}
+                key={p.value}
                 type="button"
-                onClick={() => handleQuickPreset(preset)}
-                className={`px-2 py-0.5 rounded-lg text-[10px] font-bold transition ${
-                  totalNumber === preset
-                    ? "bg-sky-600 text-white shadow-2xs"
-                    : "bg-muted hover:bg-muted/80 text-muted-foreground"
-                }`}
+                onClick={() => setAmount(p.value)}
+                className={cn(
+                  "px-3 py-1.5 rounded-xl text-xs font-bold border transition",
+                  amount === p.value
+                    ? "border-primary bg-primary/10 text-primary"
+                    : "border-border bg-muted/30 text-muted-foreground hover:text-foreground hover:bg-muted/60",
+                )}
               >
-                {preset} Db
+                {p.label} ({formatDb(p.value)})
               </button>
             ))}
           </div>
         </div>
       )}
 
-      {/* Nota de transparência */}
-      <div className="flex items-center justify-center gap-1.5 text-[10px] text-muted-foreground pt-0.5">
-        <ShieldCheck size={12} className="text-emerald-600 dark:text-emerald-400 shrink-0" />
-        <span>
-          Preço transparente: a taxa KONEKTA é suportada pelo prestador. Sem custos ocultos.
-        </span>
+      {/* Slider & Input */}
+      {editable && (
+        <div className="space-y-2.5 rounded-2xl bg-muted/30 p-4 border border-border/60">
+          <div className="flex justify-between items-center">
+            <span className="text-xs font-bold text-foreground">
+              Valor do Orçamento (Mão de Obra):
+            </span>
+            <div className="flex items-center gap-1.5">
+              <input
+                type="number"
+                min="50"
+                max="50000"
+                step="50"
+                value={amount}
+                onChange={(e) => setAmount(Math.max(10, Number(e.target.value) || 0))}
+                className="w-24 px-2 py-1 text-right text-sm font-black font-mono rounded-lg border border-border bg-card text-foreground focus:outline-none focus:ring-2 focus:ring-primary/40"
+              />
+              <span className="text-xs font-bold text-muted-foreground">Db</span>
+            </div>
+          </div>
+
+          <input
+            type="range"
+            min="100"
+            max="10000"
+            step="50"
+            value={amount}
+            onChange={(e) => setAmount(Number(e.target.value))}
+            className="w-full h-2 bg-muted rounded-lg appearance-none cursor-pointer accent-primary"
+          />
+          <div className="flex justify-between text-[10px] text-muted-foreground font-mono">
+            <span>100 Db</span>
+            <span>5.000 Db</span>
+            <span>10.000 Db</span>
+          </div>
+        </div>
+      )}
+
+      {/* Calculation Display */}
+      {isClientMode ? (
+        /* CLIENT VIEW */
+        <div className="space-y-3 rounded-2xl border border-primary/20 bg-primary/5 p-4 sm:p-5">
+          <div className="flex items-center justify-between text-xs text-muted-foreground">
+            <span>Orçamento acordado com o profissional:</span>
+            <span className="font-bold text-foreground font-mono">{formatDb(amount)}</span>
+          </div>
+          <div className="flex items-center justify-between text-xs text-muted-foreground">
+            <span className="flex items-center gap-1">
+              <span>Taxa de Proteção & Escrow KONEKTA (5%):</span>
+              <span className="inline-block px-1.5 py-0.5 rounded text-[10px] bg-emerald-600/10 text-emerald-800 dark:text-emerald-300 font-bold">
+                Sem Risco
+              </span>
+            </span>
+            <span className="font-bold text-emerald-800 dark:text-emerald-300 font-mono">
+              +{formatDb(escrowProtectionFee)}
+            </span>
+          </div>
+          <div className="border-t border-border/80 pt-3 flex items-center justify-between">
+            <div>
+              <span className="text-xs font-extrabold text-foreground block">
+                Total a Depositar em Custódia:
+              </span>
+              <span className="text-[11px] text-muted-foreground">
+                Retido em segurança até fornecer o código PIN
+              </span>
+            </div>
+            <span className="text-lg sm:text-xl font-black text-primary font-mono">
+              {formatDb(clientTotalPayment)}
+            </span>
+          </div>
+        </div>
+      ) : (
+        /* PROVIDER VIEW */
+        <div className="space-y-3 rounded-2xl border border-border bg-muted/40 p-4 sm:p-5">
+          <div className="flex items-center justify-between text-xs text-muted-foreground">
+            <span>Valor bruto do serviço:</span>
+            <span className="font-bold text-foreground font-mono">{formatDb(amount)}</span>
+          </div>
+          <div className="flex items-center justify-between text-xs text-muted-foreground">
+            <span>Taxa de Plataforma & Gestão KONEKTA (10%):</span>
+            <span className="font-bold text-destructive font-mono">
+              -{formatDb(providerCommission)}
+            </span>
+          </div>
+          <div className="border-t border-border/80 pt-3 flex items-center justify-between">
+            <div>
+              <span className="text-xs font-extrabold text-foreground block">
+                Valor Líquido a Receber:
+              </span>
+              <span className="text-[11px] text-muted-foreground">
+                Transferido automaticamente para sua conta/carteira após PIN
+              </span>
+            </div>
+            <span className="text-lg sm:text-xl font-black text-emerald-800 dark:text-emerald-300 font-mono">
+              {formatDb(providerNetPayout)}
+            </span>
+          </div>
+        </div>
+      )}
+
+      {/* Trust Guarantee Highlights */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 pt-1">
+        <div className="flex items-start gap-2 p-3 rounded-xl bg-card border border-border/60 text-xs">
+          <Lock size={15} className="text-primary shrink-0 mt-0.5" />
+          <div className="text-[11px] leading-snug text-muted-foreground">
+            <strong className="text-foreground block">Fundos Protegidos:</strong>O dinheiro fica
+            guardado até o cliente validar a conclusão.
+          </div>
+        </div>
+
+        <div className="flex items-start gap-2 p-3 rounded-xl bg-card border border-border/60 text-xs">
+          <ShieldCheck
+            size={15}
+            className="text-emerald-800 dark:text-emerald-300 shrink-0 mt-0.5"
+          />
+          <div className="text-[11px] leading-snug text-muted-foreground">
+            <strong className="text-foreground block">Garantia KONEKTA:</strong>
+            Em caso de divergência, nossa mediação analisa e resolve.
+          </div>
+        </div>
+
+        <div className="flex items-start gap-2 p-3 rounded-xl bg-card border border-border/60 text-xs">
+          <CheckCircle2 size={15} className="text-primary shrink-0 mt-0.5" />
+          <div className="text-[11px] leading-snug text-muted-foreground">
+            <strong className="text-foreground block">Libertação por PIN:</strong>
+            Pagamento liberado instantaneamente com o código de 4 dígitos.
+          </div>
+        </div>
       </div>
     </div>
   );

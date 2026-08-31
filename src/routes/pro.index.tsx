@@ -655,28 +655,26 @@ function ProHome() {
           </div>
         </section>
 
-        {/* SIMULADOR DE COBRANÇA EM CUSTÓDIA */}
+        {/* EMISSÃO DE PROPOSTA & ORÇAMENTO */}
         <section>
-          <div className="p-4 rounded-2xl bg-primary/10 border border-primary/25 flex items-center justify-between gap-3">
+          <div className="p-4 rounded-2xl bg-card border border-border shadow-xs flex items-center justify-between gap-3">
             <div className="flex items-center gap-3">
-              <div className="size-10 rounded-xl bg-primary text-primary-foreground grid place-items-center shrink-0 shadow-sm">
-                <Calculator size={18} />
+              <div className="size-10 rounded-xl bg-primary/10 text-primary grid place-items-center shrink-0">
+                <FileText size={18} />
               </div>
               <div>
-                <p className="text-xs font-bold text-foreground">
-                  Calculadora de Orçamento KONEKTA
-                </p>
+                <p className="text-xs font-bold text-foreground">Emitir Proposta Oficial</p>
                 <p className="text-[11px] text-muted-foreground">
-                  Simule retenção em custódia, materiais e comissão líquida de 15%.
+                  Elabore orçamentos técnicos com materiais, mão de obra e prazos.
                 </p>
               </div>
             </div>
             <button
               type="button"
               onClick={() => setOpenComposer(true)}
-              className="px-3 py-2 rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground text-xs font-bold shadow-xs shrink-0 cursor-pointer"
+              className="px-3.5 py-2 rounded-xl bg-primary hover:bg-brand-dark text-white text-xs font-bold shadow-xs shrink-0 cursor-pointer transition"
             >
-              Simular
+              Criar
             </button>
           </div>
         </section>

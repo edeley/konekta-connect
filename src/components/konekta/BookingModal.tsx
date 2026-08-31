@@ -43,7 +43,6 @@ import {
   formatDb,
 } from "@/lib/pricing-engine";
 import { STPSchedulePicker, type ScheduleSelection } from "./STPSchedulePicker";
-import { KonektaCalculator } from "./KonektaCalculator";
 import { validateFormSafety } from "@/lib/escrow";
 import {
   type SyncScheduleEvent,
@@ -784,13 +783,25 @@ export function BookingModal({ open, onClose, provider, initialService }: Bookin
               </div>
             </div>
           ) : (
-            <KonektaCalculator
-              initialTotal={quoteCalculation.gross}
-              feePct={quoteCalculation.feePct}
-              editable={false}
-              isClientView={true}
-              showSubtitle={true}
-            />
+            <div className="bg-card rounded-2xl p-3.5 border border-border shadow-2xs space-y-2">
+              <div className="flex items-center justify-between text-xs">
+                <span className="text-muted-foreground">Serviço:</span>
+                <span className="font-semibold text-foreground truncate max-w-[200px]">
+                  {quoteCalculation.humanSummary}
+                </span>
+              </div>
+              <div className="flex items-center justify-between pt-2 border-t border-border/60">
+                <div>
+                  <span className="text-xs font-bold text-foreground">Total do Serviço</span>
+                  <span className="block text-[10px] text-emerald-800 dark:text-emerald-400 font-medium">
+                    Garantia de 30 dias incluída
+                  </span>
+                </div>
+                <span className="text-base font-black text-primary">
+                  {formatDb(quoteCalculation.gross)}
+                </span>
+              </div>
+            </div>
           )}
 
           {error && (

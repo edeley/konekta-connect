@@ -34,7 +34,6 @@ import {
 } from "@/lib/pricing-engine";
 import { useStore } from "@/lib/store";
 import { validateFormSafety } from "@/lib/escrow";
-import { KonektaCalculator } from "./KonektaCalculator";
 
 interface QuoteComposerProps {
   open: boolean;
@@ -712,13 +711,25 @@ export function QuoteComposer({
             </div>
           </div>
 
-          {/* 8. Resumo da Calculadora KONEKTA */}
-          <KonektaCalculator
-            initialTotal={calculation.gross}
-            feePct={calculation.feePct}
-            editable={false}
-            showSubtitle={true}
-          />
+          {/* 8. Resumo Financeiro da Proposta */}
+          <div className="rounded-2xl bg-muted/40 border border-border p-3.5 space-y-2.5">
+            <div className="flex items-center justify-between text-xs text-muted-foreground">
+              <span>Valor Total da Proposta:</span>
+              <span className="font-bold text-foreground">{formatDb(calculation.gross)}</span>
+            </div>
+            <div className="flex items-center justify-between text-xs text-muted-foreground">
+              <span>Taxa de Intermediação ({calculation.feePct}%):</span>
+              <span className="font-semibold text-muted-foreground">
+                -{formatDb(calculation.fee)}
+              </span>
+            </div>
+            <div className="flex items-center justify-between pt-2 border-t border-border text-xs">
+              <span className="font-bold text-foreground">Líquido a Receber na Carteira:</span>
+              <span className="text-sm font-black text-emerald-800 dark:text-emerald-400">
+                {formatDb(calculation.net)}
+              </span>
+            </div>
+          </div>
         </div>
 
         {/* Footer com Botão de Envio */}

@@ -250,13 +250,14 @@ const BANKING_REGEXES: RegExp[] = [
   /\b(?:bistp|b\.i\.s\.t\.p|bgfi|bgfibank|afriland|banco\s*internacional|banco\s*central|caixa\s*geral)\b/i,
   // Bancos internacionais comuns
   /\b(?:bai|bfa|bic|millennium|santander|bradesco|itau|nubank)\b/i,
-  // Termos bancários para transferência externa direta
-  /\b(?:nib|iban|swift|n[uú]mero\s*d[ea]\s*conta|n[ºo]\s*conta|comprovativo|dep[oó]sito\s*direto|transfer[eê]ncia\s*banc[aá]ria|mbway|pix|paypal|multicaixa|western\s*union|moneygram)\b/i,
+  // Chaves Pix, transferências diretas e termos bancários
+  /\b(?:chave\s*pix|minha\s*chave|pix\s*e|manda\s*o\s*pix|paga\s*no\s*pix|pix\s*copia|copia\s*e\s*cola|meu\s*pix|pix)\b/i,
+  /\b(?:nib|iban|swift|n[uú]mero\s*d[ea]\s*conta|n[ºo]\s*conta|comprovativo|dep[oó]sito\s*direto|transfer[eê]ncia\s*banc[aá]ria|mbway|paypal|multicaixa|western\s*union|moneygram)\b/i,
 ];
 
 const OUTSIDE_PAYMENT_REGEXES: RegExp[] = [
   // Pagamento por fora / desintermediação
-  /\b(?:pagar\s*por\s*fora|paga\s*por\s*fora|pagamos\s*por\s*fora|pagamento\s*por\s*fora|fazer\s*por\s*fora|tratar\s*por\s*fora|negociar\s*por\s*fora|acertar\s*por\s*fora)\b/i,
+  /\b(?:pagar\s*por\s*fora|paga\s*por\s*fora|pagamos\s*por\s*fora|pagamento\s*por\s*fora|fazer\s*por\s*fora|tratar\s*por\s*fora|negociar\s*por\s*fora|acertar\s*por\s*fora|fechar\s*por\s*fora|fazemos\s*por\s*fora)\b/i,
   // Pagamento direto / em mão
   /\b(?:pagar\s*direto|paga\s*direto|pagamento\s*direto|acerto\s*direto|acertar\s*direto|pagar\s*no\s*direto|combinar\s*por\s*fora)\b/i,
   // Dinheiro físico / cash
@@ -275,9 +276,9 @@ const CONTACT_REQUEST_REGEXES: RegExp[] = [
   // Pedidos e partilha de número ou contacto
   /\b(?:meu\s*(?:n[uú]mero|contacto|contato|fone)|passa(?:r)?\s*(?:o)?\s*(?:teu\s*)?(?:n[uú]mero|contacto|contato|zap|wpp)|d[aá](?:-me)?\s*(?:o)?\s*(?:teu\s*)?(?:n[uú]mero|contacto|zap))\b/i,
   /\b(?:manda(?:r)?\s*(?:o)?\s*(?:teu\s*)?(?:n[uú]mero|contacto|contato|zap|wpp)|deixa\s*(?:o\s*)?(?:teu\s*)?(?:n[uú]mero|contacto))\b/i,
-  // Desvio para chat privado ou redes
-  /\b(?:chama(?:r|-?me)?\s*(?:no|pelo|em)\s*(?:privado|pv|zap|wpp|insta|whatsapp|facebook|face)|falar?\s*no\s*(?:privado|pv|zap|wpp|whatsapp)|vamos\s*falar\s*no\s*pv)\b/i,
-  /\b(?:vem\s*no\s*pv|manda\s*pv|conversar\s*por\s*fora|falar\s*por\s*fora|acertamos\s*por\s*fora)\b/i,
+  // Desvio para chat privado ou redes ("me chama no zap", "vamos falar no pv", etc.)
+  /\b(?:me\s*chama\s*no\s*(?:zap|whatsapp|wpp|pv|privado|insta|face|facebook|telegram)|chama(?:r|-?me)?\s*(?:no|pelo|em)\s*(?:privado|pv|zap|wpp|insta|whatsapp|facebook|face)|falar?\s*no\s*(?:privado|pv|zap|wpp|whatsapp)|vamos\s*falar\s*no\s*pv)\b/i,
+  /\b(?:vem\s*no\s*pv|manda\s*pv|conversar\s*por\s*fora|falar\s*por\s*fora|acertamos\s*por\s*fora|chama\s*no\s*zap|chama\s*zap|me\s*adiciona)\b/i,
 ];
 
 export const BLOCK_NOTICE =
@@ -344,6 +345,125 @@ function normalizeForAnalysis(text: string): {
   }
 
   return { base, collapsed, leet, digitsFromWords };
+}
+
+/**
+ * 2 Camadas de Proteção: Sanitização prévia + Regex em Tempo Real
+ * Identifica e mascara telefones, emails, redes sociais, pagamentos por fora e números soletrados.
+ */
+export interface FilterMessageResult {
+  bloqueado: boolean;
+  textoOriginal: string;
+  textoFormatado: string;
+  alertaUsuario: string | null;
+  category?: BlockCategory;
+  reason?: string;
+}
+
+export function filtrarMensagem(textoOriginal: string): FilterMessageResult {
+  if (!textoOriginal || !textoOriginal.trim()) {
+    return {
+      bloqueado: false,
+      textoOriginal: textoOriginal || "",
+      textoFormatado: textoOriginal || "",
+      alertaUsuario: null,
+    };
+  }
+
+  // 1. Normalização do texto para análise prévia
+  const textoNormalizado = textoOriginal
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "") // Remove acentos
+    .replace(/@/g, "a")
+    .replace(/\$/g, "s");
+
+  // 2. Definição da suíte de padrões de segurança
+  const padroesSeguranca: { regex: RegExp; category: BlockCategory; reason: string }[] = [
+    // 1. Telefones (inclui São Tomé e Príncipe +239 com 7 dígitos e formatos internacionais de 8-11 dígitos com espaços, pontos e traços)
+    {
+      regex:
+        /(?:\+?239[\s.-]*)?\b[92]\d[\s.-]*\d{2}[\s.-]*\d{3}\b|\b[92]\d{6}\b|(?:\+?\d{1,3}[-.\s]?)?(?:\(?\d{2,3}\)?[-.\s]?)?(?:\d[-.\s]?){8,11}/gi,
+      category: "phone",
+      reason:
+        "Contacto telefónico detectado. O envio de números pessoais é estritamente proibido para garantir a proteção de custódia da KONEKTA.",
+    },
+    // 2. Sequências de números espaçados tipo "9 9 4 4 7 4 7" ou "9.9.1.2.3.4.5"
+    {
+      regex:
+        /\b(?:[92]\s*[\d.]\s*[\d.]\s*[\d.]\s*[\d.]\s*[\d.]\s*[\d.]|\d(?:\s*[-.]\s*\d){6,10})\b/gi,
+      category: "phone",
+      reason: "Sequência numérica mascarada detectada.",
+    },
+    // 3. Números por extenso sequenciais (detecta ao menos 3 seguidos)
+    {
+      regex:
+        /(?:zero|um|uma|dois|duas|tres|tres|quatro|cinco|seis|meia|sete|oito|nove)[\s\W\d]{0,3}(?:zero|um|uma|dois|duas|tres|tres|quatro|cinco|seis|meia|sete|oito|nove)[\s\W\d]{0,3}(?:zero|um|uma|dois|duas|tres|tres|quatro|cinco|seis|meia|sete|oito|nove)/gi,
+      category: "phone",
+      reason: "Número de telefone soletrado por extenso detectado.",
+    },
+    // 4. E-mails e domínios
+    {
+      regex:
+        /[a-zA-Z0-9._%+-]+@([a-zA-Z0-9.-]+\.[a-zA-Z]{2,}|gmail|hotmail|yahoo|outlook|icloud|sapo)/gi,
+      category: "email_link",
+      reason: "Endereço de e-mail detectado. Mantenha toda a comunicação dentro do chat KONEKTA.",
+    },
+    // 5. Redes Sociais, Aplicativos de Mensagem e Termos de Evasão
+    {
+      regex:
+        /\b(?:whats\s*app|whatsapp|whatsap|watsapp|wpp|zapp?|zap\s*zap|telegram|instagram|insta|direct\s*do\s*insta|facebook|face|fb|mumu|chave\s*pix|chama\s*no\s*(?:zap|wpp|insta|pv)|chama\s*no|chama\s*la|liga\s*pra\s*mim|me\s*liga|te\s*ligo|por\s*fora|meu\s*num|meu\s*contacto|passa\s*o\s*teu|vamos\s*falar\s*no\s*pv|dinheiro\s*em\s*m[aã]o|pagar\s*por\s*fora|sem\s*comissao)\b/gi,
+      category: "social_app",
+      reason:
+        "Para sua segurança e garantia do serviço, mantenha a conversa e o pagamento dentro do app.",
+    },
+  ];
+
+  let contemInfracao = false;
+  let textoFiltrado = textoOriginal;
+  let detectedCategory: BlockCategory | undefined = undefined;
+  let detectedReason: string | undefined = undefined;
+
+  // 3. Aplicação dos filtros com mascaramento transparente
+  for (const { regex, category, reason } of padroesSeguranca) {
+    if (regex.test(textoNormalizado) || regex.test(textoOriginal)) {
+      contemInfracao = true;
+      if (!detectedCategory) {
+        detectedCategory = category;
+        detectedReason = reason;
+      }
+      textoFiltrado = textoFiltrado.replace(regex, "[Conteúdo Bloqueado por Segurança]");
+    }
+  }
+
+  // 4. Se não pegou pelo regex global, roda a análise profunda de país/bancário existente
+  if (!contemInfracao) {
+    const deepAnalysis = analyzeBlockedContent(textoOriginal);
+    if (deepAnalysis.blocked) {
+      contemInfracao = true;
+      detectedCategory = deepAnalysis.category;
+      detectedReason = deepAnalysis.reason;
+      if (deepAnalysis.matchedText) {
+        textoFiltrado = textoFiltrado.replace(
+          new RegExp(deepAnalysis.matchedText.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "gi"),
+          "[Conteúdo Bloqueado por Segurança]",
+        );
+      } else {
+        textoFiltrado = "[Conteúdo Bloqueado por Segurança]";
+      }
+    }
+  }
+
+  return {
+    bloqueado: contemInfracao,
+    textoOriginal,
+    textoFormatado: contemInfracao ? textoFiltrado : textoOriginal,
+    alertaUsuario: contemInfracao
+      ? "Sua mensagem continha dados de contacto ou menção externa. Para sua segurança e garantia de pagamento, mantenha a conversa dentro do app."
+      : null,
+    category: detectedCategory,
+    reason: detectedReason,
+  };
 }
 
 /** Analisa se o texto viola as políticas de segurança e anti-desintermediação */

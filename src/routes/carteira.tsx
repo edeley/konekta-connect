@@ -26,7 +26,6 @@ import { AppShell } from "@/components/AppShell";
 import { store, useStore } from "@/lib/store";
 import { toast } from "sonner";
 import { payoutLabel } from "@/lib/escrow";
-import { KonektaCalculator } from "@/components/konekta/KonektaCalculator";
 import { SmsOtpVerificationModal } from "@/components/konekta/SmsOtpVerificationModal";
 
 export const Route = createFileRoute("/carteira")({
@@ -132,18 +131,44 @@ function WalletPage() {
 
     setIsProcessingTopUp(true);
 
-    setTimeout(() => {
-      store.topUp(Math.min(n, 100000));
-      setTopUpAmount("");
-      setIsProcessingTopUp(false);
-      setShowTopUp(false);
-      toast.success(`Carregamento de ${n.toLocaleString("pt-PT")} STN efetuado com sucesso!`, {
+    const methodNames: Record<string, string> = {
+      dobra24: "Dobra 24 Móvel STP",
+      transferencia: "Transferência BISTP / BGFI",
+      agente: "Ponto de Recarga / Agente Parceiro",
+    };
+
+    const res = store.createDepositRequest({
+      userId: user?.id || "usr-client",
+      userName: user?.name || "Manuel Trindade",
+      userRole: "cliente",
+      userPhone: user?.phone || dobra24Phone || "+239 9918273",
+      amount: n,
+      method:
+        topUpMethod === "dobra24"
+          ? "dobra24"
+          : topUpMethod === "transferencia"
+            ? "transferencia_bancaria"
+            : "agente_parceiro",
+      bankOrProviderName: methodNames[topUpMethod] || "Dobra 24 STP",
+      referenceOrPhone:
+        topUpMethod === "dobra24"
+          ? dobra24Phone || dobra24VoucherCode || `DB24-${Date.now().toString().slice(-6)}`
+          : `TRF-${Date.now().toString().slice(-6)}`,
+      notes: "Carregamento de carteira digital do cliente",
+    });
+
+    setIsProcessingTopUp(false);
+    setShowTopUp(false);
+    setTopUpAmount("");
+
+    if (res.ok) {
+      toast.success("Comprovativo de Carregamento Submetido!", {
         description:
-          topUpMethod === "dobra24"
-            ? "Saldo creditado via Dobra 24 Móvel."
-            : "Saldo creditado na sua carteira KONEKTA.",
+          "O seu pedido de recarga foi enviado para validação administrativa e será creditado após confirmação bancária.",
       });
-    }, 700);
+    } else {
+      toast.error(res.message);
+    }
   }
 
   function handleWithdraw(e: React.FormEvent) {
@@ -302,16 +327,6 @@ function WalletPage() {
             </p>
           </div>
         </div>
-      </section>
-
-      {/* Calculadora KONEKTA Interativa */}
-      <section className="px-5 mt-4">
-        <KonektaCalculator
-          initialTotal={500}
-          editable={true}
-          isClientView={true}
-          showSubtitle={true}
-        />
       </section>
 
       {/* Histórico de Transações */}

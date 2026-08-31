@@ -463,6 +463,47 @@ export type ModerationDispute = {
   finalDecidedAmount?: number;
 };
 
+export type DepositMethod =
+  "dobra24" | "dobra24_ponto24" | "transferencia_bancaria" | "agente_parceiro";
+
+export type DepositStatus = "pendente_aprovacao" | "aprovado" | "rejeitado";
+
+export type DepositRequest = {
+  id: string;
+  userId: string;
+  userName: string;
+  userRole: "cliente" | "prestador";
+  userPhone?: string;
+  amount: number;
+  method: DepositMethod;
+  bankOrProviderName: string;
+  referenceOrPhone: string;
+  proofImage?: string;
+  notes?: string;
+  status: DepositStatus;
+  createdAt: number;
+  reviewedAt?: number;
+  reviewedBy?: string;
+  rejectionReason?: string;
+};
+
+export type PayoutRequestStatus = "pendente" | "processado" | "rejeitado";
+
+export type PayoutRequest = {
+  id: string;
+  providerId: string;
+  providerName: string;
+  providerPhone?: string;
+  amount: number;
+  method: "bistp" | "bgfi" | "afriland" | "dobra24" | "cst_money" | "pix" | "iban";
+  accountDetails: string;
+  holderName: string;
+  status: PayoutRequestStatus;
+  createdAt: number;
+  processedAt?: number;
+  rejectionReason?: string;
+};
+
 export type CompanyMonetization = {
   model: "comissao" | "plano_mensal";
   planActive: boolean;
@@ -486,11 +527,15 @@ type State = {
   companyMonetization: CompanyMonetization;
   companyProfile: CompanyProfile | null;
   inPersonDeclarations: InPersonCashDeclaration[];
+  depositRequests: DepositRequest[];
+  payoutRequests: PayoutRequest[];
   messages: Record<string, Message[]>;
   assistantMessages: AssistantMessage[];
   balance: number;
   transactions: Transaction[];
   providerBalance: number;
+  providerPendingBalance: number;
+  providerWithdrawnBalance: number;
   providerDebt: number; // Dívida acumulada de comissões por liquidar
   isProviderBlockedForDebt: boolean; // Bloqueado se dívida >= 500 STN
   providerTransactions: Transaction[];
@@ -641,6 +686,97 @@ export const seedModerationDisputes: ModerationDispute[] = [
   },
 ];
 
+export const seedDepositRequests: DepositRequest[] = [
+  {
+    id: "DEP-1092",
+    userId: "usr-client",
+    userName: "Manuel Trindade",
+    userRole: "cliente",
+    userPhone: "+239 9918273",
+    amount: 1000,
+    method: "transferencia_bancaria",
+    bankOrProviderName: "BISTP (Banco Internacional)",
+    referenceOrPhone: "TRF-BISTP-2026-9941",
+    notes: "Carregamento para serviço de canalização e pintura.",
+    status: "pendente_aprovacao",
+    createdAt: Date.now() - 1800_000,
+  },
+  {
+    id: "DEP-1088",
+    userId: "edmilson-varela",
+    userName: "Edmilson Varela",
+    userRole: "prestador",
+    userPhone: "+239 9845678",
+    amount: 500,
+    method: "dobra24_ponto24",
+    bankOrProviderName: "Dobra 24 Móvel (CST/Unitel)",
+    referenceOrPhone: "+239 9845678 / D24-88419",
+    notes: "Regularização de comissões pendentes para desbloqueio.",
+    status: "pendente_aprovacao",
+    createdAt: Date.now() - 3600_000,
+  },
+  {
+    id: "DEP-1050",
+    userId: "usr-clara",
+    userName: "Clara Mendes",
+    userRole: "cliente",
+    userPhone: "+239 9934112",
+    amount: 2000,
+    method: "transferencia_bancaria",
+    bankOrProviderName: "BGFI Bank STP",
+    referenceOrPhone: "BGFI-STP-88402",
+    notes: "Depósito confirmado no extrato bancário.",
+    status: "aprovado",
+    createdAt: Date.now() - 86400_000 * 2,
+    reviewedAt: Date.now() - 86400_000 * 2 + 1800_000,
+    reviewedBy: "Admin KONEKTA",
+  },
+  {
+    id: "DEP-1044",
+    userId: "usr-joao",
+    userName: "Dr. João Sacramento",
+    userRole: "cliente",
+    userPhone: "+239 9988776",
+    amount: 750,
+    method: "agente_parceiro",
+    bankOrProviderName: "Agente Parceiro CST Trindade",
+    referenceOrPhone: "AG-TRIN-9012",
+    notes: "Depósito em dinheiro validado no terminal do agente parceiro.",
+    status: "aprovado",
+    createdAt: Date.now() - 86400_000 * 3,
+    reviewedAt: Date.now() - 86400_000 * 3 + 600_000,
+    reviewedBy: "Admin KONEKTA",
+  },
+];
+
+export const seedPayoutRequests: PayoutRequest[] = [
+  {
+    id: "PAY-801",
+    providerId: "edmilson-varela",
+    providerName: "Edmilson Varela",
+    providerPhone: "+239 9845678",
+    amount: 1200,
+    method: "bistp",
+    accountDetails: "ST53.0001.0000.4455.6677.8899.1",
+    holderName: "Edmilson Varela",
+    status: "pendente",
+    createdAt: Date.now() - 7200_000,
+  },
+  {
+    id: "PAY-799",
+    providerId: "dercio-costa",
+    providerName: "Dércio Costa",
+    providerPhone: "+239 9912345",
+    amount: 2500,
+    method: "bgfi",
+    accountDetails: "ST53.0002.0000.1122.3344.5566.7",
+    holderName: "Dércio Costa",
+    status: "processado",
+    createdAt: Date.now() - 86400_000 * 4,
+    processedAt: Date.now() - 86400_000 * 3,
+  },
+];
+
 export const seedCompanyProfile: CompanyProfile = {
   companyName: "KONEKTA Obras & Serviços Lda",
   legalName: "KONEKTA Obras & Serviços São Tomé Lda",
@@ -700,10 +836,27 @@ const defaultState: State = {
   user: null,
   profiles: { cliente: true, prestador: false },
   providerProfile: null,
-  providerBalance: 0,
+  providerBalance: 1250,
+  providerPendingBalance: 450,
+  providerWithdrawnBalance: 8400,
   providerDebt: 0,
   isProviderBlockedForDebt: false,
-  providerTransactions: [],
+  providerTransactions: [
+    {
+      id: "pt-seed-1",
+      kind: "in",
+      label: "Liquidação Escrow OTP — Pedido KNK-1021",
+      amount: 323,
+      at: Date.now() - 86400_000 * 2,
+    },
+    {
+      id: "pt-seed-2",
+      kind: "out",
+      label: "Levantamento Bancário BISTP Processado",
+      amount: 2500,
+      at: Date.now() - 86400_000 * 4,
+    },
+  ],
   orders: seedOrders,
   reviews: seedReviews,
   requests: seedRequests,
@@ -716,6 +869,8 @@ const defaultState: State = {
   },
   companyProfile: seedCompanyProfile,
   inPersonDeclarations: [],
+  depositRequests: seedDepositRequests,
+  payoutRequests: seedPayoutRequests,
 
   messages: {
     "edmilson-varela": [
@@ -851,6 +1006,12 @@ function load(): State {
       isProviderBlockedForDebt: isBlocked,
       companyProfile: parsed.companyProfile ?? defaultState.companyProfile,
       inPersonDeclarations: parsed.inPersonDeclarations ?? defaultState.inPersonDeclarations,
+      depositRequests: parsed.depositRequests ?? defaultState.depositRequests,
+      payoutRequests: parsed.payoutRequests ?? defaultState.payoutRequests,
+      providerBalance: parsed.providerBalance ?? defaultState.providerBalance,
+      providerPendingBalance: parsed.providerPendingBalance ?? defaultState.providerPendingBalance,
+      providerWithdrawnBalance:
+        parsed.providerWithdrawnBalance ?? defaultState.providerWithdrawnBalance,
       profiles: { ...defaultState.profiles, ...(parsed.profiles ?? {}) },
       flags: { ...defaultFlags, ...(parsed.flags ?? {}) },
       settings: { ...defaultSettings, ...(parsed.settings ?? {}) },
@@ -3509,5 +3670,453 @@ export const store = {
       link: "/pro/pedidos",
     });
     return true;
+  },
+
+  /* ----------------- Gestão de Depósitos, Recargas & Custódia Escrow ----------------- */
+
+  createDepositRequest(input: {
+    userId?: string;
+    userName?: string;
+    userRole?: "cliente" | "prestador";
+    userPhone?: string;
+    amount: number;
+    method: DepositMethod;
+    bankOrProviderName: string;
+    referenceOrPhone?: string;
+    proofImage?: string;
+    notes?: string;
+  }): { ok: boolean; message: string; deposit?: DepositRequest } {
+    if (!input.amount || input.amount <= 0) {
+      return {
+        ok: false,
+        message: "Insira um montante válido para o carregamento.",
+      };
+    }
+
+    const currentUserName =
+      input.userName ||
+      state.user?.name ||
+      (input.userRole === "prestador" ? "Edmilson Varela" : "Manuel Trindade");
+    const currentUserId =
+      input.userId ||
+      state.user?.id ||
+      (input.userRole === "prestador" ? "edmilson-varela" : "usr-client");
+    const currentUserRole =
+      input.userRole ||
+      (state.profiles.prestador && !state.profiles.cliente ? "prestador" : "cliente");
+
+    const newDeposit: DepositRequest = {
+      id: `DEP-${Math.floor(1000 + Math.random() * 9000)}`,
+      userId: currentUserId,
+      userName: currentUserName,
+      userRole: currentUserRole,
+      userPhone: input.userPhone || state.user?.phone || "+239 9918273",
+      amount: input.amount,
+      method: input.method,
+      bankOrProviderName: input.bankOrProviderName,
+      referenceOrPhone: input.referenceOrPhone,
+      proofImage: input.proofImage,
+      notes: input.notes,
+      status: "pendente_aprovacao",
+      createdAt: Date.now(),
+    };
+
+    set({
+      depositRequests: [newDeposit, ...state.depositRequests],
+    });
+
+    notify({
+      title: "Pedido de Recarga Registado",
+      body: `Carregamento de ${input.amount} STN submetido. O saldo será creditado após validação da administração.`,
+      tone: "info",
+      link: currentUserRole === "prestador" ? "/pro/ganhos" : "/carteira",
+    });
+
+    try {
+      realtimeAudio.play("notification");
+    } catch {
+      // ignore
+    }
+
+    return {
+      ok: true,
+      message: `Comprovativo de ${input.amount} STN registado com sucesso! Aguarda validação do administrador.`,
+      deposit: newDeposit,
+    };
+  },
+
+  approveDepositRequest(depositId: string, adminNotes?: string): { ok: boolean; message: string } {
+    const deposit = state.depositRequests.find((d) => d.id === depositId);
+    if (!deposit) {
+      return { ok: false, message: "Pedido de depósito não encontrado." };
+    }
+    if (deposit.status === "aprovado") {
+      return { ok: false, message: "Este depósito já foi aprovado anteriormente." };
+    }
+
+    const updatedDeposits = state.depositRequests.map((d) =>
+      d.id === depositId
+        ? {
+            ...d,
+            status: "aprovado" as DepositStatus,
+            reviewedAt: Date.now(),
+            reviewedBy: "Admin KONEKTA",
+            notes: adminNotes || d.notes,
+          }
+        : d,
+    );
+
+    if (deposit.userRole === "cliente") {
+      const newTx: Transaction = {
+        id: `t_dep_${Date.now()}`,
+        kind: "in",
+        label: `Carregamento Aprovado Admin — ${deposit.bankOrProviderName} (${deposit.id})`,
+        amount: deposit.amount,
+        at: Date.now(),
+      };
+
+      set({
+        depositRequests: updatedDeposits,
+        balance: state.balance + deposit.amount,
+        transactions: [newTx, ...state.transactions],
+      });
+
+      notify({
+        title: "Recarga Aprovada pela Administração!",
+        body: `O seu carregamento de ${deposit.amount} STN (${deposit.bankOrProviderName}) foi validado e creditado na sua carteira.`,
+        tone: "success",
+        link: "/carteira",
+      });
+    } else {
+      // Prestador
+      let currentDebt = state.providerDebt;
+      let debtLiquidated = 0;
+      let remainingForBalance = deposit.amount;
+
+      if (currentDebt > 0) {
+        debtLiquidated = Math.min(deposit.amount, currentDebt);
+        currentDebt -= debtLiquidated;
+        remainingForBalance = deposit.amount - debtLiquidated;
+      }
+
+      const debtLimit = state.config.debtBlockLimit || 500;
+      const isStillBlocked = currentDebt >= debtLimit;
+      const providerTxs: Transaction[] = [];
+
+      if (debtLiquidated > 0) {
+        providerTxs.push({
+          id: `pt_debt_liq_${Date.now()}`,
+          kind: "out",
+          label: `Abate de Dívida de Comissões (${deposit.bankOrProviderName} · ${deposit.id})`,
+          amount: debtLiquidated,
+          at: Date.now(),
+        });
+      }
+
+      if (remainingForBalance > 0) {
+        providerTxs.push({
+          id: `pt_dep_in_${Date.now()}`,
+          kind: "in",
+          label: `Depósito Aprovado Admin — ${deposit.bankOrProviderName} (${deposit.id})`,
+          amount: remainingForBalance,
+          at: Date.now() + 1,
+        });
+      }
+
+      set({
+        depositRequests: updatedDeposits,
+        providerBalance: state.providerBalance + remainingForBalance,
+        providerDebt: currentDebt,
+        isProviderBlockedForDebt: isStillBlocked,
+        providerTransactions: [...providerTxs, ...state.providerTransactions],
+      });
+
+      notify({
+        title: "Depósito KONEKTA PRO Validado",
+        body: `Recarga de ${deposit.amount} STN aprovada pelo Administrador! Saldo disponível atualizado.`,
+        tone: "success",
+        link: "/pro/ganhos",
+      });
+    }
+
+    try {
+      realtimeAudio.play("coin");
+    } catch {
+      // ignore
+    }
+
+    return {
+      ok: true,
+      message: `Depósito ${deposit.id} de ${deposit.amount} STN (${deposit.userName}) aprovado com sucesso! Saldo creditado.`,
+    };
+  },
+
+  rejectDepositRequest(depositId: string, reason: string): { ok: boolean; message: string } {
+    const deposit = state.depositRequests.find((d) => d.id === depositId);
+    if (!deposit) {
+      return { ok: false, message: "Pedido de depósito não encontrado." };
+    }
+
+    set({
+      depositRequests: state.depositRequests.map((d) =>
+        d.id === depositId
+          ? {
+              ...d,
+              status: "rejeitado" as DepositStatus,
+              rejectionReason: reason || "Comprovativo não localizado no extrato bancário.",
+              reviewedAt: Date.now(),
+              reviewedBy: "Admin KONEKTA",
+            }
+          : d,
+      ),
+    });
+
+    notify({
+      title: "Recarga Rejeitada pelo Administrador",
+      body: `O pedido ${deposit.id} (${deposit.amount} STN) foi recusado: ${reason || "Comprovativo inválido"}.`,
+      tone: "error",
+      link: deposit.userRole === "prestador" ? "/pro/ganhos" : "/carteira",
+    });
+
+    return {
+      ok: true,
+      message: `Depósito ${deposit.id} rejeitado. O utilizador foi notificado.`,
+    };
+  },
+
+  /* ----------------- Repasses e Saques dos Prestadores (Payouts) ----------------- */
+
+  requestProviderPayout(input: {
+    providerId: string;
+    providerName: string;
+    providerPhone?: string;
+    amount: number;
+    method: "bistp" | "bgfi" | "afriland" | "dobra24" | "cst_money" | "pix" | "iban";
+    accountDetails: string;
+    holderName: string;
+  }): { ok: boolean; message: string } {
+    if (!input.amount || input.amount <= 0) {
+      return { ok: false, message: "Insira um montante válido para levantamento." };
+    }
+    if (input.amount > state.providerBalance) {
+      return {
+        ok: false,
+        message: `Saldo disponível insuficiente (${state.providerBalance} STN).`,
+      };
+    }
+    if (state.isProviderBlockedForDebt) {
+      return {
+        ok: false,
+        message: "Conta suspensa por dívida pendente. Regularize as comissões para efetuar saques.",
+      };
+    }
+    if (!input.accountDetails.trim()) {
+      return { ok: false, message: "Insira os dados da conta ou NIB para transferência." };
+    }
+
+    const newPayout: PayoutRequest = {
+      id: `PAY-${Math.floor(100 + Math.random() * 900)}`,
+      providerId: input.providerId,
+      providerName: input.providerName,
+      providerPhone: input.providerPhone || "+239 9845678",
+      amount: input.amount,
+      method: input.method,
+      accountDetails: input.accountDetails,
+      holderName: input.holderName,
+      status: "pendente",
+      createdAt: Date.now(),
+    };
+
+    const newTx: Transaction = {
+      id: `pt_payout_${Date.now()}`,
+      kind: "out",
+      label: `Saque Solicitado (${input.method.toUpperCase()} · ${newPayout.id})`,
+      amount: input.amount,
+      at: Date.now(),
+    };
+
+    set({
+      providerBalance: state.providerBalance - input.amount,
+      payoutRequests: [newPayout, ...state.payoutRequests],
+      providerTransactions: [newTx, ...state.providerTransactions],
+    });
+
+    notify({
+      title: "Solicitação de Saque Enviada",
+      body: `O repasse de ${input.amount} STN para ${input.method.toUpperCase()} (${input.accountDetails}) foi encaminhado para processamento.`,
+      tone: "info",
+      link: "/pro/ganhos",
+    });
+
+    return {
+      ok: true,
+      message: `Solicitação ${newPayout.id} de ${input.amount} STN enviada com sucesso!`,
+    };
+  },
+
+  approvePayoutRequest(payoutId: string): { ok: boolean; message: string } {
+    const payout = state.payoutRequests.find((p) => p.id === payoutId);
+    if (!payout) return { ok: false, message: "Pedido de repasse não encontrado." };
+    if (payout.status === "processado") return { ok: false, message: "Saque já processado." };
+
+    set({
+      payoutRequests: state.payoutRequests.map((p) =>
+        p.id === payoutId
+          ? {
+              ...p,
+              status: "processado" as PayoutRequestStatus,
+              processedAt: Date.now(),
+            }
+          : p,
+      ),
+      providerWithdrawnBalance: state.providerWithdrawnBalance + payout.amount,
+    });
+
+    notify({
+      title: "Saque Processado com Sucesso!",
+      body: `A transferência de ${payout.amount} STN (${payout.method.toUpperCase()}) foi executada para a sua conta.`,
+      tone: "success",
+      link: "/pro/ganhos",
+    });
+
+    return {
+      ok: true,
+      message: `Repasse ${payout.id} de ${payout.amount} STN para ${payout.providerName} marcado como executado!`,
+    };
+  },
+
+  rejectPayoutRequest(payoutId: string, reason: string): { ok: boolean; message: string } {
+    const payout = state.payoutRequests.find((p) => p.id === payoutId);
+    if (!payout) return { ok: false, message: "Pedido de repasse não encontrado." };
+
+    const refundTx: Transaction = {
+      id: `pt_payout_refund_${Date.now()}`,
+      kind: "in",
+      label: `Estorno de Saque Rejeitado (${payout.id})`,
+      amount: payout.amount,
+      at: Date.now(),
+    };
+
+    set({
+      payoutRequests: state.payoutRequests.map((p) =>
+        p.id === payoutId
+          ? {
+              ...p,
+              status: "rejeitado" as PayoutRequestStatus,
+              rejectionReason:
+                reason || "Dados bancários incorretos ou titularidade não coincidente.",
+            }
+          : p,
+      ),
+      providerBalance: state.providerBalance + payout.amount,
+      providerTransactions: [refundTx, ...state.providerTransactions],
+    });
+
+    notify({
+      title: "Saque Recusado & Saldo Estornado",
+      body: `O repasse ${payout.id} de ${payout.amount} STN foi recusado: ${reason || "Dados bancários incorretos"}. O saldo foi devolvido.`,
+      tone: "warning",
+      link: "/pro/ganhos",
+    });
+
+    return {
+      ok: true,
+      message: `Repasse ${payout.id} recusado e saldo de ${payout.amount} STN estornado ao prestador.`,
+    };
+  },
+
+  /* ----------------- Validação OTP e Liquidação de Escrow com Split ----------------- */
+
+  verifyPinAndSettleOrder(
+    orderId: string,
+    enteredPin: string,
+  ): {
+    ok: boolean;
+    message: string;
+    netEarnings?: number;
+    commissionAmount?: number;
+  } {
+    const order = state.orders.find((o) => o.id === orderId);
+    if (!order) {
+      return { ok: false, message: "Pedido não encontrado no sistema." };
+    }
+
+    if (order.status === "concluido" || order.status === "avaliado") {
+      return {
+        ok: false,
+        message: "Este pedido já foi finalizado e liquidado anteriormente.",
+      };
+    }
+
+    const cleanInput = enteredPin.trim();
+    const targetPin = (order.completionCode || "1234").trim();
+
+    if (cleanInput !== targetPin) {
+      try {
+        realtimeAudio.play("pin_error");
+      } catch {
+        // ignore
+      }
+      return {
+        ok: false,
+        message:
+          "Código de conclusão (OTP) incorreto. Peça o PIN de 4 dígitos ao cliente no local.",
+      };
+    }
+
+    // PIN Válido: Executar Split de Pagamento Escrow
+    const totalAmount = order.total || 0;
+    const isCompanyPlan =
+      state.companyMonetization.model === "plano_mensal" && state.companyMonetization.planActive;
+    const commPct = isCompanyPlan ? 0 : state.config.commissionPct || 20;
+    const commAmount = Math.round(totalAmount * (commPct / 100));
+    const netEarnings = totalAmount - commAmount;
+
+    // Atualizar pedido
+    const updatedOrders = state.orders.map((o) =>
+      o.id === orderId
+        ? {
+            ...o,
+            status: "concluido" as OrderStatus,
+            completedAt: Date.now(),
+            finishedAt: Date.now(),
+          }
+        : o,
+    );
+
+    const providerTx: Transaction = {
+      id: `pt_settle_${Date.now()}`,
+      kind: "in",
+      label: `Liquidação Escrow OTP — ${order.service} (${order.id})`,
+      amount: netEarnings,
+      at: Date.now(),
+    };
+
+    set({
+      orders: updatedOrders,
+      providerBalance: state.providerBalance + netEarnings,
+      providerPendingBalance: Math.max(0, state.providerPendingBalance - totalAmount),
+      providerTransactions: [providerTx, ...state.providerTransactions],
+    });
+
+    try {
+      realtimeAudio.play("pin_success");
+    } catch {
+      // ignore
+    }
+
+    notify({
+      title: "Serviço Finalizado & Pago!",
+      body: `Código OTP validado com sucesso! ${netEarnings} STN creditados no seu saldo disponível (comissão KONEKTA retida: ${commAmount} STN).`,
+      tone: "success",
+      link: "/pro/ganhos",
+    });
+
+    return {
+      ok: true,
+      message: `Código validado! O valor de ${netEarnings} STN foi transferido para o seu saldo disponível.`,
+      netEarnings,
+      commissionAmount: commAmount,
+    };
   },
 };

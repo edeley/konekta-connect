@@ -44,6 +44,10 @@ import { AuthGate } from "@/components/AuthGate";
 import { QuoteCard } from "@/components/konekta/QuoteCard";
 import { QuoteComposer } from "@/components/konekta/QuoteComposer";
 import { ReviewModal } from "@/components/konekta/ReviewModal";
+import { ChatDynamicStatus } from "@/components/konekta/ChatDynamicStatus";
+import { ChatQuickReplies } from "@/components/konekta/ChatQuickReplies";
+import { InChatCheckoutModal } from "@/components/konekta/InChatCheckoutModal";
+import { ChatMediationModal } from "@/components/konekta/ChatMediationModal";
 import { BottomSheet } from "@/components/konekta/kit";
 import { formatDb } from "@/lib/catalog";
 import { analyzeBlockedContent, containsBlockedContent } from "@/lib/escrow";
@@ -88,9 +92,18 @@ function ChatDetail() {
   const [text, setText] = useState("");
   const [composerOpen, setComposerOpen] = useState(false);
   const [reviewQuote, setReviewQuote] = useState<Quote | null>(null);
+  const [checkoutQuote, setCheckoutQuote] = useState<Quote | null>(null);
+  const [mediationModalOpen, setMediationModalOpen] = useState(false);
   const [viewingPhoto, setViewingPhoto] = useState<string | null>(null);
   const [isTyping, setIsTyping] = useState(realtimeBus.getTyping(id));
   const scrollRef = useRef<HTMLDivElement>(null);
+
+  // Orçamento ativo mais recente
+  const activeQuote = useMemo(() => {
+    const quoteMsgs = messages.filter((m) => m.kind === "quote" && m.quote);
+    if (quoteMsgs.length === 0) return null;
+    return quoteMsgs[quoteMsgs.length - 1].quote || null;
+  }, [messages]);
 
   // Verifica se todos os pedidos associados já foram concluídos
   const relatedOrders = orders.filter((o) => o.providerId === id);
@@ -503,8 +516,39 @@ function ChatDetail() {
             </div>
           )}
 
+          {/* Barra de Status Dinâmico da Negociação / Custódia */}
+          <ChatDynamicStatus
+            quote={activeQuote}
+            isClient={isClient}
+            serviceTitle={provider.category}
+            onOpenCheckout={() => {
+              if (activeQuote) setCheckoutQuote(activeQuote);
+            }}
+            onOpenComposer={() => setComposerOpen(true)}
+            onCompleteService={() => {
+              if (activeQuote) {
+                store.completeQuote(id, activeQuote.id);
+                toast.success("Serviço concluído — valor libertado ao prestador");
+                if (isClient) setReviewQuote(activeQuote);
+              }
+            }}
+            onValidateOtp={(otp) => {
+              if (!activeQuote) return;
+              const res = store.validateChatCompletionOtp(id, activeQuote.id, otp);
+              if (res.success) {
+                toast.success("Código OTP Validado! Fundos libertados na sua Carteira PRO.");
+              } else {
+                toast.error(res.error || "Código OTP incorreto.");
+              }
+            }}
+            onOpenReview={() => {
+              if (activeQuote) setReviewQuote(activeQuote);
+            }}
+            onOpenMediation={() => setMediationModalOpen(true)}
+          />
+
           {/* Banner de Proteção e Anti-Bypass Rigoroso */}
-          <div className="px-4 mt-3 space-y-2">
+          <div className="px-4 mt-1 space-y-2">
             {unlocked ? (
               <div className="rounded-2xl bg-success/10 border border-success/30 px-3.5 py-3 text-[11px] text-success space-y-2">
                 <div className="flex items-center justify-between">
@@ -844,10 +888,7 @@ function ChatDetail() {
                       isClient={isClient}
                       balance={balance}
                       onPay={() => {
-                        const ok = store.payQuote(id, m.quote!.id);
-                        toast[ok ? "success" : "error"](
-                          ok ? "Pagamento retido em custódia segura" : "Saldo insuficiente",
-                        );
+                        if (m.quote) setCheckoutQuote(m.quote);
                       }}
                       onComplete={() => {
                         store.completeQuote(id, m.quote!.id);
@@ -1130,6 +1171,19 @@ function ChatDetail() {
                     </button>
                   </div>
                 )}
+
+                {/* Respostas Rápidas / Mensagens Pré-definidas Contextuais */}
+                <ChatQuickReplies
+                  isClient={isClient}
+                  hasActiveQuote={Boolean(activeQuote)}
+                  isEscrowPaid={Boolean(
+                    activeQuote &&
+                    (activeQuote.status === "pago" || activeQuote.status === "concluido"),
+                  )}
+                  onSelect={(reply) => {
+                    setText(reply);
+                  }}
+                />
 
                 {/* Aviso pró-ativo em tempo real ao digitar termos restritos com detecção de país */}
                 {!unlocked &&
@@ -1823,6 +1877,23 @@ function ChatDetail() {
           serviceName={reviewQuote.title}
         />
       )}
+
+      {/* Modal de Checkout Interno no Chat (Escrow + Dobra 24) */}
+      {checkoutQuote && (
+        <InChatCheckoutModal
+          open={Boolean(checkoutQuote)}
+          onClose={() => setCheckoutQuote(null)}
+          quote={checkoutQuote}
+          providerName={provider.name}
+        />
+      )}
+
+      {/* Modal de Garantias, Auditoria e Mediação KONEKTA */}
+      <ChatMediationModal
+        open={mediationModalOpen}
+        onClose={() => setMediationModalOpen(false)}
+        providerName={provider.name}
+      />
     </AuthGate>
   );
 }
