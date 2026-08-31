@@ -24,6 +24,9 @@ import {
   Maximize2,
   Car,
   CheckSquare,
+  Receipt,
+  Lock,
+  Info,
 } from "lucide-react";
 import { STP_DISTRICTS } from "@/lib/auth-schemas";
 import { store, useStore } from "@/lib/store";
@@ -138,10 +141,18 @@ export function BookingModal({ open, onClose, provider, initialService }: Bookin
     timeSlot: "14:00",
   });
 
-  // Localização em São Tomé
+  // Localização em São Tomé com GPS Inteligente
   const [district, setDistrict] = useState<string>(user?.district || STP_DISTRICTS[0]);
   const [address, setAddress] = useState<string>(user?.address || "");
   const [isLocatingGPS, setIsLocatingGPS] = useState(false);
+  const [detectedGpsInfo, setDetectedGpsInfo] = useState<{
+    zone: string;
+    district: string;
+    latitude: number;
+    longitude: number;
+    accuracy: number;
+    mapsUrl: string;
+  } | null>(null);
 
   const handleGetGPS = async () => {
     setIsLocatingGPS(true);
@@ -152,8 +163,17 @@ export function BookingModal({ open, onClose, provider, initialService }: Bookin
           STP_DISTRICTS.find((d) => res.district.toLowerCase().includes(d.toLowerCase())) ||
           STP_DISTRICTS[0];
         setDistrict(matched);
-        if (!address.trim()) {
-          setAddress(`Localização GPS (${res.latitude.toFixed(4)}, ${res.longitude.toFixed(4)})`);
+        const zoneName = res.zone || matched;
+        setDetectedGpsInfo({
+          zone: zoneName,
+          district: matched,
+          latitude: res.latitude,
+          longitude: res.longitude,
+          accuracy: res.accuracy,
+          mapsUrl: res.mapsUrl || `https://www.google.com/maps?q=${res.latitude},${res.longitude}`,
+        });
+        if (!address.trim() || address.startsWith("Localização GPS")) {
+          setAddress(`${zoneName}, ${matched}`);
         }
       }
     } finally {
@@ -165,7 +185,15 @@ export function BookingModal({ open, onClose, provider, initialService }: Bookin
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Cálculo rigoroso com o Pricing Engine KONEKTA
+  // Deslocação e transporte acordados diretamente com o profissional (sem taxa forçada arbitrária)
+  const displacementFee = useMemo(() => {
+    if (!currentService) return 0;
+    if (currentService.travelFeeAmount !== undefined) {
+      return currentService.travelFeeAmount;
+    }
+    return 0; // Por defeito: 0 Db (sem valor forçado, a combinar diretamente com o profissional se necessário)
+  }, [currentService]);
+
   const quoteCalculation = useMemo(() => {
     const basePrice = currentService?.price || provider.priceFrom || 500;
     return calculateQuote({
@@ -174,7 +202,7 @@ export function BookingModal({ open, onClose, provider, initialService }: Bookin
       quantity,
       minQuantity: currentBillingModel === "hora" ? 2 : 1,
       customUnitName: currentService?.unit,
-      displacementFee: currentService?.travelFeeAmount || 150,
+      displacementFee,
       extras,
       urgencyFee: schedule.isUrgent ? 300 : 0,
       feePct: commissionPct,
@@ -184,6 +212,7 @@ export function BookingModal({ open, onClose, provider, initialService }: Bookin
     provider,
     currentBillingModel,
     quantity,
+    displacementFee,
     extras,
     schedule.isUrgent,
     commissionPct,
@@ -257,7 +286,10 @@ export function BookingModal({ open, onClose, provider, initialService }: Bookin
 
     try {
       const urgentNotice = schedule.isUrgent ? "\n⚡ ATENDIMENTO URGENTE SOLICITADO" : "";
-      const orderNotes = `${problemDescription.trim()}\n\n[Resumo KONEKTA: ${quoteCalculation.humanSummary}]${urgentNotice}\nLocal: ${fullAddress}\n(Toda a comunicação decorre no chat seguro da app KONEKTA)`;
+      const gpsInfoText = detectedGpsInfo
+        ? `\n📍 Localização GPS Detetada: ${detectedGpsInfo.zone}, ${detectedGpsInfo.district} (±${Math.round(detectedGpsInfo.accuracy)}m)\n🗺️ Rota no Mapa: ${detectedGpsInfo.mapsUrl}`
+        : "";
+      const orderNotes = `${problemDescription.trim()}\n\n[Resumo KONEKTA: ${quoteCalculation.humanSummary}]${urgentNotice}\nLocal: ${fullAddress}${gpsInfoText}\n(Toda a comunicação decorre no chat seguro da app KONEKTA)`;
 
       const order = store.createOrder({
         providerId: provider.id,
@@ -274,6 +306,8 @@ export function BookingModal({ open, onClose, provider, initialService }: Bookin
         title: `${currentService.name} - ${provider.name}`,
         description: problemDescription.trim() || `Serviço agendado com ${provider.name}`,
         location: fullAddress,
+        latitude: detectedGpsInfo?.latitude,
+        longitude: detectedGpsInfo?.longitude,
         dateStr:
           schedule.dateStr === "Hoje" ? new Date().toISOString().split("T")[0] : schedule.dateStr,
         timeStr: schedule.timeSlot || "09:00",
@@ -404,7 +438,7 @@ export function BookingModal({ open, onClose, provider, initialService }: Bookin
 
                     <div className="text-right shrink-0">
                       {srv.billingMethod === "orcamento" ? (
-                        <div className="text-xs font-bold text-purple-600 dark:text-purple-400 bg-purple-500/10 px-2 py-1 rounded-lg">
+                        <div className="text-xs font-bold text-purple-600 dark:text-purple-400 bg-purple-500/10 px-2.5 py-1 rounded-lg">
                           Sob Orçamento
                         </div>
                       ) : (
@@ -414,6 +448,11 @@ export function BookingModal({ open, onClose, provider, initialService }: Bookin
                           </span>
                           <span className="block text-[10px] text-muted-foreground font-medium">
                             /{srv.unit || "serviço"}
+                          </span>
+                          <span className="block text-[9px] text-muted-foreground/80 font-medium mt-0.5">
+                            {srv.travelFeeAmount && srv.travelFeeAmount > 0
+                              ? `+${formatDb(srv.travelFeeAmount)} deslocação`
+                              : "Deslocação a acertar se aplicável"}
                           </span>
                         </div>
                       )}
@@ -726,22 +765,44 @@ export function BookingModal({ open, onClose, provider, initialService }: Bookin
             />
           </div>
 
-          {/* 6. LOCALIZAÇÃO */}
+          {/* 6. LOCALIZAÇÃO COM DETEÇÃO DE ZONA STP */}
           <div className="space-y-1.5">
             <div className="flex items-center justify-between">
               <label className="text-xs font-bold text-foreground flex items-center gap-1.5 uppercase tracking-wider">
                 <MapPin size={13} className="text-primary" />
-                Local do Atendimento
+                Local do Atendimento (São Tomé e Príncipe)
               </label>
               <button
                 type="button"
                 onClick={handleGetGPS}
                 disabled={isLocatingGPS}
-                className="text-[10px] font-bold text-primary px-2 py-0.5 rounded-lg bg-primary/10 hover:bg-primary/20 transition active:scale-95 disabled:opacity-50"
+                className="text-[11px] font-bold text-primary px-2.5 py-1 rounded-xl bg-primary/10 hover:bg-primary/20 transition active:scale-95 disabled:opacity-50 flex items-center gap-1 cursor-pointer"
               >
-                {isLocatingGPS ? "A obter GPS..." : "📍 Usar GPS"}
+                <Navigation size={12} className={isLocatingGPS ? "animate-spin" : ""} />
+                <span>{isLocatingGPS ? "A detetar Zona..." : "📍 Usar GPS"}</span>
               </button>
             </div>
+
+            {detectedGpsInfo && (
+              <div className="p-3 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 text-xs space-y-1">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-1.5 font-bold text-emerald-800 dark:text-emerald-300">
+                    <span className="relative flex h-2 w-2">
+                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                      <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                    </span>
+                    <span>Zona: {detectedGpsInfo.zone}, {detectedGpsInfo.district}</span>
+                  </div>
+                  <span className="text-[10px] text-emerald-700 dark:text-emerald-400 font-mono font-bold">
+                    ±{Math.round(detectedGpsInfo.accuracy)}m precisão
+                  </span>
+                </div>
+                <p className="text-[11px] text-muted-foreground">
+                  📍 O prestador receberá estas coordenadas e o link de rota Google Maps no pedido para chegar até si com máxima rapidez.
+                </p>
+              </div>
+            )}
+
             <div className="grid grid-cols-2 gap-2">
               <select
                 value={district}
@@ -756,7 +817,7 @@ export function BookingModal({ open, onClose, provider, initialService }: Bookin
               </select>
               <input
                 type="text"
-                placeholder="Bairro / Morada / Referência"
+                placeholder="Bairro / Morada / Ponto de Referência"
                 value={address}
                 onChange={(e) => setAddress(e.target.value)}
                 className="text-xs px-3 py-2.5 rounded-xl bg-muted/30 border border-border focus:border-primary focus:bg-card focus:outline-hidden text-foreground placeholder:text-muted-foreground"
@@ -765,41 +826,141 @@ export function BookingModal({ open, onClose, provider, initialService }: Bookin
           </div>
         </div>
 
-        {/* Rodapé do Modal com Resumo de Custódia KONEKTA */}
+        {/* Rodapé do Modal com Discriminação Transparente & Custódia KONEKTA */}
         <div className="p-5 border-t border-border/70 bg-muted/20 shrink-0 space-y-3">
           {quoteCalculation.isQuote ? (
             <div className="bg-card rounded-2xl p-3.5 border border-border shadow-2xs space-y-1.5">
               <div className="flex items-center justify-between text-xs">
-                <span className="text-muted-foreground">Resumo do Pedido:</span>
+                <span className="text-muted-foreground">Serviço Selecionado:</span>
                 <span className="font-semibold text-foreground">
-                  {quoteCalculation.humanSummary}
+                  {currentService?.name || "Serviço Personalizado"}
                 </span>
               </div>
               <div className="flex items-center justify-between pt-1 border-t border-border/50">
                 <span className="text-xs font-bold text-foreground">Valor Estimado:</span>
-                <span className="text-sm font-bold text-purple-600 dark:text-purple-400">
-                  Sob Orçamento
+                <span className="text-xs font-bold text-purple-600 dark:text-purple-400 bg-purple-500/10 px-2.5 py-1 rounded-lg">
+                  Sob Orçamento no Chat
                 </span>
               </div>
             </div>
           ) : (
-            <div className="bg-card rounded-2xl p-3.5 border border-border shadow-2xs space-y-2">
-              <div className="flex items-center justify-between text-xs">
-                <span className="text-muted-foreground">Serviço:</span>
-                <span className="font-semibold text-foreground truncate max-w-[200px]">
-                  {quoteCalculation.humanSummary}
+            <div className="bg-card rounded-2xl p-4 border border-border/90 shadow-2xs space-y-3">
+              {/* Cabeçalho da Discriminação */}
+              <div className="flex items-center justify-between border-b border-border/70 pb-2">
+                <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
+                  <Receipt size={14} className="text-primary" /> O que está a pagar (Discriminação)
+                </span>
+                <span className="text-[10px] font-bold text-emerald-700 dark:text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 rounded-full flex items-center gap-1">
+                  <ShieldCheck size={11} /> 100% Transparente
                 </span>
               </div>
-              <div className="flex items-center justify-between pt-2 border-t border-border/60">
-                <div>
-                  <span className="text-xs font-bold text-foreground">Total do Serviço</span>
-                  <span className="block text-[10px] text-emerald-800 dark:text-emerald-400 font-medium">
-                    Garantia de 30 dias incluída
+
+              {/* Linhas de Custos Detalhados */}
+              <div className="space-y-2 text-xs">
+                {/* 1. Mão de Obra / Serviço Base */}
+                <div className="flex items-start justify-between gap-2">
+                  <div className="min-w-0">
+                    <p className="font-bold text-foreground truncate">{currentService?.name}</p>
+                    <p className="text-[11px] text-muted-foreground">
+                      {quoteCalculation.effectiveQuantity} {quoteCalculation.unitFormatted} ×{" "}
+                      {formatDb(currentService?.price || 0)}
+                    </p>
+                  </div>
+                  <span className="font-bold text-foreground shrink-0 font-mono">
+                    {formatDb(quoteCalculation.baseAmount)}
                   </span>
                 </div>
-                <span className="text-base font-black text-primary">
-                  {formatDb(quoteCalculation.gross)}
-                </span>
+
+                {/* 2. Deslocação e Transporte do Técnico */}
+                <div className="flex items-start justify-between gap-2">
+                  <div>
+                    <p className="font-medium text-foreground flex items-center gap-1">
+                      <Car size={13} className="text-muted-foreground shrink-0" />
+                      Deslocação & Transporte
+                    </p>
+                    <p className="text-[10px] text-muted-foreground">
+                      {quoteCalculation.displacementAmount > 0
+                        ? "Taxa de transporte acordada previamente"
+                        : "Sem taxa fixa forçada (a acertar com o prestador se aplicável)"}
+                    </p>
+                  </div>
+                  <span className="font-bold shrink-0 font-mono">
+                    {quoteCalculation.displacementAmount > 0 ? (
+                      `+${formatDb(quoteCalculation.displacementAmount)}`
+                    ) : (
+                      <span className="text-emerald-700 dark:text-emerald-400 font-bold">
+                        0 Db (A combinar se houver)
+                      </span>
+                    )}
+                  </span>
+                </div>
+
+                {/* 3. Extras e Materiais Selecionados */}
+                {quoteCalculation.extrasAmount > 0 && (
+                  <div className="flex items-start justify-between gap-2 pt-1 border-t border-border/40">
+                    <div>
+                      <p className="font-medium text-foreground flex items-center gap-1">
+                        <Sparkles size={13} className="text-amber-500 shrink-0" />
+                        Extras & Materiais Selecionados
+                      </p>
+                      <p className="text-[10px] text-muted-foreground">
+                        {extras
+                          .filter((e) => e.selected)
+                          .map((e) => e.name)
+                          .join(", ")}
+                      </p>
+                    </div>
+                    <span className="font-bold text-foreground shrink-0 font-mono">
+                      +{formatDb(quoteCalculation.extrasAmount)}
+                    </span>
+                  </div>
+                )}
+
+                {/* 4. Taxa de Atendimento Urgente */}
+                {quoteCalculation.urgencyAmount > 0 && (
+                  <div className="flex items-start justify-between gap-2 pt-1 border-t border-border/40">
+                    <div>
+                      <p className="font-medium text-amber-800 dark:text-amber-300 flex items-center gap-1">
+                        ⚡ Atendimento Urgente Solicitado
+                      </p>
+                      <p className="text-[10px] text-muted-foreground">
+                        Prioridade de atendimento imediato em STP
+                      </p>
+                    </div>
+                    <span className="font-bold text-amber-600 dark:text-amber-400 shrink-0 font-mono">
+                      +{formatDb(quoteCalculation.urgencyAmount)}
+                    </span>
+                  </div>
+                )}
+
+                {/* 5. Garantia 30 Dias */}
+                <div className="flex items-center justify-between gap-2 pt-1 border-t border-border/40 text-[11px]">
+                  <span className="text-muted-foreground flex items-center gap-1">
+                    <ShieldCheck size={12} className="text-emerald-600 dark:text-emerald-400" />
+                    Garantia KONEKTA (30 Dias)
+                  </span>
+                  <span className="font-bold text-emerald-700 dark:text-emerald-400">
+                    0 Db (Grátis)
+                  </span>
+                </div>
+              </div>
+
+              {/* Total Destacado */}
+              <div className="pt-2.5 border-t border-border flex items-center justify-between bg-muted/40 -mx-4 -mb-4 p-3.5 rounded-b-2xl">
+                <div>
+                  <span className="text-xs font-black text-foreground uppercase tracking-wider block">
+                    Total do Serviço
+                  </span>
+                  <span className="text-[10px] text-muted-foreground font-medium flex items-center gap-1">
+                    <Lock size={10} className="text-primary" /> Protegido em custódia até validação
+                    OTP
+                  </span>
+                </div>
+                <div className="text-right">
+                  <span className="text-lg font-black text-primary font-mono block">
+                    {formatDb(quoteCalculation.gross)}
+                  </span>
+                </div>
               </div>
             </div>
           )}

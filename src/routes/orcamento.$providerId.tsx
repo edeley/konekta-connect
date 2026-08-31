@@ -104,6 +104,14 @@ function RequestQuotePage() {
   const [submitting, setSubmitting] = useState(false);
   const [isLocatingGPS, setIsLocatingGPS] = useState(false);
   const [gpsCoords, setGpsCoords] = useState<{ lat: number; lng: number } | null>(null);
+  const [detectedGps, setDetectedGps] = useState<{
+    zone: string;
+    district: string;
+    latitude: number;
+    longitude: number;
+    accuracy: number;
+    mapsUrl: string;
+  } | null>(null);
 
   const formSafety = useMemo(() => {
     return validateFormSafety({
@@ -121,20 +129,31 @@ function RequestQuotePage() {
       const res = await getCurrentGPSLocation();
       if (res) {
         setGpsCoords({ lat: res.latitude, lng: res.longitude });
-        // Auto-match district
-        if (res.district.includes("Água Grande")) setDistrict("Água Grande (São Tomé)");
-        else if (res.district.includes("Mé-Zóchi")) setDistrict("Mé-Zóchi (Trindade)");
-        else if (res.district.includes("Cantagalo")) setDistrict("Cantagalo (Santana)");
-        else if (res.district.includes("Lobata")) setDistrict("Lobata (Guadalupe)");
-        else if (res.district.includes("Lembá")) setDistrict("Lembá (Neves)");
-        else if (res.district.includes("Caué")) setDistrict("Caué (São João dos Angolares)");
-        else if (res.district.includes("Príncipe")) setDistrict("Região Autónoma do Príncipe");
+        const zoneName = res.zone || "São Tomé";
+        const districtName = res.district;
+        setDetectedGps({
+          zone: zoneName,
+          district: districtName,
+          latitude: res.latitude,
+          longitude: res.longitude,
+          accuracy: res.accuracy,
+          mapsUrl: res.mapsUrl || `https://www.google.com/maps?q=${res.latitude},${res.longitude}`,
+        });
 
-        if (!address.trim()) {
-          setAddress(`Localização GPS (${res.latitude.toFixed(4)}, ${res.longitude.toFixed(4)})`);
+        // Auto-match district
+        if (districtName.includes("Água Grande")) setDistrict("Água Grande (São Tomé)");
+        else if (districtName.includes("Mé-Zóchi")) setDistrict("Mé-Zóchi (Trindade)");
+        else if (districtName.includes("Cantagalo")) setDistrict("Cantagalo (Santana)");
+        else if (districtName.includes("Lobata")) setDistrict("Lobata (Guadalupe)");
+        else if (districtName.includes("Lembá")) setDistrict("Lembá (Neves)");
+        else if (districtName.includes("Caué")) setDistrict("Caué (São João dos Angolares)");
+        else if (districtName.includes("Príncipe")) setDistrict("Região Autónoma do Príncipe");
+
+        if (!address.trim() || address.startsWith("Localização GPS")) {
+          setAddress(`${zoneName}, ${districtName}`);
         }
-        if (!referencePoint.trim()) {
-          setReferencePoint(`Coordenadas de GPS obtidas via telemóvel`);
+        if (!referencePoint.trim() || referencePoint.startsWith("Coordenadas")) {
+          setReferencePoint(`GPS do Telemóvel: ${zoneName} (±${Math.round(res.accuracy)}m)`);
         }
       }
     } finally {
@@ -590,13 +609,30 @@ function RequestQuotePage() {
                   type="button"
                   onClick={handleGetGPS}
                   disabled={isLocatingGPS}
-                  className="px-2.5 py-1 rounded-xl bg-primary/10 hover:bg-primary/20 text-primary text-[11px] font-bold flex items-center gap-1 transition active:scale-95 disabled:opacity-50"
-                  title="Obter coordenadas exatas do GPS do telemóvel"
+                  className="px-2.5 py-1 rounded-xl bg-primary/10 hover:bg-primary/20 text-primary text-[11px] font-bold flex items-center gap-1 transition active:scale-95 disabled:opacity-50 cursor-pointer"
+                  title="Obter coordenadas exatas e Zona de São Tomé via GPS"
                 >
                   <Compass size={12} className={isLocatingGPS ? "animate-spin" : ""} />
-                  <span>{isLocatingGPS ? "A obter GPS..." : "📍 Usar GPS"}</span>
+                  <span>{isLocatingGPS ? "A detetar Zona..." : "📍 Usar GPS"}</span>
                 </button>
               </div>
+
+              {detectedGps && (
+                <div className="p-3 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 text-xs space-y-1">
+                  <div className="flex items-center justify-between">
+                    <span className="font-bold text-emerald-800 dark:text-emerald-300 flex items-center gap-1.5">
+                      📍 Zona Identificada: {detectedGps.zone} ({detectedGps.district})
+                    </span>
+                    <span className="text-[10px] text-emerald-700 dark:text-emerald-400 font-mono font-bold">
+                      ±{Math.round(detectedGps.accuracy)}m
+                    </span>
+                  </div>
+                  <p className="text-[11px] text-muted-foreground">
+                    O prestador receberá estas coordenadas e o link para traçar rota de deslocação até ao local do serviço.
+                  </p>
+                </div>
+              )}
+
               <p className="text-[11px] text-muted-foreground leading-tight">
                 Indique a localização exata do local da obra, reparação ou instalação.
               </p>

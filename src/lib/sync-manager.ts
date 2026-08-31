@@ -1,5 +1,6 @@
 import { toast } from "sonner";
 import { store } from "./store";
+import { identifySTPZone } from "./stp-geo";
 
 export type SyncScheduleEvent = {
   id: string;
@@ -35,7 +36,11 @@ export type GPSLocationResult = {
   longitude: number;
   accuracy: number;
   district: string;
+  zone?: string;
   formattedAddress: string;
+  mapsUrl?: string;
+  directionsUrl?: string;
+  shareMessage?: string;
 };
 
 const SYNC_EVENTS_KEY = "konekta_sync_events";
@@ -77,18 +82,28 @@ export async function getCurrentGPSLocation(): Promise<GPSLocationResult | null>
     navigator.geolocation.getCurrentPosition(
       (position) => {
         const { latitude, longitude, accuracy } = position.coords;
-        const district = detectSTPDistrictFromCoords(latitude, longitude);
-        const formattedAddress = `GPS: ${latitude.toFixed(5)}, ${longitude.toFixed(5)} (${district})`;
+        const { zone } = identifySTPZone(latitude, longitude);
+        const district = zone.district;
+        const mapsUrl = `https://www.google.com/maps?q=${latitude},${longitude}`;
+        const directionsUrl = `https://www.google.com/maps/dir/?api=1&destination=${latitude},${longitude}`;
+        const formattedAddress = `${zone.name}, ${district} (GPS: ${latitude.toFixed(4)}, ${longitude.toFixed(4)})`;
+        const shareMessage = `📍 Localização GPS: ${zone.name}, ${district} · Mapa: ${mapsUrl}`;
 
-        triggerDeviceVibration([50, 50, 50]);
-        toast.success(`📍 Localização GPS obtida com precisão: ${district}`);
+        triggerDeviceVibration([60, 40, 80]);
+        toast.success(`📍 Está em ${zone.name} (${district})!`, {
+          description: `Coordenadas capturadas (±${Math.round(accuracy)}m). Localização exata enviada ao prestador.`,
+        });
 
         resolve({
           latitude,
           longitude,
           accuracy,
           district,
+          zone: zone.name,
           formattedAddress,
+          mapsUrl,
+          directionsUrl,
+          shareMessage,
         });
       },
       (error) => {

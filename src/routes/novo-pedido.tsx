@@ -119,6 +119,14 @@ function NewRequest() {
   const [isCameraModalOpen, setIsCameraModalOpen] = useState(false);
   const [viewingPhoto, setViewingPhoto] = useState<string | null>(null);
   const [isLocatingGPS, setIsLocatingGPS] = useState(false);
+  const [detectedGps, setDetectedGps] = useState<{
+    zone: string;
+    district: string;
+    latitude: number;
+    longitude: number;
+    accuracy: number;
+    mapsUrl: string;
+  } | null>(null);
 
   // Obter referências geográficas locais para o distrito atual
   const localGeo = useMemo(() => getStpDistrictData(district), [district]);
@@ -150,13 +158,23 @@ function NewRequest() {
           districts.find((d) => res.district.toLowerCase().includes(d.toLowerCase())) ||
           districts[0];
         setDistrict(matched);
-        if (!address.trim()) {
-          setAddress(`Localização GPS (${res.latitude.toFixed(4)}, ${res.longitude.toFixed(4)})`);
+        const zoneName = res.zone || matched;
+        setDetectedGps({
+          zone: zoneName,
+          district: matched,
+          latitude: res.latitude,
+          longitude: res.longitude,
+          accuracy: res.accuracy,
+          mapsUrl: res.mapsUrl || `https://www.google.com/maps?q=${res.latitude},${res.longitude}`,
+        });
+
+        if (!address.trim() || address.startsWith("Localização GPS")) {
+          setAddress(`${zoneName}, ${matched}`);
         }
-        if (!reference.trim()) {
-          setReference(`Coordenadas do telemóvel (${res.district})`);
+        if (!reference.trim() || reference.startsWith("Coordenadas")) {
+          setReference(`GPS do Telemóvel: ${zoneName} (±${Math.round(res.accuracy)}m)`);
         }
-        toast.success(`Localização detetada: ${matched}`);
+        toast.success(`Está em ${zoneName} (${matched})!`);
       }
     } catch {
       toast.error("Não foi possível aceder ao GPS.");
@@ -626,9 +644,25 @@ function NewRequest() {
                   className="px-2.5 py-1 rounded-xl bg-primary/10 hover:bg-primary/20 text-primary text-[11px] font-bold flex items-center gap-1 transition active:scale-95 disabled:opacity-50 cursor-pointer"
                 >
                   <Navigation size={12} className={isLocatingGPS ? "animate-spin" : ""} />
-                  <span>{isLocatingGPS ? "A obter GPS..." : "📍 Usar GPS"}</span>
+                  <span>{isLocatingGPS ? "A detetar Zona..." : "📍 Usar GPS"}</span>
                 </button>
               </div>
+
+              {detectedGps && (
+                <div className="p-3 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 text-xs space-y-1">
+                  <div className="flex items-center justify-between">
+                    <span className="font-bold text-emerald-800 dark:text-emerald-300 flex items-center gap-1.5">
+                      📍 Zona Identificada: {detectedGps.zone} ({detectedGps.district})
+                    </span>
+                    <span className="text-[10px] text-emerald-700 dark:text-emerald-400 font-mono font-bold">
+                      ±{Math.round(detectedGps.accuracy)}m
+                    </span>
+                  </div>
+                  <p className="text-[11px] text-muted-foreground">
+                    Os profissionais da sua zona receberão a rota para deslocação direta sem atrasos.
+                  </p>
+                </div>
+              )}
 
               <div>
                 <p className="mb-2 text-xs font-semibold text-muted-foreground">

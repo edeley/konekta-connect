@@ -24,6 +24,7 @@ import {
   Scale,
   Compass,
   CheckCircle,
+  Navigation,
 } from "lucide-react";
 import { getProvider } from "@/lib/konekta-data";
 import {
@@ -51,7 +52,7 @@ import { ChatMediationModal } from "@/components/konekta/ChatMediationModal";
 import { BottomSheet } from "@/components/konekta/kit";
 import { formatDb } from "@/lib/catalog";
 import { analyzeBlockedContent, containsBlockedContent } from "@/lib/escrow";
-import { openNativeMap, downloadIcsCalendarFile } from "@/lib/sync-manager";
+import { openNativeMap, downloadIcsCalendarFile, getCurrentGPSLocation } from "@/lib/sync-manager";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/chat/$id")({
