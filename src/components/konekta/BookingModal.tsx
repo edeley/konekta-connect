@@ -27,6 +27,9 @@ import {
   Receipt,
   Lock,
   Info,
+  Navigation,
+  ChevronDown,
+  ChevronUp,
 } from "lucide-react";
 import { STP_DISTRICTS } from "@/lib/auth-schemas";
 import { store, useStore } from "@/lib/store";
@@ -184,6 +187,7 @@ export function BookingModal({ open, onClose, provider, initialService }: Bookin
   // Estados de submissão
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [showBreakdownDetails, setShowBreakdownDetails] = useState(false);
 
   // Deslocação e transporte acordados diretamente com o profissional (sem taxa forçada arbitrária)
   const displacementFee = useMemo(() => {
@@ -322,8 +326,6 @@ export function BookingModal({ open, onClose, provider, initialService }: Bookin
         alarm1h: true,
         alarmOnTime: true,
       });
-
-      downloadIcsCalendarFile(syncEvent);
 
       toast.success(
         quoteCalculation.isQuote ? "Pedido de orçamento enviado!" : "Pedido agendado com sucesso!",
@@ -791,14 +793,17 @@ export function BookingModal({ open, onClose, provider, initialService }: Bookin
                       <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
                       <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
                     </span>
-                    <span>Zona: {detectedGpsInfo.zone}, {detectedGpsInfo.district}</span>
+                    <span>
+                      Zona: {detectedGpsInfo.zone}, {detectedGpsInfo.district}
+                    </span>
                   </div>
                   <span className="text-[10px] text-emerald-700 dark:text-emerald-400 font-mono font-bold">
                     ±{Math.round(detectedGpsInfo.accuracy)}m precisão
                   </span>
                 </div>
                 <p className="text-[11px] text-muted-foreground">
-                  📍 O prestador receberá estas coordenadas e o link de rota Google Maps no pedido para chegar até si com máxima rapidez.
+                  📍 O prestador receberá estas coordenadas e o link de rota Google Maps no pedido
+                  para chegar até si com máxima rapidez.
                 </p>
               </div>
             )}
@@ -844,124 +849,162 @@ export function BookingModal({ open, onClose, provider, initialService }: Bookin
               </div>
             </div>
           ) : (
-            <div className="bg-card rounded-2xl p-4 border border-border/90 shadow-2xs space-y-3">
-              {/* Cabeçalho da Discriminação */}
-              <div className="flex items-center justify-between border-b border-border/70 pb-2">
-                <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
-                  <Receipt size={14} className="text-primary" /> O que está a pagar (Discriminação)
-                </span>
-                <span className="text-[10px] font-bold text-emerald-700 dark:text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 rounded-full flex items-center gap-1">
-                  <ShieldCheck size={11} /> 100% Transparente
-                </span>
-              </div>
-
-              {/* Linhas de Custos Detalhados */}
-              <div className="space-y-2 text-xs">
-                {/* 1. Mão de Obra / Serviço Base */}
-                <div className="flex items-start justify-between gap-2">
+            <div className="bg-card rounded-2xl border border-border/80 shadow-2xs overflow-hidden transition-all">
+              {!showBreakdownDetails ? (
+                /* Versão Compacta (Padrão) - Ocupa espaço mínimo */
+                <div className="p-3 flex items-center justify-between gap-3 bg-card">
                   <div className="min-w-0">
-                    <p className="font-bold text-foreground truncate">{currentService?.name}</p>
-                    <p className="text-[11px] text-muted-foreground">
-                      {quoteCalculation.effectiveQuantity} {quoteCalculation.unitFormatted} ×{" "}
-                      {formatDb(currentService?.price || 0)}
-                    </p>
-                  </div>
-                  <span className="font-bold text-foreground shrink-0 font-mono">
-                    {formatDb(quoteCalculation.baseAmount)}
-                  </span>
-                </div>
-
-                {/* 2. Deslocação e Transporte do Técnico */}
-                <div className="flex items-start justify-between gap-2">
-                  <div>
-                    <p className="font-medium text-foreground flex items-center gap-1">
-                      <Car size={13} className="text-muted-foreground shrink-0" />
-                      Deslocação & Transporte
-                    </p>
-                    <p className="text-[10px] text-muted-foreground">
-                      {quoteCalculation.displacementAmount > 0
-                        ? "Taxa de transporte acordada previamente"
-                        : "Sem taxa fixa forçada (a acertar com o prestador se aplicável)"}
-                    </p>
-                  </div>
-                  <span className="font-bold shrink-0 font-mono">
-                    {quoteCalculation.displacementAmount > 0 ? (
-                      `+${formatDb(quoteCalculation.displacementAmount)}`
-                    ) : (
-                      <span className="text-emerald-700 dark:text-emerald-400 font-bold">
-                        0 Db (A combinar se houver)
+                    <div className="flex items-center gap-2">
+                      <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
+                        Total:
                       </span>
+                      <span className="text-base font-black text-primary font-mono">
+                        {formatDb(quoteCalculation.gross)}
+                      </span>
+                    </div>
+                    <span className="text-[10px] text-muted-foreground flex items-center gap-1 font-medium">
+                      <Lock size={10} className="text-primary shrink-0" /> Protegido em custódia
+                      KONEKTA
+                    </span>
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={() => setShowBreakdownDetails(true)}
+                    className="shrink-0 px-2.5 py-1.5 rounded-xl bg-primary/10 hover:bg-primary/20 text-primary font-bold text-xs flex items-center gap-1.5 transition active:scale-95 cursor-pointer"
+                  >
+                    <span>Ver mais</span>
+                    <ChevronDown size={14} />
+                  </button>
+                </div>
+              ) : (
+                /* Versão Expandida com Discriminação Completa */
+                <div className="p-4 space-y-3 animate-in fade-in zoom-in-95 duration-150">
+                  {/* Cabeçalho da Discriminação */}
+                  <div className="flex items-center justify-between border-b border-border/70 pb-2">
+                    <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
+                      <Receipt size={14} className="text-primary" /> O que está a pagar
+                      (Discriminação)
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => setShowBreakdownDetails(false)}
+                      className="text-[11px] font-bold text-primary hover:underline flex items-center gap-1 cursor-pointer bg-primary/10 px-2 py-0.5 rounded-lg"
+                    >
+                      <span>Ver menos</span>
+                      <ChevronUp size={13} />
+                    </button>
+                  </div>
+
+                  {/* Linhas de Custos Detalhados */}
+                  <div className="space-y-2 text-xs">
+                    {/* 1. Mão de Obra / Serviço Base */}
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="min-w-0">
+                        <p className="font-bold text-foreground truncate">{currentService?.name}</p>
+                        <p className="text-[11px] text-muted-foreground">
+                          {quoteCalculation.effectiveQuantity} {quoteCalculation.unitFormatted} ×{" "}
+                          {formatDb(currentService?.price || 0)}
+                        </p>
+                      </div>
+                      <span className="font-bold text-foreground shrink-0 font-mono">
+                        {formatDb(quoteCalculation.baseAmount)}
+                      </span>
+                    </div>
+
+                    {/* 2. Deslocação e Transporte do Técnico */}
+                    <div className="flex items-start justify-between gap-2">
+                      <div>
+                        <p className="font-medium text-foreground flex items-center gap-1">
+                          <Car size={13} className="text-muted-foreground shrink-0" />
+                          Deslocação & Transporte
+                        </p>
+                        <p className="text-[10px] text-muted-foreground">
+                          {quoteCalculation.displacementAmount > 0
+                            ? "Taxa de transporte acordada previamente"
+                            : "Sem taxa fixa forçada (a acertar com o prestador se aplicável)"}
+                        </p>
+                      </div>
+                      <span className="font-bold shrink-0 font-mono">
+                        {quoteCalculation.displacementAmount > 0 ? (
+                          `+${formatDb(quoteCalculation.displacementAmount)}`
+                        ) : (
+                          <span className="text-emerald-700 dark:text-emerald-400 font-bold">
+                            0 Db (A combinar se houver)
+                          </span>
+                        )}
+                      </span>
+                    </div>
+
+                    {/* 3. Extras e Materiais Selecionados */}
+                    {quoteCalculation.extrasAmount > 0 && (
+                      <div className="flex items-start justify-between gap-2 pt-1 border-t border-border/40">
+                        <div>
+                          <p className="font-medium text-foreground flex items-center gap-1">
+                            <Sparkles size={13} className="text-amber-500 shrink-0" />
+                            Extras & Materiais Selecionados
+                          </p>
+                          <p className="text-[10px] text-muted-foreground">
+                            {extras
+                              .filter((e) => e.selected)
+                              .map((e) => e.name)
+                              .join(", ")}
+                          </p>
+                        </div>
+                        <span className="font-bold text-foreground shrink-0 font-mono">
+                          +{formatDb(quoteCalculation.extrasAmount)}
+                        </span>
+                      </div>
                     )}
-                  </span>
-                </div>
 
-                {/* 3. Extras e Materiais Selecionados */}
-                {quoteCalculation.extrasAmount > 0 && (
-                  <div className="flex items-start justify-between gap-2 pt-1 border-t border-border/40">
-                    <div>
-                      <p className="font-medium text-foreground flex items-center gap-1">
-                        <Sparkles size={13} className="text-amber-500 shrink-0" />
-                        Extras & Materiais Selecionados
-                      </p>
-                      <p className="text-[10px] text-muted-foreground">
-                        {extras
-                          .filter((e) => e.selected)
-                          .map((e) => e.name)
-                          .join(", ")}
-                      </p>
+                    {/* 4. Taxa de Atendimento Urgente */}
+                    {quoteCalculation.urgencyAmount > 0 && (
+                      <div className="flex items-start justify-between gap-2 pt-1 border-t border-border/40">
+                        <div>
+                          <p className="font-medium text-amber-800 dark:text-amber-300 flex items-center gap-1">
+                            ⚡ Atendimento Urgente Solicitado
+                          </p>
+                          <p className="text-[10px] text-muted-foreground">
+                            Prioridade de atendimento imediato em STP
+                          </p>
+                        </div>
+                        <span className="font-bold text-amber-600 dark:text-amber-400 shrink-0 font-mono">
+                          +{formatDb(quoteCalculation.urgencyAmount)}
+                        </span>
+                      </div>
+                    )}
+
+                    {/* 5. Garantia 30 Dias */}
+                    <div className="flex items-center justify-between gap-2 pt-1 border-t border-border/40 text-[11px]">
+                      <span className="text-muted-foreground flex items-center gap-1">
+                        <ShieldCheck size={12} className="text-emerald-600 dark:text-emerald-400" />
+                        Garantia KONEKTA (30 Dias)
+                      </span>
+                      <span className="font-bold text-emerald-700 dark:text-emerald-400">
+                        0 Db (Grátis)
+                      </span>
                     </div>
-                    <span className="font-bold text-foreground shrink-0 font-mono">
-                      +{formatDb(quoteCalculation.extrasAmount)}
-                    </span>
                   </div>
-                )}
 
-                {/* 4. Taxa de Atendimento Urgente */}
-                {quoteCalculation.urgencyAmount > 0 && (
-                  <div className="flex items-start justify-between gap-2 pt-1 border-t border-border/40">
+                  {/* Total Destacado */}
+                  <div className="pt-2.5 border-t border-border flex items-center justify-between bg-muted/40 -mx-4 -mb-4 p-3.5 rounded-b-2xl">
                     <div>
-                      <p className="font-medium text-amber-800 dark:text-amber-300 flex items-center gap-1">
-                        ⚡ Atendimento Urgente Solicitado
-                      </p>
-                      <p className="text-[10px] text-muted-foreground">
-                        Prioridade de atendimento imediato em STP
-                      </p>
+                      <span className="text-xs font-black text-foreground uppercase tracking-wider block">
+                        Total do Serviço
+                      </span>
+                      <span className="text-[10px] text-muted-foreground font-medium flex items-center gap-1">
+                        <Lock size={10} className="text-primary" /> Protegido em custódia até
+                        validação OTP
+                      </span>
                     </div>
-                    <span className="font-bold text-amber-600 dark:text-amber-400 shrink-0 font-mono">
-                      +{formatDb(quoteCalculation.urgencyAmount)}
-                    </span>
+                    <div className="text-right">
+                      <span className="text-lg font-black text-primary font-mono block">
+                        {formatDb(quoteCalculation.gross)}
+                      </span>
+                    </div>
                   </div>
-                )}
-
-                {/* 5. Garantia 30 Dias */}
-                <div className="flex items-center justify-between gap-2 pt-1 border-t border-border/40 text-[11px]">
-                  <span className="text-muted-foreground flex items-center gap-1">
-                    <ShieldCheck size={12} className="text-emerald-600 dark:text-emerald-400" />
-                    Garantia KONEKTA (30 Dias)
-                  </span>
-                  <span className="font-bold text-emerald-700 dark:text-emerald-400">
-                    0 Db (Grátis)
-                  </span>
                 </div>
-              </div>
-
-              {/* Total Destacado */}
-              <div className="pt-2.5 border-t border-border flex items-center justify-between bg-muted/40 -mx-4 -mb-4 p-3.5 rounded-b-2xl">
-                <div>
-                  <span className="text-xs font-black text-foreground uppercase tracking-wider block">
-                    Total do Serviço
-                  </span>
-                  <span className="text-[10px] text-muted-foreground font-medium flex items-center gap-1">
-                    <Lock size={10} className="text-primary" /> Protegido em custódia até validação
-                    OTP
-                  </span>
-                </div>
-                <div className="text-right">
-                  <span className="text-lg font-black text-primary font-mono block">
-                    {formatDb(quoteCalculation.gross)}
-                  </span>
-                </div>
-              </div>
+              )}
             </div>
           )}
 

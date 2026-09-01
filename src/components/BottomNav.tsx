@@ -66,11 +66,11 @@ export function BottomNav({ role = "cliente", wide = false }: { role?: UserRole;
 
   if (role === "admin") {
     const adminTabs = [
-      { to: "/admin", label: "Painel", icon: LayoutDashboard },
-      { to: "/admin/prestadores", label: "Prestadores", icon: Users },
-      { to: "/admin/pedidos", label: "Pedidos", icon: ClipboardList },
-      { to: "/admin/financeiro", label: "Financeiro", icon: Banknote },
-      { to: "/admin/configuracoes", label: "Config.", icon: Settings },
+      { to: "/admin", label: "Painel Admin", icon: LayoutDashboard },
+      { to: "/pro", label: "Prestadores", icon: Users },
+      { to: "/pedidos", label: "Pedidos", icon: ClipboardList },
+      { to: "/carteira", label: "Custódia", icon: Banknote },
+      { to: "/definicoes", label: "Definições", icon: Settings },
     ];
 
     return (

@@ -529,12 +529,22 @@ export type Order = {
   total: number;
   address?: string;
   district?: string;
+  referencePoint?: string;
   notes?: string;
   paymentMethod?: "carteira" | "dinheiro" | "mbway";
   createdAt?: number;
   startedAt?: number;
   finishedAt?: number;
   completedAt?: number;
+  /** Coordenadas e rotas GPS de alta precisão (Estilo Encontrar Dispositivo / Google Maps) */
+  latitude?: number;
+  longitude?: number;
+  accuracy?: number;
+  mapsUrl?: string;
+  directionsUrl?: string;
+  wazeUrl?: string;
+  appleMapsUrl?: string;
+  gpsAddress?: string;
   /** Código de validação OTP de 4 dígitos para o cliente fornecer ao prestador na conclusão */
   completionCode?: string;
   rating?: { stars: number; comment?: string; at: number; tags?: string[]; recommended?: boolean };
@@ -566,6 +576,13 @@ export const orders: Order[] = [
     total: 450,
     address: "Bairro do Hospital, Rua dos Coqueiros nº 14, São Tomé",
     district: "Água Grande",
+    referencePoint: "Próximo ao Hospital Dr. Ayres de Menezes",
+    latitude: 0.3372,
+    longitude: 6.7324,
+    accuracy: 6,
+    mapsUrl: "https://www.google.com/maps?q=0.3372,6.7324&z=18",
+    directionsUrl:
+      "https://www.google.com/maps/dir/?api=1&destination=0.3372,6.7324&travelmode=driving",
     notes:
       "Instalação de 6 focos embutidos LED na sala de estar, verificação do disjuntor principal e substituição do interruptor duplo.",
     paymentMethod: "carteira",

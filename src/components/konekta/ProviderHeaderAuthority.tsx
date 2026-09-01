@@ -275,14 +275,14 @@ export function ProviderHeaderAuthority({
               <span>Mensagem no Chat</span>
             </Link>
 
-            <button
-              type="button"
-              onClick={onOpenBooking}
+            <Link
+              to="/orcamento/$providerId"
+              params={{ providerId: contract.providerId }}
               className="flex-1 h-12 rounded-2xl bg-primary text-primary-foreground font-bold text-xs flex items-center justify-center gap-2 transition active:scale-95 shadow-md hover:bg-primary/90 cursor-pointer"
             >
               <Calendar size={16} />
-              <span>Solicitar Orçamento</span>
-            </button>
+              <span>Pedir Orçamento</span>
+            </Link>
           </div>
         </div>
       </div>

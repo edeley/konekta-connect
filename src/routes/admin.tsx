@@ -72,7 +72,24 @@ export default function AdminPage() {
   // Tab Navigation State
   const [activeTab, setActiveTab] = useState<
     "deposits" | "payouts" | "escrow" | "ledger" | "disputes" | "visits" | "config"
-  >("deposits");
+  >(() => {
+    if (typeof window !== "undefined") {
+      const params = new URLSearchParams(window.location.search);
+      const t = params.get("tab");
+      if (
+        t === "deposits" ||
+        t === "payouts" ||
+        t === "escrow" ||
+        t === "ledger" ||
+        t === "disputes" ||
+        t === "visits" ||
+        t === "config"
+      ) {
+        return t;
+      }
+    }
+    return "deposits";
+  });
 
   const transactions = useStore((s) => s.transactions);
   const [ledgerFilter, setLedgerFilter] = useState<"all" | "in" | "out">("all");

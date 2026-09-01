@@ -38,36 +38,56 @@ function NotFoundComponent() {
 }
 
 function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
-  console.error(error);
+  console.error("Root Error caught:", error);
   const router = useRouter();
   useEffect(() => {
-    reportLovableError(error, { boundary: "tanstack_root_error_component" });
+    try {
+      reportLovableError(error, { boundary: "tanstack_root_error_component" });
+    } catch {
+      // ignore
+    }
   }, [error]);
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-background px-4">
-      <div className="max-w-md text-center">
-        <h1 className="text-xl font-semibold tracking-tight text-foreground">
-          This page didn't load
+      <div className="max-w-md w-full text-center space-y-4 p-6 bg-card rounded-2xl border border-border shadow-sm">
+        <div className="size-12 mx-auto rounded-full bg-amber-500/10 text-amber-600 flex items-center justify-center font-bold text-xl">
+          ⚠️
+        </div>
+        <h1 className="text-xl font-bold tracking-tight text-foreground">
+          Não foi possível carregar a página
         </h1>
-        <p className="mt-2 text-sm text-muted-foreground">
-          Something went wrong on our end. You can try refreshing or head back home.
+        <p className="text-sm text-muted-foreground">
+          Ocorreu uma pequena instabilidade momentânea na ligação ou no dispositivo. Pode tentar
+          recarregar ou regressar ao início.
         </p>
-        <div className="mt-6 flex flex-wrap justify-center gap-2">
+
+        {error?.message && (
+          <div className="p-3 bg-muted rounded-xl text-left text-xs font-mono text-muted-foreground overflow-auto max-h-24">
+            {error.message}
+          </div>
+        )}
+
+        <div className="flex flex-wrap justify-center gap-2 pt-2">
           <button
+            type="button"
             onClick={() => {
-              router.invalidate();
-              reset();
+              try {
+                router.invalidate();
+                reset();
+              } catch {
+                window.location.reload();
+              }
             }}
-            className="inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+            className="inline-flex items-center justify-center rounded-xl bg-primary px-4 py-2.5 text-sm font-semibold text-primary-foreground transition hover:bg-primary/90 active:scale-95 cursor-pointer shadow-xs"
           >
-            Try again
+            Tentar novamente
           </button>
           <a
             href="/"
-            className="inline-flex items-center justify-center rounded-md border border-input bg-background px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-accent"
+            className="inline-flex items-center justify-center rounded-xl border border-input bg-background px-4 py-2.5 text-sm font-semibold text-foreground transition hover:bg-accent active:scale-95"
           >
-            Go home
+            Ir para a Página Inicial
           </a>
         </div>
       </div>
@@ -143,14 +163,22 @@ function RootComponent() {
   useEffect(() => {
     initAlarmWatcher();
     if (typeof window !== "undefined") {
-      const hasSeen = sessionStorage.getItem("konekta_splash_session");
-      if (!hasSeen) {
-        setShowSplash(true);
-        const timer = setTimeout(() => {
-          sessionStorage.setItem("konekta_splash_session", "true");
-          setShowSplash(false);
-        }, 1200);
-        return () => clearTimeout(timer);
+      try {
+        const hasSeen = sessionStorage.getItem("konekta_splash_session");
+        if (!hasSeen) {
+          setShowSplash(true);
+          const timer = setTimeout(() => {
+            try {
+              sessionStorage.setItem("konekta_splash_session", "true");
+            } catch {
+              // ignore
+            }
+            setShowSplash(false);
+          }, 1200);
+          return () => clearTimeout(timer);
+        }
+      } catch {
+        // In case sessionStorage is blocked by browser security
       }
     }
   }, []);

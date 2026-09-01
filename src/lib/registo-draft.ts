@@ -52,7 +52,8 @@ export function useDraftState<T extends object>(initial: T) {
 export function useOnline() {
   const [online, setOnline] = useState(true);
   useEffect(() => {
-    const update = () => setOnline(navigator.onLine);
+    if (typeof window === "undefined" || typeof navigator === "undefined") return;
+    const update = () => setOnline(navigator.onLine ?? true);
     update();
     window.addEventListener("online", update);
     window.addEventListener("offline", update);

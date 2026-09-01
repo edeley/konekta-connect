@@ -59,6 +59,7 @@ import { PinVerificationSheet } from "@/components/konekta/PinVerificationSheet"
 import { EscrowCheckoutCard } from "@/components/konekta/EscrowCheckoutCard";
 import { DisputeDrawer } from "@/components/konekta/DisputeDrawer";
 import { ReviewAndPostServiceSheet } from "@/components/konekta/ReviewAndPostServiceSheet";
+import { ClientGpsRadarCard } from "@/components/konekta/ClientGpsRadarCard";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 
@@ -469,7 +470,7 @@ function RequestOrOrderDetail() {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
               <div className="p-3 rounded-2xl bg-muted/40 border border-border/60 space-y-1">
                 <span className="text-[10px] font-bold uppercase text-muted-foreground flex items-center gap-1">
-                  <Calendar size={12} /> Data & Hora
+                  <Calendar size={12} /> Data & Hora Agendada
                 </span>
                 <p className="font-bold text-foreground text-sm">{order.scheduledFor}</p>
                 <p className="text-[11px] text-muted-foreground">
@@ -479,33 +480,35 @@ function RequestOrOrderDetail() {
 
               <div className="p-3 rounded-2xl bg-muted/40 border border-border/60 space-y-1">
                 <span className="text-[10px] font-bold uppercase text-muted-foreground flex items-center gap-1">
-                  <MapPin size={12} /> Local de Execução
+                  <MapPin size={12} /> Distrito & Ponto
                 </span>
                 <p className="font-bold text-foreground text-sm truncate">
                   {order.district || "São Tomé"}
                 </p>
                 <p className="text-[11px] text-muted-foreground truncate">
-                  {order.address || "Morada indicada pelo cliente"}
+                  {order.address || "Localização indicada pelo cliente"}
                 </p>
               </div>
             </div>
 
-            {/* AÇÕES DE MAPA E CALENDÁRIO */}
-            <div className="flex items-center gap-2 pt-1">
-              <button
-                type="button"
-                onClick={() =>
-                  openNativeMap({
-                    district: order.district || "São Tomé",
-                    title: order.service,
-                  })
-                }
-                className="flex-1 py-2.5 px-3 rounded-xl bg-card border border-border hover:bg-muted text-foreground text-xs font-bold flex items-center justify-center gap-1.5 transition active:scale-95 cursor-pointer shadow-2xs"
-              >
-                <Navigation size={14} className="text-primary" />
-                <span>Navegação GPS</span>
-              </button>
+            {/* RADAR GPS & NAVEGAÇÃO TURNO-A-TURNO (ESTILO ENCONTRAR DISPOSITIVO) */}
+            <div className="pt-2">
+              <ClientGpsRadarCard
+                latitude={order.latitude}
+                longitude={order.longitude}
+                accuracy={order.accuracy}
+                address={order.address}
+                district={order.district}
+                referencePoint={order.referencePoint}
+                clientName={order.clientName || client?.name || "Cliente KONEKTA"}
+                clientPhone={client?.phone}
+                orderTitle={order.service}
+                isProviderView={isProvider}
+              />
+            </div>
 
+            {/* AÇÃO ADICIONAL DE CALENDÁRIO */}
+            <div className="pt-1">
               <button
                 type="button"
                 onClick={() =>
@@ -520,10 +523,10 @@ function RequestOrOrderDetail() {
                     createdAt: order.createdAt || Date.now(),
                   })
                 }
-                className="flex-1 py-2.5 px-3 rounded-xl bg-card border border-border hover:bg-muted text-foreground text-xs font-bold flex items-center justify-center gap-1.5 transition active:scale-95 cursor-pointer shadow-2xs"
+                className="w-full py-2.5 px-3 rounded-xl bg-card border border-border hover:bg-muted text-foreground text-xs font-bold flex items-center justify-center gap-1.5 transition active:scale-95 cursor-pointer shadow-2xs"
               >
                 <Calendar size={14} className="text-primary" />
-                <span>Adicionar à Agenda</span>
+                <span>Sincronizar com a Agenda do Telemóvel (Google Calendar / iCal)</span>
               </button>
             </div>
           </KCard>
@@ -935,22 +938,23 @@ function RequestOrOrderDetail() {
               </span>
             </div>
 
-            {/* Ações Rápidas de Mapa e Agenda */}
-            <div className="pt-2 border-t border-border flex items-center gap-1.5">
-              <button
-                type="button"
-                onClick={() =>
-                  openNativeMap({
-                    district: request.district,
-                    title: request.title,
-                  })
-                }
-                className="px-3 py-1.5 rounded-xl bg-muted/60 hover:bg-muted text-foreground text-xs font-semibold flex items-center gap-1.5 shrink-0 transition active:scale-95 cursor-pointer"
-              >
-                <Navigation size={13} className="text-primary" />
-                <span>Ver no Mapa</span>
-              </button>
+            {/* RADAR GPS & NAVEGAÇÃO TURNO-A-TURNO PARA O PEDIDO */}
+            <div className="pt-2">
+              <ClientGpsRadarCard
+                latitude={request.latitude}
+                longitude={request.longitude}
+                accuracy={request.accuracy}
+                address={request.address}
+                district={request.district}
+                referencePoint={request.reference}
+                clientName={request.clientName || "Cliente KONEKTA"}
+                orderTitle={request.title}
+                isProviderView={isProvider}
+              />
+            </div>
 
+            {/* Ações Rápidas de Agenda */}
+            <div className="pt-2 border-t border-border flex items-center gap-1.5">
               <button
                 type="button"
                 onClick={() =>
@@ -965,10 +969,10 @@ function RequestOrOrderDetail() {
                     createdAt: request.createdAt,
                   })
                 }
-                className="px-3 py-1.5 rounded-xl bg-muted/60 hover:bg-muted text-foreground text-xs font-semibold flex items-center gap-1.5 shrink-0 transition active:scale-95 cursor-pointer"
+                className="w-full py-2.5 px-3 rounded-xl bg-card border border-border hover:bg-muted text-foreground text-xs font-bold flex items-center justify-center gap-1.5 shrink-0 transition active:scale-95 cursor-pointer shadow-2xs"
               >
-                <Calendar size={13} className="text-primary" />
-                <span>Calendário</span>
+                <Calendar size={14} className="text-primary" />
+                <span>Sincronizar Data com a Agenda (iCal / Google Calendar)</span>
               </button>
             </div>
           </KCard>

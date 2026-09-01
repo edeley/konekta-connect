@@ -79,9 +79,9 @@ function Notifications() {
                 </KCard>
               );
               return n.link ? (
-                <Link key={n.id} to={n.link} className="block">
+                <a key={n.id} href={n.link} className="block">
                   {body}
-                </Link>
+                </a>
               ) : (
                 <div key={n.id}>{body}</div>
               );

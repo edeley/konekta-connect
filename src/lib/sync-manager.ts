@@ -1,6 +1,6 @@
 import { toast } from "sonner";
 import { store } from "./store";
-import { identifySTPZone } from "./stp-geo";
+import { getSTPPreciseGPS, identifySTPZone } from "./stp-geo";
 
 export type SyncScheduleEvent = {
   id: string;
@@ -37,9 +37,13 @@ export type GPSLocationResult = {
   accuracy: number;
   district: string;
   zone?: string;
+  street?: string;
   formattedAddress: string;
-  mapsUrl?: string;
-  directionsUrl?: string;
+  mapsUrl: string;
+  directionsUrl: string;
+  wazeUrl?: string;
+  appleMapsUrl?: string;
+  geoUri?: string;
   shareMessage?: string;
 };
 
@@ -73,87 +77,122 @@ export function detectSTPDistrictFromCoords(lat: number, lng: number): string {
 }
 
 export async function getCurrentGPSLocation(): Promise<GPSLocationResult | null> {
-  if (typeof window === "undefined" || !("geolocation" in navigator)) {
-    toast.error("GPS não suportado neste telemóvel/navegador.");
-    return null;
+  const result = await getSTPPreciseGPS();
+  if (!result) return null;
+
+  return {
+    latitude: result.latitude,
+    longitude: result.longitude,
+    accuracy: result.accuracy,
+    district: result.district,
+    zone: result.zone,
+    street: result.street,
+    formattedAddress: result.formattedAddress,
+    mapsUrl: result.mapsUrl,
+    directionsUrl: result.directionsUrl,
+    wazeUrl: result.wazeUrl,
+    appleMapsUrl: result.appleMapsUrl,
+    geoUri: result.geoUri,
+    shareMessage: result.shareMessage,
+  };
+}
+
+// Helper para abertura 100% segura de links externos e protocolos sem quebrar o iframe
+export function safeOpenExternalUrl(url: string, target = "_blank") {
+  if (typeof window === "undefined") return;
+  try {
+    const a = document.createElement("a");
+    a.href = url;
+    a.target = target;
+    a.rel = "noopener noreferrer";
+    document.body.appendChild(a);
+    a.click();
+    setTimeout(() => {
+      try {
+        document.body.removeChild(a);
+      } catch {
+        // ignore
+      }
+    }, 100);
+  } catch (err) {
+    console.warn("safeOpenExternalUrl fallback error:", err);
+    try {
+      window.open(url, target);
+    } catch {
+      // ignore
+    }
   }
-
-  return new Promise((resolve) => {
-    navigator.geolocation.getCurrentPosition(
-      (position) => {
-        const { latitude, longitude, accuracy } = position.coords;
-        const { zone } = identifySTPZone(latitude, longitude);
-        const district = zone.district;
-        const mapsUrl = `https://www.google.com/maps?q=${latitude},${longitude}`;
-        const directionsUrl = `https://www.google.com/maps/dir/?api=1&destination=${latitude},${longitude}`;
-        const formattedAddress = `${zone.name}, ${district} (GPS: ${latitude.toFixed(4)}, ${longitude.toFixed(4)})`;
-        const shareMessage = `📍 Localização GPS: ${zone.name}, ${district} · Mapa: ${mapsUrl}`;
-
-        triggerDeviceVibration([60, 40, 80]);
-        toast.success(`📍 Está em ${zone.name} (${district})!`, {
-          description: `Coordenadas capturadas (±${Math.round(accuracy)}m). Localização exata enviada ao prestador.`,
-        });
-
-        resolve({
-          latitude,
-          longitude,
-          accuracy,
-          district,
-          zone: zone.name,
-          formattedAddress,
-          mapsUrl,
-          directionsUrl,
-          shareMessage,
-        });
-      },
-      (error) => {
-        console.warn("GPS Error:", error);
-        let errorMsg = "Não foi possível obter a localização GPS.";
-        if (error.code === error.PERMISSION_DENIED) {
-          errorMsg = "Permissão de GPS negada. Por favor, ative a localização no telemóvel.";
-        } else if (error.code === error.TIMEOUT) {
-          errorMsg = "Tempo limite ao obter sinal GPS.";
-        }
-        toast.error(errorMsg);
-        resolve(null);
-      },
-      {
-        enableHighAccuracy: true,
-        timeout: 10000,
-        maximumAge: 30000,
-      },
-    );
-  });
 }
 
 // --- 2. MAPAS NATIVOS DO TELEMÓVEL (Google Maps, Apple Maps, Waze, Geo URI) ---
+export function openGoogleMapsRoute(options: {
+  latitude: number;
+  longitude: number;
+  label?: string;
+  travelMode?: "driving" | "walking" | "two_wheeler";
+}) {
+  const mode = options.travelMode || "driving";
+  const url = `https://www.google.com/maps/dir/?api=1&destination=${options.latitude},${options.longitude}&travelmode=${mode}`;
+  triggerDeviceVibration([40, 60]);
+  safeOpenExternalUrl(url, "_blank");
+  toast.success("A abrir rota no Google Maps...", {
+    description: `Destino: ${options.latitude.toFixed(5)}, ${options.longitude.toFixed(5)}`,
+  });
+}
+
 export function openNativeMap(options: {
   address?: string;
   district?: string;
   latitude?: number;
   longitude?: number;
   title?: string;
+  mode?: "route" | "pin";
 }) {
-  const query =
-    options.latitude && options.longitude
-      ? `${options.latitude},${options.longitude}`
-      : encodeURIComponent(
-          [options.address, options.district, "São Tomé e Príncipe"].filter(Boolean).join(", "),
-        );
+  const isIOS =
+    typeof navigator !== "undefined" && /iPad|iPhone|iPod/.test(navigator.userAgent || "");
+  const isRoute =
+    options.mode === "route" || (!options.mode && Boolean(options.latitude && options.longitude));
 
-  const isIOS = typeof navigator !== "undefined" && /iPad|iPhone|iPod/.test(navigator.userAgent);
+  if (options.latitude && options.longitude) {
+    if (isRoute) {
+      if (isIOS) {
+        safeOpenExternalUrl(
+          `https://maps.apple.com/?daddr=${options.latitude},${options.longitude}&dirflg=d`,
+          "_blank",
+        );
+      } else {
+        safeOpenExternalUrl(
+          `https://www.google.com/maps/dir/?api=1&destination=${options.latitude},${options.longitude}&travelmode=driving`,
+          "_blank",
+        );
+      }
+      toast.success("A abrir rota e navegação GPS até ao cliente...");
+      return;
+    }
+
+    if (isIOS) {
+      safeOpenExternalUrl(
+        `https://maps.apple.com/?ll=${options.latitude},${options.longitude}&q=${encodeURIComponent(options.title || "Local do Cliente")}`,
+        "_blank",
+      );
+    } else {
+      safeOpenExternalUrl(
+        `https://www.google.com/maps?q=${options.latitude},${options.longitude}&z=18`,
+        "_blank",
+      );
+    }
+    toast.info("A abrir ponto exato no mapa...");
+    return;
+  }
+
+  const query = encodeURIComponent(
+    [options.address, options.district, "São Tomé e Príncipe"].filter(Boolean).join(", "),
+  );
 
   if (isIOS) {
-    // Apple Maps intent
-    const appleMapsUrl =
-      options.latitude && options.longitude
-        ? `maps://?ll=${options.latitude},${options.longitude}&q=${encodeURIComponent(options.title || "Local do Serviço")}`
-        : `maps://?q=${query}`;
-    window.open(appleMapsUrl, "_system");
+    safeOpenExternalUrl(`https://maps.apple.com/?q=${query}`, "_blank");
   } else {
-    // Universal Google Maps web/native intent
-    const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${query}`;
-    window.open(mapsUrl, "_blank");
+    safeOpenExternalUrl(`https://www.google.com/maps/search/?api=1&query=${query}`, "_blank");
   }
 
   toast.info("A abrir mapa no telemóvel...");
@@ -161,7 +200,7 @@ export function openNativeMap(options: {
 
 // --- 3. WHATSAPP DO TELEMÓVEL ---
 export function cleanPhoneNumber(rawPhone: string): string {
-  let cleaned = rawPhone.replace(/\D/g, "");
+  let cleaned = (rawPhone || "").replace(/\D/g, "");
   // If local STP phone without country code (e.g. 9912233 or 2223344)
   if (cleaned.length === 7) {
     cleaned = `239${cleaned}`;
@@ -175,7 +214,7 @@ export function openWhatsApp(options: { phone?: string; message: string }) {
   const waUrl = `https://wa.me/${targetPhone}?text=${encodedText}`;
 
   triggerDeviceVibration([40, 40]);
-  window.open(waUrl, "_blank");
+  safeOpenExternalUrl(waUrl, "_blank");
   toast.success("A abrir WhatsApp no telemóvel...");
 }
 
@@ -184,13 +223,14 @@ export function openNativeSMS(options: { phone?: string; body: string }) {
   const targetPhone = cleanPhoneNumber(options.phone || "2399912233");
   const encodedBody = encodeURIComponent(options.body.trim());
 
-  const isIOS = typeof navigator !== "undefined" && /iPad|iPhone|iPod/.test(navigator.userAgent);
+  const isIOS =
+    typeof navigator !== "undefined" && /iPad|iPhone|iPod/.test(navigator.userAgent || "");
   const smsUrl = isIOS
     ? `sms:${targetPhone}&body=${encodedBody}`
     : `sms:${targetPhone}?body=${encodedBody}`;
 
   triggerDeviceVibration([40, 40]);
-  window.location.href = smsUrl;
+  safeOpenExternalUrl(smsUrl, "_blank");
   toast.success("A abrir aplicação de SMS...");
 }
 
@@ -201,7 +241,7 @@ export function openNativeEmail(options: { email?: string; subject: string; body
   const encodedBody = encodeURIComponent(options.body);
   const mailtoUrl = `mailto:${targetEmail}?subject=${encodedSubject}&body=${encodedBody}`;
 
-  window.location.href = mailtoUrl;
+  safeOpenExternalUrl(mailtoUrl, "_blank");
   toast.success("A abrir correio eletrónico no telemóvel...");
 }
 
@@ -209,7 +249,7 @@ export function openNativeEmail(options: { email?: string; subject: string; body
 export function openNativePhoneCall(phone: string) {
   const targetPhone = cleanPhoneNumber(phone || "2399912233");
   triggerDeviceVibration([60]);
-  window.location.href = `tel:+${targetPhone}`;
+  safeOpenExternalUrl(`tel:+${targetPhone}`, "_blank");
 }
 
 // --- 7. VIBRAÇÃO HÁPTICA DO DISPOSITIVO ---
@@ -438,16 +478,28 @@ END:VCALENDAR`;
 }
 
 export function downloadIcsCalendarFile(event: SyncScheduleEvent) {
-  const icsData = generateIcsContent(event);
-  const blob = new Blob([icsData], { type: "text/calendar;charset=utf-8" });
-  const url = window.URL.createObjectURL(blob);
-  const link = document.createElement("a");
-  link.href = url;
-  link.setAttribute("download", `konekta-servico-${event.id}.ics`);
-  document.body.appendChild(link);
-  link.click();
-  document.body.removeChild(link);
-  window.URL.revokeObjectURL(url);
+  if (typeof window === "undefined") return;
+  try {
+    const icsData = generateIcsContent(event);
+    const blob = new Blob([icsData], { type: "text/calendar;charset=utf-8" });
+    const url = window.URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.setAttribute("download", `konekta-servico-${event.id}.ics`);
+    document.body.appendChild(link);
+    link.click();
+    setTimeout(() => {
+      try {
+        document.body.removeChild(link);
+        window.URL.revokeObjectURL(url);
+      } catch {
+        // ignore
+      }
+    }, 200);
+    toast.success("Ficheiro de calendário (.ics) gerado para o telemóvel!");
+  } catch (err) {
+    console.warn("downloadIcsCalendarFile error:", err);
+  }
 }
 
 export function getGoogleCalendarUrl(event: SyncScheduleEvent): string {
@@ -488,15 +540,23 @@ export function getStoredAlarms(): SavedAlarm[] {
 
 export function saveAlarm(alarm: SavedAlarm) {
   if (typeof window === "undefined") return;
-  const current = getStoredAlarms().filter((a) => a.id !== alarm.id);
-  localStorage.setItem(ALARMS_KEY, JSON.stringify([alarm, ...current]));
+  try {
+    const current = getStoredAlarms().filter((a) => a.id !== alarm.id);
+    localStorage.setItem(ALARMS_KEY, JSON.stringify([alarm, ...current]));
+  } catch {
+    // ignore
+  }
 }
 
 export function removeAlarm(alarmId: string) {
   if (typeof window === "undefined") return;
-  const current = getStoredAlarms().filter((a) => a.id !== alarmId);
-  localStorage.setItem(ALARMS_KEY, JSON.stringify(current));
-  toast.info("Alarme removido");
+  try {
+    const current = getStoredAlarms().filter((a) => a.id !== alarmId);
+    localStorage.setItem(ALARMS_KEY, JSON.stringify(current));
+    toast.info("Alarme removido");
+  } catch {
+    // ignore
+  }
 }
 
 export function registerEventAndAlarms(
@@ -559,34 +619,38 @@ export function initAlarmWatcher() {
   monitorStarted = true;
 
   const checkAlarms = () => {
-    const alarms = getStoredAlarms();
-    const now = Date.now();
-    let updated = false;
+    try {
+      const alarms = getStoredAlarms();
+      const now = Date.now();
+      let updated = false;
 
-    alarms.forEach((alarm) => {
-      if (
-        !alarm.triggered &&
-        now >= alarm.targetTimestamp &&
-        now <= alarm.targetTimestamp + 15 * 60 * 1000
-      ) {
-        // Trigger alarm
-        alarm.triggered = true;
-        updated = true;
+      alarms.forEach((alarm) => {
+        if (
+          !alarm.triggered &&
+          now >= alarm.targetTimestamp &&
+          now <= alarm.targetTimestamp + 15 * 60 * 1000
+        ) {
+          // Trigger alarm
+          alarm.triggered = true;
+          updated = true;
 
-        showSystemNotification(
-          alarm.title,
-          `Lembrete de serviço KONEKTA agendado para ${alarm.dateFormatted} às ${alarm.timeFormatted}.`,
-        );
+          showSystemNotification(
+            alarm.title,
+            `Lembrete de serviço KONEKTA agendado para ${alarm.dateFormatted} às ${alarm.timeFormatted}.`,
+          );
 
-        toast.warning(alarm.title, {
-          description: `Serviço agendado às ${alarm.timeFormatted}. O prestador ou cliente aguarda.`,
-          duration: 10000,
-        });
+          toast.warning(alarm.title, {
+            description: `Serviço agendado às ${alarm.timeFormatted}. O prestador ou cliente aguarda.`,
+            duration: 10000,
+          });
+        }
+      });
+
+      if (updated) {
+        localStorage.setItem(ALARMS_KEY, JSON.stringify(alarms));
       }
-    });
-
-    if (updated) {
-      localStorage.setItem(ALARMS_KEY, JSON.stringify(alarms));
+    } catch {
+      // ignore
     }
   };
 

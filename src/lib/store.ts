@@ -232,6 +232,11 @@ export type QuoteRequestData = {
   photos: string[];
   createdAt: number;
   status: "enviado" | "respondido" | "fechado";
+  latitude?: number;
+  longitude?: number;
+  accuracy?: number;
+  mapsUrl?: string;
+  directionsUrl?: string;
 };
 
 export type InPersonCashDeclaration = {
@@ -1134,6 +1139,11 @@ export const store = {
     urgency: RequestUrgency;
     scheduleSummary: string;
     photos: string[];
+    latitude?: number;
+    longitude?: number;
+    accuracy?: number;
+    mapsUrl?: string;
+    directionsUrl?: string;
   }) {
     const reqId = `REQ-DIR-${Math.floor(1000 + Math.random() * 9000)}`;
     const fullAddress = `${input.address} (Ref: ${input.referencePoint})`;
@@ -1157,6 +1167,11 @@ export const store = {
       isDirect: true,
       directProviderId: input.providerId,
       directProviderName: input.providerName,
+      latitude: input.latitude,
+      longitude: input.longitude,
+      accuracy: input.accuracy,
+      mapsUrl: input.mapsUrl,
+      directionsUrl: input.directionsUrl,
     };
 
     // Fica registado no histórico privado do cliente, sem ser publicado no mercado público
@@ -1177,6 +1192,11 @@ export const store = {
       photos: input.photos,
       createdAt: Date.now(),
       status: "enviado",
+      latitude: input.latitude,
+      longitude: input.longitude,
+      accuracy: input.accuracy,
+      mapsUrl: input.mapsUrl,
+      directionsUrl: input.directionsUrl,
     };
 
     const prev = state.messages[input.providerId] ?? [];
@@ -1275,6 +1295,11 @@ export const store = {
     materialStatus?: "tem_material" | "prestador_compra" | "avaliar";
     photos?: number;
     photosList?: string[];
+    latitude?: number;
+    longitude?: number;
+    accuracy?: number;
+    mapsUrl?: string;
+    directionsUrl?: string;
   }) {
     const photosCount = input.photosList ? input.photosList.length : (input.photos ?? 0);
     const req: ServiceRequest = {
@@ -1294,6 +1319,11 @@ export const store = {
       materialStatus: input.materialStatus,
       photos: photosCount,
       photosList: input.photosList ?? [],
+      latitude: input.latitude,
+      longitude: input.longitude,
+      accuracy: input.accuracy,
+      mapsUrl: input.mapsUrl,
+      directionsUrl: input.directionsUrl,
       status: "aberto",
       clientName: state.user?.name ?? "Cliente KONEKTA",
       createdAt: Date.now(),
@@ -1383,8 +1413,15 @@ export const store = {
       total: proposal.price,
       scheduledFor: proposal.availability,
       address: req.address,
+      district: req.district,
+      referencePoint: req.reference,
       notes: req.description,
       paymentMethod: "carteira",
+      latitude: req.latitude,
+      longitude: req.longitude,
+      accuracy: req.accuracy,
+      mapsUrl: req.mapsUrl,
+      directionsUrl: req.directionsUrl,
     });
     return order;
   },
@@ -1596,8 +1633,18 @@ export const store = {
     total: number;
     scheduledFor: string;
     address?: string;
+    district?: string;
+    referencePoint?: string;
     notes?: string;
     paymentMethod?: "carteira" | "dinheiro" | "mbway";
+    latitude?: number;
+    longitude?: number;
+    accuracy?: number;
+    mapsUrl?: string;
+    directionsUrl?: string;
+    wazeUrl?: string;
+    appleMapsUrl?: string;
+    gpsAddress?: string;
   }) {
     const id = `KNK-${Math.floor(1000 + Math.random() * 9000)}`;
     const payWithWallet = (input.paymentMethod ?? "carteira") === "carteira";
@@ -1610,11 +1657,21 @@ export const store = {
       status: "pendente" as OrderStatus,
       total: input.total,
       address: input.address,
+      district: input.district,
+      referencePoint: input.referencePoint,
       notes: input.notes,
       paymentMethod: input.paymentMethod ?? "carteira",
       createdAt: Date.now(),
       completionCode,
       clientName: state.user?.name,
+      latitude: input.latitude,
+      longitude: input.longitude,
+      accuracy: input.accuracy,
+      mapsUrl: input.mapsUrl,
+      directionsUrl: input.directionsUrl,
+      wazeUrl: input.wazeUrl,
+      appleMapsUrl: input.appleMapsUrl,
+      gpsAddress: input.gpsAddress,
     };
     set({
       orders: [order, ...state.orders],

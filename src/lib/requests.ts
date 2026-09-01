@@ -41,6 +41,14 @@ export type ServiceRequest = {
   isDirect?: boolean;
   directProviderId?: string;
   directProviderName?: string;
+  /** Coordenadas e rotas GPS de alta precisão */
+  latitude?: number;
+  longitude?: number;
+  accuracy?: number;
+  mapsUrl?: string;
+  directionsUrl?: string;
+  wazeUrl?: string;
+  appleMapsUrl?: string;
 };
 
 export const urgencyLabel: Record<RequestUrgency, string> = {

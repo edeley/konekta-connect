@@ -10,9 +10,10 @@ import { cn } from "@/lib/utils";
 export function useOnline() {
   const [online, setOnline] = useState(true);
   useEffect(() => {
+    if (typeof window === "undefined" || typeof navigator === "undefined") return;
     const up = () => setOnline(true);
     const down = () => setOnline(false);
-    setOnline(navigator.onLine);
+    setOnline(navigator.onLine ?? true);
     window.addEventListener("online", up);
     window.addEventListener("offline", down);
     return () => {

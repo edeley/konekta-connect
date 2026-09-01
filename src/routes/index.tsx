@@ -137,7 +137,10 @@ function Home() {
           STP_DISTRICTS.find((d) => res.district.toLowerCase().includes(d.toLowerCase())) ||
           "Água Grande";
         setSelectedDistrict(matched);
-        toast.success(`Distrito detetado: ${matched}`);
+        const zoneName = res.zone || matched;
+        toast.success(`Está em ${zoneName} (${matched})!`, {
+          description: `Filtrando prestadores que atendem na sua zona.`,
+        });
         setIsDistrictModalOpen(false);
       }
     } catch {

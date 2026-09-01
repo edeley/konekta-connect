@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { ShieldCheck, Smartphone, RefreshCw, CheckCircle2, AlertCircle } from "lucide-react";
 import { BottomSheet } from "@/components/konekta/kit";
 import { sendSmsOtp, verifySmsOtp, normalizeStpPhone } from "@/lib/sms-otp";
@@ -38,22 +38,7 @@ export function SmsOtpVerificationModal({
       ? "CST Móvel"
       : "Rede Móvel STP";
 
-  useEffect(() => {
-    if (open) {
-      handleSendCode();
-    } else {
-      setCode(["", "", "", "", "", ""]);
-      setErrorMsg(null);
-    }
-  }, [open]);
-
-  useEffect(() => {
-    if (cooldown <= 0) return;
-    const timer = setInterval(() => setCooldown((c) => c - 1), 1000);
-    return () => clearInterval(timer);
-  }, [cooldown]);
-
-  async function handleSendCode() {
+  const handleSendCode = useCallback(async () => {
     setIsSending(true);
     setErrorMsg(null);
     try {
@@ -76,7 +61,22 @@ export function SmsOtpVerificationModal({
     } finally {
       setIsSending(false);
     }
-  }
+  }, [phone, reason, carrier]);
+
+  useEffect(() => {
+    if (open) {
+      handleSendCode();
+    } else {
+      setCode(["", "", "", "", "", ""]);
+      setErrorMsg(null);
+    }
+  }, [open, handleSendCode]);
+
+  useEffect(() => {
+    if (cooldown <= 0) return;
+    const timer = setInterval(() => setCooldown((c) => c - 1), 1000);
+    return () => clearInterval(timer);
+  }, [cooldown]);
 
   function handleDigitChange(index: number, value: string) {
     const char = value.slice(-1);

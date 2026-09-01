@@ -52,7 +52,13 @@ import { ChatMediationModal } from "@/components/konekta/ChatMediationModal";
 import { BottomSheet } from "@/components/konekta/kit";
 import { formatDb } from "@/lib/catalog";
 import { analyzeBlockedContent, containsBlockedContent } from "@/lib/escrow";
-import { openNativeMap, downloadIcsCalendarFile, getCurrentGPSLocation } from "@/lib/sync-manager";
+import {
+  openNativeMap,
+  downloadIcsCalendarFile,
+  getCurrentGPSLocation,
+  openGoogleMapsRoute,
+} from "@/lib/sync-manager";
+import { ClientGpsRadarCard } from "@/components/konekta/ClientGpsRadarCard";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/chat/$id")({
@@ -151,7 +157,27 @@ function ChatDetail() {
   const [diagnosticText, setDiagnosticText] = useState("");
   const [proposedQuoteAmount, setProposedQuoteAmount] = useState("");
 
-  // Photo / Remote Diagnostic modal state
+  const [isLocatingGPS, setIsLocatingGPS] = useState(false);
+
+  // Compartilhar localização GPS exata em tempo real no chat
+  async function handleShareGPSLocation() {
+    setIsLocatingGPS(true);
+    try {
+      const res = await getCurrentGPSLocation();
+      if (res) {
+        const zoneText = res.zone || res.district;
+        const msg = `📍 Localização GPS Partilhada:\nEstá em: ${zoneText}, ${res.district}\n🗺️ Abrir no Mapa: ${res.mapsUrl}\n🚗 Direções / Rota: ${res.directionsUrl}`;
+        store.sendMessage(id, msg);
+        toast.success(`📍 Localização (${zoneText}) enviada no chat!`, {
+          description: "O prestador já tem o link para abrir a rota no mapa.",
+        });
+      }
+    } catch {
+      toast.error("Não foi possível obter o GPS.");
+    } finally {
+      setIsLocatingGPS(false);
+    }
+  }
   const [photoModalOpen, setPhotoModalOpen] = useState(false);
   const [selectedPhotoUrl, setSelectedPhotoUrl] = useState(
     "https://images.unsplash.com/photo-1581092160607-ee22621dd758?w=800&auto=format&fit=crop&q=80",
@@ -247,13 +273,22 @@ function ChatDetail() {
     }, 400);
   }
 
-  // Check-in presencial no terreno pelo Prestador
-  function handleProviderCheckIn(visitId: string) {
-    const loc = `${activeTechnicalVisit?.district || "São Tomé"} (GPS validado)`;
+  // Check-in presencial no terreno pelo Prestador com validação de Zona STP
+  async function handleProviderCheckIn(visitId: string) {
+    let loc = `${activeTechnicalVisit?.district || "São Tomé"} (GPS validado)`;
+    try {
+      const gps = await getCurrentGPSLocation();
+      if (gps) {
+        loc = `${gps.zone || gps.district}, ${gps.district} (GPS: ${gps.latitude.toFixed(4)}, ${gps.longitude.toFixed(4)})`;
+      }
+    } catch {
+      // Continua com o distrito por defeito
+    }
+
     const res = store.providerCheckInVisit(visitId, loc);
     if (res.ok) {
       toast.success("Check-in presencial registado com sucesso!", {
-        description: "Localização validada. Pode iniciar o diagnóstico técnico.",
+        description: `Localização validada: ${loc}. Pode iniciar o diagnóstico técnico.`,
       });
     } else {
       toast.error(res.message);
@@ -911,6 +946,83 @@ function ChatDetail() {
                 );
               }
 
+              // Card de Pedido de Orçamento Direto com Radar GPS & Navegação
+              if (m.kind === "quote_request" && m.quoteRequest) {
+                const qr = m.quoteRequest;
+                return (
+                  <div key={m.id} className="py-2 w-full flex justify-center">
+                    <div className="w-full max-w-[95%] p-4 rounded-3xl bg-card border-2 border-primary/30 shadow-md space-y-3.5">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-1.5 text-xs font-black text-foreground">
+                          <FileText size={16} className="text-primary" />
+                          <span>Pedido de Orçamento Direto</span>
+                        </div>
+                        <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-primary/10 text-primary uppercase">
+                          {qr.urgency === "urgente" ? "🚨 Urgente" : "📅 Agendado"}
+                        </span>
+                      </div>
+
+                      <div className="space-y-1">
+                        <h4 className="text-sm font-black text-foreground leading-snug">
+                          {qr.title}
+                        </h4>
+                        <p className="text-xs text-muted-foreground whitespace-pre-wrap">
+                          {qr.description}
+                        </p>
+                      </div>
+
+                      {/* Radar GPS e Navegação Google Maps / Waze / Apple Maps */}
+                      <ClientGpsRadarCard
+                        latitude={qr.latitude}
+                        longitude={qr.longitude}
+                        accuracy={qr.accuracy}
+                        address={qr.address}
+                        district={qr.district}
+                        referencePoint={qr.referencePoint}
+                        clientName={qr.providerName ? "Cliente" : "Cliente"}
+                        orderTitle={qr.title}
+                        isProviderView={!isClient}
+                      />
+
+                      {/* Fotos em anexo se houver */}
+                      {qr.photos && qr.photos.length > 0 && (
+                        <div className="pt-2 border-t border-border">
+                          <p className="text-[11px] font-bold text-muted-foreground mb-1.5">
+                            Fotos do Local / Equipamento ({qr.photos.length}):
+                          </p>
+                          <div className="flex gap-2 overflow-x-auto pb-1">
+                            {qr.photos.map((ph, idx) => (
+                              <img
+                                key={idx}
+                                src={ph}
+                                alt={`Foto ${idx + 1}`}
+                                className="size-16 rounded-xl object-cover border border-border shrink-0 shadow-2xs"
+                              />
+                            ))}
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Ação rápida para o Prestador responder com Orçamento */}
+                      {!isClient && (
+                        <div className="pt-2 border-t border-border flex justify-end">
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setShowQuoteModal(true);
+                            }}
+                            className="w-full py-2.5 px-4 rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground font-bold text-xs flex items-center justify-center gap-1.5 shadow-sm cursor-pointer transition active:scale-95"
+                          >
+                            <FileText size={14} />
+                            <span>Elaborar e Enviar Orçamento Oficial</span>
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                );
+              }
+
               // Card Interativo de Confirmação Mútua de Pagamento Presencial (Em Mão)
               if (m.kind === "in_person_confirmation" && m.inPersonDeclaration) {
                 const dec = m.inPersonDeclaration;
@@ -1214,6 +1326,18 @@ function ChatDetail() {
                     title="Enviar foto para diagnóstico à distância"
                   >
                     <Camera size={18} />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleShareGPSLocation}
+                    disabled={isLocatingGPS}
+                    className="size-11 rounded-xl bg-primary/10 hover:bg-primary/20 text-primary grid place-items-center cursor-pointer transition shrink-0 border border-primary/20 disabled:opacity-50"
+                    title="Partilhar Zona e Localização GPS em tempo real"
+                  >
+                    <Navigation
+                      size={18}
+                      className={isLocatingGPS ? "animate-spin text-primary" : ""}
+                    />
                   </button>
                   <input
                     value={text}

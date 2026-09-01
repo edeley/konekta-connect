@@ -68,7 +68,13 @@ function RequestQuotePage() {
   const [isCameraModalOpen, setIsCameraModalOpen] = useState(false);
   const [photoSourceMenu, setPhotoSourceMenu] = useState(false);
 
-  const [title, setTitle] = useState("");
+  const [title, setTitle] = useState(() => {
+    if (typeof window !== "undefined") {
+      const params = new URLSearchParams(window.location.search);
+      return params.get("service") || params.get("title") || "";
+    }
+    return "";
+  });
   const [description, setDescription] = useState("");
   const [district, setDistrict] = useState("Água Grande (São Tomé)");
   const [address, setAddress] = useState("");
@@ -111,6 +117,8 @@ function RequestQuotePage() {
     longitude: number;
     accuracy: number;
     mapsUrl: string;
+    directionsUrl: string;
+    street?: string;
   } | null>(null);
 
   const formSafety = useMemo(() => {
@@ -137,7 +145,12 @@ function RequestQuotePage() {
           latitude: res.latitude,
           longitude: res.longitude,
           accuracy: res.accuracy,
-          mapsUrl: res.mapsUrl || `https://www.google.com/maps?q=${res.latitude},${res.longitude}`,
+          mapsUrl:
+            res.mapsUrl || `https://www.google.com/maps?q=${res.latitude},${res.longitude}&z=18`,
+          directionsUrl:
+            res.directionsUrl ||
+            `https://www.google.com/maps/dir/?api=1&destination=${res.latitude},${res.longitude}&travelmode=driving`,
+          street: res.street,
         });
 
         // Auto-match district
@@ -149,12 +162,21 @@ function RequestQuotePage() {
         else if (districtName.includes("Caué")) setDistrict("Caué (São João dos Angolares)");
         else if (districtName.includes("Príncipe")) setDistrict("Região Autónoma do Príncipe");
 
-        if (!address.trim() || address.startsWith("Localização GPS")) {
-          setAddress(`${zoneName}, ${districtName}`);
+        if (
+          !address.trim() ||
+          address.startsWith("Localização GPS") ||
+          address.startsWith("GPS:")
+        ) {
+          setAddress(res.street ? `${res.street}, ${zoneName}` : `${zoneName}, ${districtName}`);
         }
-        if (!referencePoint.trim() || referencePoint.startsWith("Coordenadas")) {
-          setReferencePoint(`GPS do Telemóvel: ${zoneName} (±${Math.round(res.accuracy)}m)`);
+        if (!referencePoint.trim() || referencePoint.startsWith("GPS do Telemóvel")) {
+          setReferencePoint(
+            `GPS Preciso: ${res.latitude.toFixed(5)}, ${res.longitude.toFixed(5)} (±${Math.round(res.accuracy)}m)`,
+          );
         }
+        toast.success(`📍 GPS Localizado: ${zoneName} (${districtName})!`, {
+          description: `Coordenadas: ${res.latitude.toFixed(5)}, ${res.longitude.toFixed(5)} (±${Math.round(res.accuracy)}m)`,
+        });
       }
     } finally {
       setIsLocatingGPS(false);
@@ -370,6 +392,11 @@ function RequestQuotePage() {
         urgency,
         scheduleSummary,
         photos,
+        latitude: detectedGps?.latitude,
+        longitude: detectedGps?.longitude,
+        accuracy: detectedGps?.accuracy,
+        mapsUrl: detectedGps?.mapsUrl,
+        directionsUrl: detectedGps?.directionsUrl,
       });
 
       // Sincronização automática com calendário do telemóvel e alarmes
@@ -402,6 +429,8 @@ function RequestQuotePage() {
         timeStr: targetTimeStr,
         providerName: provider.name,
         categoryName: provider.category,
+        latitude: detectedGps?.latitude,
+        longitude: detectedGps?.longitude,
         urgency: urgency === "urgente" ? "🚨 Urgente" : "📅 Normal",
         createdAt: Date.now(),
       };
@@ -412,8 +441,6 @@ function RequestQuotePage() {
         alarm1h: true,
         alarmOnTime: true,
       });
-
-      downloadIcsCalendarFile(syncEvent);
 
       toast.success(`Pedido privado enviado a ${provider.name}!`);
       navigate({ to: "/chat/$id", params: { id: provider.id } });
@@ -618,18 +645,29 @@ function RequestQuotePage() {
               </div>
 
               {detectedGps && (
-                <div className="p-3 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 text-xs space-y-1">
+                <div className="p-3 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 text-xs space-y-2">
                   <div className="flex items-center justify-between">
                     <span className="font-bold text-emerald-800 dark:text-emerald-300 flex items-center gap-1.5">
-                      📍 Zona Identificada: {detectedGps.zone} ({detectedGps.district})
+                      📍 GPS Exato: {detectedGps.zone} ({detectedGps.district})
                     </span>
-                    <span className="text-[10px] text-emerald-700 dark:text-emerald-400 font-mono font-bold">
+                    <span className="text-[10px] text-emerald-700 dark:text-emerald-400 font-mono font-bold bg-emerald-500/20 px-2 py-0.5 rounded-full">
                       ±{Math.round(detectedGps.accuracy)}m
                     </span>
                   </div>
-                  <p className="text-[11px] text-muted-foreground">
-                    O prestador receberá estas coordenadas e o link para traçar rota de deslocação até ao local do serviço.
-                  </p>
+                  <div className="flex items-center justify-between text-[11px] text-muted-foreground pt-1 border-t border-emerald-500/20">
+                    <span className="font-mono text-foreground font-semibold">
+                      {detectedGps.latitude.toFixed(6)}, {detectedGps.longitude.toFixed(6)}
+                    </span>
+                    <a
+                      href={detectedGps.directionsUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-primary font-bold hover:underline flex items-center gap-1"
+                    >
+                      <span>Testar Rota de Navegação</span>
+                      <ExternalLink size={11} />
+                    </a>
+                  </div>
                 </div>
               )}
 

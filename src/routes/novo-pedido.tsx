@@ -126,6 +126,8 @@ function NewRequest() {
     longitude: number;
     accuracy: number;
     mapsUrl: string;
+    directionsUrl: string;
+    street?: string;
   } | null>(null);
 
   // Obter referências geográficas locais para o distrito atual
@@ -165,16 +167,29 @@ function NewRequest() {
           latitude: res.latitude,
           longitude: res.longitude,
           accuracy: res.accuracy,
-          mapsUrl: res.mapsUrl || `https://www.google.com/maps?q=${res.latitude},${res.longitude}`,
+          mapsUrl:
+            res.mapsUrl || `https://www.google.com/maps?q=${res.latitude},${res.longitude}&z=18`,
+          directionsUrl:
+            res.directionsUrl ||
+            `https://www.google.com/maps/dir/?api=1&destination=${res.latitude},${res.longitude}&travelmode=driving`,
+          street: res.street,
         });
 
-        if (!address.trim() || address.startsWith("Localização GPS")) {
-          setAddress(`${zoneName}, ${matched}`);
+        if (
+          !address.trim() ||
+          address.startsWith("Localização GPS") ||
+          address.startsWith("GPS:")
+        ) {
+          setAddress(res.street ? `${res.street}, ${zoneName}` : `${zoneName}, ${matched}`);
         }
-        if (!reference.trim() || reference.startsWith("Coordenadas")) {
-          setReference(`GPS do Telemóvel: ${zoneName} (±${Math.round(res.accuracy)}m)`);
+        if (!reference.trim() || reference.startsWith("GPS do Telemóvel")) {
+          setReference(
+            `GPS Preciso: ${res.latitude.toFixed(5)}, ${res.longitude.toFixed(5)} (±${Math.round(res.accuracy)}m)`,
+          );
         }
-        toast.success(`Está em ${zoneName} (${matched})!`);
+        toast.success(`📍 GPS Localizado: ${zoneName} (${matched})!`, {
+          description: `Coordenadas: ${res.latitude.toFixed(5)}, ${res.longitude.toFixed(5)} (Precisão: ±${Math.round(res.accuracy)}m)`,
+        });
       }
     } catch {
       toast.error("Não foi possível aceder ao GPS.");
@@ -285,6 +300,11 @@ function NewRequest() {
       materialStatus,
       photos: photos.length,
       photosList: photos,
+      latitude: detectedGps?.latitude,
+      longitude: detectedGps?.longitude,
+      accuracy: detectedGps?.accuracy,
+      mapsUrl: detectedGps?.mapsUrl,
+      directionsUrl: detectedGps?.directionsUrl,
     });
 
     // Sincronização em segundo plano
@@ -296,6 +316,8 @@ function NewRequest() {
       dateStr: urgency === "sem-pressa" ? todayStr : serviceDate,
       timeStr: timeSlot === "exato" ? exactTime : timeSlotLabels[timeSlot] || "09:00",
       categoryName: category.name,
+      latitude: detectedGps?.latitude,
+      longitude: detectedGps?.longitude,
       urgency:
         urgency === "urgente"
           ? "🚨 Urgente"
@@ -310,10 +332,6 @@ function NewRequest() {
       alarm1h: true,
       alarmOnTime: true,
     });
-
-    if (urgency !== "sem-pressa") {
-      downloadIcsCalendarFile(syncEvent);
-    }
 
     toast.success("Pedido publicado em STP com sucesso!", {
       description: "Os prestadores da sua zona receberão a notificação de imediato.",
@@ -649,18 +667,29 @@ function NewRequest() {
               </div>
 
               {detectedGps && (
-                <div className="p-3 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 text-xs space-y-1">
+                <div className="p-3 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 text-xs space-y-2">
                   <div className="flex items-center justify-between">
                     <span className="font-bold text-emerald-800 dark:text-emerald-300 flex items-center gap-1.5">
-                      📍 Zona Identificada: {detectedGps.zone} ({detectedGps.district})
+                      📍 GPS Exato: {detectedGps.zone} ({detectedGps.district})
                     </span>
-                    <span className="text-[10px] text-emerald-700 dark:text-emerald-400 font-mono font-bold">
+                    <span className="text-[10px] text-emerald-700 dark:text-emerald-400 font-mono font-bold bg-emerald-500/20 px-2 py-0.5 rounded-full">
                       ±{Math.round(detectedGps.accuracy)}m
                     </span>
                   </div>
-                  <p className="text-[11px] text-muted-foreground">
-                    Os profissionais da sua zona receberão a rota para deslocação direta sem atrasos.
-                  </p>
+                  <div className="flex items-center justify-between text-[11px] text-muted-foreground pt-1 border-t border-emerald-500/20">
+                    <span className="font-mono text-foreground font-semibold">
+                      {detectedGps.latitude.toFixed(6)}, {detectedGps.longitude.toFixed(6)}
+                    </span>
+                    <a
+                      href={detectedGps.directionsUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-primary font-bold hover:underline flex items-center gap-1"
+                    >
+                      <span>Ver Rota Google Maps</span>
+                      <ExternalLink size={11} />
+                    </a>
+                  </div>
                 </div>
               )}
 
