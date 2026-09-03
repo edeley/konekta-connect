@@ -1838,23 +1838,63 @@ export async function getSTPPreciseGPS(): Promise<STPPreciseLocation | null> {
     });
   };
 
+  /**
+   * Acompanha o GPS durante alguns segundos e guarda sempre a leitura mais precisa.
+   * O primeiro fix do telemóvel costuma vir da rede (±1000m); só depois os satélites
+   * afinam para ±5-20m. Por isso esperamos pela convergência em vez de aceitar o 1º ponto.
+   */
+  const watchBestPosition = (
+    targetAccuracy = 20,
+    maxWaitMs = 20000,
+  ): Promise<GeolocationPosition | null> => {
+    return new Promise((resolve) => {
+      let best: GeolocationPosition | null = null;
+      let watchId: number | null = null;
+      let settled = false;
+
+      const finish = () => {
+        if (settled) return;
+        settled = true;
+        if (watchId !== null) navigator.geolocation.clearWatch(watchId);
+        clearTimeout(hardTimer);
+        clearTimeout(softTimer);
+        resolve(best);
+      };
+
+      // Corte máximo absoluto
+      const hardTimer = setTimeout(finish, maxWaitMs);
+      // Se já temos algo razoável passados 9s, não fazemos o utilizador esperar mais
+      const softTimer = setTimeout(() => {
+        if (best && (best.coords.accuracy ?? 9999) <= 60) finish();
+      }, 9000);
+
+      try {
+        watchId = navigator.geolocation.watchPosition(
+          (p) => {
+            const acc = p.coords.accuracy ?? 9999;
+            if (!best || acc < (best.coords.accuracy ?? 9999)) best = p;
+            if (acc <= targetAccuracy) finish();
+          },
+          () => {
+            // Mantemos o melhor fix já obtido; erros intermédios não abortam
+            if (best) finish();
+          },
+          { enableHighAccuracy: true, timeout: maxWaitMs, maximumAge: 0 },
+        );
+      } catch {
+        finish();
+      }
+    });
+  };
+
   try {
-    // 1ª Tentativa: Alta precisão de satélite (GPS do telemóvel) com tempo adequado para autorização
     let pos: GeolocationPosition | null = null;
     let lastError: GeolocationPositionError | null = null;
 
+    // 0ª verificação: permissão explicitamente negada — evita esperas inúteis
     try {
-      pos = await tryGetPosition({
-        enableHighAccuracy: true,
-        timeout: 14000,
-        maximumAge: 0, // Forçar leitura direta dos sensores do telemóvel
-      });
-    } catch (err) {
-      lastError = err as GeolocationPositionError;
-      console.warn("Alta precisão GPS excedeu tempo ou falhou, tentando precisão por rede:", err);
-
-      // Se o utilizador rejeitou explicitamente a permissão, não insistir para não incomodar
-      if (lastError?.code === 1) {
+      const perm = await navigator.permissions?.query?.({ name: "geolocation" as PermissionName });
+      if (perm?.state === "denied") {
         toast.error("Permissão de localização negada no navegador.", {
           description:
             "Para detetar a sua posição exata com o GPS do telemóvel, permita o acesso à localização no cadeado do navegador.",
@@ -1862,19 +1902,48 @@ export async function getSTPPreciseGPS(): Promise<STPPreciseLocation | null> {
         });
         return await buildLocationObject(0.3365, 6.7273, 50, true);
       }
+    } catch {
+      // Nem todos os navegadores suportam a Permissions API — seguimos em frente
+    }
 
-      // 2ª Tentativa: Precisão padrão / triangulação de antenas móveis CST/Unitel ou Wi-Fi
+    // 1ª Tentativa: acompanhamento contínuo dos satélites até convergir na posição exata
+    pos = await watchBestPosition(20, 20000);
+
+    if (!pos) {
       try {
         pos = await tryGetPosition({
-          enableHighAccuracy: false,
-          timeout: 10000,
-          maximumAge: 30000,
+          enableHighAccuracy: true,
+          timeout: 15000,
+          maximumAge: 0,
         });
-      } catch (lowAccuracyErr) {
-        lastError = lowAccuracyErr as GeolocationPositionError;
-        console.warn("Precisão de rede também falhou:", lowAccuracyErr);
+      } catch (err) {
+        lastError = err as GeolocationPositionError;
+        console.warn("Alta precisão GPS excedeu tempo ou falhou, tentando precisão por rede:", err);
+
+        if (lastError?.code === 1) {
+          toast.error("Permissão de localização negada no navegador.", {
+            description:
+              "Para detetar a sua posição exata com o GPS do telemóvel, permita o acesso à localização no cadeado do navegador.",
+            duration: 5000,
+          });
+          return await buildLocationObject(0.3365, 6.7273, 50, true);
+        }
+
+        // 2ª Tentativa: precisão por rede (antenas CST/Unitel ou Wi-Fi)
+        try {
+          pos = await tryGetPosition({
+            enableHighAccuracy: false,
+            timeout: 10000,
+            maximumAge: 30000,
+          });
+        } catch (lowAccuracyErr) {
+          lastError = lowAccuracyErr as GeolocationPositionError;
+          console.warn("Precisão de rede também falhou:", lowAccuracyErr);
+        }
       }
     }
+
+
 
     if (pos && pos.coords) {
       const { latitude, longitude, accuracy } = pos.coords;
