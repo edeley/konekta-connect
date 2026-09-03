@@ -21,7 +21,6 @@ import { toast } from "sonner";
 import { store, useStore, type TechnicalVisit } from "@/lib/store";
 import { formatDb } from "@/lib/catalog";
 import { evaluateVisitPriceDivergence } from "@/lib/pricing-engine";
-import { KButton } from "./kit";
 
 interface TechnicalVisitCardProps {
   visit: TechnicalVisit;
@@ -459,7 +458,7 @@ export function TechnicalVisitCard({ visit, providerId }: TechnicalVisitCardProp
       )}
 
       {/* 7. Concluído com Recibo Digital */}
-      {visit.status === "concluido" && visit.paymentMethod === "dinheiro_em_mao" && (
+      {visit.status === "concluido" && Boolean(visit.declaredCashAmount) && (
         <div className="mt-4 rounded-xl border border-zinc-200 bg-white p-3.5 text-xs shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
