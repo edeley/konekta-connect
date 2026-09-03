@@ -2048,7 +2048,7 @@ export const store = {
     const startFetch = async () => {
       let replyText = "";
       try {
-        if (typeof window !== "undefined" && window.fetch) {
+        if (typeof window !== "undefined" && typeof window.fetch === "function") {
           const res = await fetch("/api/chat", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
@@ -2145,7 +2145,7 @@ export const store = {
     const startPhotoDiagnosis = async () => {
       let replyText = "";
       try {
-        if (typeof window !== "undefined" && window.fetch) {
+        if (typeof window !== "undefined" && typeof window.fetch === "function") {
           const res = await fetch("/api/chat", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
@@ -2931,7 +2931,7 @@ export const store = {
       const chatMsg: Message = {
         id: `m_vis_alg_${Date.now()}`,
         from: "me",
-        text: `⚖️ ${evalResult.message}\nValor adotado: ${agreedAmount} Db.${deduct ? ` Taxa de visita (${visitFee} Db) abatida. Valor complementar: ${breakdown.finalComplementToPay} Db.` : ""}`,
+        text: `⚖️ ${evalResult.actionSummary}\nValor adotado: ${agreedAmount} Db.${deduct ? ` Taxa de visita (${visitFee} Db) abatida. Valor complementar: ${breakdown.finalComplementToPay} Db.` : ""}`,
         at: Date.now(),
         status: "sent",
         kind: "system",
@@ -2946,14 +2946,14 @@ export const store = {
 
       notify({
         title: "Validação Algorítmica Aprovada",
-        body: evalResult.message,
+        body: evalResult.actionSummary,
         tone: "info",
         link: `/chat/${visit.providerId}`,
       });
 
       return {
         ok: true,
-        message: evalResult.message,
+        message: evalResult.actionSummary,
         result: evalResult,
       };
     }
@@ -3421,7 +3421,8 @@ export const store = {
     };
 
     // Cria mensagem interativa no chat
-    const prev = state.messages[input.providerId] ?? [];
+    const providerKey = input.providerId ?? "suporte";
+    const prev = state.messages[providerKey] ?? [];
     const declMsg: Message = {
       id: `m_dec_${Date.now()}`,
       from: "them",
@@ -3450,7 +3451,7 @@ export const store = {
       technicalVisits: updatedVisits,
       messages: {
         ...state.messages,
-        [input.providerId]: [...prev, declMsg],
+        [providerKey]: [...prev, declMsg],
       },
     });
 
