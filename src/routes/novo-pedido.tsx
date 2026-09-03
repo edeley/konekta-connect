@@ -13,7 +13,6 @@ import {
   Calendar,
   Clock,
   CalendarCheck,
-  Sparkles,
   Package,
   Wrench,
   HelpCircle,
@@ -21,6 +20,7 @@ import {
   ShieldCheck,
   ChevronRight,
   Lightbulb,
+  ExternalLink,
 } from "lucide-react";
 import { toast } from "sonner";
 import { AppShell } from "@/components/AppShell";
@@ -490,7 +490,7 @@ function NewRequest() {
                     <button
                       key={item.id}
                       type="button"
-                      onClick={() => setMaterialStatus(item.id)}
+                      onClick={() => setMaterialStatus(item.id as "tem_material" | "prestador_compra" | "avaliar")}
                       className={cn(
                         "p-2.5 rounded-xl text-left border transition cursor-pointer flex flex-col justify-between",
                         active
@@ -592,11 +592,13 @@ function NewRequest() {
               <div className="flex flex-wrap items-center gap-2.5 pt-1">
                 <button
                   type="button"
-                  onClick={() => setIsCameraModalOpen(true)}
+                  onClick={() => cameraInputRef.current?.click()}
                   className="size-18 rounded-2xl border-2 border-dashed border-primary/70 bg-primary/5 hover:bg-primary/10 flex flex-col items-center justify-center gap-1 text-primary transition active:scale-95 cursor-pointer shadow-2xs group shrink-0"
+                  aria-label="Tirar foto com a câmara nativa"
+                  title="Tirar foto com a câmara nativa do telemóvel"
                 >
                   <Camera size={20} className="group-hover:scale-110 transition stroke-[2]" />
-                  <span className="text-[10px] font-bold">Câmara</span>
+                  <span className="text-[10px] font-bold">Câmara Nativa</span>
                 </button>
 
                 <button

@@ -28,7 +28,11 @@ import {
   type Order,
   type OrderStatus,
 } from "./konekta-data";
+
+export type { Order, OrderStatus };
 import { seedRequests, type Proposal, type RequestUrgency, type ServiceRequest } from "./requests";
+import { buildSanitizedUserContext } from "./chat-specialist-context";
+import { generateSpecialistResponse } from "./specialist-ai";
 
 // Simple localStorage-backed store with pub/sub. No backend required for the MVP.
 
@@ -59,9 +63,16 @@ export type PortfolioItem = {
 };
 
 export type ProviderProfile = {
+  id?: string;
+  providerType?: "individual" | "empresa";
+  companyName?: string;
+  businessName?: string;
   category: string;
   subcategory?: string;
+  subcategories?: string[];
   yearsExperience: number;
+  experienceYears?: number;
+  coverageDistricts?: string[];
   bio: string;
   services: { name: string; price: number }[];
   customServices?: ProviderCustomService[];
@@ -71,6 +82,7 @@ export type ProviderProfile = {
   radiusKm: number;
   documents: { idNumber?: string; nif?: string; selfieOk: boolean };
   bankAccount?: string;
+  iban?: string;
   status: "em_analise" | "aprovado" | "rejeitado";
   submittedAt: number;
 };
@@ -264,11 +276,14 @@ export type CompanyTechnician = {
   name: string;
   phone: string;
   specialty: string;
+  specialties?: string[];
   avatar?: string;
   active: boolean;
   assignedOrdersCount: number;
   totalEarnings: number;
   rating: number;
+  ok?: boolean;
+  message?: string;
 };
 
 export type CompanyProfile = {
@@ -279,6 +294,7 @@ export type CompanyProfile = {
   email: string;
   bankName: string;
   bankAccount: string;
+  iban?: string;
   district: string;
   address?: string;
   technicians: CompanyTechnician[];
@@ -338,6 +354,7 @@ export type FeatureFlags = {
 export type Settings = {
   pushNotifications: boolean;
   emailNotifications: boolean;
+  smsAlerts?: boolean;
   darkMode: boolean;
   theme?: "light" | "dark";
   language: "pt" | "en";
@@ -492,7 +509,7 @@ export type DepositRequest = {
   rejectionReason?: string;
 };
 
-export type PayoutRequestStatus = "pendente" | "processado" | "rejeitado";
+export type PayoutRequestStatus = "pendente" | "processado" | "aprovado" | "rejeitado";
 
 export type PayoutRequest = {
   id: string;
@@ -505,11 +522,15 @@ export type PayoutRequest = {
   holderName: string;
   status: PayoutRequestStatus;
   createdAt: number;
+  requestedAt?: number;
   processedAt?: number;
   rejectionReason?: string;
+  proofRef?: string;
+  adminNotes?: string;
 };
 
 export type CompanyMonetization = {
+  companyName?: string;
   model: "comissao" | "plano_mensal";
   planActive: boolean;
   planExpiresAt?: number;
@@ -1436,17 +1457,21 @@ export const store = {
     set({ onboarded: true });
   },
 
-  signIn(input: { phone: string; name?: string; email?: string; role?: UserRole }) {
+  signIn(input: { phone?: string; name?: string; email?: string; role?: UserRole; password?: string }) {
     const user: User = {
       id: `u_${Date.now()}`,
       role: input.role ?? "cliente",
       name: input.name?.trim() || "Cliente KONEKTA",
-      phone: input.phone.trim(),
+      phone: input.phone?.trim() || "",
       email: input.email?.trim(),
       createdAt: Date.now(),
     };
     set({ user });
     return user;
+  },
+
+  setUser(user: User | null) {
+    set({ user });
   },
 
   registerClient(data: Partial<User> & { phone: string; name: string }) {
@@ -1955,7 +1980,7 @@ export const store = {
     });
   },
 
-  /** Chat blindado: bloqueia contactos externos antes do pagamento. */
+  /** Chat com Especialista: bloqueia contactos externos antes do pagamento e responde como especialista humano com acesso seguro ao contexto do cliente (sem documentos). */
   sendMessage(providerId: string, text: string): "sent" | "blocked" | "empty" {
     const trimmed = text.trim();
     if (!trimmed) return "empty";
@@ -1997,57 +2022,17 @@ export const store = {
           [providerId]: cur.map((m) => (m.id === msg.id ? { ...m, status: "delivered" } : m)),
         },
       });
-    }, 450);
+    }, 400);
 
-    // 2. Interlocutor começa a digitar
-    setTimeout(() => {
-      const cur = state.messages[providerId] ?? [];
-      set({
-        messages: {
-          ...state.messages,
-          [providerId]: cur.map((m) => (m.id === msg.id ? { ...m, status: "read" as const } : m)),
-        },
-      });
-      realtimeBus.setTyping(providerId, true);
-    }, 1100);
+    // Constrói contexto seguro do utilizador (TUDO MENOS DOCUMENTOS)
+    const userContext = buildSanitizedUserContext({
+      user: state.user,
+      orders: state.orders,
+      technicalVisits: state.technicalVisits,
+      providerId,
+    });
 
-    // 3. Resposta chega
-    setTimeout(() => {
-      realtimeBus.setTyping(providerId, false);
-      const cur = state.messages[providerId] ?? [];
-      const reply: Message = {
-        id: `m_${Date.now() + 1}`,
-        from: "them",
-        text: "Recebido! Vou tratar disso e volto já com uma resposta.",
-        at: Date.now(),
-        status: "read",
-      };
-      set({
-        messages: {
-          ...state.messages,
-          [providerId]: [...cur, reply],
-        },
-      });
-      realtimeAudio.play("message");
-    }, 2500);
-    return "sent";
-  },
-
-  /** Envio de foto/diagnóstico à distância */
-  sendPhotoMessage(providerId: string, photoUrl: string, caption?: string) {
-    const prev = state.messages[providerId] ?? [];
-    const msg: Message = {
-      id: `m_photo_${Date.now()}`,
-      from: "me",
-      text: caption?.trim() || "Foto para diagnóstico à distância da avaria",
-      at: Date.now(),
-      status: "sent",
-      kind: "photo",
-      photos: [photoUrl],
-    };
-    set({ messages: { ...state.messages, [providerId]: [...prev, msg] } });
-    realtimeAudio.play("pop");
-
+    // 2. Especialista lê e começa a redigir a resposta com tempo humano
     setTimeout(() => {
       const cur = state.messages[providerId] ?? [];
       set({
@@ -2059,25 +2044,162 @@ export const store = {
       realtimeBus.setTyping(providerId, true);
     }, 900);
 
+    // 3. Obtenção assíncrona da resposta especialista (via API Server-side com fallback local robusto)
+    const startFetch = async () => {
+      let replyText = "";
+      try {
+        if (typeof window !== "undefined" && window.fetch) {
+          const res = await fetch("/api/chat", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              providerId,
+              message: trimmed,
+              userContext,
+              isPhoto: false,
+            }),
+          });
+          if (res.ok) {
+            const data = await res.json();
+            if (data?.text) {
+              replyText = data.text;
+            }
+          }
+        }
+      } catch {
+        // Falha de rede capturada com segurança
+      }
+
+      if (!replyText) {
+        const local = generateSpecialistResponse({
+          providerId,
+          messageText: trimmed,
+          userContext,
+          isPhoto: false,
+        });
+        replyText = local.text;
+      }
+
+      // Tempo de digitação proporcional e natural (mínimo 1500ms, máximo 2800ms)
+      const typingTime = Math.min(Math.max(replyText.length * 14, 1500), 2800);
+
+      setTimeout(() => {
+        realtimeBus.setTyping(providerId, false);
+        const cur = state.messages[providerId] ?? [];
+        const reply: Message = {
+          id: `m_${Date.now() + 1}`,
+          from: "them",
+          text: replyText,
+          at: Date.now(),
+          status: "read",
+        };
+        set({
+          messages: {
+            ...state.messages,
+            [providerId]: [...cur, reply],
+          },
+        });
+        realtimeAudio.play("message");
+      }, typingTime);
+    };
+
+    startFetch();
+    return "sent";
+  },
+
+  /** Envio de foto/diagnóstico à distância com análise de especialista */
+  sendPhotoMessage(providerId: string, photoUrl: string, caption?: string) {
+    const prev = state.messages[providerId] ?? [];
+    const msgCaption = caption?.trim() || "Foto para diagnóstico à distância da avaria";
+    const msg: Message = {
+      id: `m_photo_${Date.now()}`,
+      from: "me",
+      text: msgCaption,
+      at: Date.now(),
+      status: "sent",
+      kind: "photo",
+      photos: [photoUrl],
+    };
+    set({ messages: { ...state.messages, [providerId]: [...prev, msg] } });
+    realtimeAudio.play("pop");
+
+    // Constrói contexto seguro do utilizador (TUDO MENOS DOCUMENTOS)
+    const userContext = buildSanitizedUserContext({
+      user: state.user,
+      orders: state.orders,
+      technicalVisits: state.technicalVisits,
+      providerId,
+    });
+
     setTimeout(() => {
-      realtimeBus.setTyping(providerId, false);
       const cur = state.messages[providerId] ?? [];
-      const reply: Message = {
-        id: `m_${Date.now() + 1}`,
-        from: "them",
-        text: "Obrigado pela foto do diagnóstico! Já analisei a avaria e consigo preparar o orçamento exato ou indicar se é necessária visita técnica.",
-        at: Date.now(),
-        status: "read",
-      };
       set({
         messages: {
           ...state.messages,
-          [providerId]: [...cur, reply],
+          [providerId]: cur.map((m) => (m.id === msg.id ? { ...m, status: "read" as const } : m)),
         },
       });
-      realtimeAudio.play("message");
-    }, 2400);
+      realtimeBus.setTyping(providerId, true);
+    }, 850);
 
+    const startPhotoDiagnosis = async () => {
+      let replyText = "";
+      try {
+        if (typeof window !== "undefined" && window.fetch) {
+          const res = await fetch("/api/chat", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              providerId,
+              message: msgCaption,
+              userContext,
+              isPhoto: true,
+            }),
+          });
+          if (res.ok) {
+            const data = await res.json();
+            if (data?.text) {
+              replyText = data.text;
+            }
+          }
+        }
+      } catch {
+        // Fallback resiliente
+      }
+
+      if (!replyText) {
+        const local = generateSpecialistResponse({
+          providerId,
+          messageText: msgCaption,
+          userContext,
+          isPhoto: true,
+        });
+        replyText = local.text;
+      }
+
+      const typingTime = Math.min(Math.max(replyText.length * 14, 1600), 2900);
+
+      setTimeout(() => {
+        realtimeBus.setTyping(providerId, false);
+        const cur = state.messages[providerId] ?? [];
+        const reply: Message = {
+          id: `m_${Date.now() + 1}`,
+          from: "them",
+          text: replyText,
+          at: Date.now(),
+          status: "read",
+        };
+        set({
+          messages: {
+            ...state.messages,
+            [providerId]: [...cur, reply],
+          },
+        });
+        realtimeAudio.play("message");
+      }, typingTime);
+    };
+
+    startPhotoDiagnosis();
     return msg;
   },
 
@@ -3261,34 +3383,37 @@ export const store = {
    * Prestador declara quanto cobrou ao cliente em dinheiro/presencialmente após visita técnica ou serviço no terreno.
    */
   declareInPersonCashPayment(input: {
-    providerId: string;
-    providerName: string;
-    clientId: string;
+    providerId?: string;
+    providerName?: string;
+    clientId?: string;
     clientName: string;
     visitId?: string;
     orderId?: string;
     serviceTitle: string;
-    declaredAmount: number;
+    declaredAmount?: number;
+    amountReceived?: number;
+    commissionAmount?: number;
     notes?: string;
   }): { ok: boolean; message: string; declaration?: InPersonCashDeclaration } {
-    if (!input.declaredAmount || input.declaredAmount <= 0) {
+    const val = input.amountReceived ?? input.declaredAmount ?? 0;
+    if (!val || val <= 0) {
       return { ok: false, message: "Insira um valor válido recebido presencialmente." };
     }
 
     const commissionPct = state.config.commissionPct || 10;
-    const commissionAmount = Math.round((input.declaredAmount * commissionPct) / 100);
+    const commissionAmount = input.commissionAmount ?? Math.round((val * commissionPct) / 100);
 
     const declId = `DEC-${Date.now()}`;
     const decl: InPersonCashDeclaration = {
       id: declId,
-      providerId: input.providerId,
-      providerName: input.providerName,
-      clientId: input.clientId,
+      providerId: input.providerId || state.user?.id || "pro_1",
+      providerName: input.providerName || state.user?.name || "Prestador KONEKTA",
+      clientId: input.clientId || "client_direct",
       clientName: input.clientName,
       visitId: input.visitId,
       orderId: input.orderId,
       serviceTitle: input.serviceTitle,
-      declaredAmount: input.declaredAmount,
+      declaredAmount: val,
       commissionPct,
       commissionAmount,
       status: "aguardando_confirmacao",

@@ -27,7 +27,7 @@ export function SearchBar({
     >
       <Search size={18} className="shrink-0 text-muted-foreground" />
       <input
-        value={value}
+        value={value ?? ""}
         onChange={(e) => onChange?.(e.target.value)}
         onFocus={onFocus}
         readOnly={readOnly}

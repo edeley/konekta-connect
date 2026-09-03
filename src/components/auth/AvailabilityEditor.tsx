@@ -105,7 +105,7 @@ export function AvailabilityEditor({
                     <input
                       type="time"
                       aria-label={`${day.label} — início ${i + 1}`}
-                      value={r.from}
+                      value={r.from ?? ""}
                       onChange={(e) => setRange(day.id, i, { from: e.target.value })}
                       className="min-h-11 flex-1 rounded-lg border border-border bg-surface px-2 text-xs font-semibold outline-none focus:border-primary"
                     />
@@ -113,7 +113,7 @@ export function AvailabilityEditor({
                     <input
                       type="time"
                       aria-label={`${day.label} — fim ${i + 1}`}
-                      value={r.to}
+                      value={r.to ?? ""}
                       onChange={(e) => setRange(day.id, i, { to: e.target.value })}
                       className="min-h-11 flex-1 rounded-lg border border-border bg-surface px-2 text-xs font-semibold outline-none focus:border-primary"
                     />

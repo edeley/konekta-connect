@@ -15,7 +15,6 @@ import {
   Car,
   Calendar,
   AlertTriangle,
-  Sparkles,
   Banknote,
   Edit3,
   Camera,
@@ -25,11 +24,13 @@ import {
   Compass,
   CheckCircle,
   Navigation,
+  Paperclip,
 } from "lucide-react";
 import { getProvider } from "@/lib/konekta-data";
 import {
   store,
   useStore,
+  type Order,
   type Quote,
   type TechnicalVisit,
   type InPersonCashDeclaration,
@@ -45,6 +46,7 @@ import { AuthGate } from "@/components/AuthGate";
 import { QuoteCard } from "@/components/konekta/QuoteCard";
 import { QuoteComposer } from "@/components/konekta/QuoteComposer";
 import { ReviewModal } from "@/components/konekta/ReviewModal";
+import { CancelServiceModal } from "@/components/konekta/CancelServiceModal";
 import { ChatDynamicStatus } from "@/components/konekta/ChatDynamicStatus";
 import { ChatQuickReplies } from "@/components/konekta/ChatQuickReplies";
 import { InChatCheckoutModal } from "@/components/konekta/InChatCheckoutModal";
@@ -57,6 +59,7 @@ import {
   downloadIcsCalendarFile,
   getCurrentGPSLocation,
   openGoogleMapsRoute,
+  triggerDeviceVibration,
 } from "@/lib/sync-manager";
 import { ClientGpsRadarCard } from "@/components/konekta/ClientGpsRadarCard";
 import { toast } from "sonner";
@@ -162,14 +165,16 @@ function ChatDetail() {
   // Compartilhar localização GPS exata em tempo real no chat
   async function handleShareGPSLocation() {
     setIsLocatingGPS(true);
+    triggerDeviceVibration([40]);
     try {
       const res = await getCurrentGPSLocation();
       if (res) {
         const zoneText = res.zone || res.district;
-        const msg = `📍 Localização GPS Partilhada:\nEstá em: ${zoneText}, ${res.district}\n🗺️ Abrir no Mapa: ${res.mapsUrl}\n🚗 Direções / Rota: ${res.directionsUrl}`;
+        const msg = `📍 Localização GPS Nativa Partilhada:\nEstá em: ${zoneText}, ${res.district}\n🌐 Coordenadas: ${res.latitude.toFixed(6)}, ${res.longitude.toFixed(6)} (Precisão: ±${Math.round(res.accuracy)}m)\n🧭 Iniciar Rota no Mapa: ${res.directionsUrl}`;
         store.sendMessage(id, msg);
+        triggerDeviceVibration([50, 40]);
         toast.success(`📍 Localização (${zoneText}) enviada no chat!`, {
-          description: "O prestador já tem o link para abrir a rota no mapa.",
+          description: "O prestador já tem o link direto para navegar no mapa.",
         });
       }
     } catch {
@@ -184,6 +189,47 @@ function ChatDetail() {
   );
   const [photoCaption, setPhotoCaption] = useState("");
   const [isUploadingPhoto, setIsUploadingPhoto] = useState(false);
+  const [cancelModalOrder, setCancelModalOrder] = useState<Order | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const cameraInputRef = useRef<HTMLInputElement>(null);
+  const galleryInputRef = useRef<HTMLInputElement>(null);
+
+  // Pedido ativo associado a este prestador
+  const activeOrder = useMemo(() => {
+    return (
+      relatedOrders.find(
+        (o) => o.status !== "concluido" && o.status !== "avaliado" && o.status !== "cancelado",
+      ) || null
+    );
+  }, [relatedOrders]);
+
+  const handleImageFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith("image/")) {
+      toast.error("Por favor selecione um ficheiro de imagem válido.");
+      return;
+    }
+
+    if (file.size > 8 * 1024 * 1024) {
+      toast.error("A imagem selecionada é muito grande (máximo 8MB).");
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const dataUrl = event.target?.result as string;
+      if (dataUrl) {
+        setSelectedPhotoUrl(dataUrl);
+        setPhotoModalOpen(true);
+        triggerDeviceVibration([40]);
+        toast.success("Foto carregada. Adicione uma descrição e envie.");
+      }
+    };
+    reader.readAsDataURL(file);
+    e.target.value = "";
+  };
 
   const activeTechnicalVisit = technicalVisits.find(
     (v) => v.providerId === id && v.status !== "cancelado",
@@ -529,6 +575,17 @@ function ChatDetail() {
                 <span className="text-[10px] text-muted-foreground">· {provider.category}</span>
               </div>
             </div>
+            {isClient && activeOrder && (
+              <button
+                type="button"
+                onClick={() => setCancelModalOrder(activeOrder)}
+                className="px-2.5 py-1.5 rounded-xl bg-destructive/10 hover:bg-destructive/20 text-destructive text-[11px] font-bold flex items-center gap-1 transition shrink-0"
+                title="Cancelar Serviço com Aviso de Riscos"
+              >
+                <X size={13} />
+                <span className="hidden sm:inline">Cancelar</span>
+              </button>
+            )}
           </header>
 
           {/* Banner de Aviso caso o Prestador esteja Bloqueado por Dívida */}
@@ -585,6 +642,17 @@ function ChatDetail() {
 
           {/* Banner de Proteção e Anti-Bypass Rigoroso */}
           <div className="px-4 mt-1 space-y-2">
+            {/* Indicador de Conversação com Especialista e Proteção de Documentos */}
+            <div className="flex items-center justify-between px-3 py-1.5 rounded-xl bg-card border border-border/70 text-[10px] text-muted-foreground shadow-2xs">
+              <span className="flex items-center gap-1.5 font-medium text-foreground">
+                <ShieldCheck size={12} className="text-emerald-500 shrink-0" />
+                <span>Especialista Verificado</span>
+              </span>
+              <span className="text-[10px] text-muted-foreground truncate ml-1">
+                Contexto seguro ativo · Documentos privados
+              </span>
+            </div>
+
             {unlocked ? (
               <div className="rounded-2xl bg-success/10 border border-success/30 px-3.5 py-3 text-[11px] text-success space-y-2">
                 <div className="flex items-center justify-between">
@@ -1879,9 +1947,50 @@ function ChatDetail() {
         description="Envie uma foto clara do problema para o técnico avaliar se precisa de peças ou visita antes de se deslocar no terreno."
       >
         <form onSubmit={handleSendPhotoDiagnostic} className="space-y-4">
+          {/* Opção 1: Upload Direto da Câmara ou Galeria do Telemóvel */}
+          <div className="space-y-2">
+            <label className="text-xs font-bold text-foreground block">
+              1. Carregar Foto do Dispositivo ou Tirar Foto
+            </label>
+            {/* Inputs nativos para acionar diretamente câmara ou galeria do telemóvel */}
+            <input
+              type="file"
+              ref={cameraInputRef}
+              onChange={handleImageFileChange}
+              accept="image/*"
+              capture="environment"
+              className="hidden"
+            />
+            <input
+              type="file"
+              ref={galleryInputRef}
+              onChange={handleImageFileChange}
+              accept="image/*"
+              className="hidden"
+            />
+            <div className="grid grid-cols-2 gap-2">
+              <button
+                type="button"
+                onClick={() => cameraInputRef.current?.click()}
+                className="py-3 px-3 rounded-2xl border-2 border-dashed border-primary/50 bg-primary/5 hover:bg-primary/10 text-primary font-bold text-xs flex flex-col items-center justify-center gap-1.5 transition cursor-pointer active:scale-95 shadow-2xs"
+              >
+                <Camera size={22} className="stroke-[2]" />
+                <span>Câmara Nativa</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => galleryInputRef.current?.click()}
+                className="py-3 px-3 rounded-2xl border-2 border-dashed border-border hover:border-primary/40 bg-muted/40 hover:bg-muted text-foreground font-bold text-xs flex flex-col items-center justify-center gap-1.5 transition cursor-pointer active:scale-95 shadow-2xs"
+              >
+                <ImageIcon size={22} className="text-primary stroke-[2]" />
+                <span>Galeria de Fotos</span>
+              </button>
+            </div>
+          </div>
+
           <div>
             <label className="text-xs font-bold text-foreground block mb-1.5">
-              Exemplos comuns de avaria ou foto personalizada
+              2. Ou selecione um exemplo comum de avaria em São Tomé
             </label>
             <div className="grid grid-cols-2 gap-2">
               {[
@@ -1967,7 +2076,7 @@ function ChatDetail() {
           )}
 
           <div className="p-3 rounded-xl bg-blue-500/10 border border-blue-500/20 text-blue-950 dark:text-blue-200 text-xs flex items-center gap-2">
-            <Sparkles size={16} className="text-blue-600 dark:text-blue-400 shrink-0" />
+            <ShieldCheck size={16} className="text-blue-600 dark:text-blue-400 shrink-0" />
             <span className="leading-tight">
               O diagnóstico por foto poupa tempo e custos de deslocação desnecessários entre
               distritos em São Tomé.
@@ -1989,6 +2098,18 @@ function ChatDetail() {
           </button>
         </form>
       </BottomSheet>
+
+      {/* Modal de Cancelamento de Serviço com Aviso de Riscos */}
+      {cancelModalOrder && (
+        <CancelServiceModal
+          open={!!cancelModalOrder}
+          onClose={() => setCancelModalOrder(null)}
+          order={cancelModalOrder}
+          onCancelled={() => {
+            setCancelModalOrder(null);
+          }}
+        />
+      )}
 
       {/* Modal de Avaliação pós-serviço no Chat */}
       {reviewQuote && (

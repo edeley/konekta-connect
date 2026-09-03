@@ -1,5 +1,5 @@
 import { useState, useRef, useCallback, useEffect } from "react";
-import { MoveHorizontal, Eye, Columns, Sparkles, CheckCircle2 } from "lucide-react";
+import { MoveHorizontal, Eye, Columns, CheckCircle2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface BeforeAfterSliderProps {
@@ -232,7 +232,7 @@ export function BeforeAfterSlider({
           {/* Dica de arraste na base */}
           <div className="absolute bottom-2.5 left-1/2 -translate-x-1/2 z-10 pointer-events-none opacity-80 group-hover:opacity-100 transition-opacity">
             <span className="px-2.5 py-1 rounded-full bg-black/60 backdrop-blur-md text-[10px] font-semibold text-white/90 shadow-sm flex items-center gap-1">
-              <Sparkles size={11} className="text-primary" /> Arraste para comparar
+              <MoveHorizontal size={11} className="text-primary" /> Arraste para comparar
             </span>
           </div>
         </div>

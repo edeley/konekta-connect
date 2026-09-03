@@ -1,13 +1,5 @@
 import { useState } from "react";
-import {
-  Image as ImageIcon,
-  X,
-  Sparkles,
-  Plus,
-  MoveHorizontal,
-  Eye,
-  MessageCircle,
-} from "lucide-react";
+import { Image as ImageIcon, X, Plus, MoveHorizontal, Eye, MessageCircle } from "lucide-react";
 import { type PortfolioBeforeAfterItem } from "@/types/provider-profile";
 import { BeforeAfterSlider } from "./BeforeAfterSlider";
 import { Link } from "@tanstack/react-router";
@@ -243,7 +235,7 @@ export function PortfolioGallery({
                 className="flex-1 h-11 rounded-2xl bg-primary text-primary-foreground text-xs font-bold flex items-center justify-center gap-2 shadow-md hover:bg-primary/90 transition cursor-pointer"
                 onClick={() => setActiveItem(null)}
               >
-                <Sparkles size={14} />
+                <Plus size={14} />
                 <span>Pedir Serviço Semelhante</span>
               </Link>
 

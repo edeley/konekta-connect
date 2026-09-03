@@ -5,7 +5,6 @@ import {
   CreditCard,
   Banknote,
   Lock,
-  Sparkles,
   ChevronRight,
   AlertCircle,
   Loader2,

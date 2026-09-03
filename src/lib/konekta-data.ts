@@ -517,7 +517,8 @@ export type OrderStatus =
   | "em-execucao"
   | "aguardando-codigo"
   | "concluido"
-  | "avaliado";
+  | "avaliado"
+  | "cancelado";
 
 export type Order = {
   id: string;
@@ -529,6 +530,8 @@ export type Order = {
   total: number;
   address?: string;
   district?: string;
+  location?: string;
+  clientPhone?: string;
   referencePoint?: string;
   notes?: string;
   paymentMethod?: "carteira" | "dinheiro" | "mbway";

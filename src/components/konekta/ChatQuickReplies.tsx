@@ -1,4 +1,4 @@
-import { MessageSquare, Sparkles } from "lucide-react";
+import { MessageSquare } from "lucide-react";
 
 interface ChatQuickRepliesProps {
   isClient: boolean;
@@ -67,7 +67,7 @@ export function ChatQuickReplies({
   return (
     <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-1 px-1">
       <span className="text-[10px] font-bold text-muted-foreground shrink-0 flex items-center gap-1 pl-1">
-        <Sparkles size={11} className="text-primary" /> Sugestões:
+        <MessageSquare size={11} className="text-primary" /> Sugestões:
       </span>
       {suggestions.map((s, idx) => (
         <button

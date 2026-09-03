@@ -1,14 +1,5 @@
 import { useState } from "react";
-import {
-  Sparkles,
-  Image as ImageIcon,
-  Plus,
-  Trash2,
-  X,
-  CheckCircle2,
-  Upload,
-  Eye,
-} from "lucide-react";
+import { Image as ImageIcon, Plus, Trash2, X, CheckCircle2, Upload, Eye } from "lucide-react";
 import { type PortfolioBeforeAfterItem } from "@/types/provider-profile";
 import { BeforeAfterSlider } from "./BeforeAfterSlider";
 import { toast } from "sonner";
@@ -111,7 +102,7 @@ export function PortfolioBeforeAfterModal({
         <div className="p-4 border-b border-border flex items-center justify-between bg-muted/40 shrink-0">
           <div className="flex items-center gap-2">
             <div className="size-8 rounded-xl bg-primary/10 text-primary flex items-center justify-center">
-              <Sparkles size={16} />
+              <ImageIcon size={16} />
             </div>
             <div>
               <h3 className="text-sm font-bold text-foreground">

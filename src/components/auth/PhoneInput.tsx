@@ -37,7 +37,7 @@ export const PhoneInput = forwardRef<HTMLInputElement, PhoneInputProps>(function
   const [searchQuery, setSearchQuery] = useState("");
 
   const maxDigits = selectedCountry.digitsMax || selectedCountry.digits;
-  const cleanDigits = value.replace(/\D/g, "").slice(0, maxDigits);
+  const cleanDigits = (value || "").replace(/\D/g, "").slice(0, maxDigits);
 
   const filteredCountries = useMemo(() => {
     const q = searchQuery.trim().toLowerCase();

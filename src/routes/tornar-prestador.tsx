@@ -7,7 +7,6 @@ import {
   Smartphone,
   Star,
   ArrowRight,
-  Sparkles,
   Award,
   Wallet,
   Users,
@@ -146,7 +145,7 @@ function TornarPrestadorPage() {
         <div className="bg-gradient-to-br from-primary via-emerald-800 to-teal-900 rounded-3xl p-6 text-white relative overflow-hidden shadow-md">
           <div className="absolute -right-8 -bottom-8 w-40 h-40 rounded-full bg-white/10 blur-2xl pointer-events-none" />
           <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/15 backdrop-blur-md text-[11px] font-bold tracking-wide uppercase mb-3">
-            <Sparkles size={13} className="text-amber-300" />
+            <Award size={13} className="text-amber-300" />
             <span>KONEKTA PRO · São Tomé e Príncipe</span>
           </div>
           <h1 className="text-2xl sm:text-3xl font-black tracking-tight leading-tight">

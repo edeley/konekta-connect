@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import { useNavigate } from "@tanstack/react-router";
 import {
   X,
@@ -13,7 +13,7 @@ import {
   FileText,
   Camera,
   Trash2,
-  Sparkles,
+  PackagePlus,
   ShieldCheck,
   MessageSquare,
   ChevronRight,
@@ -30,8 +30,10 @@ import {
   Navigation,
   ChevronDown,
   ChevronUp,
+  Layers,
 } from "lucide-react";
 import { STP_DISTRICTS } from "@/lib/auth-schemas";
+import { STP_ALL_LOCALITIES } from "@/lib/stp-locations";
 import { store, useStore } from "@/lib/store";
 import { useSTPClock } from "@/lib/stp-time";
 import {
@@ -89,6 +91,23 @@ export function BookingModal({ open, onClose, provider, initialService }: Bookin
     return availableServices[0]?.id || "";
   });
 
+  const [showAllServicesList, setShowAllServicesList] = useState(false);
+
+  // Sincronizar com initialService quando o modal abre ou a prop muda
+  useEffect(() => {
+    if (initialService) {
+      const match = availableServices.find(
+        (s) =>
+          s.name.toLowerCase() === initialService.toLowerCase() ||
+          s.name.toLowerCase().includes(initialService.toLowerCase()),
+      );
+      if (match) {
+        setSelectedServiceId(match.id);
+        setShowAllServicesList(false);
+      }
+    }
+  }, [initialService, availableServices, open]);
+
   const currentService: ServiceItemDetail | undefined = useMemo(() => {
     return availableServices.find((s) => s.id === selectedServiceId) || availableServices[0];
   }, [availableServices, selectedServiceId]);
@@ -113,13 +132,8 @@ export function BookingModal({ open, onClose, provider, initialService }: Bookin
     return "fixo";
   }, [currentService]);
 
-  // Contadores de Quantidade Dinâmicos conforme o modelo
-  const [quantity, setQuantity] = useState<number>(() => {
-    if (currentBillingModel === "hora") return 2;
-    if (currentBillingModel === "m2") return 25;
-    if (currentBillingModel === "unidade") return 4;
-    return 1;
-  });
+  // Contadores de Quantidade Dinâmicos - Inicia sempre em 1 para clareza e transparência
+  const [quantity, setQuantity] = useState<number>(1);
 
   // Extras Selecionados
   const [extras, setExtras] = useState<QuoteExtraItem[]>([
@@ -385,84 +399,175 @@ export function BookingModal({ open, onClose, provider, initialService }: Bookin
 
         {/* Conteúdo com Scroll */}
         <div className="overflow-y-auto px-5 py-4 space-y-5">
-          {/* 1. SELEÇÃO DE SERVIÇO */}
-          <div>
-            <div className="flex items-center justify-between mb-2">
+          {/* BOTÃO RÁPIDO: CONVERSAR COM O PRESTADOR NO CHAT */}
+          <button
+            type="button"
+            onClick={() => {
+              onClose();
+              navigate({ to: "/chat/$id", params: { id: provider.id } });
+            }}
+            className="w-full p-2.5 rounded-2xl bg-primary/10 hover:bg-primary/15 border border-primary/25 flex items-center justify-between gap-3 text-xs font-semibold text-foreground transition cursor-pointer group"
+          >
+            <div className="flex items-center gap-2 min-w-0">
+              <div className="size-7 rounded-xl bg-primary text-primary-foreground grid place-items-center shrink-0 shadow-2xs">
+                <MessageSquare size={14} />
+              </div>
+              <div className="text-left min-w-0">
+                <p className="font-bold text-foreground text-xs truncate">
+                  Falar no Chat com {provider.name.split(" ")[0]}
+                </p>
+                <p className="text-[10px] text-muted-foreground truncate">
+                  Tirar dúvidas, negociar detalhes ou pedir esclarecimento
+                </p>
+              </div>
+            </div>
+            <span className="text-[11px] font-bold text-primary shrink-0 group-hover:translate-x-0.5 transition-transform">
+              Abrir Chat &rarr;
+            </span>
+          </button>
+
+          {/* 1. SELEÇÃO E ESPECIFICAÇÃO DO SERVIÇO */}
+          <div className="space-y-2">
+            <div className="flex items-center justify-between">
               <label className="text-xs font-bold text-foreground flex items-center gap-1.5 uppercase tracking-wider">
                 <Tag size={13} className="text-primary" />
-                1. Escolha o Serviço & Modelo de Cobrança
+                1. Serviço Selecionado & Especificações
               </label>
-              <span className="text-[11px] text-muted-foreground font-medium">
-                {availableServices.length} opções
-              </span>
+              <button
+                type="button"
+                onClick={() => setShowAllServicesList((prev) => !prev)}
+                className="text-[11px] text-primary font-bold hover:underline flex items-center gap-1"
+              >
+                <span>{showAllServicesList ? "Recolher opções" : "Trocar serviço"}</span>
+                {showAllServicesList ? <ChevronUp size={12} /> : <ChevronDown size={12} />}
+              </button>
             </div>
 
-            <div className="grid grid-cols-1 gap-2">
-              {availableServices.map((srv) => {
-                const isSelected = selectedServiceId === srv.id;
-                return (
-                  <button
-                    key={srv.id}
-                    type="button"
-                    onClick={() => {
-                      setSelectedServiceId(srv.id);
-                      setError(null);
-                    }}
-                    className={`text-left p-3.5 rounded-2xl border transition-all flex items-start justify-between gap-3 ${
-                      isSelected
-                        ? "bg-primary/10 border-primary shadow-xs ring-1 ring-primary/40"
-                        : "bg-card hover:bg-muted/50 border-border/80"
-                    }`}
-                  >
-                    <div className="space-y-1 flex-1 min-w-0">
-                      <div className="flex items-center gap-2 flex-wrap">
-                        <span className="text-xs font-bold text-foreground">{srv.name}</span>
-                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-500/20">
-                          {srv.billingMethod === "hora"
-                            ? "Por Hora"
-                            : srv.billingMethod === "diagnostico"
-                              ? "Visita / Diagnóstico"
-                              : srv.billingMethod === "orcamento"
-                                ? "Sob Orçamento"
-                                : srv.unit === "dia"
-                                  ? "Por Dia"
-                                  : srv.unit === "m²"
-                                    ? "Por m²"
-                                    : "Preço Fixo"}
+            {/* CARD DE DESTAQUE DO SERVIÇO ATUAL (FOCO E PERSONALIZAÇÃO DIRETA) */}
+            {currentService && !showAllServicesList && (
+              <div className="p-4 rounded-2xl bg-card border-2 border-primary/40 shadow-xs space-y-2.5">
+                <div className="flex items-start justify-between gap-3">
+                  <div className="space-y-1 min-w-0 flex-1">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <h4 className="text-sm font-black text-foreground">{currentService.name}</h4>
+                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-primary/10 text-primary border border-primary/20">
+                        {currentService.billingMethod === "hora"
+                          ? "Por Hora"
+                          : currentService.billingMethod === "diagnostico"
+                            ? "Visita / Diagnóstico"
+                            : currentService.billingMethod === "orcamento"
+                              ? "Sob Orçamento"
+                              : currentService.unit === "dia"
+                                ? "Por Dia"
+                                : currentService.unit === "m²"
+                                  ? "Por m²"
+                                  : "Preço Fixo"}
+                      </span>
+                    </div>
+                    <p className="text-xs text-muted-foreground leading-relaxed">
+                      {currentService.description ||
+                        "Serviço profissional com garantia KONEKTA e pagamento protegido em custódia."}
+                    </p>
+                  </div>
+
+                  <div className="text-right shrink-0">
+                    {currentService.billingMethod === "orcamento" ? (
+                      <div className="text-xs font-bold text-purple-700 dark:text-purple-300 bg-purple-500/10 px-2.5 py-1 rounded-lg">
+                        Sob Orçamento
+                      </div>
+                    ) : (
+                      <div>
+                        <span className="text-base font-black text-primary">
+                          {formatDb(currentService.price)}
+                        </span>
+                        <span className="block text-[10px] text-muted-foreground font-medium">
+                          /{currentService.unit || "serviço"}
                         </span>
                       </div>
-                      {srv.description && (
-                        <p className="text-[11px] text-muted-foreground line-clamp-1">
-                          {srv.description}
-                        </p>
-                      )}
-                    </div>
+                    )}
+                  </div>
+                </div>
 
-                    <div className="text-right shrink-0">
-                      {srv.billingMethod === "orcamento" ? (
-                        <div className="text-xs font-bold text-purple-600 dark:text-purple-400 bg-purple-500/10 px-2.5 py-1 rounded-lg">
-                          Sob Orçamento
-                        </div>
-                      ) : (
-                        <div>
-                          <span className="text-sm font-black text-primary">
-                            {formatDb(srv.price)}
-                          </span>
-                          <span className="block text-[10px] text-muted-foreground font-medium">
-                            /{srv.unit || "serviço"}
-                          </span>
-                          <span className="block text-[9px] text-muted-foreground/80 font-medium mt-0.5">
-                            {srv.travelFeeAmount && srv.travelFeeAmount > 0
-                              ? `+${formatDb(srv.travelFeeAmount)} deslocação`
-                              : "Deslocação a acertar se aplicável"}
-                          </span>
-                        </div>
-                      )}
-                    </div>
+                <div className="pt-2 border-t border-border/60 flex items-center justify-between text-[11px] text-muted-foreground">
+                  <span className="flex items-center gap-1 text-emerald-700 dark:text-emerald-400 font-semibold">
+                    <ShieldCheck size={13} /> Garantia de 7 dias
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => setShowAllServicesList(true)}
+                    className="text-primary font-bold hover:underline"
+                  >
+                    Ver outras {availableServices.length - 1} opções &rarr;
                   </button>
-                );
-              })}
-            </div>
+                </div>
+              </div>
+            )}
+
+            {/* LISTA COMPLETA CASO O CLIENTE QUEIRA TROCAR */}
+            {showAllServicesList && (
+              <div className="grid grid-cols-1 gap-2 pt-1">
+                {availableServices.map((srv) => {
+                  const isSelected = selectedServiceId === srv.id;
+                  return (
+                    <button
+                      key={srv.id}
+                      type="button"
+                      onClick={() => {
+                        setSelectedServiceId(srv.id);
+                        setShowAllServicesList(false);
+                        setError(null);
+                      }}
+                      className={`text-left p-3.5 rounded-2xl border transition-all flex items-start justify-between gap-3 ${
+                        isSelected
+                          ? "bg-primary/10 border-primary shadow-xs ring-1 ring-primary/40"
+                          : "bg-card hover:bg-muted/50 border-border/80"
+                      }`}
+                    >
+                      <div className="space-y-1 flex-1 min-w-0">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <span className="text-xs font-bold text-foreground">{srv.name}</span>
+                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-500/20">
+                            {srv.billingMethod === "hora"
+                              ? "Por Hora"
+                              : srv.billingMethod === "diagnostico"
+                                ? "Visita / Diagnóstico"
+                                : srv.billingMethod === "orcamento"
+                                  ? "Sob Orçamento"
+                                  : srv.unit === "dia"
+                                    ? "Por Dia"
+                                    : srv.unit === "m²"
+                                      ? "Por m²"
+                                      : "Preço Fixo"}
+                          </span>
+                        </div>
+                        {srv.description && (
+                          <p className="text-[11px] text-muted-foreground line-clamp-1">
+                            {srv.description}
+                          </p>
+                        )}
+                      </div>
+
+                      <div className="text-right shrink-0">
+                        {srv.billingMethod === "orcamento" ? (
+                          <div className="text-xs font-bold text-purple-600 dark:text-purple-400 bg-purple-500/10 px-2.5 py-1 rounded-lg">
+                            Sob Orçamento
+                          </div>
+                        ) : (
+                          <div>
+                            <span className="text-sm font-black text-primary">
+                              {formatDb(srv.price)}
+                            </span>
+                            <span className="block text-[10px] text-muted-foreground font-medium">
+                              /{srv.unit || "serviço"}
+                            </span>
+                          </div>
+                        )}
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+            )}
           </div>
 
           {/* 2. FORMULÁRIO DINÂMICO BASEADO NO MODELO DE COBRANÇA */}
@@ -617,7 +722,7 @@ export function BookingModal({ open, onClose, provider, initialService }: Bookin
           {/* 3. EXTRAS OPCIONAIS */}
           <div className="space-y-2">
             <label className="text-xs font-bold text-foreground flex items-center gap-1.5 uppercase tracking-wider">
-              <Sparkles size={13} className="text-primary" />
+              <PackagePlus size={14} className="text-primary" />
               Extras & Materiais Recomendados
             </label>
             <div className="space-y-1.5">
@@ -828,6 +933,31 @@ export function BookingModal({ open, onClose, provider, initialService }: Bookin
                 className="text-xs px-3 py-2.5 rounded-xl bg-muted/30 border border-border focus:border-primary focus:bg-card focus:outline-hidden text-foreground placeholder:text-muted-foreground"
               />
             </div>
+
+            {/* Sugestões rápidas de Bairros de STP com 1 toque */}
+            {STP_ALL_LOCALITIES[district] && (
+              <div className="space-y-1 pt-1">
+                <span className="text-[10px] text-muted-foreground font-semibold">
+                  Bairros frequentes em {district}:
+                </span>
+                <div className="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-none">
+                  {STP_ALL_LOCALITIES[district].slice(0, 8).map((loc) => (
+                    <button
+                      key={loc}
+                      type="button"
+                      onClick={() => setAddress(loc)}
+                      className={`text-[10px] px-2.5 py-1 rounded-full border transition whitespace-nowrap cursor-pointer shrink-0 ${
+                        address.includes(loc)
+                          ? "bg-primary text-primary-foreground border-primary font-bold shadow-2xs"
+                          : "bg-card text-muted-foreground hover:text-foreground border-border hover:border-primary/40"
+                      }`}
+                    >
+                      {loc}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         </div>
 
@@ -941,7 +1071,7 @@ export function BookingModal({ open, onClose, provider, initialService }: Bookin
                       <div className="flex items-start justify-between gap-2 pt-1 border-t border-border/40">
                         <div>
                           <p className="font-medium text-foreground flex items-center gap-1">
-                            <Sparkles size={13} className="text-amber-500 shrink-0" />
+                            <Layers size={13} className="text-primary shrink-0" />
                             Extras & Materiais Selecionados
                           </p>
                           <p className="text-[10px] text-muted-foreground">

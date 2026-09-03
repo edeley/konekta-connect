@@ -6,7 +6,6 @@ import {
   Search,
   ChevronDown,
   ChevronUp,
-  Sparkles,
   Globe,
   Compass,
 } from "lucide-react";
@@ -52,8 +51,17 @@ export function CoverageConfigurator({
     return initial;
   });
 
-  const [expandedDistrict, setExpandedDistrict] = useState<string | null>("Água Grande");
+  const [expandedDistricts, setExpandedDistricts] = useState<Record<string, boolean>>({
+    "Água Grande": true,
+  });
   const [searchFilter, setSearchFilter] = useState("");
+
+  const toggleExpand = (districtName: string) => {
+    setExpandedDistricts((prev) => ({
+      ...prev,
+      [districtName]: !prev[districtName],
+    }));
+  };
 
   const toggleDistrict = (districtName: string) => {
     if (isReadOnly) return;
@@ -74,7 +82,7 @@ export function CoverageConfigurator({
           ? [...STP_ALL_LOCALITIES[districtName]]
           : [],
       });
-      setExpandedDistrict(districtName);
+      setExpandedDistricts((prev) => ({ ...prev, [districtName]: true }));
     }
   };
 
@@ -172,7 +180,7 @@ export function CoverageConfigurator({
     const isSelected = selectedDistricts.includes(district.name);
     const allDistrictZones = STP_ALL_LOCALITIES[district.name] || [];
     const currentDistrictLocs = selectedLocalities[district.name] || [];
-    const isExpanded = expandedDistrict === district.name;
+    const isExpanded = Boolean(expandedDistricts[district.name]);
 
     if (isReadOnly && !isSelected) return null;
 
@@ -233,7 +241,7 @@ export function CoverageConfigurator({
           {/* BOTÃO EXPANDIR/VER ZONAS */}
           <button
             type="button"
-            onClick={() => setExpandedDistrict(isExpanded ? null : district.name)}
+            onClick={() => toggleExpand(district.name)}
             className="px-2.5 py-1 rounded-xl hover:bg-muted text-[11px] font-semibold text-muted-foreground hover:text-foreground flex items-center gap-1 transition cursor-pointer shrink-0 border border-border/50"
           >
             <span>{isExpanded ? "Ocultar locais" : "Ver locais"}</span>
@@ -242,7 +250,7 @@ export function CoverageConfigurator({
         </div>
 
         {/* SUBCATEGORIAS DE LOCAIS (CIDADES, BAIRROS, PRAIAS, ROÇAS) */}
-        {isSelected && (isExpanded || isReadOnly) && (
+        {isSelected && isExpanded && (
           <div className="px-3.5 pb-3.5 pt-2 border-t border-border/50 bg-muted/10 space-y-3">
             {district.groups.map((group) => {
               const allInGroup = group.zones;
@@ -365,7 +373,7 @@ export function CoverageConfigurator({
             onClick={handleSelectAllSTP}
             className="text-[11px] font-bold text-primary hover:underline cursor-pointer flex items-center gap-1"
           >
-            <Sparkles size={12} />
+            <MapPin size={12} />
             <span>
               {selectedDistricts.length === STP_DISTRICTS_DETAILED.length
                 ? "Reduzir para São Tomé Central"

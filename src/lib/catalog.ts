@@ -1,5 +1,7 @@
 import { categories, providers, type Provider } from "./konekta-data";
 
+export { categories as CATEGORIES_DATA };
+
 export type PopularService = {
   id: string;
   name: string;

@@ -5,7 +5,6 @@ import {
   ShieldCheck,
   ThumbsUp,
   Award,
-  Sparkles,
   MessageSquare,
   Share2,
   CheckCircle2,

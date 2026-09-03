@@ -21,7 +21,6 @@ import {
   CalendarCheck,
   Star,
   Wallet,
-  Sparkles,
   ExternalLink,
   Image as ImageIcon,
   Camera,

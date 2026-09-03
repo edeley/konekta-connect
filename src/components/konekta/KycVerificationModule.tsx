@@ -9,7 +9,6 @@ import {
   CheckCircle2,
   AlertTriangle,
   X,
-  Sparkles,
   Info,
   ChevronRight,
   RefreshCw,
@@ -373,7 +372,7 @@ export function KycVerificationModule({
                     onClick={handleSimulateInstantApprove}
                     className="h-9 px-3 rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/20 text-xs font-bold flex items-center justify-center gap-1.5 cursor-pointer transition"
                   >
-                    <Sparkles size={13} /> Aprovar Imediato (KYC)
+                    <CheckCircle2 size={13} /> Aprovar Imediato (KYC)
                   </button>
                   <button
                     type="button"

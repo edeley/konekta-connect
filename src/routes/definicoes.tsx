@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import {
   ArrowLeft,
@@ -18,7 +18,7 @@ import {
   HelpCircle,
   FileText,
   Smartphone,
-  Sparkles,
+  Info,
   Camera,
 } from "lucide-react";
 import { AppShell } from "@/components/AppShell";
@@ -57,11 +57,20 @@ function SettingsPage() {
   const [savingEmail, setSavingEmail] = useState(false);
 
   // Form states for editing profile
-  const [name, setName] = useState(user?.name ?? "");
-  const [phone, setPhone] = useState(user?.phone ?? "");
-  const [email, setEmail] = useState(user?.email ?? "");
-  const [district, setDistrict] = useState(user?.district ?? "Água Grande");
+  const [name, setName] = useState(user?.name || "");
+  const [phone, setPhone] = useState(user?.phone || "");
+  const [email, setEmail] = useState(user?.email || "");
+  const [district, setDistrict] = useState(user?.district || "Água Grande");
   const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    if (user) {
+      setName(user.name || "");
+      setPhone(user.phone || "");
+      setEmail(user.email || "");
+      setDistrict(user.district || "Água Grande");
+    }
+  }, [user, editUserModal]);
 
   // Form state for password/PIN update
   const [currentPass, setCurrentPass] = useState("");
@@ -423,7 +432,7 @@ function SettingsPage() {
               className="flex items-center justify-between p-4 hover:bg-accent/40 transition"
             >
               <div className="flex items-center gap-3">
-                <Sparkles size={18} className="text-muted-foreground" />
+                <Info size={18} className="text-muted-foreground" />
                 <span className="text-sm font-medium text-foreground">Sobre o KONEKTA STP</span>
               </div>
               <ChevronRight size={16} className="text-muted-foreground" />

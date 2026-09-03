@@ -21,7 +21,6 @@ import {
   Repeat,
   Search,
   ShieldCheck,
-  Sparkles,
   User,
   Users,
   Wrench,
@@ -1638,7 +1637,7 @@ function RegistoPage() {
                                     Modelo de cobrança
                                   </label>
                                   <select
-                                    value={item.pricingModel}
+                                    value={item.pricingModel ?? ""}
                                     onChange={(e) =>
                                       handleUpdateServiceField(
                                         item.id,
@@ -1662,7 +1661,7 @@ function RegistoPage() {
                                   </label>
                                   <input
                                     type="text"
-                                    value={item.priceDb}
+                                    value={item.priceDb ?? ""}
                                     onChange={(e) =>
                                       handleUpdateServiceField(item.id, "priceDb", e.target.value)
                                     }
@@ -1876,7 +1875,7 @@ function RegistoPage() {
                               {/* Start Time Picker */}
                               <div className="relative flex-1">
                                 <select
-                                  value={period.start}
+                                  value={period.start ?? ""}
                                   onChange={(e) =>
                                     handleUpdatePeriod(day.id, period.id, "start", e.target.value)
                                   }
@@ -1899,7 +1898,7 @@ function RegistoPage() {
                               {/* End Time Picker */}
                               <div className="relative flex-1">
                                 <select
-                                  value={period.end}
+                                  value={period.end ?? ""}
                                   onChange={(e) =>
                                     handleUpdatePeriod(day.id, period.id, "end", e.target.value)
                                   }
@@ -2218,7 +2217,7 @@ function RegistoPage() {
                     {/* Special Dashed Card for Outro (Screenshot 10) */}
                     <div className="p-4 rounded-2xl border-2 border-dashed border-[#1D68D8]/40 bg-[#F0F6FF]/30 space-y-3 mt-2">
                       <div className="flex items-center gap-2 text-[#1D68D8] font-bold text-xs">
-                        <Sparkles size={16} />
+                        <Plus size={16} />
                         <span>Outro — escreva a sua área</span>
                       </div>
                       <input
@@ -2274,7 +2273,7 @@ function RegistoPage() {
                     {/* Special Dashed Card for Outro subcategory (Screenshot 8) */}
                     <div className="p-4 rounded-2xl border-2 border-dashed border-[#1D68D8]/40 bg-[#F0F6FF]/30 space-y-3 mt-2">
                       <div className="flex items-center gap-2 text-[#1D68D8] font-bold text-xs">
-                        <Sparkles size={16} />
+                        <Plus size={16} />
                         <span>Outro — escreva a subcategoria</span>
                       </div>
                       <input
@@ -2344,7 +2343,7 @@ function RegistoPage() {
                     {/* Special Dashed Card for Outro service (Screenshot 9) */}
                     <div className="p-4 rounded-2xl border-2 border-dashed border-[#1D68D8]/40 bg-[#F0F6FF]/30 space-y-3 mt-2">
                       <div className="flex items-center gap-2 text-[#1D68D8] font-bold text-xs">
-                        <Sparkles size={16} />
+                        <Plus size={16} />
                         <span>Outro — escreva o serviço que faz</span>
                       </div>
                       <input

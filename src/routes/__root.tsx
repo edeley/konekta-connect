@@ -100,13 +100,18 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1, maximum-scale=1" },
-      { title: "KONEKTA — Serviços em São Tomé e Príncipe" },
+      { title: "Konekta Connect — Serviços em São Tomé e Príncipe" },
       {
         name: "description",
-        content: "Plataforma segura para contratar profissionais em São Tomé e Príncipe.",
+        content:
+          "Plataforma de contratação de serviços profissionais verificados e custódia financeira em São Tomé e Príncipe.",
       },
-      { property: "og:title", content: "KONEKTA" },
-      { property: "og:description", content: "Serviços de confiança em São Tomé e Príncipe." },
+      { property: "og:title", content: "Konekta Connect" },
+      {
+        property: "og:description",
+        content:
+          "Plataforma de contratação de serviços profissionais verificados e custódia financeira em São Tomé e Príncipe.",
+      },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
     ],

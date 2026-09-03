@@ -1,5 +1,13 @@
 import { useState } from "react";
-import { ShieldCheck, ArrowRight, Sparkles, CheckCircle2, User, Wrench, Lock } from "lucide-react";
+import {
+  ShieldCheck,
+  ArrowRight,
+  Calculator,
+  CheckCircle2,
+  User,
+  Wrench,
+  Lock,
+} from "lucide-react";
 import { formatDb } from "@/lib/catalog";
 import { cn } from "@/lib/utils";
 
@@ -54,7 +62,7 @@ export function KonektaCalculator({
         <div>
           <div className="flex items-center gap-2">
             <span className="grid size-7 place-items-center rounded-lg bg-primary/10 text-primary">
-              <Sparkles size={15} />
+              <Calculator size={15} />
             </span>
             <h3 className="text-base font-black text-foreground">Simulador de Preços & Custódia</h3>
           </div>

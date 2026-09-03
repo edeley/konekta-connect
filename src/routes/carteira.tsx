@@ -18,7 +18,6 @@ import {
   Check,
   ShieldCheck,
   Award,
-  Sparkles,
   Lock,
   ChevronRight,
   KeyRound,

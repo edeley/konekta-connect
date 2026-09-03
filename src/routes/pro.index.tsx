@@ -21,7 +21,6 @@ import {
   CheckSquare,
   Car,
   FileText,
-  Sparkles,
   MessageCircle,
   Star,
   Power,
@@ -422,7 +421,7 @@ function ProHome() {
           >
             <div className="flex items-center gap-3 min-w-0">
               <div className="size-11 rounded-xl bg-primary text-primary-foreground grid place-items-center shrink-0 shadow-2xs">
-                <Sparkles size={20} />
+                <FileText size={20} />
               </div>
               <div className="min-w-0">
                 <div className="flex items-center gap-1.5">

@@ -54,6 +54,12 @@ export const orderStateMeta: Record<OrderStatus, StateMeta> = {
     message: "Serviço concluído, pago e avaliado. Obrigado por usar a KONEKTA!",
     actions: ["Repetir pedido"],
   },
+  cancelado: {
+    label: "Cancelado",
+    tone: "neutral",
+    message: "Este serviço foi cancelado. O valor em custódia foi regularizado na sua carteira.",
+    actions: ["Repetir pedido"],
+  },
 };
 
 export type PaymentState =

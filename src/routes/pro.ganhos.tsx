@@ -7,7 +7,6 @@ import {
   Building2,
   ShieldCheck,
   Check,
-  Sparkles,
   AlertCircle,
   AlertTriangle,
   Banknote,
@@ -922,7 +921,7 @@ function ProEarnings() {
               onClick={() => setPlanModalOpen(true)}
               className="w-full py-2.5 rounded-xl border border-primary/30 bg-primary/5 hover:bg-primary/10 text-primary font-bold text-xs flex items-center justify-center gap-1.5 transition cursor-pointer"
             >
-              <Sparkles size={14} />
+              <Building2 size={14} />
               {isPlanActive
                 ? "Gerir ou Renovar Plano Empresa"
                 : "Escolher Modelo: Comissão vs Plano Mensal"}
@@ -1513,7 +1512,7 @@ function ProEarnings() {
           >
             <div className="flex items-center justify-between mb-1">
               <span className="text-xs font-bold text-foreground flex items-center gap-1">
-                <Sparkles size={14} className="text-amber-500" /> Plano Mensal Empresa (0% Comissão)
+                <Building2 size={14} className="text-primary" /> Plano Mensal Empresa (0% Comissão)
               </span>
               <span className="text-xs font-black text-emerald-800 dark:text-emerald-300 font-mono">
                 {formatDb(companyPlanFee)}/mês

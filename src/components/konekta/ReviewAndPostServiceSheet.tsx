@@ -1,13 +1,5 @@
 import { useState } from "react";
-import {
-  Star,
-  Sparkles,
-  CheckCircle2,
-  ThumbsUp,
-  Wallet,
-  ShieldCheck,
-  MessageCircle,
-} from "lucide-react";
+import { Star, CheckCircle2, ThumbsUp, Wallet, ShieldCheck, MessageCircle } from "lucide-react";
 import { BottomSheet } from "./kit";
 import { Button } from "@/components/ui/button";
 import { formatDb } from "@/lib/catalog";
@@ -142,7 +134,7 @@ export function ReviewAndPostServiceSheet({
                       : "bg-muted/60 text-muted-foreground hover:bg-muted border border-border",
                   )}
                 >
-                  <Sparkles size={12} />
+                  <ThumbsUp size={12} />
                   <span>{chip}</span>
                 </button>
               );

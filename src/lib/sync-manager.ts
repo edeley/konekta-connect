@@ -147,55 +147,112 @@ export function openNativeMap(options: {
   longitude?: number;
   title?: string;
   mode?: "route" | "pin";
+  app?: "auto" | "google" | "apple" | "waze";
 }) {
+  triggerDeviceVibration([40]);
   const isIOS =
-    typeof navigator !== "undefined" && /iPad|iPhone|iPod/.test(navigator.userAgent || "");
-  const isRoute =
-    options.mode === "route" || (!options.mode && Boolean(options.latitude && options.longitude));
+    typeof navigator !== "undefined" &&
+    (/iPad|iPhone|iPod/.test(navigator.userAgent || "") ||
+      (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1));
 
-  if (options.latitude && options.longitude) {
-    if (isRoute) {
-      if (isIOS) {
-        safeOpenExternalUrl(
-          `https://maps.apple.com/?daddr=${options.latitude},${options.longitude}&dirflg=d`,
-          "_blank",
-        );
-      } else {
-        safeOpenExternalUrl(
-          `https://www.google.com/maps/dir/?api=1&destination=${options.latitude},${options.longitude}&travelmode=driving`,
-          "_blank",
-        );
-      }
-      toast.success("A abrir rota e navegação GPS até ao cliente...");
+  const isAndroid = typeof navigator !== "undefined" && /Android/.test(navigator.userAgent || "");
+
+  const hasCoords = Boolean(options.latitude && options.longitude);
+  const isRoute = options.mode === "route" || (!options.mode && hasCoords);
+
+  if (hasCoords) {
+    const lat = options.latitude!;
+    const lng = options.longitude!;
+    const label = encodeURIComponent(options.title || "Cliente KONEKTA");
+
+    if (options.app === "apple" || (options.app !== "google" && options.app !== "waze" && isIOS)) {
+      // Abre o Apple Maps nativo no iPhone/iPad
+      const appleUrl = isRoute
+        ? `maps://maps.apple.com/?daddr=${lat},${lng}&dirflg=d`
+        : `maps://maps.apple.com/?ll=${lat},${lng}&q=${label}`;
+      safeOpenExternalUrl(appleUrl, "_blank");
+      toast.success("A abrir Apple Maps nativo no telemóvel...");
       return;
     }
 
-    if (isIOS) {
-      safeOpenExternalUrl(
-        `https://maps.apple.com/?ll=${options.latitude},${options.longitude}&q=${encodeURIComponent(options.title || "Local do Cliente")}`,
-        "_blank",
-      );
-    } else {
-      safeOpenExternalUrl(
-        `https://www.google.com/maps?q=${options.latitude},${options.longitude}&z=18`,
-        "_blank",
-      );
+    if (options.app === "waze") {
+      const wazeUrl = `https://waze.com/ul?ll=${lat},${lng}&navigate=yes`;
+      safeOpenExternalUrl(wazeUrl, "_blank");
+      toast.success("A abrir Waze nativo no telemóvel...");
+      return;
     }
-    toast.info("A abrir ponto exato no mapa...");
+
+    // Google Maps / Android / Universal
+    if (isAndroid) {
+      // No Android, o link de navegação aciona a app nativa Google Maps
+      const androidRouteUrl = `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}&travelmode=driving`;
+      safeOpenExternalUrl(androidRouteUrl, "_blank");
+      toast.success("A abrir rota no Google Maps nativo...");
+      return;
+    }
+
+    const routeUrl = isRoute
+      ? `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}&travelmode=driving`
+      : `https://www.google.com/maps?q=${lat},${lng}&z=18`;
+
+    safeOpenExternalUrl(routeUrl, "_blank");
+    toast.success(isRoute ? "A abrir rota GPS no mapa..." : "A abrir ponto no mapa...");
     return;
   }
 
+  // Se não houver coordenadas, pesquisa por endereço/distrito
   const query = encodeURIComponent(
     [options.address, options.district, "São Tomé e Príncipe"].filter(Boolean).join(", "),
   );
 
   if (isIOS) {
-    safeOpenExternalUrl(`https://maps.apple.com/?q=${query}`, "_blank");
+    safeOpenExternalUrl(`maps://maps.apple.com/?q=${query}`, "_blank");
   } else {
     safeOpenExternalUrl(`https://www.google.com/maps/search/?api=1&query=${query}`, "_blank");
   }
 
   toast.info("A abrir mapa no telemóvel...");
+}
+
+/**
+ * Partilha nativa do dispositivo (abre a folha de partilha do Android/iOS)
+ */
+export async function shareNativeLocation(options: {
+  title: string;
+  text: string;
+  url?: string;
+  latitude?: number;
+  longitude?: number;
+}) {
+  triggerDeviceVibration([40]);
+  if (typeof navigator !== "undefined" && navigator.share) {
+    try {
+      await navigator.share({
+        title: options.title,
+        text: options.text,
+        url:
+          options.url ||
+          (options.latitude && options.longitude
+            ? `https://www.google.com/maps?q=${options.latitude},${options.longitude}`
+            : undefined),
+      });
+      toast.success("Localização partilhada via sistema nativo!");
+      return;
+    } catch (err: unknown) {
+      if ((err as Error)?.name !== "AbortError") {
+        console.warn("navigator.share error:", err);
+      }
+    }
+  }
+
+  // Fallback: copiar para a área de transferência
+  const fallbackText = `${options.text}\n${options.url || ""}`.trim();
+  try {
+    await navigator.clipboard.writeText(fallbackText);
+    toast.success("Dados copiados para a área de transferência!");
+  } catch {
+    toast.info("Copie as informações manualmente.");
+  }
 }
 
 // --- 3. WHATSAPP DO TELEMÓVEL ---

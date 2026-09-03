@@ -14,7 +14,6 @@ import {
   Eye,
   Settings,
   Lock,
-  Sparkles,
   MapPin,
 } from "lucide-react";
 import { type ProviderProfileContract, type ProviderUIStateMode } from "@/types/provider-profile";

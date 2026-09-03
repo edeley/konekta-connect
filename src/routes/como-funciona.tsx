@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { ArrowLeft, Sparkles } from "lucide-react";
+import { ArrowLeft, ShieldCheck } from "lucide-react";
 import { AppShell } from "@/components/AppShell";
 import { KonektaCalculator } from "@/components/konekta/KonektaCalculator";
 
@@ -72,7 +72,7 @@ function ComoFuncionaPage() {
             <span>Voltar ao Início</span>
           </Link>
           <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-primary/10 text-primary text-[11px] font-bold uppercase tracking-wider">
-            <Sparkles size={13} />
+            <ShieldCheck size={13} />
             <span>Processo 100% Protegido</span>
           </div>
         </div>

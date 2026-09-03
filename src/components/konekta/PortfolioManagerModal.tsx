@@ -1,15 +1,5 @@
 import { useState, useRef } from "react";
-import {
-  Camera,
-  Plus,
-  Trash2,
-  Image as ImageIcon,
-  X,
-  Check,
-  Sparkles,
-  Upload,
-  Layers,
-} from "lucide-react";
+import { Camera, Plus, Trash2, Image as ImageIcon, X, Check, Upload, Layers } from "lucide-react";
 import { BottomSheet } from "@/components/konekta/kit";
 import { store, useStore, type PortfolioItem } from "@/lib/store";
 import { validateFormSafety } from "@/lib/escrow";
@@ -358,7 +348,7 @@ export function PortfolioManagerModal({ open, onClose }: PortfolioManagerModalPr
             {!imagePreview && (
               <div className="space-y-2 pt-1">
                 <div className="flex items-center gap-1.5 text-xs font-bold text-muted-foreground">
-                  <Sparkles size={13} className="text-amber-500" />
+                  <ImageIcon size={13} className="text-primary" />
                   <span>Ou escolha um exemplo de serviço:</span>
                 </div>
                 <div className="grid grid-cols-3 gap-2">

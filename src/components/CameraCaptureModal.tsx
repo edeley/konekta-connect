@@ -6,9 +6,10 @@ import {
   Check,
   Image as ImageIcon,
   AlertCircle,
-  Sparkles,
+  CheckCircle2,
 } from "lucide-react";
 import { toast } from "sonner";
+import { triggerDeviceVibration } from "@/lib/sync-manager";
 
 interface CameraCaptureModalProps {
   isOpen: boolean;
@@ -26,6 +27,7 @@ export function CameraCaptureModal({
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const nativeCameraInputRef = useRef<HTMLInputElement>(null);
+  const nativeGalleryInputRef = useRef<HTMLInputElement>(null);
 
   const [stream, setStream] = useState<MediaStream | null>(null);
   const [capturedPhoto, setCapturedPhoto] = useState<string | null>(null);
@@ -69,8 +71,8 @@ export function CameraCaptureModal({
       const errorObj = err as { name?: string };
       setCameraError(
         errorObj?.name === "NotAllowedError" || errorObj?.name === "PermissionDeniedError"
-          ? "Permissão da câmara negada. Ative a permissão ou use a câmara padrão do telemóvel."
-          : "Não foi possível abrir o visor ao vivo. Pode usar o botão abaixo para abrir a câmara nativa do seu telemóvel.",
+          ? "Permissão da câmara negada no navegador. Utilize a câmara nativa do telemóvel no botão abaixo."
+          : "Não foi possível abrir o visor ao vivo. Toque abaixo para abrir a câmara nativa do seu telemóvel.",
       );
     } finally {
       setIsStarting(false);
@@ -99,13 +101,15 @@ export function CameraCaptureModal({
   const handleSwitchCamera = () => {
     const nextMode = facingMode === "environment" ? "user" : "environment";
     setFacingMode(nextMode);
+    triggerDeviceVibration([30]);
   };
 
   const handleTakePhoto = () => {
     if (!videoRef.current || !canvasRef.current) return;
 
-    // Flash animation
+    // Flash animation & tactile feedback
     setFlashEffect(true);
+    triggerDeviceVibration([50]);
     setTimeout(() => setFlashEffect(false), 200);
 
     const video = videoRef.current;
@@ -131,6 +135,7 @@ export function CameraCaptureModal({
     if (capturedPhoto) {
       onPhotoCaptured(capturedPhoto);
       setCapturedPhoto(null);
+      triggerDeviceVibration([30, 40]);
       toast.success("Foto anexada com sucesso!");
       onClose();
     }
@@ -140,7 +145,7 @@ export function CameraCaptureModal({
     setCapturedPhoto(null);
   };
 
-  // Fallback para câmara nativa do telemóvel via input capture
+  // Fallback e acionamento direto para câmara nativa do telemóvel via input capture
   const handleNativeCameraFile = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -149,7 +154,24 @@ export function CameraCaptureModal({
     reader.onload = () => {
       if (reader.result) {
         onPhotoCaptured(reader.result as string);
-        toast.success("Foto tirada e anexada!");
+        triggerDeviceVibration([40, 60]);
+        toast.success("Foto tirada com a câmara nativa e anexada!");
+        onClose();
+      }
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleNativeGalleryFile = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = () => {
+      if (reader.result) {
+        onPhotoCaptured(reader.result as string);
+        triggerDeviceVibration([30]);
+        toast.success("Foto da galeria selecionada e anexada!");
         onClose();
       }
     };
@@ -160,7 +182,7 @@ export function CameraCaptureModal({
 
   return (
     <div className="fixed inset-0 z-50 bg-black/95 flex flex-col items-center justify-between p-4 backdrop-blur-md animate-in fade-in duration-200">
-      {/* Input nativo de câmara para fallback */}
+      {/* Inputs nativos para acionar a câmara do telemóvel e galeria do sistema */}
       <input
         ref={nativeCameraInputRef}
         type="file"
@@ -168,6 +190,13 @@ export function CameraCaptureModal({
         capture="environment"
         className="hidden"
         onChange={handleNativeCameraFile}
+      />
+      <input
+        ref={nativeGalleryInputRef}
+        type="file"
+        accept="image/*"
+        className="hidden"
+        onChange={handleNativeGalleryFile}
       />
 
       <canvas ref={canvasRef} className="hidden" />
@@ -177,7 +206,7 @@ export function CameraCaptureModal({
         <button
           type="button"
           onClick={onClose}
-          className="size-10 rounded-full bg-white/15 active:scale-95 flex items-center justify-center text-white backdrop-blur-sm transition"
+          className="size-10 rounded-full bg-white/15 active:scale-95 flex items-center justify-center text-white backdrop-blur-sm transition cursor-pointer"
           aria-label="Fechar câmara"
         >
           <X size={20} />
@@ -185,14 +214,14 @@ export function CameraCaptureModal({
 
         <div className="text-center">
           <h2 className="text-sm font-bold tracking-wide">Fotografar o Problema</h2>
-          <p className="text-[11px] text-white/70">Aponte para a avaria ou serviço</p>
+          <p className="text-[11px] text-white/70">Câmara do telemóvel ou galeria</p>
         </div>
 
         {!capturedPhoto && !cameraError && (
           <button
             type="button"
             onClick={handleSwitchCamera}
-            className="size-10 rounded-full bg-white/15 active:scale-95 flex items-center justify-center text-white backdrop-blur-sm transition"
+            className="size-10 rounded-full bg-white/15 active:scale-95 flex items-center justify-center text-white backdrop-blur-sm transition cursor-pointer"
             aria-label="Trocar de câmara"
           >
             <RefreshCw size={18} />
@@ -216,27 +245,35 @@ export function CameraCaptureModal({
               className="w-full h-full object-contain bg-black"
             />
             <div className="absolute top-4 left-4 bg-black/60 backdrop-blur-md px-3 py-1 rounded-full text-white text-xs font-semibold flex items-center gap-1.5 border border-white/20">
-              <Sparkles size={13} className="text-amber-400" />
+              <CheckCircle2 size={13} className="text-emerald-400" />
               <span>Foto pronta para envio</span>
             </div>
           </div>
         ) : cameraError ? (
-          /* Erro de Acesso / Sugestão de Câmara Nativa */
+          /* Sugestão e Disparo de Câmara Nativa */
           <div className="p-6 text-center text-white max-w-xs space-y-4">
-            <div className="size-16 rounded-full bg-amber-500/20 text-amber-400 mx-auto flex items-center justify-center border border-amber-500/30">
-              <AlertCircle size={32} />
+            <div className="size-16 rounded-full bg-emerald-500/20 text-emerald-400 mx-auto flex items-center justify-center border border-emerald-500/30">
+              <Camera size={32} />
             </div>
             <div>
-              <h3 className="font-bold text-sm">Abrir Câmara do Telemóvel</h3>
+              <h3 className="font-bold text-sm">Usar Câmara do Telemóvel</h3>
               <p className="text-xs text-white/70 mt-1.5 leading-relaxed">{cameraError}</p>
             </div>
             <button
               type="button"
               onClick={() => nativeCameraInputRef.current?.click()}
-              className="w-full py-3 px-4 rounded-2xl bg-primary text-primary-foreground font-bold text-xs flex items-center justify-center gap-2 active:scale-95 shadow-lg"
+              className="w-full py-3.5 px-4 rounded-2xl bg-primary text-primary-foreground font-bold text-xs flex items-center justify-center gap-2 active:scale-95 shadow-lg cursor-pointer"
             >
               <Camera size={16} />
-              <span>Tirar Foto com a Câmara do Telemóvel</span>
+              <span>Abrir Câmara Nativa do Telemóvel</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => nativeGalleryInputRef.current?.click()}
+              className="w-full py-3 px-4 rounded-2xl bg-white/10 text-white font-bold text-xs flex items-center justify-center gap-2 active:scale-95 border border-white/15 cursor-pointer"
+            >
+              <ImageIcon size={16} />
+              <span>Escolher da Galeria de Fotos</span>
             </button>
           </div>
         ) : (
@@ -281,7 +318,7 @@ export function CameraCaptureModal({
             <button
               type="button"
               onClick={handleRetake}
-              className="flex-1 py-3.5 px-4 rounded-2xl bg-white/15 text-white font-bold text-xs flex items-center justify-center gap-2 active:scale-95 transition hover:bg-white/20 border border-white/15"
+              className="flex-1 py-3.5 px-4 rounded-2xl bg-white/15 text-white font-bold text-xs flex items-center justify-center gap-2 active:scale-95 transition hover:bg-white/20 border border-white/15 cursor-pointer"
             >
               <RefreshCw size={15} />
               <span>Tirar Outra</span>
@@ -290,7 +327,7 @@ export function CameraCaptureModal({
             <button
               type="button"
               onClick={handleConfirmPhoto}
-              className="flex-1 py-3.5 px-4 rounded-2xl bg-primary text-primary-foreground font-bold text-xs flex items-center justify-center gap-2 active:scale-95 transition shadow-lg"
+              className="flex-1 py-3.5 px-4 rounded-2xl bg-primary text-primary-foreground font-bold text-xs flex items-center justify-center gap-2 active:scale-95 transition shadow-lg cursor-pointer"
             >
               <Check size={16} />
               <span>Usar Esta Foto</span>
@@ -303,10 +340,14 @@ export function CameraCaptureModal({
             <button
               type="button"
               onClick={() => {
-                onClose();
-                onOpenGallery?.();
+                if (onOpenGallery) {
+                  onClose();
+                  onOpenGallery();
+                } else {
+                  nativeGalleryInputRef.current?.click();
+                }
               }}
-              className="flex flex-col items-center gap-1 text-white/80 hover:text-white active:scale-95 transition"
+              className="flex flex-col items-center gap-1 text-white/80 hover:text-white active:scale-95 transition cursor-pointer"
             >
               <div className="size-11 rounded-full bg-white/15 flex items-center justify-center border border-white/20">
                 <ImageIcon size={20} />
@@ -325,7 +366,7 @@ export function CameraCaptureModal({
                   handleTakePhoto();
                 }
               }}
-              className="size-18 rounded-full border-4 border-white flex items-center justify-center p-1 active:scale-90 transition shadow-2xl group"
+              className="size-18 rounded-full border-4 border-white flex items-center justify-center p-1 active:scale-90 transition shadow-2xl group cursor-pointer"
               aria-label="Disparar foto"
             >
               <div className="size-full rounded-full bg-white group-hover:bg-primary transition shadow-inner" />
@@ -335,12 +376,12 @@ export function CameraCaptureModal({
             <button
               type="button"
               onClick={() => nativeCameraInputRef.current?.click()}
-              className="flex flex-col items-center gap-1 text-white/80 hover:text-white active:scale-95 transition"
+              className="flex flex-col items-center gap-1 text-white/80 hover:text-white active:scale-95 transition cursor-pointer"
             >
               <div className="size-11 rounded-full bg-white/15 flex items-center justify-center border border-white/20">
                 <Camera size={20} />
               </div>
-              <span className="text-[10px] font-semibold">Nativa</span>
+              <span className="text-[10px] font-semibold">Câmara Nativa</span>
             </button>
           </div>
         )}

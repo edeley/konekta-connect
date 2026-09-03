@@ -4,7 +4,6 @@ import {
   Clock,
   MapPin,
   MessageCircle,
-  Sparkles,
   Image as ImageIcon,
   X,
   Calendar,
@@ -30,6 +29,7 @@ import {
   User,
   Wallet,
   ShieldAlert,
+  Inbox,
 } from "lucide-react";
 import { AppShell } from "@/components/AppShell";
 import {
@@ -58,6 +58,7 @@ import { ClientPinCard } from "@/components/konekta/ClientPinCard";
 import { PinVerificationSheet } from "@/components/konekta/PinVerificationSheet";
 import { EscrowCheckoutCard } from "@/components/konekta/EscrowCheckoutCard";
 import { DisputeDrawer } from "@/components/konekta/DisputeDrawer";
+import { CancelServiceModal } from "@/components/konekta/CancelServiceModal";
 import { ReviewAndPostServiceSheet } from "@/components/konekta/ReviewAndPostServiceSheet";
 import { ClientGpsRadarCard } from "@/components/konekta/ClientGpsRadarCard";
 import { toast } from "sonner";
@@ -125,6 +126,7 @@ function RequestOrOrderDetail() {
   const [isReviewOpen, setIsReviewOpen] = useState(false);
   const [isReceiptOpen, setIsReceiptOpen] = useState(false);
   const [isDisputeOpen, setIsDisputeOpen] = useState(false);
+  const [isCancelOpen, setIsCancelOpen] = useState(false);
 
   // Estado para proposta do prestador em pedidos abertos
   const [isSubmittingProposal, setIsSubmittingProposal] = useState(false);
@@ -500,8 +502,8 @@ function RequestOrOrderDetail() {
                 address={order.address}
                 district={order.district}
                 referencePoint={order.referencePoint}
-                clientName={order.clientName || client?.name || "Cliente KONEKTA"}
-                clientPhone={client?.phone}
+                clientName={order.clientName || "Cliente KONEKTA"}
+                clientPhone={order.clientPhone || ""}
                 orderTitle={order.service}
                 isProviderView={isProvider}
               />
@@ -675,16 +677,26 @@ function RequestOrOrderDetail() {
               </button>
             )}
 
-            {/* Botão de Disputa / Mediação */}
+            {/* Botão de Disputa / Cancelamento */}
             {!isFinished && (
-              <div className="pt-2 border-t border-border flex justify-end">
+              <div className="pt-3 border-t border-border flex flex-wrap items-center justify-between gap-2">
+                {!isProvider && order.status !== "cancelado" && (
+                  <button
+                    type="button"
+                    onClick={() => setIsCancelOpen(true)}
+                    className="text-xs font-bold text-destructive hover:text-destructive/80 flex items-center gap-1.5 transition py-1 px-2.5 rounded-lg bg-destructive/10 hover:bg-destructive/15"
+                  >
+                    <X size={13} />
+                    <span>Cancelar Serviço</span>
+                  </button>
+                )}
                 <button
                   type="button"
                   onClick={() => setIsDisputeOpen(true)}
-                  className="text-xs font-bold text-muted-foreground hover:text-destructive flex items-center gap-1.5 transition"
+                  className="text-xs font-bold text-muted-foreground hover:text-destructive flex items-center gap-1.5 transition ml-auto"
                 >
                   <ShieldAlert size={13} />
-                  <span>Precisa de ajuda ou abrir disputa?</span>
+                  <span>Ajuda ou Disputa</span>
                 </button>
               </div>
             )}
@@ -701,6 +713,18 @@ function RequestOrOrderDetail() {
             providerName={provider.name}
             serviceTitle={order.service}
             totalAmount={order.total}
+          />
+        )}
+
+        {/* MODAL DE CANCELAMENTO COM AVISO DE RISCOS */}
+        {isCancelOpen && (
+          <CancelServiceModal
+            open={isCancelOpen}
+            onClose={() => setIsCancelOpen(false)}
+            order={order}
+            onCancelled={() => {
+              setIsCancelOpen(false);
+            }}
           />
         )}
 
@@ -1032,7 +1056,7 @@ function RequestOrOrderDetail() {
             <Section title={`Propostas Recebidas (${visibleProposals.length})`}>
               {visibleProposals.length === 0 ? (
                 <EmptyState
-                  icon={<Sparkles size={22} />}
+                  icon={<Inbox size={22} />}
                   title="À espera de propostas"
                   description="Os prestadores da categoria foram notificados. As propostas de prestadores verificados aparecem aqui em poucos minutos."
                 />

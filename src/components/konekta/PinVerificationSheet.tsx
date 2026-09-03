@@ -4,7 +4,6 @@ import {
   CheckCircle2,
   AlertTriangle,
   Loader2,
-  Sparkles,
   Wallet,
   ArrowRight,
   Shield,

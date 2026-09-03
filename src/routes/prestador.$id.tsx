@@ -27,7 +27,6 @@ import {
   Phone,
   Compass,
   MapPin,
-  Sparkles,
   Layers,
   HelpCircle,
   Eye,

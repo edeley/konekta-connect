@@ -26,6 +26,7 @@ import { requestStatusLabel, timeAgo } from "@/lib/requests";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import { ReviewModal } from "@/components/konekta/ReviewModal";
+import { CancelServiceModal } from "@/components/konekta/CancelServiceModal";
 import { openNativeMap } from "@/lib/sync-manager";
 
 export const Route = createFileRoute("/pedidos")({
@@ -57,12 +58,17 @@ function OrdersPage() {
   const requests = useStore((s) => s.requests);
   const [tab, setTab] = useState<Tab>("Propostas");
   const [evaluatingOrder, setEvaluatingOrder] = useState<Order | null>(null);
+  const [cancellingOrder, setCancellingOrder] = useState<Order | null>(null);
   const [disputeOrder, setDisputeOrder] = useState<Order | null>(null);
   const [disputeReason, setDisputeReason] = useState("");
   const [receiptOrder, setReceiptOrder] = useState<Order | null>(null);
 
-  const active = orders.filter((o) => o.status !== "concluido" && o.status !== "avaliado");
-  const history = orders.filter((o) => o.status === "concluido" || o.status === "avaliado");
+  const active = orders.filter(
+    (o) => o.status !== "concluido" && o.status !== "avaliado" && o.status !== "cancelado",
+  );
+  const history = orders.filter(
+    (o) => o.status === "concluido" || o.status === "avaliado" || o.status === "cancelado",
+  );
   const openRequests = requests.filter((r) => r.status !== "fechado");
 
   function handleReleasePayment(order: Order) {
@@ -263,7 +269,7 @@ function OrdersPage() {
                           type="button"
                           onClick={() =>
                             openNativeMap({
-                              district: o.location || "São Tomé",
+                              district: o.district || o.location || "São Tomé",
                               title: o.service,
                             })
                           }
@@ -320,6 +326,14 @@ function OrdersPage() {
                             className="press flex h-10 flex-1 items-center justify-center gap-1.5 rounded-xl bg-emerald-600 text-white text-xs font-bold shadow-2xs hover:bg-emerald-700"
                           >
                             <CheckCircle2 size={14} /> Concluir & Liberar
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setCancellingOrder(o)}
+                            className="press h-10 px-3 rounded-xl bg-destructive/10 hover:bg-destructive/20 text-destructive text-xs font-bold flex items-center gap-1 transition"
+                            title="Cancelar Serviço com Aviso de Riscos"
+                          >
+                            <X size={14} /> Cancelar
                           </button>
                           <button
                             type="button"
@@ -384,6 +398,16 @@ function OrdersPage() {
           serviceName={evaluatingOrder.service}
           initialRating={evaluatingOrder.rating?.stars ?? 5}
           initialComment={evaluatingOrder.rating?.comment ?? ""}
+        />
+      )}
+
+      {/* Modal de Cancelamento de Serviço com Aviso de Riscos */}
+      {cancellingOrder && (
+        <CancelServiceModal
+          open={!!cancellingOrder}
+          onClose={() => setCancellingOrder(null)}
+          order={cancellingOrder}
+          onCancelled={() => setCancellingOrder(null)}
         />
       )}
 

@@ -1,4 +1,4 @@
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMemo, useState, useEffect } from "react";
 import {
   Bell,
@@ -19,15 +19,11 @@ import {
   ArrowRight,
   BadgeCheck,
   Check,
-  Camera,
   X,
   Navigation,
   ShieldCheck,
-  Lock,
   FileCheck2,
   Headphones,
-  Award,
-  Sparkles,
 } from "lucide-react";
 import { AppShell } from "@/components/AppShell";
 import { categories, providers } from "@/lib/konekta-data";
@@ -110,7 +106,6 @@ const STP_SEARCH_ROTATOR = [
 ];
 
 function Home() {
-  const navigate = useNavigate();
   const user = useStore((s) => s.user);
   const unread = useStore((s) => s.notifications.filter((n) => !n.read).length);
   const [query, setQuery] = useState("");
@@ -262,7 +257,7 @@ function Home() {
               />
             </div>
 
-            {query ? (
+            {query && (
               <button
                 type="button"
                 onClick={() => setQuery("")}
@@ -270,23 +265,6 @@ function Home() {
               >
                 Limpar
               </button>
-            ) : (
-              <div className="flex items-center gap-1.5 shrink-0">
-                <Link
-                  to="/novo-pedido"
-                  className="size-8 rounded-lg bg-muted hover:bg-muted/80 text-foreground flex items-center justify-center transition cursor-pointer border border-border"
-                  title="Publicar pedido com foto"
-                >
-                  <Camera size={15} className="text-primary" />
-                </Link>
-                <button
-                  type="button"
-                  onClick={() => navigate({ to: "/categorias" })}
-                  className="text-[11px] font-bold text-primary px-3 py-1.5 rounded-lg bg-accent hover:bg-accent/80 transition cursor-pointer"
-                >
-                  Especialidades
-                </button>
-              </div>
             )}
           </div>
 
@@ -503,50 +481,7 @@ function Home() {
       ) : (
         /* HOME PRINCIPAL ELEVADA */
         <main className="space-y-6 pt-5">
-          {/* ================= 1. PILARES DE SEGURANÇA E CUSTÓDIA KONEKTA ================= */}
-          <section className="px-4 sm:px-6">
-            <div className="rounded-xl border border-border bg-card p-3.5 shadow-xs">
-              <div className="grid grid-cols-3 divide-x divide-border text-center">
-                <div className="px-2 space-y-1">
-                  <div className="flex justify-center text-primary">
-                    <ShieldCheck size={18} />
-                  </div>
-                  <h4 className="text-[11px] font-bold text-foreground leading-tight">
-                    Profissionais Verificados
-                  </h4>
-                  <p className="text-[10px] text-muted-foreground">
-                    BI STP, NIF e competência validados
-                  </p>
-                </div>
-
-                <div className="px-2 space-y-1">
-                  <div className="flex justify-center text-primary">
-                    <Lock size={18} />
-                  </div>
-                  <h4 className="text-[11px] font-bold text-foreground leading-tight">
-                    Custódia Financeira
-                  </h4>
-                  <p className="text-[10px] text-muted-foreground">
-                    Liberação do valor apenas por PIN
-                  </p>
-                </div>
-
-                <div className="px-2 space-y-1">
-                  <div className="flex justify-center text-primary">
-                    <Award size={18} />
-                  </div>
-                  <h4 className="text-[11px] font-bold text-foreground leading-tight">
-                    Garantia Técnica
-                  </h4>
-                  <p className="text-[10px] text-muted-foreground">
-                    Proteção de 30 dias pós-serviço
-                  </p>
-                </div>
-              </div>
-            </div>
-          </section>
-
-          {/* ================= 2. ESPECIALIDADES EM GRADE ================= */}
+          {/* ================= ESPECIALIDADES EM GRADE ================= */}
           <section className="px-4 sm:px-6">
             <div className="flex items-center justify-between mb-3">
               <div>

@@ -4,7 +4,6 @@ import {
   CheckCircle2,
   FileText,
   Lock,
-  Sparkles,
   ChevronRight,
   KeyRound,
   Check,
@@ -73,7 +72,7 @@ export function ChatDynamicStatus({
           <div className="flex items-center gap-2 min-w-0">
             {phase === "negotiating" && (
               <div className="size-7 rounded-xl bg-sky-500/15 text-sky-600 dark:text-sky-400 grid place-items-center shrink-0">
-                <Sparkles size={14} />
+                <Clock size={14} />
               </div>
             )}
             {phase === "quote_pending" && (

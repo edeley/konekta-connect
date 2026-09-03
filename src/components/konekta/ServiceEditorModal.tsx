@@ -14,7 +14,6 @@ import {
   FileText,
   AlertCircle,
   HelpCircle,
-  Sparkles,
   Info,
   ShieldCheck,
 } from "lucide-react";
@@ -323,7 +322,7 @@ export function ServiceEditorModal({
           {/* 3. Formulário Dinâmico Específico por Modelo */}
           <div className="p-4 rounded-2xl bg-emerald-50/50 dark:bg-emerald-950/20 border border-emerald-500/20 space-y-4">
             <div className="flex items-center gap-2 text-xs font-bold text-emerald-800 dark:text-emerald-300">
-              <Sparkles size={15} />
+              <CheckCircle2 size={15} />
               <span>Configuração do modelo: {currentMeta.label}</span>
             </div>
 

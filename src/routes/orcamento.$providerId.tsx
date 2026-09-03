@@ -16,6 +16,7 @@ import {
   Clock,
   AlertTriangle,
   Image as ImageIcon,
+  ExternalLink,
 } from "lucide-react";
 import { AppShell } from "@/components/AppShell";
 import { CameraCaptureModal } from "@/components/CameraCaptureModal";
@@ -570,10 +571,10 @@ function RequestQuotePage() {
                 {/* 1. Ícone Circular Tracejado com Câmera para TIRAR FOTO */}
                 <button
                   type="button"
-                  onClick={handleOpenCamera}
+                  onClick={handleOpenNativeCamera}
                   className="size-20 rounded-full border-2 border-dashed border-primary/70 hover:border-primary bg-primary/5 hover:bg-primary/10 flex flex-col items-center justify-center gap-0.5 text-primary transition active:scale-95 group shrink-0 shadow-2xs cursor-pointer"
-                  aria-label="Tirar foto com a câmara do telemóvel"
-                  title="Tirar foto com a câmara"
+                  aria-label="Tirar foto com a câmara nativa do telemóvel"
+                  title="Tirar foto com a câmara nativa"
                 >
                   <Camera
                     size={26}

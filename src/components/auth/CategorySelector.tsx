@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { ArrowLeft, Check, Plus, Sparkles, X } from "lucide-react";
+import { ArrowLeft, Check, Plus, X } from "lucide-react";
 import { BottomSheet } from "@/components/konekta/kit";
 import {
   PRICING_LABELS,
@@ -220,7 +220,7 @@ export function CategorySelector({
               ))}
               <div className="rounded-xl border border-dashed border-primary/50 bg-accent/40 p-3">
                 <p className="flex items-center gap-1.5 text-xs font-bold text-primary">
-                  <Sparkles size={14} aria-hidden="true" /> Outro — escreva a sua área
+                  <Plus size={14} aria-hidden="true" /> Outro — escreva a sua área
                 </p>
                 <input
                   value={customCat}
@@ -264,7 +264,7 @@ export function CategorySelector({
               ))}
               <div className="rounded-xl border border-dashed border-primary/50 bg-accent/40 p-3">
                 <p className="flex items-center gap-1.5 text-xs font-bold text-primary">
-                  <Sparkles size={14} aria-hidden="true" /> Outro — escreva a subcategoria
+                  <Plus size={14} aria-hidden="true" /> Outro — escreva a subcategoria
                 </p>
                 <input
                   value={customSub}
@@ -332,7 +332,7 @@ export function CategorySelector({
 
               <div className="rounded-xl border border-dashed border-primary/50 bg-accent/40 p-3">
                 <p className="flex items-center gap-1.5 text-xs font-bold text-primary">
-                  <Sparkles size={14} aria-hidden="true" /> Outro — escreva o serviço que faz
+                  <Plus size={14} aria-hidden="true" /> Outro — escreva o serviço que faz
                 </p>
                 <input
                   value={customServ}

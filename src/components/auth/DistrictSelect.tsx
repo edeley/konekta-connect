@@ -82,7 +82,7 @@ export function DistrictSelect(props: SingleProps | MultiProps) {
       </label>
       <select
         id={id}
-        value={props.value}
+        value={props.value ?? ""}
         aria-invalid={!!error}
         onChange={(e) => props.onChange(e.target.value)}
         className={cn(

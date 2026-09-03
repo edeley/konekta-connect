@@ -61,9 +61,9 @@ export function ReviewModal({
   onSuccess,
 }: ReviewModalProps) {
   const user = useStore((s) => s.user);
-  const [stars, setStars] = useState<number>(initialRating);
+  const [stars, setStars] = useState<number>(initialRating || 5);
   const [hoveredStars, setHoveredStars] = useState<number | null>(null);
-  const [comment, setComment] = useState(initialComment);
+  const [comment, setComment] = useState(initialComment || "");
   const [selectedTags, setSelectedTags] = useState<string[]>(["Pontualidade", "Trabalho Limpo"]);
   const [recommended, setRecommended] = useState<boolean>(true);
   const [reviewPhotos, setReviewPhotos] = useState<string[]>([]);

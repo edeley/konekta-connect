@@ -1,15 +1,5 @@
 import { useState } from "react";
-import {
-  Calendar,
-  Clock,
-  Check,
-  Copy,
-  Plus,
-  Trash2,
-  Sparkles,
-  CheckCircle2,
-  Moon,
-} from "lucide-react";
+import { Calendar, Clock, Check, Copy, Plus, Trash2, CheckCircle2, Moon } from "lucide-react";
 import { type ProviderWeeklySchedule, DEFAULT_WEEKLY_SCHEDULE } from "@/types/provider-profile";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
