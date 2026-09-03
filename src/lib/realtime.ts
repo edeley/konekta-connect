@@ -46,7 +46,7 @@ class RealtimeSound {
     }
   }
 
-  play(tone: "message" | "quote" | "status" | "pop") {
+  play(tone: "message" | "quote" | "status" | "pop" | "coin" | "notification" | "pin_error" | "pin_success") {
     const ctx = this.getContext();
     if (!ctx) return;
 
@@ -58,7 +58,7 @@ class RealtimeSound {
       osc.connect(gain);
       gain.connect(ctx.destination);
 
-      if (tone === "message") {
+      if (tone === "message" || tone === "notification") {
         // Dois tons rápidos agradáveis (587Hz -> 880Hz)
         osc.type = "sine";
         osc.frequency.setValueAtTime(587.33, now); // D5
@@ -67,7 +67,7 @@ class RealtimeSound {
         gain.gain.exponentialRampToValueAtTime(0.001, now + 0.22);
         osc.start(now);
         osc.stop(now + 0.22);
-      } else if (tone === "quote") {
+      } else if (tone === "quote" || tone === "coin" || tone === "pin_success") {
         // Acorde alegre ascendente para proposta/orçamento
         osc.type = "triangle";
         osc.frequency.setValueAtTime(523.25, now); // C5
@@ -77,7 +77,7 @@ class RealtimeSound {
         gain.gain.exponentialRampToValueAtTime(0.001, now + 0.35);
         osc.start(now);
         osc.stop(now + 0.35);
-      } else if (tone === "status") {
+      } else if (tone === "status" || tone === "pin_error") {
         // Som sutil de confirmação
         osc.type = "sine";
         osc.frequency.setValueAtTime(440, now);

@@ -431,6 +431,7 @@ export type TechnicalVisit = {
   cashConfirmedByClient?: boolean;
   cashConfirmedAt?: number;
   cashReceiptDisputed?: boolean;
+  cashDisputeReason?: string;
 };
 
 export type ModerationDispute = {
@@ -1737,7 +1738,7 @@ export const store = {
     notify({
       title: "Serviço iniciado",
       body: `${order.id} — O profissional iniciou o serviço no local.`,
-      tone: "primary",
+      tone: "info",
       link: `/pedido/${order.id}`,
     });
     realtimeAudio.play("pop");
@@ -2048,7 +2049,7 @@ export const store = {
     const startFetch = async () => {
       let replyText = "";
       try {
-        if (typeof window !== "undefined" && window.fetch) {
+        if (typeof window !== "undefined" && typeof window.fetch === "function") {
           const res = await fetch("/api/chat", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
@@ -2145,7 +2146,7 @@ export const store = {
     const startPhotoDiagnosis = async () => {
       let replyText = "";
       try {
-        if (typeof window !== "undefined" && window.fetch) {
+        if (typeof window !== "undefined" && typeof window.fetch === "function") {
           const res = await fetch("/api/chat", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
@@ -2766,8 +2767,8 @@ export const store = {
     const deduct = input.deductVisitFee ?? visit.deductVisitFeeOnService ?? true;
     const visitFee = visit.visitFee || 150;
     const breakdown = calculateFinalServiceCharge({
-      totalServiceAmount: input.declaredAmount,
-      visitFeePaidInEscrow: visitFee,
+      serviceGrossAmount: input.declaredAmount,
+      visitFeePaid: visitFee,
       deductVisitFee: deduct,
     });
 
@@ -2780,8 +2781,8 @@ export const store = {
               declaredAmountByProvider: input.declaredAmount,
               diagnosticReport: input.diagnosticReport,
               deductVisitFeeOnService: deduct,
-              visitFeeDeductedAmount: breakdown.visitFeeDeduction,
-              finalComplementToPay: breakdown.complementToPay,
+              visitFeeDeductedAmount: breakdown.visitFeeDeducted,
+              finalComplementToPay: breakdown.finalComplementToPay,
             }
           : v,
       ),
@@ -2791,7 +2792,7 @@ export const store = {
     const chatMsg: Message = {
       id: `m_vis_diag_${Date.now()}`,
       from: "them",
-      text: `📋 Proposta de Orçamento no Terreno: ${input.declaredAmount} Db.\n${input.diagnosticReport ? `Diagnóstico: "${input.diagnosticReport}"\n` : ""}${deduct ? `Taxa de visita (${visitFee} Db) já retida é abatida. Valor complementar a pagar: ${breakdown.complementToPay} Db.` : `Valor total a pagar: ${input.declaredAmount} Db.`}\n\nAguardando validação do cliente na app.`,
+      text: `📋 Proposta de Orçamento no Terreno: ${input.declaredAmount} Db.\n${input.diagnosticReport ? `Diagnóstico: "${input.diagnosticReport}"\n` : ""}${deduct ? `Taxa de visita (${visitFee} Db) já retida é abatida. Valor complementar a pagar: ${breakdown.finalComplementToPay} Db.` : `Valor total a pagar: ${input.declaredAmount} Db.`}\n\nAguardando validação do cliente na app.`,
       at: Date.now(),
       status: "sent",
       kind: "system",
@@ -2842,8 +2843,8 @@ export const store = {
     // Caso 1: Cliente confirma que o valor do prestador está correto
     if (input.agreed) {
       const breakdown = calculateFinalServiceCharge({
-        totalServiceAmount: providerAmount,
-        visitFeePaidInEscrow: visitFee,
+        serviceGrossAmount: providerAmount,
+        visitFeePaid: visitFee,
         deductVisitFee: deduct,
       });
 
@@ -2855,8 +2856,8 @@ export const store = {
                 status: "visita_paga_e_aprovada",
                 finalAgreedAmount: providerAmount,
                 declaredAmountByClient: providerAmount,
-                visitFeeDeductedAmount: breakdown.visitFeeDeduction,
-                finalComplementToPay: breakdown.complementToPay,
+                visitFeeDeductedAmount: breakdown.visitFeeDeducted,
+                finalComplementToPay: breakdown.finalComplementToPay,
               }
             : v,
         ),
@@ -2866,7 +2867,7 @@ export const store = {
       const chatMsg: Message = {
         id: `m_vis_val_${Date.now()}`,
         from: "me",
-        text: `✅ Orçamento presencial de ${providerAmount} Db confirmado e aprovado pelo cliente!${deduct ? ` Taxa de visita (${visitFee} Db) abatida com sucesso. Valor complementar: ${breakdown.complementToPay} Db retido em custódia.` : " Valor retido em custódia segura KONEKTA."}`,
+        text: `✅ Orçamento presencial de ${providerAmount} Db confirmado e aprovado pelo cliente!${deduct ? ` Taxa de visita (${visitFee} Db) abatida com sucesso. Valor complementar: ${breakdown.finalComplementToPay} Db retido em custódia.` : " Valor retido em custódia segura KONEKTA."}`,
         at: Date.now(),
         status: "sent",
         kind: "system",
@@ -2905,8 +2906,8 @@ export const store = {
       // Auto-validação algorítmica (adota o valor do cliente)
       const agreedAmount = evalResult.adoptedAmount;
       const breakdown = calculateFinalServiceCharge({
-        totalServiceAmount: agreedAmount,
-        visitFeePaidInEscrow: visitFee,
+        serviceGrossAmount: agreedAmount,
+        visitFeePaid: visitFee,
         deductVisitFee: deduct,
       });
 
@@ -2918,10 +2919,10 @@ export const store = {
                 status: "visita_paga_e_aprovada",
                 finalAgreedAmount: agreedAmount,
                 declaredAmountByClient: clientAmount,
-                divergencePercent: evalResult.divergencePercent,
+                divergencePercent: evalResult.variationPct,
                 divergenceTier: evalResult.tier,
-                visitFeeDeductedAmount: breakdown.visitFeeDeduction,
-                finalComplementToPay: breakdown.complementToPay,
+                visitFeeDeductedAmount: breakdown.visitFeeDeducted,
+                finalComplementToPay: breakdown.finalComplementToPay,
               }
             : v,
         ),
@@ -2931,7 +2932,7 @@ export const store = {
       const chatMsg: Message = {
         id: `m_vis_alg_${Date.now()}`,
         from: "me",
-        text: `⚖️ ${evalResult.message}\nValor adotado: ${agreedAmount} Db.${deduct ? ` Taxa de visita (${visitFee} Db) abatida. Valor complementar: ${breakdown.complementToPay} Db.` : ""}`,
+        text: `⚖️ ${evalResult.actionSummary}\nValor adotado: ${agreedAmount} Db.${deduct ? ` Taxa de visita (${visitFee} Db) abatida. Valor complementar: ${breakdown.finalComplementToPay} Db.` : ""}`,
         at: Date.now(),
         status: "sent",
         kind: "system",
@@ -2946,14 +2947,14 @@ export const store = {
 
       notify({
         title: "Validação Algorítmica Aprovada",
-        body: evalResult.message,
+        body: evalResult.actionSummary,
         tone: "info",
         link: `/chat/${visit.providerId}`,
       });
 
       return {
         ok: true,
-        message: evalResult.message,
+        message: evalResult.actionSummary,
         result: evalResult,
       };
     }
@@ -2965,7 +2966,7 @@ export const store = {
     const newDispute: ModerationDispute = {
       id: disputeId,
       visitId: input.visitId,
-      category: benchmark.name,
+      category: benchmark.categoryName,
       serviceTitle: visit.serviceTitle,
       district: visit.district,
       createdAt: Date.now(),
@@ -2987,16 +2988,16 @@ export const store = {
         providerDeclaredAmount: providerAmount,
         clientDeclaredAmount: clientAmount,
         divergenceAmount: Math.abs(providerAmount - clientAmount),
-        divergencePercent: evalResult.divergencePercent,
+        divergencePercent: evalResult.variationPct,
       },
       marketBenchmark: {
-        categoryName: benchmark.name,
+        categoryName: benchmark.categoryName,
         minPrice: benchmark.minPrice,
         avgPrice: benchmark.avgPrice,
         maxPrice: benchmark.maxPrice,
         isClientWithinAverage:
           clientAmount >= benchmark.minPrice && clientAmount <= benchmark.maxPrice,
-        analysisVerdict: `Divergência de ${evalResult.divergencePercent}% excede a margem de segurança de 40%. Valor do prestador: ${providerAmount} Db. Valor do cliente: ${clientAmount} Db. Média de mercado STP: ${benchmark.avgPrice} Db.`,
+        analysisVerdict: `Divergência de ${evalResult.variationPct}% excede a margem de segurança de 40%. Valor do prestador: ${providerAmount} Db. Valor do cliente: ${clientAmount} Db. Média de mercado STP: ${benchmark.avgPrice} Db.`,
       },
       evidences: {
         chatTranscript: (state.messages[visit.providerId] || []).slice(-6).map((m) => ({
@@ -3023,7 +3024,7 @@ export const store = {
               ...v,
               status: "em_moderacao",
               declaredAmountByClient: clientAmount,
-              divergencePercent: evalResult.divergencePercent,
+              divergencePercent: evalResult.variationPct,
               divergenceTier: "tier_3_moderation",
               moderationCaseId: disputeId,
             }
@@ -3036,7 +3037,7 @@ export const store = {
     const chatMsg: Message = {
       id: `m_vis_mod_${Date.now()}`,
       from: "me",
-      text: `🚨 Divergência Crítica de Preço (${evalResult.divergencePercent}%):\nPrestador declarou: ${providerAmount} Db\nCliente informou: ${clientAmount} Db\n\nO pedido foi congelado em custódia e encaminhado para o Painel de Moderação KONEKTA (Protocolo ${disputeId}). A equipa de suporte analisará os registos em até 2h.`,
+      text: `🚨 Divergência Crítica de Preço (${evalResult.variationPct}%):\nPrestador declarou: ${providerAmount} Db\nCliente informou: ${clientAmount} Db\n\nO pedido foi congelado em custódia e encaminhado para o Painel de Moderação KONEKTA (Protocolo ${disputeId}). A equipa de suporte analisará os registos em até 2h.`,
       at: Date.now(),
       status: "sent",
       kind: "system",
@@ -3051,14 +3052,14 @@ export const store = {
 
     notify({
       title: "⚠️ Pedido Encaminhado para Moderação",
-      body: `Divergência de ${evalResult.divergencePercent}% entre os valores declarados. Fundos congelados com segurança.`,
+      body: `Divergência de ${evalResult.variationPct}% entre os valores declarados. Fundos congelados com segurança.`,
       tone: "error",
       link: `/chat/${visit.providerId}`,
     });
 
     return {
       ok: true,
-      message: `Divergência de ${evalResult.divergencePercent}% encaminhada para moderação administrativa.`,
+      message: `Divergência de ${evalResult.variationPct}% encaminhada para moderação administrativa.`,
       result: evalResult,
     };
   },
@@ -3421,7 +3422,8 @@ export const store = {
     };
 
     // Cria mensagem interativa no chat
-    const prev = state.messages[input.providerId] ?? [];
+    const providerKey = input.providerId ?? "suporte";
+    const prev = state.messages[providerKey] ?? [];
     const declMsg: Message = {
       id: `m_dec_${Date.now()}`,
       from: "them",
@@ -3450,7 +3452,7 @@ export const store = {
       technicalVisits: updatedVisits,
       messages: {
         ...state.messages,
-        [input.providerId]: [...prev, declMsg],
+        [providerKey]: [...prev, declMsg],
       },
     });
 
@@ -3895,8 +3897,8 @@ export const store = {
       userPhone: input.userPhone || state.user?.phone || "+239 9918273",
       amount: input.amount,
       method: input.method,
-      bankOrProviderName: input.bankOrProviderName,
-      referenceOrPhone: input.referenceOrPhone,
+      bankOrProviderName: input.bankOrProviderName ?? "",
+      referenceOrPhone: input.referenceOrPhone ?? "",
       proofImage: input.proofImage,
       notes: input.notes,
       status: "pendente_aprovacao",

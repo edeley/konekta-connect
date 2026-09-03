@@ -40,6 +40,8 @@ export type ServiceItemDetail = {
   unit?: string; // "serviço", "hora", "visita", "projeto"
   duration?: string;
   description?: string;
+  /** Taxa de deslocação cobrada pelo prestador (Db), quando aplicável. */
+  travelFeeAmount?: number;
 };
 
 export type Provider = {
@@ -52,6 +54,9 @@ export type Provider = {
   image: string;
   bio: string;
   services: string[];
+  categorySlug?: string;
+  district?: string;
+  reviewsCount?: number;
   detailedServices?: ServiceItemDetail[];
   portfolio?: PortfolioItem[];
 };
@@ -663,6 +668,7 @@ export const statusLabel: Record<OrderStatus, string> = {
   "aguardando-codigo": "Aguardando Código",
   concluido: "Concluído",
   avaliado: "Avaliado",
+  cancelado: "Cancelado",
 };
 
 export function getProvider(id: string) {

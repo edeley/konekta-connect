@@ -35,6 +35,7 @@ import { Route as TornarPrestadorRouteImport } from './routes/tornar-prestador'
 import { Route as VerifyOtpRouteImport } from './routes/verify-otp'
 import { Route as Char91DotmcpChar93ListToolsRouteImport } from './routes/[.mcp]/list-tools'
 import { Route as Char91DotwellKnownChar93OauthProtectedResourceRouteImport } from './routes/[.well-known]/oauth-protected-resource'
+import { Route as ApiChatRouteImport } from './routes/api.chat'
 import { Route as CategoriasIndexRouteImport } from './routes/categorias.index'
 import { Route as CategoriasSlugRouteImport } from './routes/categorias.$slug'
 import { Route as ChatIndexRouteImport } from './routes/chat.index'
@@ -181,6 +182,11 @@ const Char91DotwellKnownChar93OauthProtectedResourceRoute =
     path: '/.well-known/oauth-protected-resource',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiChatRoute = ApiChatRouteImport.update({
+  id: '/api/chat',
+  path: '/api/chat',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const CategoriasIndexRoute = CategoriasIndexRouteImport.update({
   id: '/categorias/',
   path: '/categorias/',
@@ -275,6 +281,7 @@ export interface FileRoutesByFullPath {
   '/verify-otp': typeof VerifyOtpRoute
   '/.mcp/list-tools': typeof Char91DotmcpChar93ListToolsRoute
   '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
+  '/api/chat': typeof ApiChatRoute
   '/categorias/$slug': typeof CategoriasSlugRoute
   '/chat/$id': typeof ChatIdRoute
   '/orcamento/$providerId': typeof OrcamentoProviderIdRoute
@@ -316,6 +323,7 @@ export interface FileRoutesByTo {
   '/verify-otp': typeof VerifyOtpRoute
   '/.mcp/list-tools': typeof Char91DotmcpChar93ListToolsRoute
   '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
+  '/api/chat': typeof ApiChatRoute
   '/categorias/$slug': typeof CategoriasSlugRoute
   '/chat/$id': typeof ChatIdRoute
   '/orcamento/$providerId': typeof OrcamentoProviderIdRoute
@@ -358,6 +366,7 @@ export interface FileRoutesById {
   '/verify-otp': typeof VerifyOtpRoute
   '/.mcp/list-tools': typeof Char91DotmcpChar93ListToolsRoute
   '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
+  '/api/chat': typeof ApiChatRoute
   '/categorias/$slug': typeof CategoriasSlugRoute
   '/chat/$id': typeof ChatIdRoute
   '/orcamento/$providerId': typeof OrcamentoProviderIdRoute
@@ -401,6 +410,7 @@ export interface FileRouteTypes {
     | '/verify-otp'
     | '/.mcp/list-tools'
     | '/.well-known/oauth-protected-resource'
+    | '/api/chat'
     | '/categorias/$slug'
     | '/chat/$id'
     | '/orcamento/$providerId'
@@ -442,6 +452,7 @@ export interface FileRouteTypes {
     | '/verify-otp'
     | '/.mcp/list-tools'
     | '/.well-known/oauth-protected-resource'
+    | '/api/chat'
     | '/categorias/$slug'
     | '/chat/$id'
     | '/orcamento/$providerId'
@@ -483,6 +494,7 @@ export interface FileRouteTypes {
     | '/verify-otp'
     | '/.mcp/list-tools'
     | '/.well-known/oauth-protected-resource'
+    | '/api/chat'
     | '/categorias/$slug'
     | '/chat/$id'
     | '/orcamento/$providerId'
@@ -525,6 +537,7 @@ export interface RootRouteChildren {
   VerifyOtpRoute: typeof VerifyOtpRoute
   Char91DotmcpChar93ListToolsRoute: typeof Char91DotmcpChar93ListToolsRoute
   Char91DotwellKnownChar93OauthProtectedResourceRoute: typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
+  ApiChatRoute: typeof ApiChatRoute
   CategoriasSlugRoute: typeof CategoriasSlugRoute
   ChatIdRoute: typeof ChatIdRoute
   OrcamentoProviderIdRoute: typeof OrcamentoProviderIdRoute
@@ -724,6 +737,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof Char91DotwellKnownChar93OauthProtectedResourceRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/chat': {
+      id: '/api/chat'
+      path: '/api/chat'
+      fullPath: '/api/chat'
+      preLoaderRoute: typeof ApiChatRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/categorias/': {
       id: '/categorias/'
       path: '/categorias'
@@ -846,6 +866,7 @@ const rootRouteChildren: RootRouteChildren = {
   Char91DotmcpChar93ListToolsRoute: Char91DotmcpChar93ListToolsRoute,
   Char91DotwellKnownChar93OauthProtectedResourceRoute:
     Char91DotwellKnownChar93OauthProtectedResourceRoute,
+  ApiChatRoute: ApiChatRoute,
   CategoriasSlugRoute: CategoriasSlugRoute,
   ChatIdRoute: ChatIdRoute,
   OrcamentoProviderIdRoute: OrcamentoProviderIdRoute,
