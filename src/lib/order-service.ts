@@ -223,7 +223,7 @@ export const OrderService = {
     store.notify({
       title: "Prestador a Caminho",
       body: `O profissional iniciou a deslocação para o seu endereço em São Tomé.`,
-      tone: "primary",
+      tone: "info",
       link: `/pedido/${orderId}`,
     });
 
