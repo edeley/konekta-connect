@@ -76,13 +76,19 @@ export function KCard({
   children,
   className,
   as = "div",
+  id,
 }: {
   children: ReactNode;
   className?: string;
   as?: "div" | "li";
+  id?: string;
 }) {
   const Tag = as;
-  return <Tag className={cn("rounded-2xl bg-card p-4 shadow-soft", className)}>{children}</Tag>;
+  return (
+    <Tag id={id} className={cn("rounded-2xl bg-card p-4 shadow-soft", className)}>
+      {children}
+    </Tag>
+  );
 }
 
 /* --------------------------------- Feedback -------------------------------- */
@@ -304,18 +310,20 @@ export function ProgressSteps({ step, total }: { step: number; total: number }) 
 
 export function BottomSheet({
   open,
+  isOpen,
   onClose,
   title,
   description,
   children,
 }: {
-  open: boolean;
+  open?: boolean;
+  isOpen?: boolean;
   onClose: () => void;
   title?: string;
   description?: string;
   children: ReactNode;
 }) {
-  if (!open) return null;
+  if (!(open ?? isOpen)) return null;
   return (
     <div className="fixed inset-0 z-[60] flex items-end justify-center">
       <button
