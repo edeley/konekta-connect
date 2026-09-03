@@ -431,6 +431,7 @@ export type TechnicalVisit = {
   cashConfirmedByClient?: boolean;
   cashConfirmedAt?: number;
   cashReceiptDisputed?: boolean;
+  cashDisputeReason?: string;
 };
 
 export type ModerationDispute = {

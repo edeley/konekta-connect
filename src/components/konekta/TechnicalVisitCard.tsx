@@ -78,7 +78,7 @@ export function TechnicalVisitCard({ visit, providerId }: TechnicalVisitCardProp
       toast.error("Insira um breve diagnóstico técnico das condições do local.");
       return;
     }
-    const res = store.providerDeclareVisitBudget(visit.id, val, reportInput);
+    const res = store.providerDeclareOnSiteBudget({ visitId: visit.id, declaredAmount: val, diagnosticReport: reportInput });
     if (res.ok) {
       toast.success("Orçamento Presencial Enviado", {
         description: res.message,
@@ -91,7 +91,7 @@ export function TechnicalVisitCard({ visit, providerId }: TechnicalVisitCardProp
 
   function handleClientConfirmBudget(agreed: boolean) {
     if (agreed) {
-      const res = store.clientConfirmVisitBudget(visit.id, true);
+      const res = store.clientValidateOnSiteBudget({ visitId: visit.id, agreed: true });
       if (res.ok) {
         toast.success("Orçamento Confirmado!", {
           description: res.message,
@@ -110,9 +110,9 @@ export function TechnicalVisitCard({ visit, providerId }: TechnicalVisitCardProp
       toast.error("Insira o valor real combinado presencialmente.");
       return;
     }
-    const res = store.clientConfirmVisitBudget(visit.id, false, val, clientReason);
+    const res = store.clientValidateOnSiteBudget({ visitId: visit.id, agreed: false, clientAmount: val, notes: clientReason });
     if (res.ok) {
-      if (res.resultLevel === "level_3") {
+      if (res.result?.tier === "tier_3_moderation") {
         toast.warning("Divergência em Moderação", {
           description: res.message,
         });
@@ -132,8 +132,8 @@ export function TechnicalVisitCard({ visit, providerId }: TechnicalVisitCardProp
       toast.error("Insira o código OTP de 4 dígitos gerado no telemóvel do cliente.");
       return;
     }
-    const amount = visit.finalAgreedAmount || visit.providerDeclaredAmount || 500;
-    const res = store.declareCashPaymentWithOtp(visit.id, amount, otpInput.trim());
+    const amount = visit.finalAgreedAmount || visit.declaredAmountByProvider || 500;
+    const res = store.declareInPersonCashPayment({ visitId: visit.id, providerId: visit.providerId, providerName: visit.providerName, clientId: visit.clientId, clientName: visit.clientName, serviceTitle: visit.serviceTitle, declaredAmount: amount, notes: `OTP ${otpInput.trim()}` });
     if (res.ok) {
       toast.success("Pagamento em Dinheiro Validado!", {
         description: res.message,
@@ -149,7 +149,7 @@ export function TechnicalVisitCard({ visit, providerId }: TechnicalVisitCardProp
       toast.error("Por favor descreva o motivo da contestação.");
       return;
     }
-    const res = store.contestCashReceipt(visit.id, contestReason);
+    const res = store.clientDisputeCashReceipt(visit.id, contestReason);
     if (res.ok) {
       toast.success("Contestação Enviada", {
         description: res.message,
@@ -334,7 +334,7 @@ export function TechnicalVisitCard({ visit, providerId }: TechnicalVisitCardProp
                 Valor Declarado pelo Técnico:
               </span>
               <strong className="text-base text-zinc-950 dark:text-white">
-                {formatDb(visit.providerDeclaredAmount || 0)}
+                {formatDb(visit.declaredAmountByProvider || 0)}
               </strong>
             </div>
             {visit.diagnosticReport && (
@@ -348,7 +348,7 @@ export function TechnicalVisitCard({ visit, providerId }: TechnicalVisitCardProp
             <div className="mt-4">
               <p className="text-xs font-medium text-zinc-800 dark:text-zinc-200">
                 O prestador informou que o valor combinado para a execução completa é de{" "}
-                <strong>{formatDb(visit.providerDeclaredAmount || 0)}</strong>. Este valor está
+                <strong>{formatDb(visit.declaredAmountByProvider || 0)}</strong>. Este valor está
                 correto?
               </p>
               <div className="mt-3 flex flex-wrap gap-2">
@@ -356,7 +356,7 @@ export function TechnicalVisitCard({ visit, providerId }: TechnicalVisitCardProp
                   onClick={() => handleClientConfirmBudget(true)}
                   className="flex-1 rounded-xl bg-emerald-600 px-4 py-2.5 text-xs font-bold text-white shadow hover:bg-emerald-700"
                 >
-                  ✓ Sim, está correto ({formatDb(visit.providerDeclaredAmount || 0)})
+                  ✓ Sim, está correto ({formatDb(visit.declaredAmountByProvider || 0)})
                 </button>
                 <button
                   onClick={() => handleClientConfirmBudget(false)}
@@ -384,13 +384,13 @@ export function TechnicalVisitCard({ visit, providerId }: TechnicalVisitCardProp
           </div>
           <p className="mt-1.5 text-amber-800 dark:text-amber-300">
             O valor informado pelo cliente (
-            <strong>{formatDb(visit.clientDeclaredAmount || 0)}</strong>) diverge do informado pelo
-            prestador (<strong>{formatDb(visit.providerDeclaredAmount || 0)}</strong>) em{" "}
-            <strong>{visit.divergencePct}%</strong>. A equipe de suporte está avaliando o caso com
+            <strong>{formatDb(visit.declaredAmountByClient || 0)}</strong>) diverge do informado pelo
+            prestador (<strong>{formatDb(visit.declaredAmountByProvider || 0)}</strong>) em{" "}
+            <strong>{visit.divergencePercent}%</strong>. A equipe de suporte está avaliando o caso com
             base no histórico e evidências.
           </p>
           <div className="mt-3 flex items-center gap-2 text-[11px] font-semibold text-amber-900 dark:text-amber-200">
-            <span>ID da Disputa: {visit.disputeId || "DISP-8492"}</span>
+            <span>ID da Disputa: {visit.moderationCaseId || "DISP-8492"}</span>
             <span>•</span>
             <span>Status: Congelado para Proteção de Ambos</span>
           </div>
@@ -405,7 +405,7 @@ export function TechnicalVisitCard({ visit, providerId }: TechnicalVisitCardProp
               <CheckCircle2 className="h-4 w-4 text-emerald-600" />
               <span className="font-bold text-emerald-900 dark:text-emerald-200">
                 Orçamento Validado:{" "}
-                {formatDb(visit.finalAgreedAmount || visit.providerDeclaredAmount || 0)}
+                {formatDb(visit.finalAgreedAmount || visit.declaredAmountByProvider || 0)}
               </span>
             </div>
             <span className="text-[11px] font-semibold text-emerald-700 dark:text-emerald-300">
@@ -431,7 +431,7 @@ export function TechnicalVisitCard({ visit, providerId }: TechnicalVisitCardProp
                     Seu Código de Validação OTP para entregar ao técnico:
                   </div>
                   <div className="mt-0.5 text-lg font-mono font-bold tracking-widest text-emerald-900 dark:text-emerald-200">
-                    {showOtp ? visit.completionOtp || "8492" : "••••"}
+                    {showOtp ? visit.cashOtp || "8492" : "••••"}
                   </div>
                 </div>
                 <button
@@ -474,9 +474,9 @@ export function TechnicalVisitCard({ visit, providerId }: TechnicalVisitCardProp
             </span>
           </div>
 
-          {visit.cashReceiptContested ? (
+          {visit.cashReceiptDisputed ? (
             <div className="mt-2 rounded-lg bg-amber-50 p-2 text-amber-800 dark:bg-amber-950/60 dark:text-amber-300">
-              ⚠️ Recibo contestado pelo cliente: "{visit.cashContestReason}" (Em análise pelo
+              ⚠️ Recibo contestado pelo cliente: "{visit.cashDisputeReason}" (Em análise pelo
               suporte)
             </div>
           ) : (
@@ -568,7 +568,7 @@ export function TechnicalVisitCard({ visit, providerId }: TechnicalVisitCardProp
               </h3>
             </div>
             <p className="mt-1 text-xs text-zinc-500 dark:text-zinc-400">
-              O prestador lançou <strong>{formatDb(visit.providerDeclaredAmount || 0)}</strong>.
+              O prestador lançou <strong>{formatDb(visit.declaredAmountByProvider || 0)}</strong>.
               Informe o valor exato acordado entre vocês no local. O sistema validará
               automaticamente em conformidade com as taxas de mercado de São Tomé.
             </p>
