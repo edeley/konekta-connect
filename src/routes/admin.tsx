@@ -494,6 +494,31 @@ export default function AdminPage() {
                           </code>
                         </div>
 
+                        {dep.proofImage ? (
+                          dep.proofImage.startsWith("data:image") ? (
+                            <a href={dep.proofImage} target="_blank" rel="noreferrer">
+                              <img
+                                src={dep.proofImage}
+                                alt={`Comprovativo ${dep.id}`}
+                                className="h-24 rounded-xl border border-border object-cover"
+                              />
+                            </a>
+                          ) : (
+                            <a
+                              href={dep.proofImage}
+                              target="_blank"
+                              rel="noreferrer"
+                              className="inline-flex items-center gap-1.5 text-[11px] font-bold text-primary underline"
+                            >
+                              📄 Ver comprovativo ({dep.proofFileName || "PDF"})
+                            </a>
+                          )
+                        ) : (
+                          <p className="text-[11px] font-bold text-red-600">
+                            ⚠️ Sem comprovativo anexado
+                          </p>
+                        )}
+
                         {dep.notes && (
                           <p className="text-[11px] text-muted-foreground italic bg-muted/40 p-1.5 rounded-lg">
                             "{dep.notes}"
