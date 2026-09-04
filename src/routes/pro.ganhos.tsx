@@ -599,7 +599,7 @@ function ProEarnings() {
                     </p>
                     <p className="text-[11px] text-muted-foreground">
                       Titular: {req.holderName} · Solicitado em{" "}
-                      {new Date(req.requestedAt).toLocaleDateString("pt-PT")}
+                      {new Date(req.requestedAt ?? Date.now()).toLocaleDateString("pt-PT")}
                     </p>
                   </div>
                   <div className="text-right">
@@ -642,7 +642,7 @@ function ProEarnings() {
           <StatCard
             label="Dívida de Comissão"
             value={formatDb(providerDebt)}
-            tone={providerDebt > 0 ? "danger" : "default"}
+            tone={providerDebt > 0 ? "error" : "neutral"}
             icon={<AlertCircle size={15} />}
           />
           <StatCard
@@ -822,7 +822,7 @@ function ProEarnings() {
                         </span>
                       </div>
                       <p className="text-[11px] text-muted-foreground truncate">
-                        Tel: {t.phone || "N/A"} · {t.specialties.join(", ")}
+                        Tel: {t.phone || "N/A"} · {(t.specialties ?? []).join(", ")}
                       </p>
                     </div>
 
@@ -882,7 +882,7 @@ function ProEarnings() {
                 </p>
               </div>
             </div>
-            <StatusPill tone={isPlanActive ? "success" : "default"}>
+            <StatusPill tone={isPlanActive ? "success" : "neutral"}>
               {isPlanActive ? "0% Taxa" : `${commission}% Taxa`}
             </StatusPill>
           </div>

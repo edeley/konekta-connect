@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useMemo } from "react";
 import {
+  CheckCircle2,
   X,
   Plus,
   Trash2,

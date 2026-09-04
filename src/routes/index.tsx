@@ -152,7 +152,7 @@ function Home() {
         (p) =>
           p.bio.toLowerCase().includes(selectedDistrict.toLowerCase()) ||
           p.name.toLowerCase().includes(selectedDistrict.toLowerCase()) ||
-          p.districts?.includes(selectedDistrict) ||
+          p.district === selectedDistrict ||
           true,
       );
     }
@@ -203,7 +203,7 @@ function Home() {
 
           {/* Notificações, Perfil e Relógio Oficial GMT */}
           <div className="flex items-center gap-2 shrink-0">
-            {user?.role === "ambos" && (
+            {user?.role === "prestador" && (
               <div className="hidden sm:block">
                 <ProfileSwitcher />
               </div>

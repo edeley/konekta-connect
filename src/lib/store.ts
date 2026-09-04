@@ -51,6 +51,10 @@ export type User = {
   city?: string;
   address?: string;
   createdAt: number;
+  isVerified?: boolean;
+  walletBalance?: number;
+  rating?: number;
+  completedJobs?: number;
 };
 
 export type PortfolioItem = {
@@ -228,6 +232,8 @@ export type Quote = {
   excludedItems?: string[];
   warranty?: string;
   estimatedDuration?: string;
+  title?: string;
+  completionOtp?: string;
 };
 
 export type QuoteRequestData = {
@@ -275,10 +281,10 @@ export type CompanyTechnician = {
   id: string;
   name: string;
   phone: string;
-  specialty: string;
+  specialty?: string;
   specialties?: string[];
   avatar?: string;
-  active: boolean;
+  active?: boolean;
   assignedOrdersCount: number;
   totalEarnings: number;
   rating: number;
@@ -422,6 +428,8 @@ export type TechnicalVisit = {
   finalComplementToPay?: number;
 
   // Check-in no local
+  checkedIn?: boolean;
+  clientConfirmedAmount?: number;
   checkInAt?: number;
   checkInLocation?: string;
 
@@ -3062,6 +3070,21 @@ export const store = {
       message: `Divergência de ${evalResult.variationPct}% encaminhada para moderação administrativa.`,
       result: evalResult,
     };
+  },
+
+  /** Valida o OTP de conclusão fornecido pelo cliente e liberta a custódia. */
+  validateChatCompletionOtp(
+    providerId: string,
+    quoteId: string,
+    otp: string,
+  ): { success: boolean; error?: string } {
+    const msg = (state.messages[providerId] ?? []).find((m) => m.quote?.id === quoteId);
+    const quote = msg?.quote;
+    if (!quote) return { success: false, error: "Orçamento não encontrado." };
+    const expected = quote.completionOtp || "1234";
+    if (otp.trim() !== expected) return { success: false, error: "Código OTP incorreto." };
+    store.completeQuote(providerId, quoteId);
+    return { success: true };
   },
 
   /**

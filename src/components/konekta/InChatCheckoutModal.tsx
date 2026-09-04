@@ -43,7 +43,7 @@ export function InChatCheckoutModal({
     setTimeout(() => {
       // Se selecionou Dobra 24 ou se o saldo é insuficiente, adiciona o valor via recarga automática
       if (selectedMethod === "dobra24" || isWalletInsufficient) {
-        store.topup(quote.gross, "Dobra 24 (Cartão STP Instantâneo)");
+        store.topUp(quote.gross);
       }
 
       const success = store.payQuote(quote.providerId, quote.id);

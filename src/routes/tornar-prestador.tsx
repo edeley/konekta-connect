@@ -124,6 +124,7 @@ function TornarPrestadorPage() {
           role: "prestador",
           district: selectedDistricts[0],
           isVerified: true,
+          createdAt: Date.now(),
           walletBalance: 250,
           rating: 5.0,
           completedJobs: 0,

@@ -128,7 +128,7 @@ export function CoverageConfigurator({
     if (selectedDistricts.length === STP_DISTRICTS_DETAILED.length) {
       setSelectedDistricts(["Água Grande"]);
       setSelectedLocalities({ "Água Grande": [...(STP_ALL_LOCALITIES["Água Grande"] || [])] });
-      setExpandedDistrict("Água Grande");
+      setExpandedDistricts({ "Água Grande": true });
     } else {
       const allNames = STP_DISTRICTS_DETAILED.map((d) => d.name);
       setSelectedDistricts(allNames);
