@@ -210,9 +210,8 @@ function NewRequest() {
   const canNext = !formSafety.isValid
     ? false
     : (step === 1 && !!categorySlug) ||
-      (step === 2 && title.trim().length >= 4 && description.trim().length >= 10) ||
-      (step === 3 && !!district) ||
-      step === 4;
+      (step === 2 && (title.trim().length >= 3 || !!category) && description.trim().length >= 5) ||
+      step === 3;
 
   const getTimeLabel = () => {
     if (timeSlot === "exato") return `às ${exactTime}`;
@@ -287,7 +286,7 @@ function NewRequest() {
     const req = store.createRequest({
       categorySlug: category.slug,
       categoryName: category.name,
-      title: title.trim(),
+      title: title.trim() || `Serviço de ${category.name}`,
       description: description.trim(),
       district,
       address: address.trim() || undefined,
@@ -310,7 +309,7 @@ function NewRequest() {
     // Sincronização em segundo plano
     const syncEvent: SyncScheduleEvent = {
       id: `req_${req.id}`,
-      title: title.trim(),
+      title: title.trim() || `Serviço de ${category.name}`,
       description: description.trim(),
       location: `${address.trim() || "São Tomé e Príncipe"}, ${district}${reference ? ` (Ref: ${reference.trim()})` : ""}`,
       dateStr: urgency === "sem-pressa" ? todayStr : serviceDate,
@@ -343,10 +342,10 @@ function NewRequest() {
     <AppShell hideNav hideFab>
       <ScreenHeader
         title="Publicar Pedido de Serviço"
-        subtitle={`Passo ${step} de 4 · Mercado de São Tomé e Príncipe`}
+        subtitle={`Passo ${step} de 3 · Mercado de São Tomé e Príncipe`}
       />
       <Section>
-        <ProgressSteps step={step} total={4} />
+        <ProgressSteps step={step} total={3} />
       </Section>
 
       {/* PASSO 1: CATEGORIA + MODELOS FREQUENTES DE STP */}
@@ -360,7 +359,11 @@ function NewRequest() {
                   <button
                     key={c.slug}
                     type="button"
-                    onClick={() => setCategorySlug(c.slug)}
+                    onClick={() => {
+                      setCategorySlug(c.slug);
+                      if (!title.trim()) setTitle(`Serviço de ${c.name}`);
+                      setStep(2);
+                    }}
                     className={cn(
                       "press flex flex-col items-center justify-center text-center gap-1.5 rounded-2xl p-3.5 shadow-soft transition-all cursor-pointer border",
                       active
@@ -1001,8 +1004,8 @@ function NewRequest() {
         </Section>
       )}
 
-      {/* PASSO 4: REVISÃO COMPLETA COM GARANTIA KONEKTA */}
-      {step === 4 && (
+      {/* PASSO 3 (parte final): REVISÃO COMPLETA COM GARANTIA KONEKTA */}
+      {step === 3 && (
         <Section title="Rever e Publicar Pedido">
           <KCard className="space-y-3.5">
             <Row label="Categoria" value={category?.name ?? "—"} />
@@ -1091,9 +1094,9 @@ function NewRequest() {
         <Button
           className="h-12 flex-[2] rounded-2xl text-sm font-bold cursor-pointer"
           disabled={!canNext}
-          onClick={() => (step === 4 ? publish() : setStep(step + 1))}
+          onClick={() => (step === 3 ? publish() : setStep(step + 1))}
         >
-          {step === 4 ? "Publicar Pedido Agora" : "Continuar"}
+          {step === 3 ? "Publicar Pedido Agora" : "Continuar"}
         </Button>
       </div>
 
