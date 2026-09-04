@@ -888,7 +888,7 @@ function RegistoPage() {
               bio: proDescription.trim(),
               experienceYears: Number(proExperience) || 1,
               yearsExperience: Number(proExperience) || 1,
-              services: selectedServices.map((s) => ({ name: s.name, price: s.price ?? 0 })),
+              services: selectedServices.map((s) => ({ name: s.name, price: s.priceDb ?? 0 })),
               radiusKm: 15,
               documents: { selfieOk: true },
               coverageDistricts: selectedDistricts,

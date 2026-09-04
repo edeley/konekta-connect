@@ -3078,12 +3078,12 @@ export const store = {
     quoteId: string,
     otp: string,
   ): { success: boolean; error?: string } {
-    const quotes = state.quotes[providerId] ?? [];
-    const quote = quotes.find((q) => q.id === quoteId);
+    const msg = (state.messages[providerId] ?? []).find((m) => m.quote?.id === quoteId);
+    const quote = msg?.quote;
     if (!quote) return { success: false, error: "Orçamento não encontrado." };
     const expected = quote.completionOtp || "1234";
     if (otp.trim() !== expected) return { success: false, error: "Código OTP incorreto." };
-    this.completeQuote(providerId, quoteId);
+    store.completeQuote(providerId, quoteId);
     return { success: true };
   },
 
