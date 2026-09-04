@@ -1943,8 +1943,6 @@ export async function getSTPPreciseGPS(): Promise<STPPreciseLocation | null> {
       }
     }
 
-
-
     if (pos && pos.coords) {
       const { latitude, longitude, accuracy } = pos.coords;
       triggerDeviceVibration([40, 60, 40]);

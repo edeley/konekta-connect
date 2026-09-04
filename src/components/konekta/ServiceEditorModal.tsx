@@ -17,7 +17,6 @@ import {
   HelpCircle,
   Info,
   ShieldCheck,
-  CheckCircle2,
 } from "lucide-react";
 import {
   type BillingModel,

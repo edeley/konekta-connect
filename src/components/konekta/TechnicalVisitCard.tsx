@@ -77,7 +77,11 @@ export function TechnicalVisitCard({ visit, providerId }: TechnicalVisitCardProp
       toast.error("Insira um breve diagnóstico técnico das condições do local.");
       return;
     }
-    const res = store.providerDeclareOnSiteBudget({ visitId: visit.id, declaredAmount: val, diagnosticReport: reportInput });
+    const res = store.providerDeclareOnSiteBudget({
+      visitId: visit.id,
+      declaredAmount: val,
+      diagnosticReport: reportInput,
+    });
     if (res.ok) {
       toast.success("Orçamento Presencial Enviado", {
         description: res.message,
@@ -109,7 +113,12 @@ export function TechnicalVisitCard({ visit, providerId }: TechnicalVisitCardProp
       toast.error("Insira o valor real combinado presencialmente.");
       return;
     }
-    const res = store.clientValidateOnSiteBudget({ visitId: visit.id, agreed: false, clientAmount: val, notes: clientReason });
+    const res = store.clientValidateOnSiteBudget({
+      visitId: visit.id,
+      agreed: false,
+      clientAmount: val,
+      notes: clientReason,
+    });
     if (res.ok) {
       if (res.result?.tier === "tier_3_moderation") {
         toast.warning("Divergência em Moderação", {
@@ -132,7 +141,16 @@ export function TechnicalVisitCard({ visit, providerId }: TechnicalVisitCardProp
       return;
     }
     const amount = visit.finalAgreedAmount || visit.declaredAmountByProvider || 500;
-    const res = store.declareInPersonCashPayment({ visitId: visit.id, providerId: visit.providerId, providerName: visit.providerName, clientId: visit.clientId, clientName: visit.clientName, serviceTitle: visit.serviceTitle, declaredAmount: amount, notes: `OTP ${otpInput.trim()}` });
+    const res = store.declareInPersonCashPayment({
+      visitId: visit.id,
+      providerId: visit.providerId,
+      providerName: visit.providerName,
+      clientId: visit.clientId,
+      clientName: visit.clientName,
+      serviceTitle: visit.serviceTitle,
+      declaredAmount: amount,
+      notes: `OTP ${otpInput.trim()}`,
+    });
     if (res.ok) {
       toast.success("Pagamento em Dinheiro Validado!", {
         description: res.message,
@@ -383,10 +401,10 @@ export function TechnicalVisitCard({ visit, providerId }: TechnicalVisitCardProp
           </div>
           <p className="mt-1.5 text-amber-800 dark:text-amber-300">
             O valor informado pelo cliente (
-            <strong>{formatDb(visit.declaredAmountByClient || 0)}</strong>) diverge do informado pelo
-            prestador (<strong>{formatDb(visit.declaredAmountByProvider || 0)}</strong>) em{" "}
-            <strong>{visit.divergencePercent}%</strong>. A equipe de suporte está avaliando o caso com
-            base no histórico e evidências.
+            <strong>{formatDb(visit.declaredAmountByClient || 0)}</strong>) diverge do informado
+            pelo prestador (<strong>{formatDb(visit.declaredAmountByProvider || 0)}</strong>) em{" "}
+            <strong>{visit.divergencePercent}%</strong>. A equipe de suporte está avaliando o caso
+            com base no histórico e evidências.
           </p>
           <div className="mt-3 flex items-center gap-2 text-[11px] font-semibold text-amber-900 dark:text-amber-200">
             <span>ID da Disputa: {visit.moderationCaseId || "DISP-8492"}</span>

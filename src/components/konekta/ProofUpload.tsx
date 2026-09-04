@@ -17,8 +17,7 @@ export function ProofUpload({ value, fileName, onChange, label }: ProofUploadPro
 
   function handleFile(file?: File) {
     if (!file) return;
-    const ok =
-      file.type.startsWith("image/") || file.type === "application/pdf";
+    const ok = file.type.startsWith("image/") || file.type === "application/pdf";
     if (!ok) {
       toast.error("Envie uma imagem (foto do recibo) ou um ficheiro PDF.");
       return;
