@@ -1077,7 +1077,7 @@ function ChatDetail() {
                           <button
                             type="button"
                             onClick={() => {
-                              setShowQuoteModal(true);
+                              setComposerOpen(true);
                             }}
                             className="w-full py-2.5 px-4 rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground font-bold text-xs flex items-center justify-center gap-1.5 shadow-sm cursor-pointer transition active:scale-95"
                           >
@@ -1596,10 +1596,9 @@ function ChatDetail() {
               const clientVal = Number(clientAgreedAmountInput);
               const benchmark = getCategoryBenchmark(activeTechnicalVisit.category);
               const preview = evaluatePriceDivergence({
-                declaredByProvider: providerVal,
-                confirmedByClient: clientVal,
-                benchmarkAverage: benchmark.averagePrice,
-                category: activeTechnicalVisit.category,
+                providerAmount: providerVal,
+                clientAmount: clientVal,
+                categorySlugOrName: activeTechnicalVisit.category,
               });
 
               return (
@@ -1607,7 +1606,7 @@ function ChatDetail() {
                   className={`p-3 rounded-xl text-xs space-y-1.5 border ${
                     preview.tier === "tier_1_auto"
                       ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-950 dark:text-emerald-200"
-                      : preview.tier === "tier_2_benchmark"
+                      : preview.tier === "tier_2_market"
                         ? "bg-blue-500/10 border-blue-500/30 text-blue-950 dark:text-blue-200"
                         : "bg-red-500/10 border-red-500/30 text-red-950 dark:text-red-200"
                   }`}
@@ -1615,14 +1614,14 @@ function ChatDetail() {
                   <div className="flex items-center justify-between font-bold">
                     <span>Divergência Calculada:</span>
                     <span className="font-mono text-sm">
-                      {preview.divergencePercent.toFixed(1)}%
+                      {preview.variationPct.toFixed(1)}%
                     </span>
                   </div>
                   <p className="text-[11px] leading-relaxed">
                     {preview.tier === "tier_1_auto" &&
                       "✅ Divergência ≤ 15%: Aceitação automática do valor informado pelo cliente e ajuste de custódia."}
-                    {preview.tier === "tier_2_benchmark" &&
-                      `🔍 Divergência entre 15% e 40%: Verificação algorítmica face à média de mercado em São Tomé (${formatDb(benchmark.averagePrice)}).`}
+                    {preview.tier === "tier_2_market" &&
+                      `🔍 Divergência entre 15% e 40%: Verificação algorítmica face à média de mercado em São Tomé (${formatDb(benchmark.avgPrice)}).`}
                     {preview.tier === "tier_3_moderation" &&
                       "🚨 Divergência crítica (> 40%): O pedido será congelado em custódia e encaminhado para o Painel de Moderação Administrativa KONEKTA."}
                   </p>

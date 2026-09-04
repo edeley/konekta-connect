@@ -3072,6 +3072,21 @@ export const store = {
     };
   },
 
+  /** Valida o OTP de conclusão fornecido pelo cliente e liberta a custódia. */
+  validateChatCompletionOtp(
+    providerId: string,
+    quoteId: string,
+    otp: string,
+  ): { success: boolean; error?: string } {
+    const quotes = state.quotes[providerId] ?? [];
+    const quote = quotes.find((q) => q.id === quoteId);
+    if (!quote) return { success: false, error: "Orçamento não encontrado." };
+    const expected = quote.completionOtp || "1234";
+    if (otp.trim() !== expected) return { success: false, error: "Código OTP incorreto." };
+    this.completeQuote(providerId, quoteId);
+    return { success: true };
+  },
+
   /**
    * Resolução de caso no Painel de Moderação pelo Administrador
    */
