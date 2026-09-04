@@ -128,6 +128,7 @@ function TornarPrestadorPage() {
           walletBalance: 250,
           rating: 5.0,
           completedJobs: 0,
+          createdAt: Date.now(),
         });
       }
 

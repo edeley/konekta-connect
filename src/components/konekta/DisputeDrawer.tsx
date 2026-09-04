@@ -102,7 +102,7 @@ export function DisputeDrawer({
   };
 
   return (
-    <BottomSheet isOpen={isOpen} onClose={onClose}>
+    <BottomSheet open={isOpen} onClose={onClose}>
       <div id={`dispute-drawer-${orderId}`} className="space-y-4 max-w-lg mx-auto">
         {/* CABEÇALHO */}
         <div className="flex items-center gap-3">

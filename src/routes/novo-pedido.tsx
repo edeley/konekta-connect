@@ -493,7 +493,11 @@ function NewRequest() {
                     <button
                       key={item.id}
                       type="button"
-                      onClick={() => setMaterialStatus(item.id as "tem_material" | "prestador_compra" | "avaliar")}
+                      onClick={() =>
+                        setMaterialStatus(
+                          item.id as "tem_material" | "prestador_compra" | "avaliar",
+                        )
+                      }
                       className={cn(
                         "p-2.5 rounded-xl text-left border transition cursor-pointer flex flex-col justify-between",
                         active

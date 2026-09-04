@@ -199,7 +199,8 @@ function generateIntelligentResponse(text: string): AssistantResponse {
       const topPros = matchingProviders.slice(0, 3);
       const prosList = topPros
         .map(
-          (p) => `• **${p.name}** (${p.district}) · ⭐ ${p.rating} (${p.reviewsCount} avaliações)`,
+          (p) =>
+            `• **${p.name}** (${p.district || "São Tomé"}) · ⭐ ${p.rating} (${p.reviewsCount || p.reviews} avaliações)`,
         )
         .join("\n");
 

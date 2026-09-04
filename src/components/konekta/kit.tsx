@@ -91,6 +91,9 @@ export function KCard({
   );
 }
 
+export const Card = KCard;
+export const KButton = Button;
+
 /* --------------------------------- Feedback -------------------------------- */
 
 export function EmptyState({
@@ -179,10 +182,14 @@ export function SkeletonList({ count = 3 }: { count?: number }) {
 
 const toneMap = {
   neutral: "bg-muted text-muted-foreground",
+  default: "bg-muted text-muted-foreground",
   primary: "bg-accent text-accent-foreground",
+  accent: "bg-primary/10 text-primary",
   success: "bg-success/12 text-success",
   warning: "bg-warning/15 text-warning",
   error: "bg-destructive/12 text-destructive",
+  danger: "bg-destructive/12 text-destructive",
+  info: "bg-blue-500/15 text-blue-600 dark:text-blue-400",
 } as const;
 
 export type Tone = keyof typeof toneMap;

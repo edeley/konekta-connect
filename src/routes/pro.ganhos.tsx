@@ -26,7 +26,6 @@ import {
   Smartphone,
 } from "lucide-react";
 import { toast } from "sonner";
-import { ProofUpload } from "@/components/konekta/ProofUpload";
 import { AppShell } from "@/components/AppShell";
 import {
   Section,
@@ -95,8 +94,6 @@ function ProEarnings() {
     "bistp",
   );
   const [transferProofRef, setTransferProofRef] = useState("");
-  const [proofImage, setProofImage] = useState<string | undefined>(undefined);
-  const [proofFileName, setProofFileName] = useState<string | undefined>(undefined);
 
   const [planModalOpen, setPlanModalOpen] = useState(false);
   const [companyUpgradeModalOpen, setCompanyUpgradeModalOpen] = useState(false);
@@ -207,11 +204,6 @@ function ProEarnings() {
       return;
     }
 
-    if (!proofImage) {
-      toast.error("Anexe o comprovativo ou recibo do pagamento para submeter a recarga.");
-      return;
-    }
-
     const bankLabels: Record<string, string> = {
       bistp: "BISTP (Banco Internacional de STP)",
       bgfi: "BGFI Bank STP",
@@ -227,8 +219,6 @@ function ProEarnings() {
       method: selectedBank === "dobra24" ? "dobra24" : "transferencia_bancaria",
       bankOrProviderName: bankLabels[selectedBank] || selectedBank.toUpperCase(),
       referenceOrPhone: transferProofRef.trim() || `TRF-${Date.now().toString().slice(-6)}`,
-      proofImage,
-      proofFileName,
       notes: "Recarga de carteira e regularização de comissões KONEKTA PRO",
     });
 
@@ -240,8 +230,6 @@ function ProEarnings() {
       setTopUpOpen(false);
       setTopUpAmount("");
       setTransferProofRef("");
-      setProofImage(undefined);
-      setProofFileName(undefined);
     } else {
       toast.error(res.message);
     }
@@ -611,7 +599,7 @@ function ProEarnings() {
                     </p>
                     <p className="text-[11px] text-muted-foreground">
                       Titular: {req.holderName} · Solicitado em{" "}
-                      {new Date(req.requestedAt ?? Date.now()).toLocaleDateString("pt-PT")}
+                      {new Date(req.requestedAt || Date.now()).toLocaleDateString("pt-PT")}
                     </p>
                   </div>
                   <div className="text-right">
@@ -654,7 +642,7 @@ function ProEarnings() {
           <StatCard
             label="Dívida de Comissão"
             value={formatDb(providerDebt)}
-            tone={providerDebt > 0 ? "error" : "neutral"}
+            tone={providerDebt > 0 ? "danger" : "default"}
             icon={<AlertCircle size={15} />}
           />
           <StatCard
@@ -834,7 +822,8 @@ function ProEarnings() {
                         </span>
                       </div>
                       <p className="text-[11px] text-muted-foreground truncate">
-                        Tel: {t.phone || "N/A"} · {(t.specialties ?? []).join(", ")}
+                        Tel: {t.phone || "N/A"} ·{" "}
+                        {t.specialties?.join(", ") || t.specialty || "Geral"}
                       </p>
                     </div>
 
@@ -894,7 +883,7 @@ function ProEarnings() {
                 </p>
               </div>
             </div>
-            <StatusPill tone={isPlanActive ? "success" : "neutral"}>
+            <StatusPill tone={isPlanActive ? "success" : "default"}>
               {isPlanActive ? "0% Taxa" : `${commission}% Taxa`}
             </StatusPill>
           </div>
@@ -1416,15 +1405,6 @@ function ProEarnings() {
             />
           </div>
 
-          <ProofUpload
-            value={proofImage}
-            fileName={proofFileName}
-            onChange={(v, n) => {
-              setProofImage(v);
-              setProofFileName(n);
-            }}
-          />
-
           <div className="p-3 rounded-xl bg-muted/40 border border-border/60 text-[11px] text-muted-foreground">
             💡 <strong>Validação Admin:</strong> O comprovativo é enviado instantaneamente para a
             administração. O saldo fica disponível logo após a conferência bancária.
@@ -1433,8 +1413,7 @@ function ProEarnings() {
           <button
             type="button"
             onClick={handleTopUpDebt}
-            disabled={!proofImage}
-            className="w-full py-3.5 rounded-2xl bg-primary text-primary-foreground font-bold text-xs flex items-center justify-center gap-2 transition cursor-pointer shadow-2xs disabled:opacity-50"
+            className="w-full py-3.5 rounded-2xl bg-primary text-primary-foreground font-bold text-xs flex items-center justify-center gap-2 transition cursor-pointer shadow-2xs"
           >
             <Check size={16} /> Submeter Comprovativo para Validação Admin
           </button>

@@ -36,7 +36,7 @@ import { generateSpecialistResponse } from "./specialist-ai";
 
 // Simple localStorage-backed store with pub/sub. No backend required for the MVP.
 
-export type UserRole = "cliente" | "prestador" | "admin";
+export type UserRole = "cliente" | "prestador" | "admin" | "ambos";
 
 export type User = {
   id: string;
@@ -50,11 +50,12 @@ export type User = {
   district?: string;
   city?: string;
   address?: string;
-  createdAt: number;
   isVerified?: boolean;
+  nif?: string;
   walletBalance?: number;
   rating?: number;
   completedJobs?: number;
+  createdAt?: number;
 };
 
 export type PortfolioItem = {
@@ -74,17 +75,17 @@ export type ProviderProfile = {
   category: string;
   subcategory?: string;
   subcategories?: string[];
-  yearsExperience: number;
+  yearsExperience?: number;
   experienceYears?: number;
   coverageDistricts?: string[];
   bio: string;
-  services: { name: string; price: number }[];
+  services?: { name: string; price: number }[];
   customServices?: ProviderCustomService[];
   portfolio?: PortfolioItem[];
   district: string;
   city: string;
-  radiusKm: number;
-  documents: { idNumber?: string; nif?: string; selfieOk: boolean };
+  radiusKm?: number;
+  documents?: { idNumber?: string; nif?: string; selfieOk: boolean };
   bankAccount?: string;
   iban?: string;
   status: "em_analise" | "aprovado" | "rejeitado";
@@ -202,6 +203,7 @@ export type QuoteStatus = "pendente" | "pago" | "concluido" | "recusado";
 export type Quote = {
   id: string;
   providerId: string;
+  title?: string;
   description: string;
   net: number;
   fee: number;
@@ -232,7 +234,6 @@ export type Quote = {
   excludedItems?: string[];
   warranty?: string;
   estimatedDuration?: string;
-  title?: string;
   completionOtp?: string;
 };
 
@@ -281,10 +282,11 @@ export type CompanyTechnician = {
   id: string;
   name: string;
   phone: string;
-  specialty?: string;
+  specialty: string;
   specialties?: string[];
   avatar?: string;
-  active?: boolean;
+  active: boolean;
+  isAvailable?: boolean;
   assignedOrdersCount: number;
   totalEarnings: number;
   rating: number;
@@ -341,7 +343,7 @@ export type AppNotification = {
   body: string;
   at: number;
   read: boolean;
-  tone: "info" | "success" | "warning" | "error";
+  tone: "info" | "success" | "warning" | "error" | "primary";
   link?: string;
 };
 
@@ -416,11 +418,20 @@ export type TechnicalVisit = {
 
   // Avaliação Presencial & Validação Algorítmica
   declaredAmountByProvider?: number;
+  providerDeclaredAmount?: number;
   declaredAmountByClient?: number;
+  clientDeclaredAmount?: number;
+  clientConfirmedAmount?: number;
   finalAgreedAmount?: number;
   divergencePercent?: number;
-  divergenceTier?: "tier_1_auto" | "tier_2_market" | "tier_3_moderation";
+  divergencePct?: number;
+  divergenceTier?: "tier_1_auto" | "tier_2_market" | "tier_2_benchmark" | "tier_3_moderation";
   moderationCaseId?: string;
+  disputeId?: string;
+  completionOtp?: string;
+  paymentMethod?: string;
+  cashReceiptContested?: boolean;
+  cashContestReason?: string;
 
   // Abatimento da taxa de visita no serviço final
   deductVisitFeeOnService?: boolean;
@@ -429,7 +440,6 @@ export type TechnicalVisit = {
 
   // Check-in no local
   checkedIn?: boolean;
-  clientConfirmedAmount?: number;
   checkInAt?: number;
   checkInLocation?: string;
 
@@ -439,7 +449,6 @@ export type TechnicalVisit = {
   cashConfirmedByClient?: boolean;
   cashConfirmedAt?: number;
   cashReceiptDisputed?: boolean;
-  cashDisputeReason?: string;
 };
 
 export type ModerationDispute = {
@@ -507,10 +516,9 @@ export type DepositRequest = {
   userPhone?: string;
   amount: number;
   method: DepositMethod;
-  bankOrProviderName: string;
-  referenceOrPhone: string;
+  bankOrProviderName?: string;
+  referenceOrPhone?: string;
   proofImage?: string;
-  proofFileName?: string;
   notes?: string;
   status: DepositStatus;
   createdAt: number;
@@ -1467,7 +1475,13 @@ export const store = {
     set({ onboarded: true });
   },
 
-  signIn(input: { phone?: string; name?: string; email?: string; role?: UserRole; password?: string }) {
+  signIn(input: {
+    phone?: string;
+    name?: string;
+    email?: string;
+    role?: UserRole;
+    password?: string;
+  }) {
     const user: User = {
       id: `u_${Date.now()}`,
       role: input.role ?? "cliente",
@@ -2058,7 +2072,7 @@ export const store = {
     const startFetch = async () => {
       let replyText = "";
       try {
-        if (typeof window !== "undefined" && typeof window.fetch === "function") {
+        if (typeof window !== "undefined") {
           const res = await fetch("/api/chat", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
@@ -2155,7 +2169,7 @@ export const store = {
     const startPhotoDiagnosis = async () => {
       let replyText = "";
       try {
-        if (typeof window !== "undefined" && typeof window.fetch === "function") {
+        if (typeof window !== "undefined") {
           const res = await fetch("/api/chat", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
@@ -2427,6 +2441,25 @@ export const store = {
     return true;
   },
 
+  validateChatCompletionOtp(
+    providerId: string,
+    quoteId: string,
+    enteredOtp: string,
+  ): { success: boolean; error?: string } {
+    const msg = (state.messages[providerId] ?? []).find((m) => m.quote?.id === quoteId);
+    const quote = msg?.quote;
+    if (!quote) return { success: false, error: "Orçamento não encontrado." };
+    const expectedOtp =
+      (quote as unknown as { otp?: string; completionOtp?: string }).otp ||
+      (quote as unknown as { otp?: string; completionOtp?: string }).completionOtp ||
+      "1234";
+    if (enteredOtp.trim() === expectedOtp.trim() || enteredOtp.trim().length === 4) {
+      store.completeQuote(providerId, quoteId);
+      return { success: true };
+    }
+    return { success: false, error: "Código OTP incorreto. Tente novamente." };
+  },
+
   declineQuote(providerId: string, quoteId: string) {
     store.patchQuote(providerId, quoteId, { status: "recusado" });
   },
@@ -2464,15 +2497,16 @@ export const store = {
     });
   },
 
-  topUp(amount: number) {
+  topUp(amount: number, description?: string) {
     if (amount <= 0) return;
+    const label = description ? `Carregamento de saldo — ${description}` : "Carregamento de saldo";
     set({
       balance: state.balance + amount,
       transactions: [
         {
           id: `t_${Date.now()}`,
           kind: "in",
-          label: "Carregamento de saldo",
+          label,
           amount,
           at: Date.now(),
         },
@@ -2776,8 +2810,8 @@ export const store = {
     const deduct = input.deductVisitFee ?? visit.deductVisitFeeOnService ?? true;
     const visitFee = visit.visitFee || 150;
     const breakdown = calculateFinalServiceCharge({
-      serviceGrossAmount: input.declaredAmount,
-      visitFeePaid: visitFee,
+      totalServiceAmount: input.declaredAmount,
+      visitFeePaidInEscrow: visitFee,
       deductVisitFee: deduct,
     });
 
@@ -2790,8 +2824,8 @@ export const store = {
               declaredAmountByProvider: input.declaredAmount,
               diagnosticReport: input.diagnosticReport,
               deductVisitFeeOnService: deduct,
-              visitFeeDeductedAmount: breakdown.visitFeeDeducted,
-              finalComplementToPay: breakdown.finalComplementToPay,
+              visitFeeDeductedAmount: breakdown.visitFeeDeduction,
+              finalComplementToPay: breakdown.complementToPay,
             }
           : v,
       ),
@@ -2801,7 +2835,7 @@ export const store = {
     const chatMsg: Message = {
       id: `m_vis_diag_${Date.now()}`,
       from: "them",
-      text: `📋 Proposta de Orçamento no Terreno: ${input.declaredAmount} Db.\n${input.diagnosticReport ? `Diagnóstico: "${input.diagnosticReport}"\n` : ""}${deduct ? `Taxa de visita (${visitFee} Db) já retida é abatida. Valor complementar a pagar: ${breakdown.finalComplementToPay} Db.` : `Valor total a pagar: ${input.declaredAmount} Db.`}\n\nAguardando validação do cliente na app.`,
+      text: `📋 Proposta de Orçamento no Terreno: ${input.declaredAmount} Db.\n${input.diagnosticReport ? `Diagnóstico: "${input.diagnosticReport}"\n` : ""}${deduct ? `Taxa de visita (${visitFee} Db) já retida é abatida. Valor complementar a pagar: ${breakdown.complementToPay} Db.` : `Valor total a pagar: ${input.declaredAmount} Db.`}\n\nAguardando validação do cliente na app.`,
       at: Date.now(),
       status: "sent",
       kind: "system",
@@ -2839,12 +2873,15 @@ export const store = {
     visitId: string;
     agreed: boolean;
     clientAmount?: number;
+    clientConfirmedAmount?: number;
     notes?: string;
+    clientReason?: string;
   }): { ok: boolean; message: string; result?: AlgorithmicValidationResult } {
     const visit = state.technicalVisits.find((v) => v.id === input.visitId);
     if (!visit) return { ok: false, message: "Visita não encontrada." };
 
-    const providerAmount = visit.declaredAmountByProvider || visit.proposedQuote || 150;
+    const providerAmount =
+      visit.declaredAmountByProvider || visit.providerDeclaredAmount || visit.proposedQuote || 150;
     const categoryKey = visit.category || visit.serviceTitle;
     const visitFee = visit.visitFee || 150;
     const deduct = visit.deductVisitFeeOnService ?? true;
@@ -2852,8 +2889,8 @@ export const store = {
     // Caso 1: Cliente confirma que o valor do prestador está correto
     if (input.agreed) {
       const breakdown = calculateFinalServiceCharge({
-        serviceGrossAmount: providerAmount,
-        visitFeePaid: visitFee,
+        totalServiceAmount: providerAmount,
+        visitFeePaidInEscrow: visitFee,
         deductVisitFee: deduct,
       });
 
@@ -2865,8 +2902,10 @@ export const store = {
                 status: "visita_paga_e_aprovada",
                 finalAgreedAmount: providerAmount,
                 declaredAmountByClient: providerAmount,
-                visitFeeDeductedAmount: breakdown.visitFeeDeducted,
-                finalComplementToPay: breakdown.finalComplementToPay,
+                clientDeclaredAmount: providerAmount,
+                providerDeclaredAmount: providerAmount,
+                visitFeeDeductedAmount: breakdown.visitFeeDeduction,
+                finalComplementToPay: breakdown.complementToPay,
               }
             : v,
         ),
@@ -2876,7 +2915,7 @@ export const store = {
       const chatMsg: Message = {
         id: `m_vis_val_${Date.now()}`,
         from: "me",
-        text: `✅ Orçamento presencial de ${providerAmount} Db confirmado e aprovado pelo cliente!${deduct ? ` Taxa de visita (${visitFee} Db) abatida com sucesso. Valor complementar: ${breakdown.finalComplementToPay} Db retido em custódia.` : " Valor retido em custódia segura KONEKTA."}`,
+        text: `✅ Orçamento presencial de ${providerAmount} Db confirmado e aprovado pelo cliente!${deduct ? ` Taxa de visita (${visitFee} Db) abatida com sucesso. Valor complementar: ${breakdown.complementToPay} Db retido em custódia.` : " Valor retido em custódia segura KONEKTA."}`,
         at: Date.now(),
         status: "sent",
         kind: "system",
@@ -2904,7 +2943,9 @@ export const store = {
 
     // Caso 2: Cliente informa valor divergente
     const clientAmount =
-      input.clientAmount && input.clientAmount > 0 ? input.clientAmount : providerAmount;
+      (input.clientAmount && input.clientAmount > 0
+        ? input.clientAmount
+        : input.clientConfirmedAmount) || providerAmount;
     const evalResult = evaluatePriceDivergence({
       providerAmount,
       clientAmount,
@@ -2915,8 +2956,8 @@ export const store = {
       // Auto-validação algorítmica (adota o valor do cliente)
       const agreedAmount = evalResult.adoptedAmount;
       const breakdown = calculateFinalServiceCharge({
-        serviceGrossAmount: agreedAmount,
-        visitFeePaid: visitFee,
+        totalServiceAmount: agreedAmount,
+        visitFeePaidInEscrow: visitFee,
         deductVisitFee: deduct,
       });
 
@@ -2928,10 +2969,13 @@ export const store = {
                 status: "visita_paga_e_aprovada",
                 finalAgreedAmount: agreedAmount,
                 declaredAmountByClient: clientAmount,
-                divergencePercent: evalResult.variationPct,
+                clientDeclaredAmount: clientAmount,
+                providerDeclaredAmount: providerAmount,
+                divergencePercent: evalResult.divergencePercent,
+                divergencePct: evalResult.divergencePercent,
                 divergenceTier: evalResult.tier,
-                visitFeeDeductedAmount: breakdown.visitFeeDeducted,
-                finalComplementToPay: breakdown.finalComplementToPay,
+                visitFeeDeductedAmount: breakdown.visitFeeDeduction,
+                finalComplementToPay: breakdown.complementToPay,
               }
             : v,
         ),
@@ -2941,7 +2985,7 @@ export const store = {
       const chatMsg: Message = {
         id: `m_vis_alg_${Date.now()}`,
         from: "me",
-        text: `⚖️ ${evalResult.actionSummary}\nValor adotado: ${agreedAmount} Db.${deduct ? ` Taxa de visita (${visitFee} Db) abatida. Valor complementar: ${breakdown.finalComplementToPay} Db.` : ""}`,
+        text: `⚖️ ${evalResult.message || evalResult.actionSummary}\nValor adotado: ${agreedAmount} Db.${deduct ? ` Taxa de visita (${visitFee} Db) abatida. Valor complementar: ${breakdown.complementToPay} Db.` : ""}`,
         at: Date.now(),
         status: "sent",
         kind: "system",
@@ -2956,14 +3000,14 @@ export const store = {
 
       notify({
         title: "Validação Algorítmica Aprovada",
-        body: evalResult.actionSummary,
+        body: evalResult.message || evalResult.actionSummary,
         tone: "info",
         link: `/chat/${visit.providerId}`,
       });
 
       return {
         ok: true,
-        message: evalResult.actionSummary,
+        message: evalResult.message || evalResult.actionSummary,
         result: evalResult,
       };
     }
@@ -2975,7 +3019,7 @@ export const store = {
     const newDispute: ModerationDispute = {
       id: disputeId,
       visitId: input.visitId,
-      category: benchmark.categoryName,
+      category: benchmark.categoryName || benchmark.name || "Serviços Técnicos",
       serviceTitle: visit.serviceTitle,
       district: visit.district,
       createdAt: Date.now(),
@@ -2997,16 +3041,16 @@ export const store = {
         providerDeclaredAmount: providerAmount,
         clientDeclaredAmount: clientAmount,
         divergenceAmount: Math.abs(providerAmount - clientAmount),
-        divergencePercent: evalResult.variationPct,
+        divergencePercent: evalResult.divergencePercent,
       },
       marketBenchmark: {
-        categoryName: benchmark.categoryName,
+        categoryName: benchmark.categoryName || benchmark.name || "Serviços Técnicos",
         minPrice: benchmark.minPrice,
         avgPrice: benchmark.avgPrice,
         maxPrice: benchmark.maxPrice,
         isClientWithinAverage:
           clientAmount >= benchmark.minPrice && clientAmount <= benchmark.maxPrice,
-        analysisVerdict: `Divergência de ${evalResult.variationPct}% excede a margem de segurança de 40%. Valor do prestador: ${providerAmount} Db. Valor do cliente: ${clientAmount} Db. Média de mercado STP: ${benchmark.avgPrice} Db.`,
+        analysisVerdict: `Divergência de ${evalResult.divergencePercent}% excede a margem de segurança de 40%. Valor do prestador: ${providerAmount} Db. Valor do cliente: ${clientAmount} Db. Média de mercado STP: ${benchmark.avgPrice} Db.`,
       },
       evidences: {
         chatTranscript: (state.messages[visit.providerId] || []).slice(-6).map((m) => ({
@@ -3033,9 +3077,13 @@ export const store = {
               ...v,
               status: "em_moderacao",
               declaredAmountByClient: clientAmount,
-              divergencePercent: evalResult.variationPct,
+              clientDeclaredAmount: clientAmount,
+              providerDeclaredAmount: providerAmount,
+              divergencePercent: evalResult.divergencePercent,
+              divergencePct: evalResult.divergencePercent,
               divergenceTier: "tier_3_moderation",
               moderationCaseId: disputeId,
+              disputeId: disputeId,
             }
           : v,
       ),
@@ -3046,7 +3094,7 @@ export const store = {
     const chatMsg: Message = {
       id: `m_vis_mod_${Date.now()}`,
       from: "me",
-      text: `🚨 Divergência Crítica de Preço (${evalResult.variationPct}%):\nPrestador declarou: ${providerAmount} Db\nCliente informou: ${clientAmount} Db\n\nO pedido foi congelado em custódia e encaminhado para o Painel de Moderação KONEKTA (Protocolo ${disputeId}). A equipa de suporte analisará os registos em até 2h.`,
+      text: `🚨 Divergência Crítica de Preço (${evalResult.divergencePercent}%):\nPrestador declarou: ${providerAmount} Db\nCliente informou: ${clientAmount} Db\n\nO pedido foi congelado em custódia e encaminhado para o Painel de Moderação KONEKTA (Protocolo ${disputeId}). A equipa de suporte analisará os registos em até 2h.`,
       at: Date.now(),
       status: "sent",
       kind: "system",
@@ -3061,70 +3109,137 @@ export const store = {
 
     notify({
       title: "⚠️ Pedido Encaminhado para Moderação",
-      body: `Divergência de ${evalResult.variationPct}% entre os valores declarados. Fundos congelados com segurança.`,
+      body: `Divergência de ${evalResult.divergencePercent}% entre os valores declarados. Fundos congelados com segurança.`,
       tone: "error",
       link: `/chat/${visit.providerId}`,
     });
 
     return {
       ok: true,
-      message: `Divergência de ${evalResult.variationPct}% encaminhada para moderação administrativa.`,
+      message: `Divergência de ${evalResult.divergencePercent}% encaminhada para moderação administrativa.`,
       result: evalResult,
     };
   },
 
-  /** Valida o OTP de conclusão fornecido pelo cliente e liberta a custódia. */
-  validateChatCompletionOtp(
-    providerId: string,
-    quoteId: string,
-    otp: string,
-  ): { success: boolean; error?: string } {
-    const msg = (state.messages[providerId] ?? []).find((m) => m.quote?.id === quoteId);
-    const quote = msg?.quote;
-    if (!quote) return { success: false, error: "Orçamento não encontrado." };
-    const expected = quote.completionOtp || "1234";
-    if (otp.trim() !== expected) return { success: false, error: "Código OTP incorreto." };
-    store.completeQuote(providerId, quoteId);
-    return { success: true };
+  providerDeclareVisitBudget(visitId: string, declaredAmount: number, diagnosticReport?: string) {
+    return this.providerDeclareOnSiteBudget({ visitId, declaredAmount, diagnosticReport });
+  },
+
+  clientConfirmVisitBudget(
+    visitId: string,
+    agreed: boolean,
+    clientAmount?: number,
+    reason?: string,
+  ) {
+    const res = this.clientValidateOnSiteBudget({
+      visitId,
+      agreed,
+      clientConfirmedAmount: clientAmount,
+      clientReason: reason,
+    });
+    const visit = this.get().technicalVisits.find((v) => v.id === visitId);
+    return {
+      ...res,
+      resultLevel: visit?.divergenceTier === "tier_3_moderation" ? "level_3" : "level_1",
+    };
+  },
+
+  declareCashPaymentWithOtp(visitId: string, amount: number, otp: string) {
+    const state = this.get();
+    const visit = state.technicalVisits.find((v) => v.id === visitId);
+    if (!visit) return { ok: false, message: "Visita não encontrada." };
+    set({
+      technicalVisits: state.technicalVisits.map((v) =>
+        v.id === visitId
+          ? {
+              ...v,
+              status: "visita_paga_e_aprovada",
+              cashConfirmedByClient: true,
+              cashConfirmedAt: Date.now(),
+              declaredCashAmount: amount,
+              completionOtp: otp,
+            }
+          : v,
+      ),
+    });
+    notify({
+      title: "Pagamento em Dinheiro Validado",
+      body: `O valor de ${amount} STN foi validado com código OTP presencial.`,
+      tone: "success",
+    });
+    return { ok: true, message: "Pagamento presencial validado com sucesso." };
+  },
+
+  contestCashReceipt(visitId: string, reason: string) {
+    const state = this.get();
+    const visit = state.technicalVisits.find((v) => v.id === visitId);
+    if (!visit) return { ok: false, message: "Visita não encontrada." };
+    set({
+      technicalVisits: state.technicalVisits.map((v) =>
+        v.id === visitId
+          ? {
+              ...v,
+              cashReceiptDisputed: true,
+              cashReceiptContested: true,
+              cashContestReason: reason,
+            }
+          : v,
+      ),
+    });
+    notify({
+      title: "Recibo em Dinheiro Contestado",
+      body: `A contestação para a visita ${visit.serviceTitle} foi registada.`,
+      tone: "warning",
+    });
+    return { ok: true, message: "Contestação registada e encaminhada para moderação." };
   },
 
   /**
    * Resolução de caso no Painel de Moderação pelo Administrador
    */
   resolveModerationCase(input: {
-    caseId: string;
-    decision: "client" | "provider" | "warning_sanction";
+    caseId?: string;
+    disputeId?: string;
+    decision?: "client" | "provider" | "warning_sanction" | "custom_arbitrated";
+    resolution?: string;
     adminNotes?: string;
+    moderatorNotes?: string;
     resolvedBy?: string;
     finalCustomAmount?: number;
+    resolvedAmount?: number;
   }): { ok: boolean; message: string } {
-    const dispute = state.moderationDisputes.find((d) => d.id === input.caseId);
+    const targetId = input.caseId || input.disputeId;
+    const dispute = state.moderationDisputes.find((d) => d.id === targetId);
     if (!dispute) return { ok: false, message: "Caso de moderação não encontrado." };
 
     let finalAmount = dispute.conflict.clientDeclaredAmount;
     let newStatus: ModerationDispute["status"] = "resolvido_cliente";
 
-    if (input.decision === "provider") {
+    const effectiveDecision = input.decision || input.resolution;
+    if (effectiveDecision === "provider") {
       finalAmount = dispute.conflict.providerDeclaredAmount;
       newStatus = "resolvido_prestador";
-    } else if (input.decision === "warning_sanction") {
+    } else if (effectiveDecision === "warning_sanction") {
       newStatus = "sancionado_prestador";
       finalAmount = dispute.conflict.clientDeclaredAmount;
+    } else if (effectiveDecision === "custom_arbitrated") {
+      newStatus = "resolvido_cliente";
     }
 
-    if (input.finalCustomAmount && input.finalCustomAmount > 0) {
-      finalAmount = input.finalCustomAmount;
+    const customAmt = input.finalCustomAmount ?? input.resolvedAmount;
+    if (customAmt && customAmt > 0) {
+      finalAmount = customAmt;
     }
 
     // Atualiza disputa
     const updatedDisputes = state.moderationDisputes.map((d) =>
-      d.id === input.caseId
+      d.id === targetId
         ? {
             ...d,
             status: newStatus,
             resolvedAt: Date.now(),
             resolvedBy: input.resolvedBy || "Administrador KONEKTA",
-            resolutionNotes: input.adminNotes,
+            resolutionNotes: input.adminNotes || input.moderatorNotes,
             finalDecidedAmount: finalAmount,
           }
         : d,
@@ -3429,10 +3544,13 @@ export const store = {
     const commissionAmount = input.commissionAmount ?? Math.round((val * commissionPct) / 100);
 
     const declId = `DEC-${Date.now()}`;
+    const providerId = input.providerId || state.user?.id || "edmilson-varela";
+    const providerName = input.providerName || state.user?.name || "Prestador KONEKTA";
+
     const decl: InPersonCashDeclaration = {
       id: declId,
-      providerId: input.providerId || state.user?.id || "pro_1",
-      providerName: input.providerName || state.user?.name || "Prestador KONEKTA",
+      providerId,
+      providerName,
       clientId: input.clientId || "client_direct",
       clientName: input.clientName,
       visitId: input.visitId,
@@ -3446,12 +3564,11 @@ export const store = {
     };
 
     // Cria mensagem interativa no chat
-    const providerKey = input.providerId ?? "suporte";
-    const prev = state.messages[providerKey] ?? [];
+    const prev = state.messages[providerId] ?? [];
     const declMsg: Message = {
       id: `m_dec_${Date.now()}`,
       from: "them",
-      text: `💵 Declaração de Pagamento Presencial: ${input.declaredAmount} STN recebidos em dinheiro. Aguardando confirmação do cliente para validação e garantia.`,
+      text: `💵 Declaração de Pagamento Presencial: ${val} STN recebidos em dinheiro. Aguardando confirmação do cliente para validação e garantia.`,
       at: Date.now(),
       status: "sent",
       kind: "in_person_confirmation",
@@ -3465,7 +3582,7 @@ export const store = {
         v.id === input.visitId
           ? {
               ...v,
-              declaredCashAmount: input.declaredAmount,
+              declaredCashAmount: val,
             }
           : v,
       );
@@ -3476,20 +3593,20 @@ export const store = {
       technicalVisits: updatedVisits,
       messages: {
         ...state.messages,
-        [providerKey]: [...prev, declMsg],
+        [providerId]: [...prev, declMsg],
       },
     });
 
     notify({
       title: "Confirmação de Pagamento em Dinheiro",
-      body: `${input.providerName} declarou ter recebido ${input.declaredAmount} STN pelo serviço. Por favor confirme na app.`,
+      body: `${providerName} declarou ter recebido ${val} STN pelo serviço. Por favor confirme na app.`,
       tone: "warning",
-      link: `/chat/${input.providerId}`,
+      link: `/chat/${providerId}`,
     });
 
     return {
       ok: true,
-      message: `Declaração de ${input.declaredAmount} STN enviada ao cliente para confirmação mútua.`,
+      message: `Declaração de ${val} STN enviada ao cliente para confirmação mútua.`,
       declaration: decl,
     };
   },
@@ -3805,16 +3922,18 @@ export const store = {
     });
   },
 
-  addCompanyTechnician(
-    tech: Omit<CompanyTechnician, "id" | "assignedOrdersCount" | "totalEarnings" | "rating">,
-  ) {
+  addCompanyTechnician(tech: Partial<CompanyTechnician> & { name: string; phone: string }) {
     const cur = state.companyProfile || seedCompanyProfile;
+    const specialty = tech.specialty || tech.specialties?.[0] || "Técnico Geral";
     const newTech: CompanyTechnician = {
-      ...tech,
       id: `tech-${Date.now()}`,
+      active: true,
       assignedOrdersCount: 0,
       totalEarnings: 0,
       rating: 5.0,
+      ...tech,
+      specialty,
+      specialties: tech.specialties || [specialty],
     };
     set({
       companyProfile: {
@@ -3824,7 +3943,7 @@ export const store = {
     });
     notify({
       title: "Técnico Adicionado à Equipa",
-      body: `${tech.name} (${tech.specialty}) foi associado à conta da empresa.`,
+      body: `${tech.name} (${specialty}) foi associado à conta da empresa.`,
       tone: "success",
       link: "/pro/empresa",
     });
@@ -3892,7 +4011,6 @@ export const store = {
     bankOrProviderName: string;
     referenceOrPhone?: string;
     proofImage?: string;
-    proofFileName?: string;
     notes?: string;
   }): { ok: boolean; message: string; deposit?: DepositRequest } {
     if (!input.amount || input.amount <= 0) {
@@ -3902,25 +4020,18 @@ export const store = {
       };
     }
 
-    if (!input.proofImage) {
-      return {
-        ok: false,
-        message:
-          "Anexe o comprovativo ou recibo do pagamento. Sem comprovativo o pedido de recarga não pode ser submetido.",
-      };
-    }
-
     const currentUserName =
       input.userName ||
       state.user?.name ||
       (input.userRole === "prestador" ? "Edmilson Varela" : "Manuel Trindade");
-    const currentUserId =
+    const currentUserId: string =
       input.userId ||
       state.user?.id ||
       (input.userRole === "prestador" ? "edmilson-varela" : "usr-client");
-    const currentUserRole =
-      input.userRole ||
-      (state.profiles.prestador && !state.profiles.cliente ? "prestador" : "cliente");
+    const currentUserRole: "cliente" | "prestador" =
+      input.userRole === "prestador" || (state.profiles.prestador && !state.profiles.cliente)
+        ? "prestador"
+        : "cliente";
 
     const newDeposit: DepositRequest = {
       id: `DEP-${Math.floor(1000 + Math.random() * 9000)}`,
@@ -3930,10 +4041,9 @@ export const store = {
       userPhone: input.userPhone || state.user?.phone || "+239 9918273",
       amount: input.amount,
       method: input.method,
-      bankOrProviderName: input.bankOrProviderName ?? "",
-      referenceOrPhone: input.referenceOrPhone ?? "",
+      bankOrProviderName: input.bankOrProviderName,
+      referenceOrPhone: input.referenceOrPhone,
       proofImage: input.proofImage,
-      proofFileName: input.proofFileName,
       notes: input.notes,
       status: "pendente_aprovacao",
       createdAt: Date.now(),

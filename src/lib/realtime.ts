@@ -46,7 +46,17 @@ class RealtimeSound {
     }
   }
 
-  play(tone: "message" | "quote" | "status" | "pop" | "coin" | "notification" | "pin_error" | "pin_success") {
+  play(
+    tone:
+      | "message"
+      | "quote"
+      | "status"
+      | "pop"
+      | "coin"
+      | "notification"
+      | "pin_error"
+      | "pin_success",
+  ) {
     const ctx = this.getContext();
     if (!ctx) return;
 
@@ -58,7 +68,7 @@ class RealtimeSound {
       osc.connect(gain);
       gain.connect(ctx.destination);
 
-      if (tone === "message" || tone === "notification") {
+      if (tone === "message") {
         // Dois tons rápidos agradáveis (587Hz -> 880Hz)
         osc.type = "sine";
         osc.frequency.setValueAtTime(587.33, now); // D5
@@ -67,8 +77,8 @@ class RealtimeSound {
         gain.gain.exponentialRampToValueAtTime(0.001, now + 0.22);
         osc.start(now);
         osc.stop(now + 0.22);
-      } else if (tone === "quote" || tone === "coin" || tone === "pin_success") {
-        // Acorde alegre ascendente para proposta/orçamento
+      } else if (tone === "quote" || tone === "notification") {
+        // Acorde alegre ascendente para proposta/orçamento/notificação
         osc.type = "triangle";
         osc.frequency.setValueAtTime(523.25, now); // C5
         osc.frequency.setValueAtTime(659.25, now + 0.08); // E5
@@ -77,15 +87,33 @@ class RealtimeSound {
         gain.gain.exponentialRampToValueAtTime(0.001, now + 0.35);
         osc.start(now);
         osc.stop(now + 0.35);
-      } else if (tone === "status" || tone === "pin_error") {
-        // Som sutil de confirmação
+      } else if (tone === "status" || tone === "pin_success") {
+        // Som sutil de confirmação / sucesso
         osc.type = "sine";
-        osc.frequency.setValueAtTime(440, now);
-        osc.frequency.exponentialRampToValueAtTime(660, now + 0.12);
-        gain.gain.setValueAtTime(0.06, now);
-        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.18);
+        osc.frequency.setValueAtTime(523.25, now);
+        osc.frequency.exponentialRampToValueAtTime(880, now + 0.12);
+        gain.gain.setValueAtTime(0.08, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.22);
         osc.start(now);
-        osc.stop(now + 0.18);
+        osc.stop(now + 0.22);
+      } else if (tone === "coin") {
+        // Som metálico de moeda / pagamento recebido
+        osc.type = "triangle";
+        osc.frequency.setValueAtTime(987.77, now); // B5
+        osc.frequency.setValueAtTime(1318.51, now + 0.08); // E6
+        gain.gain.setValueAtTime(0.09, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.28);
+        osc.start(now);
+        osc.stop(now + 0.28);
+      } else if (tone === "pin_error") {
+        // Som grave de erro
+        osc.type = "sawtooth";
+        osc.frequency.setValueAtTime(220, now);
+        osc.frequency.exponentialRampToValueAtTime(140, now + 0.15);
+        gain.gain.setValueAtTime(0.08, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.25);
+        osc.start(now);
+        osc.stop(now + 0.25);
       } else {
         // Pop suave
         osc.type = "sine";

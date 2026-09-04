@@ -6,8 +6,10 @@
 export interface CategoryBenchmark {
   categorySlug: string;
   categoryName: string;
+  name?: string;
   minPrice: number;
   avgPrice: number;
+  averagePrice?: number;
   maxPrice: number;
   typicalVisitFee: number;
   description: string;
@@ -116,11 +118,13 @@ export function getCategoryBenchmark(categorySlugOrName?: string): CategoryBench
   };
 }
 
-export type DivergenceTier = "tier_1_auto" | "tier_2_market" | "tier_3_moderation";
+export type DivergenceTier =
+  "tier_1_auto" | "tier_2_market" | "tier_2_benchmark" | "tier_3_moderation";
 
 export interface AlgorithmicValidationResult {
   tier: DivergenceTier;
   variationPct: number; // 0 a 100+
+  divergencePercent: number;
   differenceAmount: number;
   adoptedAmount: number;
   benchmark: CategoryBenchmark;
@@ -130,6 +134,7 @@ export interface AlgorithmicValidationResult {
   recommendation: "auto_approve_client" | "auto_approve_market_aligned" | "freeze_for_admin";
   messageForProvider: string;
   messageForClient: string;
+  message?: string;
 }
 
 /**
@@ -143,12 +148,19 @@ export interface AlgorithmicValidationResult {
  * - Tier 3 (Variação > 40% ou valores anómalos): Congelamento imediato e envio para Painel de Moderação.
  */
 export function evaluatePriceDivergence(params: {
-  providerAmount: number;
-  clientAmount: number;
+  providerAmount?: number;
+  declaredByProvider?: number;
+  clientAmount?: number;
+  confirmedByClient?: number;
+  benchmarkAverage?: number;
+  category?: string;
   categorySlugOrName?: string;
 }): AlgorithmicValidationResult {
-  const { providerAmount, clientAmount, categorySlugOrName } = params;
+  const providerAmount = params.providerAmount ?? params.declaredByProvider ?? 0;
+  const clientAmount = params.clientAmount ?? params.confirmedByClient ?? 0;
+  const categorySlugOrName = params.categorySlugOrName ?? params.category;
   const benchmark = getCategoryBenchmark(categorySlugOrName);
+  benchmark.averagePrice = benchmark.avgPrice;
 
   const safeClientAmount = Math.max(1, clientAmount);
   const diff = Math.abs(providerAmount - clientAmount);
@@ -165,6 +177,7 @@ export function evaluatePriceDivergence(params: {
     return {
       tier: "tier_1_auto",
       variationPct,
+      divergencePercent: variationPct,
       differenceAmount: diff,
       adoptedAmount: clientAmount,
       benchmark,
@@ -183,6 +196,7 @@ export function evaluatePriceDivergence(params: {
       return {
         tier: "tier_2_market",
         variationPct,
+        divergencePercent: variationPct,
         differenceAmount: diff,
         adoptedAmount: clientAmount,
         benchmark,
@@ -197,6 +211,7 @@ export function evaluatePriceDivergence(params: {
       return {
         tier: "tier_3_moderation",
         variationPct,
+        divergencePercent: variationPct,
         differenceAmount: diff,
         adoptedAmount: clientAmount,
         benchmark,
@@ -214,6 +229,7 @@ export function evaluatePriceDivergence(params: {
   return {
     tier: "tier_3_moderation",
     variationPct,
+    divergencePercent: variationPct,
     differenceAmount: diff,
     adoptedAmount: clientAmount,
     benchmark,
@@ -230,21 +246,29 @@ export function evaluatePriceDivergence(params: {
  * Calcula o abatimento da taxa de visita técnica no serviço final
  */
 export function calculateFinalServiceCharge(params: {
-  serviceGrossAmount: number;
+  serviceGrossAmount?: number;
+  totalServiceAmount?: number;
   visitFeePaid?: number;
+  visitFeePaidInEscrow?: number;
   deductVisitFee?: boolean;
 }): {
   serviceGrossAmount: number;
   visitFeeDeducted: number;
+  visitFeeDeduction: number;
   finalComplementToPay: number;
+  complementToPay: number;
 } {
-  const { serviceGrossAmount, visitFeePaid = 0, deductVisitFee = true } = params;
+  const serviceGrossAmount = params.serviceGrossAmount ?? params.totalServiceAmount ?? 0;
+  const visitFeePaid = params.visitFeePaid ?? params.visitFeePaidInEscrow ?? 0;
+  const deductVisitFee = params.deductVisitFee ?? true;
   const visitFeeDeducted = deductVisitFee ? Math.min(visitFeePaid, serviceGrossAmount) : 0;
   const finalComplementToPay = Math.max(0, serviceGrossAmount - visitFeeDeducted);
 
   return {
     serviceGrossAmount,
     visitFeeDeducted,
+    visitFeeDeduction: visitFeeDeducted,
     finalComplementToPay,
+    complementToPay: finalComplementToPay,
   };
 }

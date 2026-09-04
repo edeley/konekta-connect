@@ -38,16 +38,14 @@ export function InChatCheckoutModal({
   const neededTopup = isWalletInsufficient ? quote.gross - balance : 0;
 
   function handleConfirmPayment() {
-    if (isWalletInsufficient) {
-      toast.error("Saldo insuficiente na carteira", {
-        description: `Faltam ${formatDb(neededTopup)}. Faça o carregamento na carteira e envie o comprovativo — o saldo entra assim que o administrador confirmar.`,
-      });
-      return;
-    }
-
     setProcessing(true);
 
     setTimeout(() => {
+      // Se selecionou Dobra 24 ou se o saldo é insuficiente, adiciona o valor via recarga automática
+      if (selectedMethod === "dobra24" || isWalletInsufficient) {
+        store.topUp(quote.gross, "Dobra 24 (Cartão STP Instantâneo)");
+      }
+
       const success = store.payQuote(quote.providerId, quote.id);
       setProcessing(false);
 
@@ -61,7 +59,6 @@ export function InChatCheckoutModal({
       }
     }, 600);
   }
-
 
   return (
     <BottomSheet

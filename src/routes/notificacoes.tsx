@@ -24,6 +24,7 @@ export const Route = createFileRoute("/notificacoes")({
 
 const toneMap = {
   info: "primary",
+  primary: "primary",
   success: "success",
   warning: "warning",
   error: "error",

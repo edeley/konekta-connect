@@ -1596,9 +1596,10 @@ function ChatDetail() {
               const clientVal = Number(clientAgreedAmountInput);
               const benchmark = getCategoryBenchmark(activeTechnicalVisit.category);
               const preview = evaluatePriceDivergence({
-                providerAmount: providerVal,
-                clientAmount: clientVal,
-                categorySlugOrName: activeTechnicalVisit.category,
+                declaredByProvider: providerVal,
+                confirmedByClient: clientVal,
+                benchmarkAverage: benchmark.averagePrice,
+                category: activeTechnicalVisit.category,
               });
 
               return (
@@ -1606,7 +1607,7 @@ function ChatDetail() {
                   className={`p-3 rounded-xl text-xs space-y-1.5 border ${
                     preview.tier === "tier_1_auto"
                       ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-950 dark:text-emerald-200"
-                      : preview.tier === "tier_2_market"
+                      : preview.tier === "tier_2_benchmark"
                         ? "bg-blue-500/10 border-blue-500/30 text-blue-950 dark:text-blue-200"
                         : "bg-red-500/10 border-red-500/30 text-red-950 dark:text-red-200"
                   }`}
@@ -1614,14 +1615,14 @@ function ChatDetail() {
                   <div className="flex items-center justify-between font-bold">
                     <span>Divergência Calculada:</span>
                     <span className="font-mono text-sm">
-                      {preview.variationPct.toFixed(1)}%
+                      {preview.divergencePercent.toFixed(1)}%
                     </span>
                   </div>
                   <p className="text-[11px] leading-relaxed">
                     {preview.tier === "tier_1_auto" &&
                       "✅ Divergência ≤ 15%: Aceitação automática do valor informado pelo cliente e ajuste de custódia."}
-                    {preview.tier === "tier_2_market" &&
-                      `🔍 Divergência entre 15% e 40%: Verificação algorítmica face à média de mercado em São Tomé (${formatDb(benchmark.avgPrice)}).`}
+                    {preview.tier === "tier_2_benchmark" &&
+                      `🔍 Divergência entre 15% e 40%: Verificação algorítmica face à média de mercado em São Tomé (${formatDb(benchmark.avgPrice || benchmark.averagePrice || 0)}).`}
                     {preview.tier === "tier_3_moderation" &&
                       "🚨 Divergência crítica (> 40%): O pedido será congelado em custódia e encaminhado para o Painel de Moderação Administrativa KONEKTA."}
                   </p>
@@ -2119,7 +2120,7 @@ function ChatDetail() {
           providerName={provider.name}
           providerImage={provider.image}
           providerCategory={provider.category}
-          serviceName={reviewQuote.title}
+          serviceName={reviewQuote.title || reviewQuote.description}
         />
       )}
 

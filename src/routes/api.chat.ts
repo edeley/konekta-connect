@@ -38,9 +38,20 @@ export const Route = createFileRoute("/api/chat")({
           const { providerId, message, userContext, isPhoto } = body;
 
           // Regra obrigatória: Higienização rigorosa contra documentos
-          const safeUserContext = stripAnyDocumentFields(
-            (userContext || {}) as unknown as Record<string, unknown>,
-          ) as unknown as SanitizedUserChatContext;
+          const safeUserContext: SanitizedUserChatContext = userContext
+            ? (stripAnyDocumentFields(userContext) as SanitizedUserChatContext)
+            : {
+                name: "Cliente KONEKTA",
+                firstName: "Cliente",
+                phone: "+239 9900000",
+                role: "cliente",
+                district: "Água Grande",
+                city: "São Tomé",
+                activeOrders: [],
+                technicalVisits: [],
+                hasCompletedOrders: false,
+                memberSinceFormatted: "Membro KONEKTA",
+              };
 
           const provider = getProvider(providerId) || providers.find((p) => p.id === providerId);
           const providerName = provider?.name || "Especialista KONEKTA";

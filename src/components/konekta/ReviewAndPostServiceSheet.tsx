@@ -72,7 +72,7 @@ export function ReviewAndPostServiceSheet({
   };
 
   return (
-    <BottomSheet isOpen={isOpen} onClose={onClose}>
+    <BottomSheet open={isOpen} onClose={onClose}>
       <div id={`review-post-service-${orderId}`} className="space-y-4 max-w-lg mx-auto">
         {/* CABEÇALHO COM BANNER DE SUCESSO */}
         <div className="text-center space-y-1">

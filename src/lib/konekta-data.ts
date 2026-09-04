@@ -40,7 +40,6 @@ export type ServiceItemDetail = {
   unit?: string; // "serviço", "hora", "visita", "projeto"
   duration?: string;
   description?: string;
-  /** Taxa de deslocação cobrada pelo prestador (Db), quando aplicável. */
   travelFeeAmount?: number;
 };
 
@@ -48,17 +47,21 @@ export type Provider = {
   id: string;
   name: string;
   category: string;
+  categorySlug?: string;
   rating: number;
   reviews: number;
+  reviewsCount?: number;
   priceFrom: number;
   image: string;
   bio: string;
   services: string[];
-  categorySlug?: string;
-  district?: string;
-  reviewsCount?: number;
   detailedServices?: ServiceItemDetail[];
   portfolio?: PortfolioItem[];
+  district?: string;
+  districts?: string[];
+  phone?: string;
+  status?: string;
+  verified?: boolean;
 };
 
 export const providers: Provider[] = [

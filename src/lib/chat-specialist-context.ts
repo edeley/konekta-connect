@@ -15,7 +15,7 @@ export interface SanitizedUserChatContext {
   firstName: string;
   phone: string;
   email?: string;
-  role: "cliente" | "prestador" | "admin";
+  role: "cliente" | "prestador" | "admin" | "ambos";
 
   // Localização em São Tomé e Príncipe
   district: string;
@@ -158,7 +158,7 @@ export function buildSanitizedUserContext(params: {
  * Validador de segurança adicional:
  * Remove categoricamente qualquer chave de documento ou identificação fiscal/civil.
  */
-export function stripAnyDocumentFields<T extends Record<string, unknown>>(data: T): T {
+export function stripAnyDocumentFields<T extends object>(data: T): T {
   if (!data || typeof data !== "object") return data;
 
   const forbiddenKeys = [
@@ -179,7 +179,7 @@ export function stripAnyDocumentFields<T extends Record<string, unknown>>(data: 
     "hash",
   ];
 
-  const cleaned = { ...data };
+  const cleaned = { ...data } as Record<string, unknown>;
   for (const key of Object.keys(cleaned)) {
     if (forbiddenKeys.some((fk) => key.toLowerCase().includes(fk))) {
       delete cleaned[key];
