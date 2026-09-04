@@ -510,6 +510,7 @@ export type DepositRequest = {
   bankOrProviderName: string;
   referenceOrPhone: string;
   proofImage?: string;
+  proofFileName?: string;
   notes?: string;
   status: DepositStatus;
   createdAt: number;
@@ -3891,12 +3892,21 @@ export const store = {
     bankOrProviderName: string;
     referenceOrPhone?: string;
     proofImage?: string;
+    proofFileName?: string;
     notes?: string;
   }): { ok: boolean; message: string; deposit?: DepositRequest } {
     if (!input.amount || input.amount <= 0) {
       return {
         ok: false,
         message: "Insira um montante válido para o carregamento.",
+      };
+    }
+
+    if (!input.proofImage) {
+      return {
+        ok: false,
+        message:
+          "Anexe o comprovativo ou recibo do pagamento. Sem comprovativo o pedido de recarga não pode ser submetido.",
       };
     }
 
@@ -3923,6 +3933,7 @@ export const store = {
       bankOrProviderName: input.bankOrProviderName ?? "",
       referenceOrPhone: input.referenceOrPhone ?? "",
       proofImage: input.proofImage,
+      proofFileName: input.proofFileName,
       notes: input.notes,
       status: "pendente_aprovacao",
       createdAt: Date.now(),
