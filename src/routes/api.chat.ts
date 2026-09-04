@@ -39,8 +39,8 @@ export const Route = createFileRoute("/api/chat")({
 
           // Regra obrigatória: Higienização rigorosa contra documentos
           const safeUserContext = stripAnyDocumentFields(
-            userContext || ({} as SanitizedUserChatContext),
-          ) as SanitizedUserChatContext;
+            (userContext || {}) as unknown as Record<string, unknown>,
+          ) as unknown as SanitizedUserChatContext;
 
           const provider = getProvider(providerId) || providers.find((p) => p.id === providerId);
           const providerName = provider?.name || "Especialista KONEKTA";

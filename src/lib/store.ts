@@ -51,6 +51,10 @@ export type User = {
   city?: string;
   address?: string;
   createdAt: number;
+  isVerified?: boolean;
+  walletBalance?: number;
+  rating?: number;
+  completedJobs?: number;
 };
 
 export type PortfolioItem = {
@@ -228,6 +232,8 @@ export type Quote = {
   excludedItems?: string[];
   warranty?: string;
   estimatedDuration?: string;
+  title?: string;
+  completionOtp?: string;
 };
 
 export type QuoteRequestData = {
@@ -275,10 +281,10 @@ export type CompanyTechnician = {
   id: string;
   name: string;
   phone: string;
-  specialty: string;
+  specialty?: string;
   specialties?: string[];
   avatar?: string;
-  active: boolean;
+  active?: boolean;
   assignedOrdersCount: number;
   totalEarnings: number;
   rating: number;
@@ -422,6 +428,8 @@ export type TechnicalVisit = {
   finalComplementToPay?: number;
 
   // Check-in no local
+  checkedIn?: boolean;
+  clientConfirmedAmount?: number;
   checkInAt?: number;
   checkInLocation?: string;
 

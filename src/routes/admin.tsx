@@ -509,7 +509,7 @@ export default function AdminPage() {
                               dep.status === "aprovado"
                                 ? "success"
                                 : dep.status === "pendente_aprovacao"
-                                  ? "accent"
+                                  ? "primary"
                                   : "error"
                             }
                           >
@@ -709,7 +709,7 @@ export default function AdminPage() {
                           {formatDb(pay.amount)}
                         </p>
                         <div className="mt-1">
-                          <StatusPill tone={isPending ? "accent" : "success"}>
+                          <StatusPill tone={isPending ? "warning" : "success"}>
                             {isPending ? "⏳ Aguarda Transferência" : "✅ Processado"}
                           </StatusPill>
                         </div>
@@ -806,8 +806,8 @@ export default function AdminPage() {
                             isFinished
                               ? "success"
                               : order.status === "a-caminho" || order.status === "em-execucao"
-                                ? "accent"
-                                : "default"
+                                ? "primary"
+                                : "neutral"
                           }
                         >
                           {isFinished
@@ -1187,12 +1187,12 @@ export default function AdminPage() {
                                   type="button"
                                   onClick={() => {
                                     const res = store.resolveModerationCase({
-                                      disputeId: dispute.id,
-                                      resolution: "custom_arbitrated",
-                                      resolvedAmount:
+                                      caseId: dispute.id,
+                                      decision: "client",
+                                      finalCustomAmount:
                                         Number(customArbitratedAmount) ||
                                         dispute.marketBenchmark.avgPrice,
-                                      moderatorNotes: "Decisão arbitral final da administração.",
+                                      adminNotes: "Decisão arbitral final da administração.",
                                     });
                                     if (res.ok) {
                                       toast.success(res.message);
@@ -1259,8 +1259,8 @@ export default function AdminPage() {
                           v.status === "concluido"
                             ? "success"
                             : v.status === "a_caminho"
-                              ? "accent"
-                              : "default"
+                              ? "primary"
+                              : "neutral"
                         }
                       >
                         {v.status === "a_caminho"
