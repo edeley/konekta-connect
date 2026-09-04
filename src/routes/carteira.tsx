@@ -31,6 +31,7 @@ import {
 import { AppShell } from "@/components/AppShell";
 import { store, useStore } from "@/lib/store";
 import { toast } from "sonner";
+import { ProofUpload } from "@/components/konekta/ProofUpload";
 import { payoutLabel } from "@/lib/escrow";
 import { SmsOtpVerificationModal } from "@/components/konekta/SmsOtpVerificationModal";
 
@@ -107,6 +108,8 @@ function WalletPage() {
   const [topUpAmount, setTopUpAmount] = useState("500");
   const [dobra24Phone, setDobra24Phone] = useState(user?.phone || "+239 99");
   const [transferProofRef, setTransferProofRef] = useState("");
+  const [proofImage, setProofImage] = useState<string | undefined>(undefined);
+  const [proofFileName, setProofFileName] = useState<string | undefined>(undefined);
   const [isProcessingTopUp, setIsProcessingTopUp] = useState(false);
 
   // Withdraw Form State
@@ -144,6 +147,11 @@ function WalletPage() {
       return;
     }
 
+    if (!proofImage) {
+      toast.error("Anexe o comprovativo ou recibo do pagamento para submeter a recarga.");
+      return;
+    }
+
     setIsProcessingTopUp(true);
 
     const methodNames: Record<string, string> = {
@@ -169,13 +177,19 @@ function WalletPage() {
         topUpMethod === "dobra24"
           ? dobra24Phone || `DB24-${Date.now().toString().slice(-6)}`
           : transferProofRef.trim() || `TRF-${Date.now().toString().slice(-6)}`,
+      proofImage,
+      proofFileName,
       notes: "Carregamento de carteira digital do cliente",
     });
 
     setIsProcessingTopUp(false);
     setShowTopUp(false);
-    setTopUpAmount("");
-    setTransferProofRef("");
+    if (res.ok) {
+      setTopUpAmount("");
+      setTransferProofRef("");
+      setProofImage(undefined);
+      setProofFileName(undefined);
+    }
 
     if (res.ok) {
       toast.success("Comprovativo de Carregamento Submetido!", {
@@ -865,9 +879,24 @@ function WalletPage() {
                 />
               </label>
 
+              <ProofUpload
+                value={proofImage}
+                fileName={proofFileName}
+                onChange={(v, n) => {
+                  setProofImage(v);
+                  setProofFileName(n);
+                }}
+              />
+
+              <div className="p-3 rounded-xl bg-amber-500/10 border border-amber-500/30 text-[11px] text-amber-800 dark:text-amber-200">
+                O saldo só é creditado depois de o administrador confirmar o comprovativo enviado.
+              </div>
+
               <button
                 type="submit"
-                disabled={!topUpAmount || Number(topUpAmount) <= 0 || isProcessingTopUp}
+                disabled={
+                  !topUpAmount || Number(topUpAmount) <= 0 || isProcessingTopUp || !proofImage
+                }
                 className="w-full bg-primary text-primary-foreground rounded-xl py-3 font-bold text-xs shadow-sm hover:opacity-95 active:scale-98 transition-all disabled:opacity-50 cursor-pointer flex items-center justify-center gap-1.5"
               >
                 {isProcessingTopUp ? (
