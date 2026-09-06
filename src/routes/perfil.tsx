@@ -81,7 +81,7 @@ function ProfilePage() {
   const [savingPass, setSavingPass] = useState(false);
 
   const initial = user?.name?.charAt(0).toUpperCase() ?? "K";
-  const memberYear = user ? new Date(user.createdAt).getFullYear() : new Date().getFullYear();
+  const memberYear = user ? new Date(user.createdAt ?? Date.now()).getFullYear() : new Date().getFullYear();
   const isProvider = user?.role === "prestador";
   const docState = !profile
     ? "nao_enviado"

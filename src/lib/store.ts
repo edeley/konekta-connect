@@ -449,6 +449,7 @@ export type TechnicalVisit = {
   cashConfirmedByClient?: boolean;
   cashConfirmedAt?: number;
   cashReceiptDisputed?: boolean;
+  cashDisputeReason?: string;
 };
 
 export type ModerationDispute = {
@@ -519,6 +520,7 @@ export type DepositRequest = {
   bankOrProviderName?: string;
   referenceOrPhone?: string;
   proofImage?: string;
+  proofFileName?: string;
   notes?: string;
   status: DepositStatus;
   createdAt: number;
