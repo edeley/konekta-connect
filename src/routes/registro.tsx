@@ -853,7 +853,9 @@ function RegistoPage() {
             district: selectedDistricts[0] || "Água Grande",
           });
           store.updateProviderProfile({
-            businessName: proName.trim() || fullName.trim(),
+            providerType: proType,
+            companyName: proType === "empresa" ? proName.trim() : undefined,
+            businessName: proType === "empresa" ? proName.trim() : undefined,
             bio: proDescription.trim(),
             experienceYears: Number(proExperience) || undefined,
             coverageDistricts: selectedDistricts,
@@ -879,7 +881,10 @@ function RegistoPage() {
         if (role === "prestador" || role === "ambos") {
           store.registerProvider(
             {
-              name: fullName.trim() || proName.trim() || "Prestador KONEKTA",
+              name:
+                fullName.trim() ||
+                (proType === "empresa" ? proResponsibleName.trim() : proName.trim()) ||
+                "Prestador KONEKTA",
               phone: formattedPhone,
               email: email.trim() || undefined,
               avatar: avatarUrl || undefined,
@@ -887,7 +892,9 @@ function RegistoPage() {
             {
               category: selectedServices[0]?.category || "Serviços Gerais",
               subcategories: selectedServices.map((s) => s.name),
-              businessName: proName.trim() || fullName.trim(),
+              providerType: proType,
+              companyName: proType === "empresa" ? proName.trim() : undefined,
+              businessName: proType === "empresa" ? proName.trim() : undefined,
               bio: proDescription.trim(),
               experienceYears: Number(proExperience) || 1,
               yearsExperience: Number(proExperience) || 1,
