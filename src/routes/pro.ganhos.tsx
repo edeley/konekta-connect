@@ -261,9 +261,7 @@ function ProEarnings() {
     });
 
     toast.success(`Pagamento presencial de ${formatDb(val)} declarado com sucesso!`, {
-      description: isPlanActive
-        ? "0% de comissão deduzida (Plano Empresa Ativo)."
-        : `Comissão KONEKTA de ${formatDb(commAmount)} (${commPct}%) adicionada ao extrato.`,
+      description: `Comissão KONEKTA de ${formatDb(commAmount)} (${commPct}%) adicionada ao extrato.`,
     });
 
     setCashDeclModalOpen(false);
