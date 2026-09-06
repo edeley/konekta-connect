@@ -765,99 +765,6 @@ function ProEarnings() {
         )}
       </Section>
 
-      {/* GESTÃO DE EMPRESA & TÉCNICOS */}
-      {isCompany && (
-        <Section title="Gestão da Empresa & Equipa de Técnicos">
-          <KCard className="border border-border/80 space-y-4">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2.5">
-                <div className="size-9 rounded-2xl bg-primary/10 text-primary grid place-items-center">
-                  <Building size={18} />
-                </div>
-                <div>
-                  <p className="text-sm font-bold text-foreground">
-                    {companyProfile?.companyName ||
-                      providerProfile?.companyName ||
-                      "Empresa Prestadora"}
-                  </p>
-                  <p className="text-xs text-muted-foreground">
-                    NIF: {companyProfile?.nif || providerProfile?.documents?.nif || "Pendente"} ·{" "}
-                    {companyProfile?.technicians?.length || 0} Técnicos registados
-                  </p>
-                </div>
-              </div>
-              <button
-                type="button"
-                onClick={() => setAddTechModalOpen(true)}
-                className="px-3 py-1.5 rounded-xl bg-primary text-primary-foreground font-bold text-xs flex items-center gap-1 transition cursor-pointer active:scale-95"
-              >
-                <Plus size={13} /> Novo Técnico
-              </button>
-            </div>
-
-            {/* Lista de Técnicos */}
-            <div className="space-y-2 pt-1">
-              {!companyProfile?.technicians || companyProfile.technicians.length === 0 ? (
-                <div className="p-3.5 rounded-xl bg-muted/40 border border-dashed border-border text-center text-xs text-muted-foreground">
-                  Nenhum técnico associado à empresa. Adicione técnicos para atribuir chamados no
-                  terreno.
-                </div>
-              ) : (
-                companyProfile.technicians.map((t) => (
-                  <div
-                    key={t.id}
-                    className="p-3 rounded-xl bg-muted/40 border border-border flex items-center justify-between gap-3 text-xs"
-                  >
-                    <div className="min-w-0 flex-1">
-                      <div className="flex items-center gap-2">
-                        <span className="font-bold text-foreground truncate">{t.name}</span>
-                        <span
-                          className={`text-[9px] px-1.5 py-0.5 rounded-full font-bold ${
-                            t.active
-                              ? "bg-emerald-500/20 text-emerald-800 dark:text-emerald-300"
-                              : "bg-muted text-muted-foreground"
-                          }`}
-                        >
-                          {t.active ? "Ativo" : "Inativo"}
-                        </span>
-                      </div>
-                      <p className="text-[11px] text-muted-foreground truncate">
-                        Tel: {t.phone || "N/A"} ·{" "}
-                        {t.specialties?.join(", ") || t.specialty || "Geral"}
-                      </p>
-                    </div>
-
-                    <div className="flex items-center gap-1.5">
-                      <button
-                        type="button"
-                        onClick={() => {
-                          store.toggleCompanyTechnician(t.id);
-                          toast.success(`Estado do técnico ${t.name} atualizado`);
-                        }}
-                        className="px-2.5 py-1 rounded-lg bg-card border border-border text-[11px] font-semibold text-foreground hover:bg-muted transition cursor-pointer"
-                      >
-                        {t.active ? "Desativar" : "Ativar"}
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          store.removeCompanyTechnician(t.id);
-                          toast.success("Técnico removido");
-                        }}
-                        className="p-1.5 rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition cursor-pointer"
-                        aria-label="Remover técnico"
-                      >
-                        <Trash2 size={13} />
-                      </button>
-                    </div>
-                  </div>
-                ))
-              )}
-            </div>
-          </KCard>
-        </Section>
-      )}
-
       {/* MODELO DE COBRANÇA */}
       <Section title="Modelo de Cobrança KONEKTA" className="pb-10">
         <KCard className="border border-border/80 shadow-2xs space-y-3">
@@ -868,85 +775,32 @@ function ProEarnings() {
               </div>
               <div>
                 <p className="text-sm font-bold text-foreground">
-                  {isCompany
-                    ? isPlanActive
-                      ? "Plano Mensal Empresa Pro (0% Comissão)"
-                      : "Empresa · Modelo por Comissão (20%)"
-                    : "Profissional Individual · Comissão (20%)"}
+                  Prestador · Comissão de {commission}%
                 </p>
                 <p className="text-xs text-muted-foreground">
-                  {isCompany
-                    ? isPlanActive
-                      ? "0% de taxa por serviço · Subscrição mensal ativa"
-                      : "20% retidos apenas após aprovação do cliente"
-                    : "Profissionais simples pagam apenas comissão de sucesso por serviço"}
+                  A comissão só é retida depois de o cliente aprovar o serviço concluído.
                 </p>
               </div>
             </div>
-            <StatusPill tone={isPlanActive ? "success" : "default"}>
-              {isPlanActive ? "0% Taxa" : `${commission}% Taxa`}
-            </StatusPill>
+            <StatusPill tone="default">{commission}% Taxa</StatusPill>
           </div>
 
           <div className="p-3.5 rounded-2xl bg-muted/40 border border-border/60 text-xs text-foreground/80 space-y-2">
             <div className="flex items-center justify-between text-[11px]">
               <span className="text-muted-foreground">Tipo de Conta:</span>
-              <span className="font-bold text-foreground">
-                {isCompany ? "🏢 Empresa Prestadora" : "👤 Profissional Simples / Individual"}
-              </span>
+              <span className="font-bold text-foreground">Prestador de serviços</span>
             </div>
 
             <div className="flex items-center justify-between text-[11px]">
               <span className="text-muted-foreground">Regra de Cobrança:</span>
               <strong className="text-foreground">
-                {isPlanActive
-                  ? "Subscrição Mensal Fixa (0% comissão)"
-                  : "Comissão de Sucesso (20% por serviço)"}
+                Comissão de sucesso ({commission}% por serviço)
               </strong>
             </div>
-
-            {isPlanActive && companyMonetization.planExpiresAt && (
-              <div className="flex items-center justify-between text-[11px]">
-                <span className="text-muted-foreground">Renovação do plano:</span>
-                <strong className="text-emerald-800 dark:text-emerald-300 font-bold">
-                  {new Date(companyMonetization.planExpiresAt).toLocaleDateString("pt-PT")}
-                </strong>
-              </div>
-            )}
           </div>
-
-          {/* Ações baseadas no Tipo de Perfil */}
-          {isCompany ? (
-            <button
-              type="button"
-              onClick={() => setPlanModalOpen(true)}
-              className="w-full py-2.5 rounded-xl border border-primary/30 bg-primary/5 hover:bg-primary/10 text-primary font-bold text-xs flex items-center justify-center gap-1.5 transition cursor-pointer"
-            >
-              <Building2 size={14} />
-              {isPlanActive
-                ? "Gerir ou Renovar Plano Empresa"
-                : "Escolher Modelo: Comissão vs Plano Mensal"}
-            </button>
-          ) : (
-            <div className="pt-1 space-y-2">
-              <div className="p-2.5 rounded-xl bg-amber-500/10 border border-amber-500/20 text-[11px] text-amber-900 dark:text-amber-200">
-                💡 <strong>Regra KONEKTA:</strong> Os profissionais simples funcionam exclusivamente
-                com comissão por serviço concluído (20%). Apenas{" "}
-                <strong>empresas prestadoras</strong> podem optar pelo plano mensal fixo.
-              </div>
-
-              <button
-                type="button"
-                onClick={() => setCompanyUpgradeModalOpen(true)}
-                className="w-full py-2 rounded-xl bg-muted hover:bg-muted/80 text-foreground font-bold text-xs flex items-center justify-center gap-1.5 transition border border-border cursor-pointer"
-              >
-                <Building2 size={13} />
-                Registar Perfil como Empresa Comercial
-              </button>
-            </div>
-          )}
         </KCard>
       </Section>
+
 
       {/* ========================================================================= */}
       {/* BOTTOM SHEET DE DETALHE DE TRANSAÇÃO (MATEMÁTICA & DETALHES) */}
