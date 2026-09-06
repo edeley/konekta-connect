@@ -430,10 +430,13 @@ function RegistoPage() {
   };
 
   // Section 2: Perfil profissional
-  const [proType, setProType] = useState<ProType>(
-    currentProvider?.businessName ? "empresa" : "individual",
+  // O tipo vem sempre do que o utilizador escolheu antes (nunca inferido pelo nome).
+  const [proType, setProType] = useState<ProType>(currentProvider?.providerType ?? "individual");
+  const [proName, setProName] = useState(
+    currentProvider?.providerType === "empresa"
+      ? currentProvider?.companyName || currentProvider?.businessName || ""
+      : currentUser?.name || "",
   );
-  const [proName, setProName] = useState(currentProvider?.businessName || currentUser?.name || "");
   const [proResponsibleName, setProResponsibleName] = useState(currentUser?.name || "");
   const [proDescription, setProDescription] = useState(currentProvider?.bio || "");
   const [proExperience, setProExperience] = useState(
