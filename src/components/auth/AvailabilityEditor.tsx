@@ -15,7 +15,7 @@ export const DEFAULT_AVAILABILITY: Availability = Object.fromEntries(
   ]),
 ) as Availability;
 
-export function summarizeAvailability(a: Availability) {
+function summarizeAvailability(a: Availability) {
   const active = WEEK_DAYS.filter((d) => a[d.id]?.active);
   if (!active.length) return "Sem dias definidos";
   return active

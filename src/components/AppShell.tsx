@@ -7,7 +7,7 @@ import { OfflineBanner } from "./konekta/kit";
 import { useStore, type UserRole } from "@/lib/store";
 import { cn } from "@/lib/utils";
 
-export function useOnline() {
+function useOnline() {
   const [online, setOnline] = useState(true);
   useEffect(() => {
     if (typeof window === "undefined" || typeof navigator === "undefined") return;

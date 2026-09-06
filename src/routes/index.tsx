@@ -148,12 +148,13 @@ function Home() {
   const filteredProviders = useMemo(() => {
     let list = providers;
     if (selectedDistrict !== "Todos") {
+      const matchLower = selectedDistrict.toLowerCase();
       list = list.filter(
         (p) =>
-          p.bio.toLowerCase().includes(selectedDistrict.toLowerCase()) ||
-          p.name.toLowerCase().includes(selectedDistrict.toLowerCase()) ||
           p.district === selectedDistrict ||
-          true,
+          (p.districts && p.districts.includes(selectedDistrict)) ||
+          p.bio.toLowerCase().includes(matchLower) ||
+          p.name.toLowerCase().includes(matchLower),
       );
     }
     return list;
