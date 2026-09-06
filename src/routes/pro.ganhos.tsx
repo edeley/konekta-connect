@@ -261,9 +261,7 @@ function ProEarnings() {
     });
 
     toast.success(`Pagamento presencial de ${formatDb(val)} declarado com sucesso!`, {
-      description: isPlanActive
-        ? "0% de comissão deduzida (Plano Empresa Ativo)."
-        : `Comissão KONEKTA de ${formatDb(commAmount)} (${commPct}%) adicionada ao extrato.`,
+      description: `Comissão KONEKTA de ${formatDb(commAmount)} (${commPct}%) adicionada ao extrato.`,
     });
 
     setCashDeclModalOpen(false);
@@ -273,72 +271,6 @@ function ProEarnings() {
     setCashDeclNotes("");
   }
 
-  function handleSubscribePlan() {
-    if (!isCompany) {
-      toast.error("Apenas empresas prestadoras podem subscrever o plano mensal");
-      return;
-    }
-    const res = store.subscribeCompanyPlan(1);
-    if (res.ok) {
-      toast.success(res.message);
-      setPlanModalOpen(false);
-    } else {
-      toast.error(res.message);
-    }
-  }
-
-  function handleUpgradeToCompany(e: React.FormEvent) {
-    e.preventDefault();
-    if (!companyNameInput.trim()) {
-      toast.error("Insira o nome oficial da empresa.");
-      return;
-    }
-    store.updateProviderProfile({
-      providerType: "empresa",
-      companyName: companyNameInput.trim(),
-      documents: {
-        ...providerProfile?.documents,
-        nif: companyNifInput.trim(),
-        selfieOk: true,
-      },
-    });
-    store.updateCompanyProfile({
-      companyName: companyNameInput.trim(),
-      nif: companyNifInput.trim(),
-      iban: companyIbanInput.trim(),
-    });
-    toast.success("Perfil atualizado para Empresa Prestadora de Serviços!");
-    setCompanyUpgradeModalOpen(false);
-    setPlanModalOpen(true);
-  }
-
-  function handleAddTechnician(e: React.FormEvent) {
-    e.preventDefault();
-    if (!techName.trim()) {
-      toast.error("Insira o nome do técnico.");
-      return;
-    }
-    const res = store.addCompanyTechnician({
-      name: techName.trim(),
-      phone: techPhone.trim(),
-      specialties: techSpecialty
-        ? techSpecialty
-            .split(",")
-            .map((s) => s.trim())
-            .filter(Boolean)
-        : ["Técnico Especialista"],
-    });
-
-    if (res.ok) {
-      toast.success(res.message);
-      setAddTechModalOpen(false);
-      setTechName("");
-      setTechPhone("");
-      setTechSpecialty("");
-    } else {
-      toast.error(res.message);
-    }
-  }
 
   return (
     <AppShell roles={["prestador"]}>
@@ -765,99 +697,6 @@ function ProEarnings() {
         )}
       </Section>
 
-      {/* GESTÃO DE EMPRESA & TÉCNICOS */}
-      {isCompany && (
-        <Section title="Gestão da Empresa & Equipa de Técnicos">
-          <KCard className="border border-border/80 space-y-4">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2.5">
-                <div className="size-9 rounded-2xl bg-primary/10 text-primary grid place-items-center">
-                  <Building size={18} />
-                </div>
-                <div>
-                  <p className="text-sm font-bold text-foreground">
-                    {companyProfile?.companyName ||
-                      providerProfile?.companyName ||
-                      "Empresa Prestadora"}
-                  </p>
-                  <p className="text-xs text-muted-foreground">
-                    NIF: {companyProfile?.nif || providerProfile?.documents?.nif || "Pendente"} ·{" "}
-                    {companyProfile?.technicians?.length || 0} Técnicos registados
-                  </p>
-                </div>
-              </div>
-              <button
-                type="button"
-                onClick={() => setAddTechModalOpen(true)}
-                className="px-3 py-1.5 rounded-xl bg-primary text-primary-foreground font-bold text-xs flex items-center gap-1 transition cursor-pointer active:scale-95"
-              >
-                <Plus size={13} /> Novo Técnico
-              </button>
-            </div>
-
-            {/* Lista de Técnicos */}
-            <div className="space-y-2 pt-1">
-              {!companyProfile?.technicians || companyProfile.technicians.length === 0 ? (
-                <div className="p-3.5 rounded-xl bg-muted/40 border border-dashed border-border text-center text-xs text-muted-foreground">
-                  Nenhum técnico associado à empresa. Adicione técnicos para atribuir chamados no
-                  terreno.
-                </div>
-              ) : (
-                companyProfile.technicians.map((t) => (
-                  <div
-                    key={t.id}
-                    className="p-3 rounded-xl bg-muted/40 border border-border flex items-center justify-between gap-3 text-xs"
-                  >
-                    <div className="min-w-0 flex-1">
-                      <div className="flex items-center gap-2">
-                        <span className="font-bold text-foreground truncate">{t.name}</span>
-                        <span
-                          className={`text-[9px] px-1.5 py-0.5 rounded-full font-bold ${
-                            t.active
-                              ? "bg-emerald-500/20 text-emerald-800 dark:text-emerald-300"
-                              : "bg-muted text-muted-foreground"
-                          }`}
-                        >
-                          {t.active ? "Ativo" : "Inativo"}
-                        </span>
-                      </div>
-                      <p className="text-[11px] text-muted-foreground truncate">
-                        Tel: {t.phone || "N/A"} ·{" "}
-                        {t.specialties?.join(", ") || t.specialty || "Geral"}
-                      </p>
-                    </div>
-
-                    <div className="flex items-center gap-1.5">
-                      <button
-                        type="button"
-                        onClick={() => {
-                          store.toggleCompanyTechnician(t.id);
-                          toast.success(`Estado do técnico ${t.name} atualizado`);
-                        }}
-                        className="px-2.5 py-1 rounded-lg bg-card border border-border text-[11px] font-semibold text-foreground hover:bg-muted transition cursor-pointer"
-                      >
-                        {t.active ? "Desativar" : "Ativar"}
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          store.removeCompanyTechnician(t.id);
-                          toast.success("Técnico removido");
-                        }}
-                        className="p-1.5 rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition cursor-pointer"
-                        aria-label="Remover técnico"
-                      >
-                        <Trash2 size={13} />
-                      </button>
-                    </div>
-                  </div>
-                ))
-              )}
-            </div>
-          </KCard>
-        </Section>
-      )}
-
       {/* MODELO DE COBRANÇA */}
       <Section title="Modelo de Cobrança KONEKTA" className="pb-10">
         <KCard className="border border-border/80 shadow-2xs space-y-3">
@@ -868,85 +707,32 @@ function ProEarnings() {
               </div>
               <div>
                 <p className="text-sm font-bold text-foreground">
-                  {isCompany
-                    ? isPlanActive
-                      ? "Plano Mensal Empresa Pro (0% Comissão)"
-                      : "Empresa · Modelo por Comissão (20%)"
-                    : "Profissional Individual · Comissão (20%)"}
+                  Prestador · Comissão de {commission}%
                 </p>
                 <p className="text-xs text-muted-foreground">
-                  {isCompany
-                    ? isPlanActive
-                      ? "0% de taxa por serviço · Subscrição mensal ativa"
-                      : "20% retidos apenas após aprovação do cliente"
-                    : "Profissionais simples pagam apenas comissão de sucesso por serviço"}
+                  A comissão só é retida depois de o cliente aprovar o serviço concluído.
                 </p>
               </div>
             </div>
-            <StatusPill tone={isPlanActive ? "success" : "default"}>
-              {isPlanActive ? "0% Taxa" : `${commission}% Taxa`}
-            </StatusPill>
+            <StatusPill tone="default">{commission}% Taxa</StatusPill>
           </div>
 
           <div className="p-3.5 rounded-2xl bg-muted/40 border border-border/60 text-xs text-foreground/80 space-y-2">
             <div className="flex items-center justify-between text-[11px]">
               <span className="text-muted-foreground">Tipo de Conta:</span>
-              <span className="font-bold text-foreground">
-                {isCompany ? "🏢 Empresa Prestadora" : "👤 Profissional Simples / Individual"}
-              </span>
+              <span className="font-bold text-foreground">Prestador de serviços</span>
             </div>
 
             <div className="flex items-center justify-between text-[11px]">
               <span className="text-muted-foreground">Regra de Cobrança:</span>
               <strong className="text-foreground">
-                {isPlanActive
-                  ? "Subscrição Mensal Fixa (0% comissão)"
-                  : "Comissão de Sucesso (20% por serviço)"}
+                Comissão de sucesso ({commission}% por serviço)
               </strong>
             </div>
-
-            {isPlanActive && companyMonetization.planExpiresAt && (
-              <div className="flex items-center justify-between text-[11px]">
-                <span className="text-muted-foreground">Renovação do plano:</span>
-                <strong className="text-emerald-800 dark:text-emerald-300 font-bold">
-                  {new Date(companyMonetization.planExpiresAt).toLocaleDateString("pt-PT")}
-                </strong>
-              </div>
-            )}
           </div>
-
-          {/* Ações baseadas no Tipo de Perfil */}
-          {isCompany ? (
-            <button
-              type="button"
-              onClick={() => setPlanModalOpen(true)}
-              className="w-full py-2.5 rounded-xl border border-primary/30 bg-primary/5 hover:bg-primary/10 text-primary font-bold text-xs flex items-center justify-center gap-1.5 transition cursor-pointer"
-            >
-              <Building2 size={14} />
-              {isPlanActive
-                ? "Gerir ou Renovar Plano Empresa"
-                : "Escolher Modelo: Comissão vs Plano Mensal"}
-            </button>
-          ) : (
-            <div className="pt-1 space-y-2">
-              <div className="p-2.5 rounded-xl bg-amber-500/10 border border-amber-500/20 text-[11px] text-amber-900 dark:text-amber-200">
-                💡 <strong>Regra KONEKTA:</strong> Os profissionais simples funcionam exclusivamente
-                com comissão por serviço concluído (20%). Apenas{" "}
-                <strong>empresas prestadoras</strong> podem optar pelo plano mensal fixo.
-              </div>
-
-              <button
-                type="button"
-                onClick={() => setCompanyUpgradeModalOpen(true)}
-                className="w-full py-2 rounded-xl bg-muted hover:bg-muted/80 text-foreground font-bold text-xs flex items-center justify-center gap-1.5 transition border border-border cursor-pointer"
-              >
-                <Building2 size={13} />
-                Registar Perfil como Empresa Comercial
-              </button>
-            </div>
-          )}
         </KCard>
       </Section>
+
 
       {/* ========================================================================= */}
       {/* BOTTOM SHEET DE DETALHE DE TRANSAÇÃO (MATEMÁTICA & DETALHES) */}
@@ -1420,180 +1206,6 @@ function ProEarnings() {
         </div>
       </BottomSheet>
 
-      {/* MODAL DE ADICIONAR NOVO TÉCNICO */}
-      <BottomSheet
-        open={addTechModalOpen}
-        onClose={() => setAddTechModalOpen(false)}
-        title="Adicionar Técnico à Equipa"
-        description="Registe os colaboradores técnicos da sua empresa para deslocação a serviços de campo."
-      >
-        <form onSubmit={handleAddTechnician} className="space-y-3 pt-2">
-          <div>
-            <label className="text-xs font-bold text-foreground block mb-1">
-              Nome Completo do Técnico *
-            </label>
-            <input
-              type="text"
-              value={techName}
-              onChange={(e) => setTechName(e.target.value)}
-              placeholder="Ex: Manuel da Costa"
-              className="w-full h-11 px-3.5 rounded-xl bg-muted text-xs font-medium text-foreground outline-none"
-              required
-            />
-          </div>
-
-          <div>
-            <label className="text-xs font-bold text-foreground block mb-1">
-              Contacto Telefónico STP
-            </label>
-            <input
-              type="tel"
-              value={techPhone}
-              onChange={(e) => setTechPhone(e.target.value)}
-              placeholder="Ex: 9912345"
-              className="w-full h-11 px-3.5 rounded-xl bg-muted text-xs font-medium text-foreground outline-none font-mono"
-            />
-          </div>
-
-          <div>
-            <label className="text-xs font-bold text-foreground block mb-1">
-              Especialidades (separadas por vírgula)
-            </label>
-            <input
-              type="text"
-              value={techSpecialty}
-              onChange={(e) => setTechSpecialty(e.target.value)}
-              placeholder="Ex: Eletricidade, Redes, Climatização"
-              className="w-full h-11 px-3.5 rounded-xl bg-muted text-xs font-medium text-foreground outline-none"
-            />
-          </div>
-
-          <button
-            type="submit"
-            className="w-full py-3.5 rounded-2xl bg-primary text-primary-foreground font-bold text-xs flex items-center justify-center gap-2 cursor-pointer shadow-2xs"
-          >
-            <Plus size={16} /> Registar Técnico
-          </button>
-        </form>
-      </BottomSheet>
-
-      {/* MODAL DE PLANOS DE EMPRESA */}
-      <BottomSheet
-        open={planModalOpen}
-        onClose={() => setPlanModalOpen(false)}
-        title="Modelos de Cobrança para Empresas"
-        description="Apenas empresas prestadoras de serviços podem alternar entre Comissão ou Plano Mensal."
-      >
-        <div className="space-y-4 pt-2">
-          <div
-            onClick={() => {
-              store.switchMonetizationModel("comissao");
-              toast.success("Modalidade de comissão por serviço selecionada");
-              setPlanModalOpen(false);
-            }}
-            className={`p-4 rounded-2xl border-2 transition cursor-pointer ${
-              !isPlanActive
-                ? "border-primary bg-primary/5"
-                : "border-border bg-card hover:bg-muted/30"
-            }`}
-          >
-            <div className="flex items-center justify-between mb-1">
-              <span className="text-xs font-bold text-foreground">Plano Flexível (Comissão)</span>
-              <span className="text-xs font-bold text-primary">{commission}% por serviço</span>
-            </div>
-            <p className="text-[11px] text-muted-foreground">
-              Sem custos fixos mensais. A empresa paga apenas 20% quando fechar e concluir serviços.
-            </p>
-          </div>
-
-          <div
-            className={`p-4 rounded-2xl border-2 transition ${
-              isPlanActive ? "border-emerald-500 bg-emerald-500/10" : "border-border bg-card"
-            }`}
-          >
-            <div className="flex items-center justify-between mb-1">
-              <span className="text-xs font-bold text-foreground flex items-center gap-1">
-                <Building2 size={14} className="text-primary" /> Plano Mensal Empresa (0% Comissão)
-              </span>
-              <span className="text-xs font-black text-emerald-800 dark:text-emerald-300 font-mono">
-                {formatDb(companyPlanFee)}/mês
-              </span>
-            </div>
-            <p className="text-[11px] text-muted-foreground mb-3">
-              Receba 100% do valor dos seus orçamentos sem qualquer dedução de comissões por
-              serviço.
-            </p>
-
-            <button
-              type="button"
-              onClick={handleSubscribePlan}
-              className="w-full py-3 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs transition active:scale-98 cursor-pointer"
-            >
-              {isPlanActive
-                ? "Renovar Subscrição (1 Mês)"
-                : `Subscrever por ${formatDb(companyPlanFee)}/mês`}
-            </button>
-          </div>
-        </div>
-      </BottomSheet>
-
-      {/* MODAL DE UPGRADE PARA EMPRESA */}
-      <BottomSheet
-        open={companyUpgradeModalOpen}
-        onClose={() => setCompanyUpgradeModalOpen(false)}
-        title="Registar como Empresa Prestadora"
-        description="Empresas registadas têm acesso a planos mensais fixos com 0% de taxa por serviço e gestão de múltiplos técnicos."
-      >
-        <form onSubmit={handleUpgradeToCompany} className="space-y-3 pt-2">
-          <div>
-            <label className="text-xs font-bold text-foreground block mb-1">
-              Nome Comercial da Empresa *
-            </label>
-            <input
-              type="text"
-              value={companyNameInput}
-              onChange={(e) => setCompanyNameInput(e.target.value)}
-              placeholder="Ex: EletroSantome Lda"
-              required
-              className="w-full h-11 px-3.5 rounded-xl bg-muted text-xs font-medium text-foreground outline-none"
-            />
-          </div>
-
-          <div>
-            <label className="text-xs font-bold text-foreground block mb-1">
-              NIF da Empresa (São Tomé e Príncipe)
-            </label>
-            <input
-              type="text"
-              value={companyNifInput}
-              onChange={(e) => setCompanyNifInput(e.target.value)}
-              placeholder="Ex: 500123456"
-              className="w-full h-11 px-3.5 rounded-xl bg-muted text-xs font-medium text-foreground outline-none font-mono"
-            />
-          </div>
-
-          <div>
-            <label className="text-xs font-bold text-foreground block mb-1">
-              IBAN Bancário Corporativo (BISTP / BGFI / Afriland)
-            </label>
-            <input
-              type="text"
-              value={companyIbanInput}
-              onChange={(e) => setCompanyIbanInput(e.target.value)}
-              placeholder="ST53.0001.0000.xxxx.xxxx.x"
-              className="w-full h-11 px-3.5 rounded-xl bg-muted text-xs font-medium text-foreground outline-none font-mono"
-            />
-          </div>
-
-          <button
-            type="submit"
-            className="w-full py-3.5 rounded-2xl bg-primary text-primary-foreground font-bold text-xs flex items-center justify-center gap-1.5 shadow-sm active:scale-98 transition cursor-pointer"
-          >
-            <Building2 size={14} />
-            Confirmar Registo de Empresa
-          </button>
-        </form>
-      </BottomSheet>
     </AppShell>
   );
 }
