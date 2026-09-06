@@ -4013,6 +4013,7 @@ export const store = {
     bankOrProviderName: string;
     referenceOrPhone?: string;
     proofImage?: string;
+    proofFileName?: string;
     notes?: string;
   }): { ok: boolean; message: string; deposit?: DepositRequest } {
     if (!input.amount || input.amount <= 0) {
