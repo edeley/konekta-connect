@@ -430,10 +430,13 @@ function RegistoPage() {
   };
 
   // Section 2: Perfil profissional
-  const [proType, setProType] = useState<ProType>(
-    currentProvider?.businessName ? "empresa" : "individual",
+  // O tipo vem sempre do que o utilizador escolheu antes (nunca inferido pelo nome).
+  const [proType, setProType] = useState<ProType>(currentProvider?.providerType ?? "individual");
+  const [proName, setProName] = useState(
+    currentProvider?.providerType === "empresa"
+      ? currentProvider?.companyName || currentProvider?.businessName || ""
+      : currentUser?.name || "",
   );
-  const [proName, setProName] = useState(currentProvider?.businessName || currentUser?.name || "");
   const [proResponsibleName, setProResponsibleName] = useState(currentUser?.name || "");
   const [proDescription, setProDescription] = useState(currentProvider?.bio || "");
   const [proExperience, setProExperience] = useState(
@@ -850,7 +853,9 @@ function RegistoPage() {
             district: selectedDistricts[0] || "Água Grande",
           });
           store.updateProviderProfile({
-            businessName: proName.trim() || fullName.trim(),
+            providerType: proType,
+            companyName: proType === "empresa" ? proName.trim() : undefined,
+            businessName: proType === "empresa" ? proName.trim() : undefined,
             bio: proDescription.trim(),
             experienceYears: Number(proExperience) || undefined,
             coverageDistricts: selectedDistricts,
@@ -876,7 +881,10 @@ function RegistoPage() {
         if (role === "prestador" || role === "ambos") {
           store.registerProvider(
             {
-              name: fullName.trim() || proName.trim() || "Prestador KONEKTA",
+              name:
+                fullName.trim() ||
+                (proType === "empresa" ? proResponsibleName.trim() : proName.trim()) ||
+                "Prestador KONEKTA",
               phone: formattedPhone,
               email: email.trim() || undefined,
               avatar: avatarUrl || undefined,
@@ -884,7 +892,9 @@ function RegistoPage() {
             {
               category: selectedServices[0]?.category || "Serviços Gerais",
               subcategories: selectedServices.map((s) => s.name),
-              businessName: proName.trim() || fullName.trim(),
+              providerType: proType,
+              companyName: proType === "empresa" ? proName.trim() : undefined,
+              businessName: proType === "empresa" ? proName.trim() : undefined,
               bio: proDescription.trim(),
               experienceYears: Number(proExperience) || 1,
               yearsExperience: Number(proExperience) || 1,
