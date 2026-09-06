@@ -216,6 +216,10 @@ function ProHome() {
   const today = orders.filter((o) => o.status !== "concluido" && o.status !== "avaliado");
   const done = orders.filter((o) => o.status === "concluido" || o.status === "avaliado");
   const firstName = user?.name?.split(" ")[0] ?? "Prestador";
+  const isCompany = providerProfile?.providerType === "empresa";
+  const displayName = isCompany
+    ? providerProfile?.companyName || providerProfile?.businessName || firstName
+    : firstName;
 
   // KYC Status
   const kycStatus: KycStatus =
@@ -282,7 +286,7 @@ function ProHome() {
   return (
     <AppShell roles={["prestador"]}>
       {/* HEADER VERDE KONEKTA PRO COM TOGGLE ONLINE/OFFLINE */}
-      <header className="rounded-b-3xl bg-emerald-600 px-5 pb-6 pt-7 text-white shadow-lg space-y-4">
+      <header className="rounded-b-[28px] bg-gradient-to-br from-emerald-600 via-emerald-600 to-emerald-700 px-5 pb-7 pt-8 text-white shadow-xl space-y-4">
         <div className="flex items-start justify-between">
           <div>
             <div className="flex items-center gap-2">
@@ -291,9 +295,11 @@ function ProHome() {
               </span>
               <span className="text-xs text-emerald-100 font-medium">São Tomé e Príncipe</span>
             </div>
-            <h1 className="text-2xl font-black leading-tight mt-1">Olá, {firstName}! 👋</h1>
-            <p className="text-xs text-emerald-100 mt-0.5">
-              Painel Privado do Prestador de Serviços
+            <h1 className="text-[26px] font-black leading-tight mt-1.5 tracking-tight">
+              {isCompany ? displayName : `Olá, ${displayName}`}
+            </h1>
+            <p className="text-xs text-emerald-100/90 mt-1">
+              {isCompany ? "Conta de empresa · Painel do prestador" : "Conta individual · Painel do prestador"}
             </p>
           </div>
 
@@ -326,7 +332,7 @@ function ProHome() {
             />
             <div className="min-w-0">
               <p className="text-xs font-black truncate">
-                {isOnline ? "🟢 Status: Online para Chamados" : "⚪ Status: Offline (Pausado)"}
+                {isOnline ? "Disponível para chamados" : "Indisponível (pausado)"}
               </p>
               <p className="text-[10px] text-emerald-100 truncate">
                 {isOnline
