@@ -593,12 +593,12 @@ function ChatDetail() {
             <div className="mx-4 mt-3 p-3.5 rounded-2xl bg-destructive/15 border border-destructive/30 text-destructive text-xs space-y-1.5 animate-pulse">
               <div className="flex items-center gap-2 font-bold">
                 <AlertTriangle size={16} />
-                <span>Conta KONEKTA PRO Suspensa por Dívida</span>
+                <span>Conta KONEKTA Suspensa por Dívida</span>
               </div>
               <p className="text-[11px] leading-relaxed text-foreground/90">
                 A sua dívida acumulada de comissões atingiu <strong>{providerDebt} STN</strong>{" "}
                 (limite máximo de 500 STN). Não pode enviar novos orçamentos ou propor visitas
-                enquanto não regularizar a sua conta na Carteira PRO.
+                enquanto não regularizar a sua conta na Carteira KONEKTA.
               </p>
               <Link
                 to="/pro/ganhos"
@@ -1169,7 +1169,7 @@ function ChatDetail() {
                       {!isClient && isPending && (
                         <p className="text-[10px] text-muted-foreground italic text-center pt-1 border-t border-border">
                           Aguardando validação do cliente. A comissão de{" "}
-                          {formatDb(dec.commissionAmount)} será debitada da sua conta KONEKTA PRO.
+                          {formatDb(dec.commissionAmount)} será debitada da sua conta KONEKTA.
                         </p>
                       )}
 

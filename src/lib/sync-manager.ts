@@ -38,6 +38,11 @@ export type GPSLocationResult = {
   district: string;
   zone?: string;
   street?: string;
+  houseNumber?: string;
+  neighborhood?: string;
+  landmark?: string;
+  plusCode?: string;
+  geocodingProvider?: string;
   formattedAddress: string;
   mapsUrl: string;
   directionsUrl: string;
@@ -87,6 +92,11 @@ export async function getCurrentGPSLocation(): Promise<GPSLocationResult | null>
     district: result.district,
     zone: result.zone,
     street: result.street,
+    houseNumber: result.houseNumber,
+    neighborhood: result.neighborhood,
+    landmark: result.landmark,
+    plusCode: result.plusCode,
+    geocodingProvider: result.geocodingProvider,
     formattedAddress: result.formattedAddress,
     mapsUrl: result.mapsUrl,
     directionsUrl: result.directionsUrl,
@@ -255,58 +265,67 @@ export async function shareNativeLocation(options: {
   }
 }
 
-// --- 3. WHATSAPP DO TELEMÓVEL ---
+// --- 3. WHATSAPP OFICIAL KONEKTA (Canal de Suporte e Mediação Blindado) ---
 export function cleanPhoneNumber(rawPhone: string): string {
   let cleaned = (rawPhone || "").replace(/\D/g, "");
-  // If local STP phone without country code (e.g. 9912233 or 2223344)
   if (cleaned.length === 7) {
     cleaned = `239${cleaned}`;
   }
   return cleaned;
 }
 
+/**
+ * Canal Oficial WhatsApp KONEKTA.
+ * Por segurança e proteção de garantias (escrow), toda a comunicação entre clientes
+ * e prestadores ocorre internamente na app. Links externos abrem unicamente o canal
+ * oficial de apoio e verificação da KONEKTA (+239 994 4747).
+ */
 export function openWhatsApp(options: { phone?: string; message: string }) {
-  const targetPhone = cleanPhoneNumber(options.phone || "2399912233");
-  const encodedText = encodeURIComponent(options.message.trim());
-  const waUrl = `https://wa.me/${targetPhone}?text=${encodedText}`;
+  // Apenas o número oficial da KONEKTA é permitido para suporte/mediação
+  const officialPhone = "2399944747";
+  const encodedText = encodeURIComponent(
+    `[KONEKTA Central STP] ${options.message.trim()}`,
+  );
+  const waUrl = `https://wa.me/${officialPhone}?text=${encodedText}`;
 
   triggerDeviceVibration([40, 40]);
   safeOpenExternalUrl(waUrl, "_blank");
-  toast.success("A abrir WhatsApp no telemóvel...");
+  toast.success("A abrir Canal Oficial KONEKTA no WhatsApp...");
 }
 
-// --- 4. SMS NATIVO DO TELEMÓVEL ---
+// --- 4. SMS NATIVO DO TELEMÓVEL (Central de Apoio KONEKTA) ---
 export function openNativeSMS(options: { phone?: string; body: string }) {
-  const targetPhone = cleanPhoneNumber(options.phone || "2399912233");
-  const encodedBody = encodeURIComponent(options.body.trim());
+  const officialPhone = "2399944747";
+  const encodedBody = encodeURIComponent(`[KONEKTA] ${options.body.trim()}`);
 
   const isIOS =
     typeof navigator !== "undefined" && /iPad|iPhone|iPod/.test(navigator.userAgent || "");
   const smsUrl = isIOS
-    ? `sms:${targetPhone}&body=${encodedBody}`
-    : `sms:${targetPhone}?body=${encodedBody}`;
+    ? `sms:${officialPhone}&body=${encodedBody}`
+    : `sms:${officialPhone}?body=${encodedBody}`;
 
   triggerDeviceVibration([40, 40]);
   safeOpenExternalUrl(smsUrl, "_blank");
-  toast.success("A abrir aplicação de SMS...");
+  toast.success("A abrir SMS da Linha Oficial KONEKTA...");
 }
 
-// --- 5. EMAIL NATIVO DO TELEMÓVEL ---
+// --- 5. EMAIL NATIVO DO TELEMÓVEL (Apenas suporte@konekta.st) ---
 export function openNativeEmail(options: { email?: string; subject: string; body: string }) {
-  const targetEmail = options.email || "suporte@konekta.st";
+  const targetEmail = "suporte@konekta.st";
   const encodedSubject = encodeURIComponent(options.subject);
   const encodedBody = encodeURIComponent(options.body);
   const mailtoUrl = `mailto:${targetEmail}?subject=${encodedSubject}&body=${encodedBody}`;
 
   safeOpenExternalUrl(mailtoUrl, "_blank");
-  toast.success("A abrir correio eletrónico no telemóvel...");
+  toast.success("A abrir correio eletrónico de suporte KONEKTA...");
 }
 
-// --- 6. CHAMADA TELEFÓNICA NATIVA ---
-export function openNativePhoneCall(phone: string) {
-  const targetPhone = cleanPhoneNumber(phone || "2399912233");
+// --- 6. CHAMADA TELEFÓNICA NATIVA (Apenas Linha de Apoio KONEKTA) ---
+export function openNativePhoneCall(_phone?: string) {
+  // Chamadas diretas entre clientes e prestadores são proibidas para garantir mediação e custódia
+  const officialPhone = "2399944747";
   triggerDeviceVibration([60]);
-  safeOpenExternalUrl(`tel:+${targetPhone}`, "_blank");
+  safeOpenExternalUrl(`tel:+${officialPhone}`, "_blank");
 }
 
 // --- 7. VIBRAÇÃO HÁPTICA DO DISPOSITIVO ---

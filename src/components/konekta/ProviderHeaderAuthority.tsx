@@ -249,17 +249,16 @@ export function ProviderHeaderAuthority({
 
         {/* PRIVACIDADE DE CONTATO & BOTÕES DE AÇÃO RÁPIDA (CLIENTE) */}
         <div className="pt-2 border-t border-border/60 space-y-3">
-          {/* AVISO DE PRIVACIDADE DE CONTATO */}
-          <div className="p-2.5 rounded-2xl bg-muted/30 border border-border/40 flex items-center justify-between gap-2 text-xs">
+          {/* AVISO DE PRIVACIDADE DE CONTATO TOTALMENTE BLINDADO */}
+          <div className="p-2.5 rounded-2xl bg-primary/5 border border-primary/20 flex items-center justify-between gap-2 text-xs">
             <div className="flex items-center gap-2 text-muted-foreground">
               <Lock size={13} className="text-primary shrink-0" />
               <span className="text-[11px]">
-                Contacto Protegido:{" "}
-                <strong className="text-foreground">{personalInfo.phoneMasked}</strong>
+                Contacto Blindado: <strong className="text-foreground">Canal Oficial KONEKTA</strong>
               </span>
             </div>
-            <span className="text-[10px] font-bold text-primary bg-primary/10 px-2 py-0.5 rounded-md">
-              KONEKTA Seguro
+            <span className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-md">
+              Garantia de Custódia
             </span>
           </div>
 

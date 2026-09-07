@@ -31,13 +31,13 @@ import { toast } from "sonner";
 export const Route = createFileRoute("/tornar-prestador")({
   head: () => ({
     meta: [
-      { title: "Seja um Prestador KONEKTA PRO em São Tomé e Príncipe" },
+      { title: "Seja um Prestador KONEKTA em São Tomé e Príncipe" },
       {
         name: "description",
         content:
           "Ganhe dinheiro prestando serviços em São Tomé e Príncipe. Receba pedidos semanais, pagamentos garantidos e valorização profissional.",
       },
-      { property: "og:title", content: "Seja um Prestador KONEKTA PRO" },
+      { property: "og:title", content: "Seja um Prestador KONEKTA" },
       {
         property: "og:description",
         content: "Trabalhos semanais, pagamentos protegidos por Dobra 24 e bancos locais.",
@@ -132,7 +132,7 @@ function TornarPrestadorPage() {
       }
 
       setIsSubmitting(false);
-      toast.success("Candidatura KONEKTA PRO aprovada com sucesso!", {
+      toast.success("Candidatura KONEKTA aprovada com sucesso!", {
         description: "O seu perfil já está ativo e pronto para receber pedidos em São Tomé.",
       });
       navigate({ to: "/pro/agenda" });
@@ -147,7 +147,7 @@ function TornarPrestadorPage() {
           <div className="absolute -right-8 -bottom-8 w-40 h-40 rounded-full bg-white/10 blur-2xl pointer-events-none" />
           <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/15 backdrop-blur-md text-[11px] font-bold tracking-wide uppercase mb-3">
             <Award size={13} className="text-amber-300" />
-            <span>KONEKTA PRO · São Tomé e Príncipe</span>
+            <span>KONEKTA · São Tomé e Príncipe</span>
           </div>
           <h1 className="text-2xl sm:text-3xl font-black tracking-tight leading-tight">
             Receba mais clientes e ganhe em Dobras (STN)
@@ -599,7 +599,7 @@ function TornarPrestadorPage() {
                 />
               </div>
 
-              {/* Termos de Compromisso KONEKTA PRO */}
+              {/* Termos de Compromisso KONEKTA */}
               <div className="p-3.5 rounded-2xl bg-muted/70 border border-border text-[11px] text-muted-foreground space-y-1.5">
                 <span className="font-bold text-foreground block">
                   Compromisso KONEKTA com o Prestador:
@@ -639,7 +639,7 @@ function TornarPrestadorPage() {
         {/* Perguntas Frequentes dos Prestadores em STP */}
         <section className="bg-card border border-border rounded-3xl p-5 shadow-sm space-y-3">
           <h2 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
-            Dúvidas Frequentes sobre a KONEKTA PRO
+            Dúvidas Frequentes sobre a KONEKTA
           </h2>
 
           <div className="space-y-2.5 text-xs">
@@ -677,7 +677,7 @@ function TornarPrestadorPage() {
           onClose={() => setOtpModalOpen(false)}
           phone={phone}
           title="Validar Contacto Telefónico"
-          reason="Autenticação segura de prestador de serviços KONEKTA PRO"
+          reason="Autenticação segura de prestador de serviços KONEKTA"
           onVerified={() => {
             setIsPhoneVerified(true);
             toast.success("Telemóvel verificado com sucesso por SMS OTP!");

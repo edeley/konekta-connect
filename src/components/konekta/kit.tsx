@@ -342,13 +342,23 @@ export function BottomSheet({
       <div
         role="dialog"
         aria-modal="true"
-        className="relative w-full max-w-md rounded-t-3xl bg-card p-5 pb-8 shadow-raised"
+        className="relative flex max-h-[92vh] w-full max-w-md flex-col rounded-t-3xl bg-card p-5 pb-8 shadow-raised"
         style={{ animation: "k-sheet-up 260ms cubic-bezier(0.2,0,0,1) both" }}
       >
-        <span className="mx-auto mb-4 block h-1.5 w-10 rounded-full bg-border" />
-        {title && <h2 className="text-base font-bold tracking-tight">{title}</h2>}
-        {description && <p className="mt-1 text-xs text-muted-foreground">{description}</p>}
-        <div className="mt-4 space-y-2">{children}</div>
+        <div className="flex shrink-0 items-center justify-center pb-2">
+          <span className="block h-1.5 w-12 rounded-full bg-muted-foreground/30" />
+        </div>
+        {(title || description) && (
+          <div className="shrink-0 border-b border-border/50 pb-3">
+            {title && (
+              <h2 className="text-base font-bold tracking-tight text-foreground">{title}</h2>
+            )}
+            {description && (
+              <p className="mt-0.5 text-xs text-muted-foreground leading-relaxed">{description}</p>
+            )}
+          </div>
+        )}
+        <div className="flex-1 overflow-y-auto overscroll-contain pt-3 space-y-2">{children}</div>
       </div>
     </div>
   );

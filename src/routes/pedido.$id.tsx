@@ -503,7 +503,6 @@ function RequestOrOrderDetail() {
                 district={order.district}
                 referencePoint={order.referencePoint}
                 clientName={order.clientName || "Cliente KONEKTA"}
-                clientPhone={order.clientPhone || ""}
                 orderTitle={order.service}
                 isProviderView={isProvider}
               />

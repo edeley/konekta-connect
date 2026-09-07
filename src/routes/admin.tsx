@@ -67,7 +67,6 @@ export default function AdminPage() {
   const orders = useStore((s) => s.orders);
   const depositRequests = useStore((s) => s.depositRequests || []);
   const payoutRequests = useStore((s) => s.payoutRequests || []);
-  const companyMonetization = useStore((s) => s.companyMonetization);
 
   // Tab Navigation State
   const [activeTab, setActiveTab] = useState<
@@ -124,12 +123,6 @@ export default function AdminPage() {
     config.providerWhatsappGroup || "https://chat.whatsapp.com/KONEKTA-Prestadores-STP",
   );
   const [commissionPct, setCommissionPct] = useState(String(config.commissionPct || 20));
-  const [companyPlanFee, setCompanyPlanFee] = useState(
-    String(config.companyMonthlyPlanFee || 1500),
-  );
-  const [companyCommissionPct, setCompanyCommissionPct] = useState(
-    String(config.companyCommissionPct || 0),
-  );
   const [technicalVisitFee, setTechnicalVisitFee] = useState(
     String(config.technicalVisitFee || 150),
   );
@@ -155,8 +148,6 @@ export default function AdminPage() {
         clientWhatsappGroup: clientGroup.trim(),
         providerWhatsappGroup: providerGroup.trim(),
         commissionPct: Number(commissionPct) || 20,
-        companyMonthlyPlanFee: Number(companyPlanFee) || 1500,
-        companyCommissionPct: Number(companyCommissionPct) || 0,
         technicalVisitFee: Number(technicalVisitFee) || 150,
       });
 
@@ -1283,16 +1274,26 @@ export default function AdminPage() {
                         tone={
                           v.status === "concluido"
                             ? "success"
-                            : v.status === "a_caminho"
+                            : v.status === "a_caminho" || v.status === "aprovado_pelo_admin"
                               ? "primary"
-                              : "neutral"
+                              : v.status === "aguardando_aprovacao_admin"
+                                ? "warn"
+                                : v.status === "cancelado"
+                                  ? "danger"
+                                  : "neutral"
                         }
                       >
                         {v.status === "a_caminho"
                           ? "🚗 A caminho"
-                          : v.status === "concluido"
-                            ? "✅ Concluído"
-                            : "⏳ Pendente"}
+                          : v.status === "aprovado_pelo_admin"
+                            ? "✅ Aprovado (Aguardando Saída)"
+                            : v.status === "aguardando_aprovacao_admin"
+                              ? "🛡️ Requer Aprovação"
+                              : v.status === "concluido"
+                                ? "✅ Concluído"
+                                : v.status === "cancelado"
+                                  ? "❌ Cancelado"
+                                  : "⏳ Pendente"}
                       </StatusPill>
                       <p className="text-xs font-black text-primary mt-1">{formatDb(v.visitFee)}</p>
                       <p className="text-[9px] text-emerald-800 dark:text-emerald-300 font-bold">
@@ -1300,6 +1301,42 @@ export default function AdminPage() {
                       </p>
                     </div>
                   </div>
+
+                  {/* Ações de moderação administrativa para autorização de deslocação no terreno */}
+                  {(v.status === "aguardando_aprovacao_admin" || v.status === "pendente") && (
+                    <div className="mt-3 pt-2.5 border-t border-border/80 flex flex-wrap items-center justify-between gap-2 bg-amber-500/5 -mx-3 -mb-3 p-3 rounded-b-xl">
+                      <span className="text-[11px] font-semibold text-amber-700 dark:text-amber-400">
+                        Taxa de deslocação de {formatDb(v.visitFee)} retida em custódia segura.
+                        Autorizar saída no terreno?
+                      </span>
+                      <div className="flex items-center gap-2">
+                        <KButton
+                          size="sm"
+                          variant="outline"
+                          className="text-[11px] h-7 px-2.5 text-rose-600 border-rose-300 dark:border-rose-900/60 hover:bg-rose-50 dark:hover:bg-rose-950/30"
+                          onClick={() => {
+                            const res = store.adminRejectTechnicalVisit(
+                              v.id,
+                              "Recusada pela administração",
+                            );
+                            if (res.ok) toast.info(res.message);
+                          }}
+                        >
+                          Rejeitar & Reembolsar
+                        </KButton>
+                        <KButton
+                          size="sm"
+                          className="text-[11px] h-7 px-3 bg-emerald-600 hover:bg-emerald-700 text-white font-bold shadow-2xs"
+                          onClick={() => {
+                            const res = store.adminApproveTechnicalVisit(v.id);
+                            if (res.ok) toast.success(res.message);
+                          }}
+                        >
+                          Aprovar Deslocação
+                        </KButton>
+                      </div>
+                    </div>
+                  )}
                 </KCard>
               ))}
             </div>
@@ -1456,23 +1493,6 @@ export default function AdminPage() {
                   />
                   <p className="text-[10px] text-muted-foreground mt-1">
                     Percentagem retida no pagamento em custódia (ex: 20%)
-                  </p>
-                </div>
-
-                <div>
-                  <label className="text-xs font-bold text-foreground block mb-1">
-                    Mensalidade do Plano Empresa (Db / STN)
-                  </label>
-                  <input
-                    type="number"
-                    min="0"
-                    value={companyPlanFee}
-                    onChange={(e) => setCompanyPlanFee(e.target.value)}
-                    className="w-full h-11 px-3.5 rounded-xl bg-muted/50 border border-border text-xs font-semibold text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20"
-                    required
-                  />
-                  <p className="text-[10px] text-muted-foreground mt-1">
-                    Preço mensal para empresas com 0% comissão (ex: 1500 Db)
                   </p>
                 </div>
               </div>

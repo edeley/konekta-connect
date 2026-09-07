@@ -1,5 +1,17 @@
 import { useState, useRef } from "react";
-import { Camera, Plus, Trash2, Image as ImageIcon, X, Check, Upload, Layers } from "lucide-react";
+import {
+  Camera,
+  Plus,
+  Trash2,
+  Image as ImageIcon,
+  X,
+  Check,
+  Upload,
+  Layers,
+  Sparkles,
+  ArrowLeft,
+  RotateCcw,
+} from "lucide-react";
 import { BottomSheet } from "@/components/konekta/kit";
 import { store, useStore, type PortfolioItem } from "@/lib/store";
 import { validateFormSafety } from "@/lib/escrow";
@@ -9,52 +21,6 @@ interface PortfolioManagerModalProps {
   open: boolean;
   onClose: () => void;
 }
-
-// Exemplos de fotos de serviços de alta qualidade para sugestão rápida
-const PRESET_SERVICE_PHOTOS = [
-  {
-    category: "Eletricidade",
-    title: "Instalação de Quadro Elétrico Geral",
-    description: "Quadro trifásico com disjuntores e proteção diferencial.",
-    image:
-      "https://images.unsplash.com/photo-1621905251189-08b45d6a269e?auto=format&fit=crop&w=800&q=80",
-  },
-  {
-    category: "Eletricidade",
-    title: "Iluminação LED Embutida",
-    description: "Focos embutidos e acabamento moderno em teto falso.",
-    image:
-      "https://images.unsplash.com/photo-1513506003901-1e6a229e2d15?auto=format&fit=crop&w=800&q=80",
-  },
-  {
-    category: "Canalização",
-    title: "Canalização & Termoacumulador",
-    description: "Instalação de tubagem termofusão para água quente.",
-    image:
-      "https://images.unsplash.com/photo-1584622650111-993a426fbf0a?auto=format&fit=crop&w=800&q=80",
-  },
-  {
-    category: "Canalização",
-    title: "Montagem de Louças e Torneiras",
-    description: "Instalação completa de casa de banho.",
-    image:
-      "https://images.unsplash.com/photo-1507652313519-d4e9174996dd?auto=format&fit=crop&w=800&q=80",
-  },
-  {
-    category: "Pintura",
-    title: "Pintura Interior Decorativa",
-    description: "Pintura com tinta acetinada e acabamento uniforme.",
-    image:
-      "https://images.unsplash.com/photo-1589939705384-5185137a7f0f?auto=format&fit=crop&w=800&q=80",
-  },
-  {
-    category: "Limpeza",
-    title: "Limpeza Pós-Obra Completa",
-    description: "Higienização profunda de pisos, vidros e paredes.",
-    image:
-      "https://images.unsplash.com/photo-1581578731548-c64695cc6952?auto=format&fit=crop&w=800&q=80",
-  },
-];
 
 export function PortfolioManagerModal({ open, onClose }: PortfolioManagerModalProps) {
   const user = useStore((s) => s.user);
@@ -66,9 +32,12 @@ export function PortfolioManagerModal({ open, onClose }: PortfolioManagerModalPr
   const [description, setDescription] = useState("");
   const [category, setCategory] = useState(profile?.category || "Serviços Gerais");
   const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [imageFileName, setImageFileName] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const fileInputRef = useRef<HTMLInputElement | null>(null);
+  // Separate refs for Camera and Gallery
+  const cameraInputRef = useRef<HTMLInputElement | null>(null);
+  const galleryInputRef = useRef<HTMLInputElement | null>(null);
 
   const isProvider = user?.role === "prestador";
 
@@ -107,6 +76,7 @@ export function PortfolioManagerModal({ open, onClose }: PortfolioManagerModalPr
     setTitle("");
     setDescription("");
     setImagePreview(null);
+    setImageFileName(null);
     setCategory(profile?.category || "Serviços Gerais");
     setMode("list");
   }
@@ -116,38 +86,33 @@ export function PortfolioManagerModal({ open, onClose }: PortfolioManagerModalPr
     if (!file) return;
 
     if (!file.type.startsWith("image/")) {
-      toast.error("Por favor selecione um arquivo de imagem (JPG, PNG)");
+      toast.error("Por favor selecione um ficheiro de imagem válido (JPG, PNG, HEIC).");
       return;
     }
 
-    if (file.size > 5 * 1024 * 1024) {
-      toast.error("A imagem é muito grande (máximo 5MB)");
+    if (file.size > 8 * 1024 * 1024) {
+      toast.error("A imagem é muito grande (máximo 8MB).");
       return;
     }
+
+    setImageFileName(file.name);
 
     const reader = new FileReader();
     reader.onload = () => {
       setImagePreview(reader.result as string);
+      toast.success("Foto carregada com sucesso!");
     };
     reader.readAsDataURL(file);
-  }
-
-  function handleSelectPreset(preset: (typeof PRESET_SERVICE_PHOTOS)[0]) {
-    setImagePreview(preset.image);
-    setTitle(preset.title);
-    setDescription(preset.description);
-    setCategory(preset.category);
-    toast.success("Foto selecionada! Pode personalizar o título e descrição.");
   }
 
   function handleSavePhoto(e: React.FormEvent) {
     e.preventDefault();
     if (!imagePreview) {
-      toast.error("Selecione ou carregue uma foto do serviço");
+      toast.error("Tire uma foto ou escolha uma imagem da sua galeria.");
       return;
     }
     if (!title.trim()) {
-      toast.error("Insira um título para identificar o trabalho");
+      toast.error("Insira um título para identificar o trabalho realizado.");
       return;
     }
 
@@ -172,12 +137,14 @@ export function PortfolioManagerModal({ open, onClose }: PortfolioManagerModalPr
 
       setIsSubmitting(false);
       resetForm();
-    }, 300);
+      toast.success("Foto adicionada ao seu portfólio público!");
+    }, 350);
   }
 
   function handleDeleteItem(item: PortfolioItem) {
     if (confirm(`Remover "${item.title}" do seu portfólio?`)) {
       store.removePortfolioItem(item.id);
+      toast.success("Foto removida do portfólio.");
     }
   }
 
@@ -188,26 +155,30 @@ export function PortfolioManagerModal({ open, onClose }: PortfolioManagerModalPr
         resetForm();
         onClose();
       }}
-      title="Portfólio & Fotos de Serviços"
-      description="Mostre a qualidade dos seus serviços aos clientes com fotos reais dos seus trabalhos."
+      title={mode === "list" ? "Portfólio de Trabalhos" : "Adicionar Foto Real"}
+      description={
+        mode === "list"
+          ? "Mostre aos clientes a qualidade dos seus serviços com fotos reais dos seus trabalhos realizados em São Tomé e Príncipe."
+          : "Tire uma fotografia na hora com a câmara ou escolha uma foto dos seus trabalhos na galeria."
+      }
     >
-      <div className="space-y-4 pb-6">
+      <div className="space-y-4 pb-4">
         {mode === "list" ? (
           <>
             {/* Header de Ação */}
-            <div className="flex items-center justify-between gap-3">
+            <div className="flex items-center justify-between gap-3 bg-muted/40 p-3 rounded-2xl border border-border/70">
               <div className="flex items-center gap-2">
-                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-primary/10 text-primary text-xs font-bold">
+                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-primary/10 text-primary text-xs font-bold">
                   <Layers size={13} />
                   {portfolio.length} {portfolio.length === 1 ? "foto" : "fotos"}
                 </span>
-                <span className="text-[11px] text-muted-foreground">Visível para os clientes</span>
+                <span className="text-[11px] text-muted-foreground">Público no perfil</span>
               </div>
 
               <button
                 type="button"
                 onClick={() => setMode("add")}
-                className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-primary text-primary-foreground text-xs font-bold hover:bg-primary/90 transition shadow-2xs"
+                className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-primary text-primary-foreground text-xs font-bold hover:bg-primary/90 transition shadow-xs active:scale-95"
               >
                 <Plus size={15} />
                 Adicionar Foto
@@ -218,15 +189,15 @@ export function PortfolioManagerModal({ open, onClose }: PortfolioManagerModalPr
             {portfolio.length === 0 ? (
               <div className="p-8 rounded-2xl bg-card border border-dashed border-border/80 text-center space-y-3">
                 <div className="size-14 rounded-2xl bg-primary/10 text-primary mx-auto grid place-items-center">
-                  <ImageIcon size={28} />
+                  <Camera size={26} />
                 </div>
                 <div className="space-y-1">
                   <p className="text-sm font-bold text-foreground">
                     Ainda não tem fotos no portfólio
                   </p>
-                  <p className="text-xs text-muted-foreground max-w-xs mx-auto">
-                    Profissionais com fotos de trabalhos realizados recebem até 3x mais pedidos de
-                    orçamento.
+                  <p className="text-xs text-muted-foreground max-w-xs mx-auto leading-relaxed">
+                    Fotografe os seus serviços no terreno. Prestadores com fotos reais transmitem
+                    muito mais confiança e fecham até 3x mais serviços.
                   </p>
                 </div>
                 <button
@@ -235,7 +206,7 @@ export function PortfolioManagerModal({ open, onClose }: PortfolioManagerModalPr
                   className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-primary text-primary-foreground text-xs font-bold shadow-soft transition active:scale-95"
                 >
                   <Camera size={15} />
-                  Adicionar Primeira Foto
+                  Tirar Primeira Foto
                 </button>
               </div>
             ) : (
@@ -285,107 +256,149 @@ export function PortfolioManagerModal({ open, onClose }: PortfolioManagerModalPr
             )}
           </>
         ) : (
-          /* Formulário de Adição de Foto */
+          /* Formulário de Adição de Foto (100% Real - Câmera ou Galeria) */
           <form onSubmit={handleSavePhoto} className="space-y-4">
+            {/* Hidden native file inputs */}
+            <input
+              ref={cameraInputRef}
+              type="file"
+              accept="image/*"
+              capture="environment"
+              onChange={handleFileChange}
+              className="hidden"
+            />
+            <input
+              ref={galleryInputRef}
+              type="file"
+              accept="image/*"
+              onChange={handleFileChange}
+              className="hidden"
+            />
+
             <div className="flex items-center justify-between">
-              <span className="text-xs font-bold text-foreground">Nova foto para o portfólio</span>
               <button
                 type="button"
                 onClick={resetForm}
-                className="text-xs font-semibold text-muted-foreground hover:text-foreground"
+                className="inline-flex items-center gap-1.5 text-xs font-semibold text-muted-foreground hover:text-foreground transition cursor-pointer"
               >
-                Voltar à lista
+                <ArrowLeft size={14} />
+                <span>Voltar às fotos</span>
               </button>
+              <span className="text-[11px] font-medium text-emerald-600 bg-emerald-500/10 px-2 py-0.5 rounded-full">
+                Foto Real do Serviço
+              </span>
             </div>
 
-            {/* Upload Area / Preview */}
-            <div>
-              <input
-                ref={fileInputRef}
-                type="file"
-                accept="image/*"
-                onChange={handleFileChange}
-                className="hidden"
-              />
-
-              {imagePreview ? (
-                <div className="relative rounded-2xl border border-border overflow-hidden bg-black/5 aspect-16/10">
+            {/* SEÇÃO PRINCIPAL DE CAPTURA / PREVIEW */}
+            {imagePreview ? (
+              /* Pré-visualização da Foto Carregada */
+              <div className="space-y-2.5">
+                <div className="relative rounded-2xl border-2 border-primary/40 overflow-hidden bg-black/5 aspect-16/10 shadow-sm">
                   <img
                     src={imagePreview}
-                    alt="Pré-visualização"
+                    alt="Foto capturada do serviço"
                     className="size-full object-cover"
                   />
+                  <div className="absolute top-2 right-2 flex items-center gap-1.5">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setImagePreview(null);
+                        setImageFileName(null);
+                      }}
+                      className="size-8 rounded-full bg-black/70 hover:bg-rose-600 text-white grid place-items-center transition backdrop-blur-xs"
+                      title="Eliminar foto"
+                    >
+                      <Trash2 size={14} />
+                    </button>
+                  </div>
+
+                  <div className="absolute bottom-2 left-2 right-2 bg-black/70 backdrop-blur-md px-3 py-1.5 rounded-xl text-white text-[11px] flex items-center justify-between">
+                    <span className="truncate max-w-[200px]">
+                      {imageFileName || "Foto selecionada"}
+                    </span>
+                    <span className="text-emerald-300 font-bold shrink-0">✓ Pronta</span>
+                  </div>
+                </div>
+
+                {/* Opções para trocar a foto */}
+                <div className="flex items-center gap-2">
                   <button
                     type="button"
-                    onClick={() => setImagePreview(null)}
-                    className="absolute top-2 right-2 size-8 rounded-full bg-black/70 hover:bg-rose-600 text-white grid place-items-center transition"
-                    title="Remover imagem selecionada"
+                    onClick={() => cameraInputRef.current?.click()}
+                    className="flex-1 py-2 px-3 rounded-xl bg-muted hover:bg-muted/80 text-foreground text-xs font-semibold flex items-center justify-center gap-1.5 transition border border-border/80"
                   >
-                    <X size={16} />
+                    <Camera size={14} className="text-primary" />
+                    <span>Tirar outra</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => galleryInputRef.current?.click()}
+                    className="flex-1 py-2 px-3 rounded-xl bg-muted hover:bg-muted/80 text-foreground text-xs font-semibold flex items-center justify-center gap-1.5 transition border border-border/80"
+                  >
+                    <ImageIcon size={14} className="text-primary" />
+                    <span>Outra da galeria</span>
                   </button>
                 </div>
-              ) : (
-                <div
-                  onClick={() => fileInputRef.current?.click()}
-                  className="rounded-2xl border-2 border-dashed border-border hover:border-primary p-6 text-center cursor-pointer transition bg-card/50 hover:bg-muted/30 space-y-2"
-                >
-                  <div className="size-12 rounded-xl bg-primary/10 text-primary mx-auto grid place-items-center">
-                    <Upload size={22} />
-                  </div>
-                  <div>
-                    <p className="text-xs font-bold text-foreground">
-                      Carregar foto do seu telemóvel ou computador
-                    </p>
-                    <p className="text-[11px] text-muted-foreground mt-0.5">
-                      Toque aqui para escolher da galeria ou tirar foto (JPG, PNG até 5MB)
-                    </p>
-                  </div>
-                </div>
-              )}
-            </div>
+              </div>
+            ) : (
+              /* DUAS OPÇÕES DIRETAS E CLARAS: CÂMARA OU GALERIA */
+              <div className="space-y-2.5">
+                <p className="text-xs font-bold text-foreground">Escolha como anexar a imagem:</p>
 
-            {/* Sugestões Rápidas de Fotos de Serviços */}
-            {!imagePreview && (
-              <div className="space-y-2 pt-1">
-                <div className="flex items-center gap-1.5 text-xs font-bold text-muted-foreground">
-                  <ImageIcon size={13} className="text-primary" />
-                  <span>Ou escolha um exemplo de serviço:</span>
+                <div className="grid grid-cols-2 gap-2.5">
+                  {/* Botão 1: Tirar Foto no Momento com a Câmera */}
+                  <button
+                    type="button"
+                    onClick={() => cameraInputRef.current?.click()}
+                    className="p-4 rounded-2xl border-2 border-dashed border-emerald-500/50 bg-emerald-500/5 hover:bg-emerald-500/10 text-center transition flex flex-col items-center justify-center gap-2 active:scale-98 cursor-pointer group"
+                  >
+                    <div className="size-12 rounded-2xl bg-emerald-500/20 text-emerald-700 dark:text-emerald-300 grid place-items-center group-hover:scale-110 transition-transform">
+                      <Camera size={24} />
+                    </div>
+                    <div>
+                      <p className="text-xs font-black text-foreground">Tirar com Câmera</p>
+                      <p className="text-[10px] text-muted-foreground mt-0.5">
+                        Fotografar agora no local
+                      </p>
+                    </div>
+                  </button>
+
+                  {/* Botão 2: Pegar na Galeria do Telemóvel */}
+                  <button
+                    type="button"
+                    onClick={() => galleryInputRef.current?.click()}
+                    className="p-4 rounded-2xl border-2 border-dashed border-primary/50 bg-primary/5 hover:bg-primary/10 text-center transition flex flex-col items-center justify-center gap-2 active:scale-98 cursor-pointer group"
+                  >
+                    <div className="size-12 rounded-2xl bg-primary/20 text-primary grid place-items-center group-hover:scale-110 transition-transform">
+                      <ImageIcon size={24} />
+                    </div>
+                    <div>
+                      <p className="text-xs font-black text-foreground">Pegar na Galeria</p>
+                      <p className="text-[10px] text-muted-foreground mt-0.5">
+                        Fotos salvas no telemóvel
+                      </p>
+                    </div>
+                  </button>
                 </div>
-                <div className="grid grid-cols-3 gap-2">
-                  {PRESET_SERVICE_PHOTOS.map((preset, idx) => (
-                    <button
-                      key={idx}
-                      type="button"
-                      onClick={() => handleSelectPreset(preset)}
-                      className="group relative rounded-xl border border-border overflow-hidden bg-card text-left aspect-4/3 flex flex-col justify-end p-1.5 transition hover:border-primary"
-                    >
-                      <img
-                        src={preset.image}
-                        alt={preset.title}
-                        className="absolute inset-0 size-full object-cover group-hover:scale-105 transition duration-200"
-                        loading="lazy"
-                      />
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
-                      <span className="relative text-[9px] font-bold text-white leading-tight line-clamp-2">
-                        {preset.title}
-                      </span>
-                    </button>
-                  ))}
-                </div>
+
+                <p className="text-[11px] text-muted-foreground text-center">
+                  Formatos aceites: JPG, PNG, HEIC (fotos até 8MB)
+                </p>
               </div>
             )}
 
-            {/* Campos de Texto */}
-            <div className="space-y-3 pt-1">
+            {/* Campos de Identificação do Trabalho */}
+            <div className="space-y-3 pt-2 border-t border-border/60">
               <div className="space-y-1">
                 <label className="text-xs font-bold text-foreground">
-                  Título do Serviço <span className="text-primary">*</span>
+                  Título do Trabalho / Serviço Realizado <span className="text-primary">*</span>
                 </label>
                 <input
                   type="text"
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
-                  placeholder="Ex: Instalação de Quadro Trifásico em Santana"
+                  placeholder="Ex: Instalação de Bomba de Água em Santana"
                   className="w-full rounded-xl border border-border bg-card px-3.5 py-2.5 text-xs text-foreground placeholder:text-muted-foreground/60 focus:border-primary focus:outline-hidden"
                   required
                 />
@@ -398,7 +411,7 @@ export function PortfolioManagerModal({ open, onClose }: PortfolioManagerModalPr
                     type="text"
                     value={category}
                     onChange={(e) => setCategory(e.target.value)}
-                    placeholder="Ex: Eletricidade, Instalação"
+                    placeholder="Ex: Canalização, Eletricidade"
                     className="w-full rounded-xl border border-border bg-card px-3.5 py-2.5 text-xs text-foreground placeholder:text-muted-foreground/60 focus:border-primary focus:outline-hidden"
                   />
                 </div>
@@ -422,14 +435,14 @@ export function PortfolioManagerModal({ open, onClose }: PortfolioManagerModalPr
                 <textarea
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
-                  placeholder="Ex: Substituição de cablagem antiga, colocação de disjuntores modernos e ligação à terra."
+                  placeholder="Ex: Substituição de tubos danificados, teste de estanqueidade e pressurização da rede."
                   rows={2}
                   className="w-full rounded-xl border border-border bg-card px-3.5 py-2 text-xs text-foreground placeholder:text-muted-foreground/60 focus:border-primary focus:outline-hidden resize-none"
                 />
               </div>
             </div>
 
-            {/* Botões do Formulário */}
+            {/* Botões de Ação */}
             <div className="flex items-center gap-2 pt-2">
               <button
                 type="button"
@@ -441,10 +454,10 @@ export function PortfolioManagerModal({ open, onClose }: PortfolioManagerModalPr
               <button
                 type="submit"
                 disabled={isSubmitting || !imagePreview || !title.trim()}
-                className="flex-1 py-2.5 rounded-xl bg-primary text-primary-foreground text-xs font-bold flex items-center justify-center gap-2 shadow-2xs hover:bg-primary/90 transition disabled:opacity-50"
+                className="flex-1 py-2.5 rounded-xl bg-primary text-primary-foreground text-xs font-bold flex items-center justify-center gap-2 shadow-xs hover:bg-primary/90 transition disabled:opacity-50 active:scale-95"
               >
                 <Check size={14} />
-                {isSubmitting ? "A guardar..." : "Publicar no Portfólio"}
+                {isSubmitting ? "A publicar..." : "Publicar no Portfólio"}
               </button>
             </div>
           </form>

@@ -208,6 +208,16 @@ export function TechnicalVisitCard({ visit, providerId }: TechnicalVisitCardProp
               Aguardando Aceite
             </span>
           )}
+          {visit.status === "aguardando_aprovacao_admin" && (
+            <span className="rounded-full bg-amber-100 px-2.5 py-1 text-xs font-bold text-amber-900 dark:bg-amber-900/60 dark:text-amber-200">
+              🛡️ Aguardando Aprovação Admin
+            </span>
+          )}
+          {visit.status === "aprovado_pelo_admin" && (
+            <span className="rounded-full bg-emerald-100 px-2.5 py-1 text-xs font-bold text-emerald-900 dark:bg-emerald-900/60 dark:text-emerald-200">
+              ✅ Aprovado pelo Admin
+            </span>
+          )}
           {visit.status === "aguardando_visita" && (
             <span className="rounded-full bg-blue-100 px-2.5 py-1 text-xs font-semibold text-blue-800 dark:bg-blue-900/60 dark:text-blue-200">
               Visita Confirmada
@@ -298,18 +308,48 @@ export function TechnicalVisitCard({ visit, providerId }: TechnicalVisitCardProp
         </div>
       )}
 
-      {/* 2. Aguardando Visita: Prestador clica em Iniciar Deslocação */}
-      {visit.status === "aguardando_visita" && isProviderMode && (
-        <div className="mt-4 flex items-center justify-between gap-2 rounded-xl bg-white p-3 shadow-sm dark:bg-zinc-900">
-          <div className="text-xs text-zinc-600 dark:text-zinc-400">
-            Visita confirmada pelo cliente. Inicie a viagem quando estiver a caminho.
+      {/* 2. Aguardando Aprovação Admin: Informa cliente e prestador */}
+      {visit.status === "aguardando_aprovacao_admin" && (
+        <div className="mt-4 rounded-xl border border-amber-300 bg-amber-50/90 p-3.5 dark:border-amber-900/60 dark:bg-amber-950/40">
+          <div className="flex items-start gap-2.5">
+            <ShieldCheck className="h-5 w-5 shrink-0 text-amber-600 dark:text-amber-400 mt-0.5" />
+            <div>
+              <p className="text-xs font-bold text-amber-950 dark:text-amber-100">
+                Garantia de Deslocação Retida em Custódia ({formatDb(visit.visitFee)})
+              </p>
+              <p className="text-[11px] text-amber-800 dark:text-amber-300 mt-0.5">
+                {isClient
+                  ? "O seu pagamento de deslocação está seguro na KONEKTA. O pedido aguarda autorização da Administração da plataforma para validar a saída do técnico no terreno."
+                  : "O cliente aceitou a visita e a taxa está retida em custódia. Aguarde a aprovação formal da Administração KONEKTA para iniciar a deslocação no terreno."}
+              </p>
+            </div>
           </div>
-          <button
-            onClick={handleStartWay}
-            className="inline-flex items-center gap-1.5 rounded-xl bg-indigo-600 px-4 py-2 text-xs font-bold text-white shadow hover:bg-indigo-700"
-          >
-            <Car className="h-4 w-4" /> Iniciar Deslocação 🚗
-          </button>
+        </div>
+      )}
+
+      {/* 3. Aprovado pelo Admin: Prestador clica em Iniciar Deslocação */}
+      {(visit.status === "aprovado_pelo_admin" || visit.status === "aguardando_visita") && (
+        <div className="mt-4 rounded-xl border border-emerald-300 bg-emerald-50/90 p-3.5 dark:border-emerald-900/60 dark:bg-emerald-950/40">
+          <div className="flex items-center justify-between gap-2">
+            <div>
+              <p className="text-xs font-bold text-emerald-950 dark:text-emerald-100">
+                ✅ Deslocação no Terreno Autorizada pela Administração
+              </p>
+              <p className="text-[11px] text-emerald-800 dark:text-emerald-300 mt-0.5">
+                {isProviderMode
+                  ? "A administração KONEKTA validou o pedido. Inicie a rota estilo Uber quando estiver pronto."
+                  : "A administração KONEKTA aprovou a visita técnica. O técnico foi autorizado a deslocar-se até ao seu local."}
+              </p>
+            </div>
+            {isProviderMode && (
+              <button
+                onClick={handleStartWay}
+                className="inline-flex items-center gap-1.5 rounded-xl bg-indigo-600 px-4 py-2 text-xs font-bold text-white shadow hover:bg-indigo-700 shrink-0"
+              >
+                <Car className="h-4 w-4" /> Iniciar Rota 🚗
+              </button>
+            )}
+          </div>
         </div>
       )}
 

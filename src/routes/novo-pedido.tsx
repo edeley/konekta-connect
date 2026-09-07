@@ -180,15 +180,24 @@ function NewRequest() {
           address.startsWith("Localização GPS") ||
           address.startsWith("GPS:")
         ) {
-          setAddress(res.street ? `${res.street}, ${zoneName}` : `${zoneName}, ${matched}`);
-        }
-        if (!reference.trim() || reference.startsWith("GPS do Telemóvel")) {
-          setReference(
-            `GPS Preciso: ${res.latitude.toFixed(5)}, ${res.longitude.toFixed(5)} (±${Math.round(res.accuracy)}m)`,
+          setAddress(
+            res.formattedAddress ||
+              (res.street ? `${res.street}, ${zoneName}` : `${zoneName}, ${matched}`),
           );
         }
-        toast.success(`📍 GPS Localizado: ${zoneName} (${matched})!`, {
-          description: `Coordenadas: ${res.latitude.toFixed(5)}, ${res.longitude.toFixed(5)} (Precisão: ±${Math.round(res.accuracy)}m)`,
+        if (
+          !reference.trim() ||
+          reference.startsWith("GPS do Telemóvel") ||
+          reference.startsWith("GPS Preciso")
+        ) {
+          setReference(
+            res.landmark
+              ? `Próximo de ${res.landmark} (GPS: ${res.latitude.toFixed(5)}, ${res.longitude.toFixed(5)})`
+              : `GPS: ${res.latitude.toFixed(5)}, ${res.longitude.toFixed(5)} (±${Math.round(res.accuracy)}m)`,
+          );
+        }
+        toast.success(`📍 GPS Localizado: ${res.street || zoneName} (${matched})!`, {
+          description: `Endereço: ${res.formattedAddress || zoneName} (Precisão: ±${Math.round(res.accuracy)}m)`,
         });
       }
     } catch {
@@ -676,15 +685,33 @@ function NewRequest() {
               </div>
 
               {detectedGps && (
-                <div className="p-3 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 text-xs space-y-2">
+                <div className="p-3 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 text-xs space-y-2.5">
                   <div className="flex items-center justify-between">
                     <span className="font-bold text-emerald-800 dark:text-emerald-300 flex items-center gap-1.5">
-                      📍 GPS Exato: {detectedGps.zone} ({detectedGps.district})
+                      📍 GPS Exato: {detectedGps.street || detectedGps.zone} ({detectedGps.district}
+                      )
                     </span>
                     <span className="text-[10px] text-emerald-700 dark:text-emerald-400 font-mono font-bold bg-emerald-500/20 px-2 py-0.5 rounded-full">
                       ±{Math.round(detectedGps.accuracy)}m
                     </span>
                   </div>
+
+                  {/* Google Maps Embed Mini */}
+                  <div className="relative w-full h-36 rounded-xl overflow-hidden border border-emerald-500/25 bg-slate-950">
+                    <iframe
+                      title="Pré-visualização Google Maps Localização"
+                      width="100%"
+                      height="100%"
+                      src={`https://maps.google.com/maps?q=${detectedGps.latitude},${detectedGps.longitude}&z=17&output=embed`}
+                      style={{ border: 0 }}
+                      loading="lazy"
+                      referrerPolicy="no-referrer-when-downgrade"
+                    />
+                    <div className="absolute bottom-1.5 right-1.5 px-2 py-0.5 rounded-lg bg-slate-900/90 text-emerald-300 text-[10px] font-bold flex items-center gap-1 shadow-xs pointer-events-none">
+                      <span>Google Maps Ativo</span>
+                    </div>
+                  </div>
+
                   <div className="flex items-center justify-between text-[11px] text-muted-foreground pt-1 border-t border-emerald-500/20">
                     <span className="font-mono text-foreground font-semibold">
                       {detectedGps.latitude.toFixed(6)}, {detectedGps.longitude.toFixed(6)}
@@ -695,7 +722,7 @@ function NewRequest() {
                       rel="noopener noreferrer"
                       className="text-primary font-bold hover:underline flex items-center gap-1"
                     >
-                      <span>Ver Rota Google Maps</span>
+                      <span>Traçar Rota no Google Maps</span>
                       <ExternalLink size={11} />
                     </a>
                   </div>

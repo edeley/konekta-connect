@@ -246,10 +246,10 @@ function generateIntelligentResponse(text: string): AssistantResponse {
     lower.includes("comissao")
   ) {
     return {
-      text: `**Como Ser um Prestador Verificado KONEKTA PRO:**\n\n1. Registe-se na app e ative a opção **Modo Prestador**.\n2. Submeta o seu Bilhete de Identidade (BI) e fotos dos seus trabalhos anteriores.\n3. Defina os distritos em que atende e os seus preços base.\n4. Receba pedidos com garantia de pagamento seguro em custódia.\n\nComissão justa de 10% por serviço concluído ou plano mensal sem comissões!`,
+      text: `**Como Ser um Prestador Verificado KONEKTA:**\n\n1. Registe-se na app e ative a opção **Modo Prestador**.\n2. Submeta o seu Bilhete de Identidade (BI) e fotos dos seus trabalhos anteriores.\n3. Defina os distritos em que atende e os seus preços base.\n4. Receba pedidos com garantia de pagamento seguro em custódia.\n\nComissão justa de 10% por serviço concluído ou plano mensal sem comissões!`,
       actions: [
         { label: "Tornar-me Prestador Agora", link: "/tornar-prestador" },
-        { label: "Ver Painel PRO", link: "/pro" },
+        { label: "Ver Painel do Prestador", link: "/pro" },
       ],
     };
   }

@@ -281,11 +281,8 @@ export type RequiredDocument = {
   format: "image" | "pdf";
 };
 
-/** Documentos exigidos consoante o tipo de prestador e categorias. */
-export function requiredDocuments(
-  kind: "individual" | "empresa",
-  categoryIds: string[],
-): RequiredDocument[] {
+/** Documentos exigidos consoante as categorias do prestador. */
+export function requiredDocuments(categoryIds: string[] = []): RequiredDocument[] {
   const docs: RequiredDocument[] = [
     {
       id: "bi",
@@ -296,16 +293,6 @@ export function requiredDocuments(
       format: "image",
     },
   ];
-  if (kind === "empresa") {
-    docs.push({
-      id: "empresa",
-      label: "Registo comercial da empresa",
-      hint: "Envie o ficheiro em PDF (documento de constituição ou NIF)",
-      required: true,
-      sides: 1,
-      format: "pdf",
-    });
-  }
   if (categoryIds.some((id) => categoryById(id)?.requiresLicense)) {
     docs.push({
       id: "licenca",

@@ -9,7 +9,6 @@ import { COUNTRIES } from "./countries";
  */
 
 export const COMMISSION_PCT = 20;
-export const COMPANY_MONTHLY_PLAN_DEFAULT = 1500; // 1.500 Db/mês
 export const TECHNICAL_VISIT_FEE_DEFAULT = 150; // 150 Db taxa de visita técnica Uber-style
 
 /* ------------------------------- Anti-bypass ------------------------------ */

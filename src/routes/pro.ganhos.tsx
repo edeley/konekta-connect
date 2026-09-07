@@ -24,6 +24,9 @@ import {
   RefreshCw,
   Info,
   Smartphone,
+  Eye,
+  EyeOff,
+  ChevronRight,
 } from "lucide-react";
 import { toast } from "sonner";
 import { AppShell } from "@/components/AppShell";
@@ -43,16 +46,16 @@ import { isPayoutDay, payoutLabel } from "@/lib/escrow";
 export const Route = createFileRoute("/pro/ganhos")({
   head: () => ({
     meta: [
-      { title: "Carteira Digital & Gestão · KONEKTA PRO" },
+      { title: "Carteira Digital & Gestão · KONEKTA" },
       {
         name: "description",
         content:
-          "Consulte os seus ganhos, dívida de comissões, regularização bancária STP, planos de empresa e equipa de técnicos.",
+          "Consulte os seus ganhos, custódia de clientes, regularização bancária STP e movimentos financeiros.",
       },
-      { property: "og:title", content: "Carteira Digital & Gestão · KONEKTA PRO" },
+      { property: "og:title", content: "Carteira Digital & Gestão · KONEKTA" },
       {
         property: "og:description",
-        content: "Carteira do prestador, gestão de dívida, equipa e comissões.",
+        content: "Carteira do prestador, gestão de dívida e comissões.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
@@ -69,14 +72,12 @@ function ProEarnings() {
   const user = useStore((s) => s.user);
   const txs = useStore((s) => s.providerTransactions);
   const commission = useStore((s) => s.config.commissionPct);
-  const companyPlanFee = useStore((s) => s.config.companyMonthlyPlanFee);
-  const companyMonetization = useStore((s) => s.companyMonetization);
   const providerProfile = useStore((s) => s.providerProfile);
   const providerDebt = useStore((s) => s.providerDebt);
   const isProviderBlockedForDebt = useStore((s) => s.isProviderBlockedForDebt);
-  const companyProfile = useStore((s) => s.companyProfile);
   const debtBlockLimit = useStore((s) => s.config.debtBlockLimit || 500);
 
+  const [showBalance, setShowBalance] = useState(true);
   const [payoutOpen, setPayoutOpen] = useState(false);
   const [topUpOpen, setTopUpOpen] = useState(false);
   const [amount, setAmount] = useState("");
@@ -84,9 +85,7 @@ function ProEarnings() {
     "bistp" | "bgfi" | "afriland" | "dobra24" | "cst_money" | "pix" | "iban"
   >("bistp");
   const [payoutAccount, setPayoutAccount] = useState("ST53.0001.0000.4455.6677.8899.1");
-  const [payoutHolder, setPayoutHolder] = useState(
-    user?.name || providerProfile?.companyName || "Edmilson Varela",
-  );
+  const [payoutHolder, setPayoutHolder] = useState(user?.name || "Edmilson Varela");
   const [payoutPhone, setPayoutPhone] = useState(user?.phone || "+239 9845678");
 
   const [topUpAmount, setTopUpAmount] = useState("");
@@ -94,22 +93,6 @@ function ProEarnings() {
     "bistp",
   );
   const [transferProofRef, setTransferProofRef] = useState("");
-
-  const [planModalOpen, setPlanModalOpen] = useState(false);
-  const [companyUpgradeModalOpen, setCompanyUpgradeModalOpen] = useState(false);
-  const [companyNameInput, setCompanyNameInput] = useState(
-    companyProfile?.companyName || providerProfile?.companyName || "",
-  );
-  const [companyNifInput, setCompanyNifInput] = useState(
-    companyProfile?.nif || providerProfile?.documents?.nif || "",
-  );
-  const [companyIbanInput, setCompanyIbanInput] = useState(companyProfile?.iban || "");
-
-  // Modal Técnico
-  const [addTechModalOpen, setAddTechModalOpen] = useState(false);
-  const [techName, setTechName] = useState("");
-  const [techPhone, setTechPhone] = useState("");
-  const [techSpecialty, setTechSpecialty] = useState("");
 
   // Transação selecionada para BottomSheet de Detalhes
   const [selectedTx, setSelectedTx] = useState<Transaction | null>(null);
@@ -122,17 +105,9 @@ function ProEarnings() {
   const [cashDeclAmount, setCashDeclAmount] = useState("");
   const [cashDeclNotes, setCashDeclNotes] = useState("");
 
-  const isCompany =
-    providerProfile?.providerType === "empresa" ||
-    Boolean(providerProfile?.companyName) ||
-    Boolean(companyProfile?.companyName) ||
-    companyMonetization.companyName !== undefined;
-
   const earned = txs.filter((t) => t.kind === "in").reduce((a, t) => a + t.amount, 0);
 
   const canPayout = isPayoutDay();
-  const isPlanActive =
-    isCompany && companyMonetization.model === "plano_mensal" && companyMonetization.planActive;
 
   // Filtragem de Transações
   const filteredTxs = txs.filter((t) => {
@@ -174,7 +149,7 @@ function ProEarnings() {
     }
 
     const providerId = providerProfile?.id || "edmilson-varela";
-    const providerName = user?.name || providerProfile?.companyName || "Edmilson Varela";
+    const providerName = user?.name || "Edmilson Varela";
 
     const res = store.requestProviderPayout({
       providerId,
@@ -213,13 +188,13 @@ function ProEarnings() {
 
     const res = store.createDepositRequest({
       userRole: "prestador",
-      userName: user?.name || providerProfile?.companyName || "Edmilson Varela",
+      userName: user?.name || "Edmilson Varela",
       userPhone: user?.phone || "+239 9845678",
       amount: value,
       method: selectedBank === "dobra24" ? "dobra24" : "transferencia_bancaria",
       bankOrProviderName: bankLabels[selectedBank] || selectedBank.toUpperCase(),
       referenceOrPhone: transferProofRef.trim() || `TRF-${Date.now().toString().slice(-6)}`,
-      notes: "Recarga de carteira e regularização de comissões KONEKTA PRO",
+      notes: "Recarga de carteira e regularização de comissões KONEKTA",
     });
 
     if (res.ok) {
@@ -248,7 +223,7 @@ function ProEarnings() {
     }
 
     const targetService = cashDeclServiceTitle.trim() || "Serviço Presencial Concluído";
-    const commPct = isPlanActive ? 0 : commission;
+    const commPct = commission;
     const commAmount = Math.round(val * (commPct / 100));
 
     // Regista a transação e atualiza a dívida
@@ -271,29 +246,42 @@ function ProEarnings() {
     setCashDeclNotes("");
   }
 
-
   return (
     <AppShell roles={["prestador"]}>
-      <header className="px-5 pb-2 pt-8">
-        <h1 className="text-2xl font-extrabold tracking-tight">Carteira Digital & Gestão PRO</h1>
-        <p className="text-sm text-muted-foreground">
-          Gestão financeira STP, custódia escrow, liquidação de comissões e saques.
-        </p>
+      {/* Header Limpo e Humano */}
+      <header className="px-5 pb-2 pt-6 flex items-start justify-between gap-4">
+        <div>
+          <span className="text-[11px] font-bold text-emerald-600 bg-emerald-500/10 px-2.5 py-0.5 rounded-full inline-flex items-center gap-1.5 mb-1.5">
+            <span className="size-1.5 rounded-full bg-emerald-500 animate-pulse" />
+            Conta Profissional STP
+          </span>
+          <h1 className="text-2xl font-black tracking-tight text-foreground">A Minha Carteira</h1>
+          <p className="text-xs text-muted-foreground mt-0.5">
+            Gestão de ganhos, custódia e levantamentos bancários em Dobras (Db).
+          </p>
+        </div>
+
+        <button
+          type="button"
+          onClick={() => setShowBalance(!showBalance)}
+          className="size-9 rounded-xl bg-muted hover:bg-muted/80 text-muted-foreground hover:text-foreground grid place-items-center transition border border-border shrink-0 cursor-pointer"
+          title={showBalance ? "Ocultar saldos" : "Mostrar saldos"}
+        >
+          {showBalance ? <Eye size={17} /> : <EyeOff size={17} />}
+        </button>
       </header>
 
-      {/* Alerta Crítico de Bloqueio por Dívida */}
+      {/* Alerta de Bloqueio por Dívida (caso ocorra) */}
       {isProviderBlockedForDebt && (
         <div className="px-5 pt-2">
-          <div className="p-4 rounded-3xl bg-destructive/15 border-2 border-destructive/40 text-destructive text-xs space-y-2.5">
-            <div className="flex items-center gap-2 font-black text-sm">
-              <AlertTriangle size={18} />
-              <span>CONTA SUSPENSA: Limite de Dívida Atingido (≥ {formatDb(debtBlockLimit)})</span>
+          <div className="p-4 rounded-2xl bg-rose-500/10 border border-rose-500/30 text-rose-950 dark:text-rose-200 text-xs space-y-2">
+            <div className="flex items-center gap-2 font-black text-sm text-rose-600 dark:text-rose-400">
+              <AlertTriangle size={17} />
+              <span>Conta Suspensa: Limite de Comissões Atingido</span>
             </div>
-            <p className="text-destructive/90 leading-relaxed font-medium">
-              Acumulou <strong>{formatDb(providerDebt)}</strong> em comissões pendentes de serviços
-              pagos em dinheiro no terreno. O limite máximo de crédito é de{" "}
-              {formatDb(debtBlockLimit)}. A sua conta está temporariamente bloqueada para novos
-              serviços até amortizar o valor.
+            <p className="leading-relaxed">
+              Tem <strong>{formatDb(providerDebt)}</strong> pendentes de serviços pagos em dinheiro
+              no terreno. Amortize a dívida para reativar o recebimento de novos serviços.
             </p>
             <button
               type="button"
@@ -301,208 +289,195 @@ function ProEarnings() {
                 setTopUpAmount(String(providerDebt));
                 setTopUpOpen(true);
               }}
-              className="w-full py-2.5 rounded-xl bg-destructive text-destructive-foreground font-bold text-xs flex items-center justify-center gap-1.5 shadow-sm active:scale-95 transition cursor-pointer"
+              className="w-full py-2.5 rounded-xl bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs flex items-center justify-center gap-1.5 shadow-xs transition cursor-pointer"
             >
-              <Banknote size={14} /> Regularizar Dívida Imediatamente ({formatDb(providerDebt)})
+              <RefreshCw size={13} /> Regularizar Agora ({formatDb(providerDebt)})
             </button>
           </div>
         </div>
       )}
 
-      {/* HEADER CARD COM OS 3 PILARES DE SALDO MD3 */}
-      <Section className="pt-2">
-        <div className="rounded-3xl border border-border/80 bg-card p-5 space-y-4 shadow-sm">
-          {/* TOPO DO CARD */}
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2.5">
-              <div className="size-10 rounded-2xl bg-primary/10 text-primary flex items-center justify-center">
-                <Wallet size={20} />
-              </div>
-              <div>
-                <h3 className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
-                  Visão Consolidada
-                </h3>
-                <p className="text-sm font-extrabold text-foreground">Saldos & Custódia KONEKTA</p>
-              </div>
-            </div>
+      {/* CARTÃO FINANCEIRO PRINCIPAL (DESIGN MODERNO FINTECH) */}
+      <div className="px-5 pt-3">
+        <div className="relative rounded-3xl bg-gradient-to-br from-emerald-950 via-slate-900 to-emerald-900 text-white p-6 shadow-lg overflow-hidden border border-emerald-800/40">
+          {/* Efeito decorativo sutil de fundo */}
+          <div className="absolute -right-12 -bottom-12 size-48 rounded-full bg-emerald-500/10 blur-2xl pointer-events-none" />
+          <div className="absolute -left-12 -top-12 size-40 rounded-full bg-teal-400/10 blur-xl pointer-events-none" />
 
-            <span
-              className={`px-2.5 py-1 rounded-full text-[11px] font-bold flex items-center gap-1 ${
-                isProviderBlockedForDebt
-                  ? "bg-destructive/15 text-destructive"
-                  : providerDebt > 0
-                    ? "bg-amber-500/15 text-amber-900 dark:text-amber-300"
-                    : "bg-emerald-500/15 text-emerald-800 dark:text-emerald-300"
-              }`}
-            >
-              {isProviderBlockedForDebt ? (
-                <>
-                  <AlertTriangle size={12} /> Bloqueado
-                </>
-              ) : providerDebt > 0 ? (
-                <>
-                  <AlertCircle size={12} /> Dívida Pendente
-                </>
-              ) : (
-                <>
-                  <ShieldCheck size={12} /> Regularizado
-                </>
-              )}
-            </span>
-          </div>
-
-          {/* OS 3 PILARES DE SALDO */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-            {/* 1. SALDO DISPONÍVEL (Verde) */}
-            <div className="p-4 rounded-2xl bg-emerald-500/10 border border-emerald-500/25 space-y-1.5">
-              <div className="flex items-center justify-between">
-                <span className="text-[11px] font-bold text-emerald-900 dark:text-emerald-300 flex items-center gap-1">
-                  <CheckCircle2 size={13} className="text-emerald-600" /> 1. Saldo Disponível
-                </span>
-                <span className="px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-900 dark:text-emerald-200 text-[10px] font-bold">
-                  Pronto
-                </span>
+          {/* Topo do Cartão */}
+          <div className="relative flex items-center justify-between mb-4">
+            <div className="flex items-center gap-2">
+              <div className="size-7 rounded-lg bg-emerald-500/20 text-emerald-300 grid place-items-center border border-emerald-400/30">
+                <Wallet size={14} />
               </div>
-              <p className="text-2xl sm:text-3xl font-black text-foreground tracking-tight font-mono">
-                {formatDb(balance)}
-              </p>
-              <p className="text-[11px] text-muted-foreground leading-snug">
-                Dinheiro de serviços concluídos e aprovados, pronto para levantamento bancário STP.
-              </p>
-            </div>
-
-            {/* 2. SALDO EM CUSTÓDIA / ESCROW (Âmbar) */}
-            <div className="p-4 rounded-2xl bg-amber-500/10 border border-amber-500/25 space-y-1.5">
-              <div className="flex items-center justify-between">
-                <span className="text-[11px] font-bold text-amber-900 dark:text-amber-300 flex items-center gap-1">
-                  <Lock size={13} className="text-amber-600" /> 2. Em Custódia (Escrow)
-                </span>
-                <span className="px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-900 dark:text-amber-200 text-[10px] font-bold">
-                  Garantido
-                </span>
-              </div>
-              <p className="text-2xl sm:text-3xl font-black text-foreground tracking-tight font-mono">
-                {formatDb(pendingBalance)}
-              </p>
-              <p className="text-[11px] text-muted-foreground leading-snug">
-                Retido em segurança. Transferido para o saldo disponível assim que o cliente validar
-                o PIN.
-              </p>
-            </div>
-
-            {/* 3. DÍVIDA DE COMISSÕES (Vermelho) */}
-            <div
-              className={`p-4 rounded-2xl border space-y-1.5 ${
-                providerDebt > 0
-                  ? "bg-destructive/10 border-destructive/30"
-                  : "bg-muted/40 border-border/80"
-              }`}
-            >
-              <div className="flex items-center justify-between">
-                <span
-                  className={`text-[11px] font-bold flex items-center gap-1 ${
-                    providerDebt > 0 ? "text-destructive" : "text-muted-foreground"
-                  }`}
-                >
-                  <AlertTriangle
-                    size={13}
-                    className={providerDebt > 0 ? "text-destructive" : "text-muted-foreground"}
-                  />{" "}
-                  3. Dívida de Comissões
-                </span>
-                <span
-                  className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
-                    providerDebt >= debtBlockLimit
-                      ? "bg-destructive text-white"
-                      : providerDebt > 0
-                        ? "bg-amber-500/20 text-amber-900 dark:text-amber-200"
-                        : "bg-muted text-muted-foreground"
-                  }`}
-                >
-                  {providerDebt >= debtBlockLimit
-                    ? "Limite Atingido"
-                    : providerDebt > 0
-                      ? `${formatDb(debtBlockLimit - providerDebt)} p/ Bloqueio`
-                      : "0 Db"}
-                </span>
-              </div>
-              <p
-                className={`text-2xl sm:text-3xl font-black tracking-tight font-mono ${
-                  providerDebt > 0 ? "text-destructive" : "text-foreground"
-                }`}
-              >
-                {formatDb(providerDebt)}
-              </p>
-              {/* Barra de Progresso da Dívida */}
-              <div className="w-full bg-muted/60 h-1.5 rounded-full overflow-hidden">
-                <div
-                  className={`h-full transition-all duration-300 ${
-                    providerDebt >= debtBlockLimit ? "bg-destructive" : "bg-amber-500"
-                  }`}
-                  style={{
-                    width: `${Math.min(100, (providerDebt / debtBlockLimit) * 100)}%`,
-                  }}
-                />
-              </div>
-              <p className="text-[10px] text-muted-foreground leading-snug">
-                {providerDebt > 0
-                  ? `Comissões de dinheiro recebido no local. Limite: ${formatDb(debtBlockLimit)}.`
-                  : "Nenhuma comissão pendente de repasse."}
-              </p>
-            </div>
-          </div>
-
-          {/* BARRA DE AÇÕES RÁPIDAS */}
-          <div className="pt-2 border-t border-border/60 flex flex-wrap items-center justify-between gap-2.5">
-            <div className="text-[11px] text-muted-foreground flex items-center gap-1.5">
-              <Info size={13} className="text-primary shrink-0" />
-              <span>
-                Taxa de serviço da plataforma:{" "}
-                <strong>{isPlanActive ? "0% (Plano Empresa)" : `${commission}%`}</strong>
+              <span className="text-[11px] font-bold tracking-wider uppercase text-emerald-200/90">
+                KONEKTA STP
               </span>
             </div>
 
-            <div className="flex items-center gap-2">
-              <button
-                type="button"
-                onClick={() => setCashDeclModalOpen(true)}
-                className="px-3.5 h-9 rounded-xl bg-muted hover:bg-muted/80 text-foreground text-xs font-bold flex items-center gap-1.5 transition cursor-pointer border border-border"
-              >
-                <Banknote size={14} className="text-emerald-600" />
-                <span>Declarar Pagamento Dinheiro</span>
-              </button>
+            <span className="text-[10px] font-bold px-2.5 py-1 rounded-full bg-emerald-500/20 text-emerald-200 border border-emerald-400/25">
+              Saldo Líquido
+            </span>
+          </div>
 
-              {providerDebt > 0 && (
-                <button
-                  type="button"
-                  onClick={() => {
-                    setTopUpAmount(String(providerDebt));
-                    setTopUpOpen(true);
-                  }}
-                  className="px-3.5 h-9 rounded-xl bg-amber-500/15 text-amber-900 dark:text-amber-200 text-xs font-bold flex items-center gap-1.5 hover:bg-amber-500/25 transition cursor-pointer border border-amber-500/30"
-                >
-                  <RefreshCw size={13} />
-                  <span>Regularizar Dívida</span>
-                </button>
-              )}
-
-              <button
-                type="button"
-                onClick={() => setPayoutOpen(true)}
-                disabled={balance <= 0 || isProviderBlockedForDebt}
-                className="px-4 h-9 rounded-xl bg-primary text-primary-foreground text-xs font-bold flex items-center gap-1.5 shadow-sm hover:bg-primary/90 transition cursor-pointer disabled:opacity-50"
-              >
-                <ArrowUpRight size={14} />
-                <span>Solicitar Saque</span>
-              </button>
+          {/* Montante Principal */}
+          <div className="relative space-y-1 mb-6">
+            <p className="text-xs text-emerald-200/80 font-medium">
+              Disponível para Levantamento Imediato
+            </p>
+            <div className="flex items-baseline gap-2">
+              <span className="text-3xl sm:text-4xl font-black font-mono tracking-tight text-white">
+                {showBalance ? formatDb(balance) : "••••••••"}
+              </span>
             </div>
+            <p className="text-[11px] text-emerald-300/70">
+              Transferência direta para a sua conta BISTP, BGFI ou Dobra 24
+            </p>
+          </div>
+
+          {/* Ações Rápidas no Cartão */}
+          <div className="relative grid grid-cols-2 gap-2.5 pt-2 border-t border-emerald-800/60">
+            <button
+              type="button"
+              onClick={() => setPayoutOpen(true)}
+              disabled={balance <= 0 || isProviderBlockedForDebt}
+              className="py-3 px-4 rounded-2xl bg-white text-slate-950 hover:bg-emerald-50 font-black text-xs flex items-center justify-center gap-1.5 shadow-md active:scale-98 transition disabled:opacity-50 cursor-pointer"
+            >
+              <ArrowUpRight size={16} className="text-emerald-700" />
+              <span>Levantar Dinheiro</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setCashDeclModalOpen(true)}
+              className="py-3 px-3 rounded-2xl bg-white/10 hover:bg-white/15 text-white font-bold text-xs flex items-center justify-center gap-1.5 border border-white/20 active:scale-98 transition cursor-pointer backdrop-blur-xs"
+            >
+              <Banknote size={15} className="text-emerald-300" />
+              <span>Declarar em Dinheiro</span>
+            </button>
           </div>
         </div>
-      </Section>
+      </div>
 
-      {/* HISTÓRICO DE SAQUES SOLICITADOS */}
+      {/* 2 CARDS INFORMATIVOS (SEM NUMERAÇÃO ROBÓTICA) */}
+      <div className="px-5 pt-3 grid grid-cols-1 sm:grid-cols-2 gap-3">
+        {/* Card 1: Saldo em Custódia Segura (Escrow) */}
+        <div className="p-4 rounded-2xl bg-card border border-border shadow-2xs space-y-2">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <div className="size-8 rounded-xl bg-amber-500/10 text-amber-600 dark:text-amber-400 grid place-items-center">
+                <Lock size={15} />
+              </div>
+              <span className="text-xs font-bold text-foreground">Custódia Protegida</span>
+            </div>
+            <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-500/15 text-amber-700 dark:text-amber-300">
+              Garantido
+            </span>
+          </div>
+
+          <p className="text-2xl font-black font-mono text-foreground">
+            {showBalance ? formatDb(pendingBalance) : "••••••"}
+          </p>
+
+          <p className="text-[11px] text-muted-foreground leading-relaxed">
+            Pago antecipadamente pelos clientes. É creditado no seu saldo assim que o cliente
+            confirmar a conclusão do serviço com o código de 4 dígitos.
+          </p>
+        </div>
+
+        {/* Card 2: Comissões KONEKTA & Estado da Conta */}
+        <div className="p-4 rounded-2xl bg-card border border-border shadow-2xs space-y-2">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <div
+                className={`size-8 rounded-xl grid place-items-center ${
+                  providerDebt > 0
+                    ? "bg-rose-500/10 text-rose-600 dark:text-rose-400"
+                    : "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400"
+                }`}
+              >
+                {providerDebt > 0 ? <AlertCircle size={15} /> : <ShieldCheck size={15} />}
+              </div>
+              <span className="text-xs font-bold text-foreground">Estado das Comissões</span>
+            </div>
+            <span
+              className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                providerDebt > 0
+                  ? "bg-rose-500/15 text-rose-700 dark:text-rose-300"
+                  : "bg-emerald-500/15 text-emerald-700 dark:text-emerald-300"
+              }`}
+            >
+              {providerDebt > 0 ? "Pendente" : "Regularizada"}
+            </span>
+          </div>
+
+          <div className="flex items-baseline justify-between">
+            <p
+              className={`text-2xl font-black font-mono ${
+                providerDebt > 0 ? "text-rose-600 dark:text-rose-400" : "text-foreground"
+              }`}
+            >
+              {showBalance ? formatDb(providerDebt) : "••••••"}
+            </p>
+            {providerDebt > 0 && (
+              <button
+                type="button"
+                onClick={() => {
+                  setTopUpAmount(String(providerDebt));
+                  setTopUpOpen(true);
+                }}
+                className="text-[11px] font-bold text-primary hover:underline cursor-pointer flex items-center gap-0.5"
+              >
+                <span>Pagar</span>
+                <ChevronRight size={12} />
+              </button>
+            )}
+          </div>
+
+          <p className="text-[11px] text-muted-foreground leading-relaxed">
+            {providerDebt > 0
+              ? `Comissão de ${commission}% em serviços presenciais. Limite de crédito: ${formatDb(debtBlockLimit)}.`
+              : `Conta 100% em dia. A comissão de ${commission}% só se aplica quando os serviços são concluídos com sucesso.`}
+          </p>
+        </div>
+      </div>
+
+      {/* CONTA BANCÁRIA VINCULADA STP */}
+      <div className="px-5 pt-3">
+        <div className="p-4 rounded-2xl bg-muted/40 border border-border/80 flex items-center justify-between gap-3">
+          <div className="flex items-center gap-3">
+            <div className="size-10 rounded-xl bg-primary/10 text-primary grid place-items-center shrink-0">
+              <Building2 size={18} />
+            </div>
+            <div>
+              <div className="flex items-center gap-1.5">
+                <p className="text-xs font-bold text-foreground">BISTP · Conta Bancária STP</p>
+                <span className="text-[10px] text-emerald-600 font-bold bg-emerald-500/10 px-1.5 py-0.5 rounded-md">
+                  Ativa
+                </span>
+              </div>
+              <p className="text-[11px] font-mono text-muted-foreground mt-0.5">
+                ST53.0001.0000.4455.6677.8899.1
+              </p>
+              <p className="text-[10px] text-muted-foreground">
+                Titular: {user?.name || "Edmilson Varela"}
+              </p>
+            </div>
+          </div>
+
+          <button
+            type="button"
+            onClick={() => setPayoutOpen(true)}
+            className="px-3 py-1.5 rounded-xl border border-border bg-card hover:bg-muted text-foreground text-xs font-bold transition shrink-0 cursor-pointer"
+          >
+            Alterar
+          </button>
+        </div>
+      </div>
+
+      {/* HISTÓRICO DE SAQUES SOLICITADOS (SE HOUVER) */}
       {payoutRequests.length > 0 && (
-        <Section title="Solicitações de Saque Bancário">
+        <Section title="Pedidos de Levantamento Recentes" className="pt-4">
           <div className="space-y-2.5">
             {payoutRequests.map((req) => (
               <KCard key={req.id} className="border border-border/80 space-y-2">
@@ -547,7 +522,7 @@ function ProEarnings() {
                 </div>
                 {req.adminNotes && (
                   <p className="text-[11px] text-muted-foreground bg-muted/40 p-2 rounded-lg border border-border/40">
-                    ℹ️ Nota: {req.adminNotes}
+                    Nota: {req.adminNotes}
                   </p>
                 )}
               </KCard>
@@ -557,7 +532,7 @@ function ProEarnings() {
       )}
 
       {/* RESUMO DE MÉTRICAS */}
-      <Section>
+      <Section className="pt-3">
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
           <StatCard
             label="Total Ganho Líquido"
@@ -566,28 +541,29 @@ function ProEarnings() {
             icon={<TrendingUp size={15} />}
           />
           <StatCard
-            label="Total Sacado"
+            label="Total Levantado"
             value={formatDb(withdrawnBalance)}
             tone="primary"
-            icon={<Building2 size={15} />}
-          />
-          <StatCard
-            label="Dívida de Comissão"
-            value={formatDb(providerDebt)}
-            tone={providerDebt > 0 ? "danger" : "default"}
-            icon={<AlertCircle size={15} />}
+            icon={<Wallet size={15} />}
           />
           <StatCard
             label="Taxa de Serviço"
-            value={isPlanActive ? "0%" : `${commission}%`}
-            tone={isPlanActive ? "success" : "warning"}
+            value={`${commission}%`}
+            tone="default"
+            icon={<ShieldCheck size={15} />}
+          />
+          <StatCard
+            label="Prazo de Repasse"
+            value="24h úteis"
+            tone="default"
+            icon={<Clock size={15} />}
           />
         </div>
       </Section>
 
-      {/* LISTA DE MOVIMENTOS & TRANSAÇÕES COM FILTROS */}
-      <Section title="Extrato Detalhado de Movimentos" className="space-y-3 pb-6">
-        {/* FILTRO CHIPS */}
+      {/* EXTRATO DETALHADO DE MOVIMENTOS COM FILTROS */}
+      <Section title="Extrato de Movimentos" className="space-y-3 pb-8">
+        {/* FILTROS CHIPS */}
         <div className="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-none">
           {[
             { id: "all" as const, label: `Todos (${txs.length})` },
@@ -597,7 +573,7 @@ function ProEarnings() {
             },
             {
               id: "out" as const,
-              label: `Saques (${txs.filter((t) => t.kind === "out" && !t.label.toLowerCase().includes("comiss")).length})`,
+              label: `Levantamentos (${txs.filter((t) => t.kind === "out" && !t.label.toLowerCase().includes("comiss")).length})`,
             },
             {
               id: "commissions" as const,
@@ -677,9 +653,9 @@ function ProEarnings() {
                     <span
                       className={`text-sm font-black font-mono block ${
                         t.kind === "in"
-                          ? "text-emerald-800 dark:text-emerald-300"
+                          ? "text-emerald-700 dark:text-emerald-300"
                           : isCommissionDebit
-                            ? "text-amber-800 dark:text-amber-300"
+                            ? "text-amber-700 dark:text-amber-300"
                             : "text-foreground"
                       }`}
                     >
@@ -687,7 +663,7 @@ function ProEarnings() {
                       {formatDb(t.amount)}
                     </span>
                     <span className="text-[10px] text-muted-foreground flex items-center justify-end gap-0.5">
-                      Ver detalhes
+                      Ver recibo
                     </span>
                   </div>
                 </div>
@@ -697,45 +673,8 @@ function ProEarnings() {
         )}
       </Section>
 
-      {/* MODELO DE COBRANÇA */}
-      <Section title="Modelo de Cobrança KONEKTA" className="pb-10">
-        <KCard className="border border-border/80 shadow-2xs space-y-3">
-          <div className="flex items-start justify-between gap-3">
-            <div className="flex items-center gap-2.5">
-              <div className="size-9 rounded-2xl bg-blue-50 text-blue-600 dark:bg-blue-950/40 dark:text-blue-400 grid place-items-center shrink-0">
-                <Building2 size={18} />
-              </div>
-              <div>
-                <p className="text-sm font-bold text-foreground">
-                  Prestador · Comissão de {commission}%
-                </p>
-                <p className="text-xs text-muted-foreground">
-                  A comissão só é retida depois de o cliente aprovar o serviço concluído.
-                </p>
-              </div>
-            </div>
-            <StatusPill tone="default">{commission}% Taxa</StatusPill>
-          </div>
-
-          <div className="p-3.5 rounded-2xl bg-muted/40 border border-border/60 text-xs text-foreground/80 space-y-2">
-            <div className="flex items-center justify-between text-[11px]">
-              <span className="text-muted-foreground">Tipo de Conta:</span>
-              <span className="font-bold text-foreground">Prestador de serviços</span>
-            </div>
-
-            <div className="flex items-center justify-between text-[11px]">
-              <span className="text-muted-foreground">Regra de Cobrança:</span>
-              <strong className="text-foreground">
-                Comissão de sucesso ({commission}% por serviço)
-              </strong>
-            </div>
-          </div>
-        </KCard>
-      </Section>
-
-
       {/* ========================================================================= */}
-      {/* BOTTOM SHEET DE DETALHE DE TRANSAÇÃO (MATEMÁTICA & DETALHES) */}
+      {/* BOTTOM SHEET DE DETALHE DE TRANSAÇÃO (RECIBO & MATEMÁTICA) */}
       {/* ========================================================================= */}
       <BottomSheet
         open={Boolean(selectedTx)}
@@ -752,7 +691,7 @@ function ProEarnings() {
                 <p
                   className={`text-2xl font-black font-mono ${
                     selectedTx.kind === "in"
-                      ? "text-emerald-800 dark:text-emerald-300"
+                      ? "text-emerald-700 dark:text-emerald-300"
                       : "text-foreground"
                   }`}
                 >
@@ -767,7 +706,7 @@ function ProEarnings() {
                     : "bg-muted text-foreground border border-border"
                 }`}
               >
-                {selectedTx.kind === "in" ? "✓ Entrada Liquidada" : "Débito / Saque"}
+                {selectedTx.kind === "in" ? "✓ Entrada Liquidada" : "Débito / Levantamento"}
               </span>
             </div>
 
@@ -782,29 +721,23 @@ function ProEarnings() {
                   <div className="flex justify-between items-center text-muted-foreground">
                     <span>Valor Bruto do Serviço (Cliente):</span>
                     <strong className="text-foreground font-mono">
-                      {formatDb(
-                        Math.round(selectedTx.amount / (1 - (isPlanActive ? 0 : commission / 100))),
-                      )}
+                      {formatDb(Math.round(selectedTx.amount / (1 - commission / 100)))}
                     </strong>
                   </div>
                   <div className="flex justify-between items-center text-muted-foreground">
-                    <span>
-                      Taxa de Comissão Plataforma (
-                      {isPlanActive ? "0% Plano Empresa" : `${commission}%`}):
-                    </span>
-                    <strong className="text-amber-800 dark:text-amber-300 font-mono">
+                    <span>Taxa de Comissão Plataforma ({commission}%):</span>
+                    <strong className="text-amber-700 dark:text-amber-300 font-mono">
                       −{" "}
                       {formatDb(
                         Math.round(
-                          (selectedTx.amount / (1 - (isPlanActive ? 0 : commission / 100))) *
-                            (isPlanActive ? 0 : commission / 100),
+                          (selectedTx.amount / (1 - commission / 100)) * (commission / 100),
                         ),
                       )}
                     </strong>
                   </div>
                   <div className="flex justify-between items-center border-t border-border pt-2 font-bold text-sm">
                     <span className="text-foreground">Líquido Creditado na Carteira:</span>
-                    <strong className="text-emerald-800 dark:text-emerald-300 font-mono">
+                    <strong className="text-emerald-700 dark:text-emerald-300 font-mono">
                       {formatDb(selectedTx.amount)}
                     </strong>
                   </div>
@@ -819,8 +752,8 @@ function ProEarnings() {
                   </div>
                   <div className="flex justify-between items-center text-muted-foreground">
                     <span>Taxa de Transação KONEKTA:</span>
-                    <strong className="text-emerald-800 dark:text-emerald-300 font-mono">
-                      0 STN (Gratuito)
+                    <strong className="text-emerald-700 dark:text-emerald-300 font-mono">
+                      0 Db (Gratuito)
                     </strong>
                   </div>
                   <div className="flex justify-between items-center border-t border-border pt-2 font-bold text-sm">
@@ -891,7 +824,7 @@ function ProEarnings() {
       <BottomSheet
         open={cashDeclModalOpen}
         onClose={() => setCashDeclModalOpen(false)}
-        title="Declarar Pagamento Presencial (Dinheiro)"
+        title="Declarar Pagamento Presencial"
         description="Registe os pagamentos recebidos em dinheiro vivo diretamente das mãos do cliente no terreno."
       >
         <form onSubmit={handleDeclareCashPayment} className="space-y-3.5 pt-2">
@@ -925,7 +858,7 @@ function ProEarnings() {
 
           <div>
             <label className="text-xs font-bold text-foreground block mb-1">
-              Valor Total Recebido em Dinheiro (STN) *
+              Valor Total Recebido em Dinheiro (Db) *
             </label>
             <input
               type="number"
@@ -946,21 +879,16 @@ function ProEarnings() {
                 <strong className="font-mono">{formatDb(Number(cashDeclAmount))}</strong>
               </div>
               <div className="flex justify-between">
-                <span className="text-muted-foreground">
-                  Comissão KONEKTA ({isPlanActive ? "0% Empresa" : `${commission}%`}):
-                </span>
+                <span className="text-muted-foreground">Comissão KONEKTA ({commission}%):</span>
                 <strong className="text-destructive font-mono">
-                  {formatDb(
-                    Math.round(Number(cashDeclAmount) * ((isPlanActive ? 0 : commission) / 100)),
-                  )}
+                  {formatDb(Math.round(Number(cashDeclAmount) * (commission / 100)))}
                 </strong>
               </div>
               <div className="flex justify-between border-t border-amber-500/30 pt-1 text-[11px] text-muted-foreground">
                 <span>Impacto na Carteira:</span>
                 <span className="font-bold text-foreground">
-                  {isPlanActive
-                    ? "Sem acréscimo de dívida (0% taxa)"
-                    : `+${formatDb(Math.round(Number(cashDeclAmount) * (commission / 100)))} na dívida de comissões`}
+                  +{formatDb(Math.round(Number(cashDeclAmount) * (commission / 100)))} na comissão
+                  pendente
                 </span>
               </div>
             </div>
@@ -992,14 +920,14 @@ function ProEarnings() {
       <BottomSheet
         open={payoutOpen}
         onClose={() => setPayoutOpen(false)}
-        title="Solicitar Saque Bancário STP"
+        title="Solicitar Levantamento Bancário"
         description={`Saldo disponível líquido: ${formatDb(balance)} · ${payoutLabel()}`}
       >
         <div className="space-y-4 pt-2">
           {/* Montante e Atalhos */}
           <div>
             <label className="text-xs font-bold text-foreground block mb-1">
-              Valor a Transferir (STN) *
+              Valor a Transferir (Db) *
             </label>
             <input
               value={amount}
@@ -1095,7 +1023,7 @@ function ProEarnings() {
             </div>
             <div className="flex justify-between">
               <span>Taxa de processamento KONEKTA:</span>
-              <strong className="text-emerald-800 dark:text-emerald-300">0 Db (Gratuito)</strong>
+              <strong className="text-emerald-700 dark:text-emerald-300">0 Db (Gratuito)</strong>
             </div>
             <div className="flex justify-between border-t border-border/50 pt-1 font-bold">
               <span>Total a transferir:</span>
@@ -1108,7 +1036,7 @@ function ProEarnings() {
             onClick={handlePayout}
             className="w-full h-12 rounded-2xl bg-primary text-primary-foreground text-xs font-bold flex items-center justify-center gap-2 shadow-sm active:scale-98 transition-all cursor-pointer"
           >
-            <Check size={16} /> Confirmar Pedido de Saque
+            <Check size={16} /> Confirmar Pedido de Levantamento
           </button>
         </div>
       </BottomSheet>
@@ -1117,20 +1045,20 @@ function ProEarnings() {
       <BottomSheet
         open={topUpOpen}
         onClose={() => setTopUpOpen(false)}
-        title="Recarregar Saldo / Regularizar Dívida"
+        title="Regularizar Comissões KONEKTA"
         description="Transfira para as contas oficiais KONEKTA em São Tomé e Príncipe. O saldo será creditado após validação do comprovativo pela administração."
       >
         <div className="space-y-4 pt-2">
           {providerDebt > 0 && (
             <div className="p-3.5 rounded-2xl bg-amber-500/10 border border-amber-500/30 text-xs text-amber-900 dark:text-amber-200">
-              Dívida atual: <strong>{formatDb(providerDebt)}</strong>. O carregamento amortiza a sua
-              dívida e desbloqueia a sua conta assim que validado pelo administrador.
+              Comissões pendentes: <strong>{formatDb(providerDebt)}</strong>. O pagamento amortiza a
+              sua dívida e mantém a sua conta ativa e apta a receber novos serviços.
             </div>
           )}
 
           <div>
             <label className="text-xs font-bold text-foreground block mb-1">
-              Valor a Transferir (STN) *
+              Valor a Transferir (Db) *
             </label>
             <input
               type="number"
@@ -1144,7 +1072,7 @@ function ProEarnings() {
 
           <div>
             <label className="text-xs font-bold text-foreground block mb-1.5">
-              Selecione o Canal de Pagamento STP:
+              Selecione a Conta Bancária de Destino:
             </label>
             <div className="grid grid-cols-2 gap-2">
               {[
@@ -1192,20 +1120,19 @@ function ProEarnings() {
           </div>
 
           <div className="p-3 rounded-xl bg-muted/40 border border-border/60 text-[11px] text-muted-foreground">
-            💡 <strong>Validação Admin:</strong> O comprovativo é enviado instantaneamente para a
-            administração. O saldo fica disponível logo após a conferência bancária.
+            💡 <strong>Validação Rápida:</strong> O comprovativo é processado pela equipa KONEKTA em
+            até 2 horas úteis.
           </div>
 
           <button
             type="button"
             onClick={handleTopUpDebt}
-            className="w-full py-3.5 rounded-2xl bg-primary text-primary-foreground font-bold text-xs flex items-center justify-center gap-2 transition cursor-pointer shadow-2xs"
+            className="w-full py-3.5 rounded-2xl bg-primary text-primary-foreground font-bold text-xs flex items-center justify-center gap-2 transition cursor-pointer shadow-2xs active:scale-98"
           >
-            <Check size={16} /> Submeter Comprovativo para Validação Admin
+            <Check size={16} /> Submeter Comprovativo de Regularização
           </button>
         </div>
       </BottomSheet>
-
     </AppShell>
   );
 }

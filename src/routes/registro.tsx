@@ -3,7 +3,6 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import {
   ArrowLeft,
   Briefcase,
-  Building2,
   Calendar,
   Camera,
   Check,
@@ -32,7 +31,6 @@ import { cn } from "@/lib/utils";
 import { COUNTRIES, DEFAULT_COUNTRY, findCountryByCodeOrIso, Country } from "@/lib/countries";
 
 type Role = "cliente" | "prestador" | "ambos";
-type ProType = "individual" | "empresa";
 
 export const Route = createFileRoute("/registro")({
   validateSearch: (search: Record<string, unknown>): { role?: Role; edit?: boolean } => {
@@ -430,14 +428,7 @@ function RegistoPage() {
   };
 
   // Section 2: Perfil profissional
-  // O tipo vem sempre do que o utilizador escolheu antes (nunca inferido pelo nome).
-  const [proType, setProType] = useState<ProType>(currentProvider?.providerType ?? "individual");
-  const [proName, setProName] = useState(
-    currentProvider?.providerType === "empresa"
-      ? currentProvider?.companyName || currentProvider?.businessName || ""
-      : currentUser?.name || "",
-  );
-  const [proResponsibleName, setProResponsibleName] = useState(currentUser?.name || "");
+  const [proName, setProName] = useState(currentProvider?.businessName || currentUser?.name || "");
   const [proDescription, setProDescription] = useState(currentProvider?.bio || "");
   const [proExperience, setProExperience] = useState(
     currentProvider?.experienceYears ? String(currentProvider.experienceYears) : "",
@@ -583,7 +574,6 @@ function RegistoPage() {
   // Section 6: Verificação de identidade
   const [frontDocName, setFrontDocName] = useState<string | null>(null);
   const [backDocName, setBackDocName] = useState<string | null>(null);
-  const [companyDocName, setCompanyDocName] = useState<string | null>(null);
 
   // Checkboxes
   const [acceptTerms, setAcceptTerms] = useState(true);
@@ -650,14 +640,6 @@ function RegistoPage() {
     if (file) {
       setBackDocName(file.name);
       toast.success("Foto do verso do BI/Passaporte carregada!");
-    }
-  };
-
-  const handleCompanyDocUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      setCompanyDocName(file.name);
-      toast.success("Documento do registo comercial carregado!");
     }
   };
 
@@ -853,9 +835,7 @@ function RegistoPage() {
             district: selectedDistricts[0] || "Água Grande",
           });
           store.updateProviderProfile({
-            providerType: proType,
-            companyName: proType === "empresa" ? proName.trim() : undefined,
-            businessName: proType === "empresa" ? proName.trim() : undefined,
+            businessName: proName.trim() || fullName.trim(),
             bio: proDescription.trim(),
             experienceYears: Number(proExperience) || undefined,
             coverageDistricts: selectedDistricts,
@@ -881,10 +861,7 @@ function RegistoPage() {
         if (role === "prestador" || role === "ambos") {
           store.registerProvider(
             {
-              name:
-                fullName.trim() ||
-                (proType === "empresa" ? proResponsibleName.trim() : proName.trim()) ||
-                "Prestador KONEKTA",
+              name: fullName.trim() || proName.trim() || "Prestador KONEKTA",
               phone: formattedPhone,
               email: email.trim() || undefined,
               avatar: avatarUrl || undefined,
@@ -892,9 +869,7 @@ function RegistoPage() {
             {
               category: selectedServices[0]?.category || "Serviços Gerais",
               subcategories: selectedServices.map((s) => s.name),
-              providerType: proType,
-              companyName: proType === "empresa" ? proName.trim() : undefined,
-              businessName: proType === "empresa" ? proName.trim() : undefined,
+              businessName: proName.trim() || fullName.trim(),
               bio: proDescription.trim(),
               experienceYears: Number(proExperience) || 1,
               yearsExperience: Number(proExperience) || 1,
@@ -1468,87 +1443,19 @@ function RegistoPage() {
 
             {openProProfile && (
               <div className="px-5 pb-5 pt-1 border-t border-slate-100 space-y-4">
-                {/* Switch button: Profissional individual vs Empresa */}
-                <div className="grid grid-cols-2 gap-3 pt-2">
-                  <button
-                    type="button"
-                    onClick={() => setProType("individual")}
-                    className={cn(
-                      "flex flex-col items-center justify-center p-4 rounded-2xl border text-center transition-all cursor-pointer gap-2",
-                      proType === "individual"
-                        ? "border-2 border-[#1D68D8] bg-[#F0F6FF]"
-                        : "border-slate-200 bg-white hover:border-slate-300",
-                    )}
-                  >
-                    <User
-                      size={20}
-                      className={proType === "individual" ? "text-[#1D68D8]" : "text-slate-500"}
-                    />
-                    <span
-                      className={cn(
-                        "text-xs font-bold leading-tight",
-                        proType === "individual" ? "text-[#1D68D8]" : "text-slate-700",
-                      )}
-                    >
-                      Profissional individual
-                    </span>
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() => setProType("empresa")}
-                    className={cn(
-                      "flex flex-col items-center justify-center p-4 rounded-2xl border text-center transition-all cursor-pointer gap-2",
-                      proType === "empresa"
-                        ? "border-2 border-[#1D68D8] bg-[#F0F6FF]"
-                        : "border-slate-200 bg-white hover:border-slate-300",
-                    )}
-                  >
-                    <Building2
-                      size={20}
-                      className={proType === "empresa" ? "text-[#1D68D8]" : "text-slate-500"}
-                    />
-                    <span
-                      className={cn(
-                        "text-xs font-bold leading-tight",
-                        proType === "empresa" ? "text-[#1D68D8]" : "text-slate-700",
-                      )}
-                    >
-                      Empresa
-                    </span>
-                  </button>
-                </div>
-
-                {/* Nome da empresa / Nome profissional */}
-                <div className="space-y-1.5">
+                {/* Nome profissional */}
+                <div className="space-y-1.5 pt-2">
                   <label className="text-xs font-bold text-slate-900">
-                    {proType === "empresa" ? "Nome da empresa" : "Nome profissional"}{" "}
-                    <span className="text-red-500">*</span>
+                    Nome profissional <span className="text-red-500">*</span>
                   </label>
                   <input
                     type="text"
                     value={proName}
                     onChange={(e) => setProName(e.target.value)}
-                    placeholder={
-                      proType === "empresa" ? "Ex.: STP Serviços, Lda" : "Ex.: Eletricista Nando"
-                    }
+                    placeholder="Ex.: Eletricista Nando, Canalizador Silva"
                     className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3.5 text-sm font-medium text-slate-900 placeholder:text-slate-400 outline-none focus:border-[#1D68D8] focus:ring-2 focus:ring-[#1D68D8]/20 transition"
                   />
                 </div>
-
-                {/* Nome do responsável (only for empresa) */}
-                {proType === "empresa" && (
-                  <div className="space-y-1.5">
-                    <label className="text-xs font-bold text-slate-900">Nome do responsável</label>
-                    <input
-                      type="text"
-                      value={proResponsibleName}
-                      onChange={(e) => setProResponsibleName(e.target.value)}
-                      placeholder="Quem responde pela empresa"
-                      className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3.5 text-sm font-medium text-slate-900 placeholder:text-slate-400 outline-none focus:border-[#1D68D8] focus:ring-2 focus:ring-[#1D68D8]/20 transition"
-                    />
-                  </div>
-                )}
 
                 {/* Descrição */}
                 <div className="space-y-1.5">
@@ -2070,42 +1977,6 @@ function RegistoPage() {
                   </p>
                 </div>
               </div>
-
-              {/* Registo comercial da empresa (only when proType is empresa) */}
-              {proType === "empresa" && (
-                <div className="rounded-2xl border border-slate-200 bg-slate-50/50 p-4 space-y-4">
-                  <div>
-                    <h4 className="text-sm font-bold text-slate-900">
-                      Registo comercial da empresa <span className="text-red-500">*</span>
-                    </h4>
-                    <p className="text-xs text-slate-500">
-                      Envie o ficheiro em PDF (documento de constituição ou NIF)
-                    </p>
-                  </div>
-
-                  <div className="space-y-1.5">
-                    <label className="text-xs font-bold text-slate-900">
-                      Ficheiro <span className="text-red-500">*</span>
-                    </label>
-                    <label className="flex flex-col items-center justify-center p-6 border-2 border-dashed border-slate-200 rounded-2xl bg-white hover:border-[#1D68D8] transition cursor-pointer text-center">
-                      <CloudUpload size={28} className="text-[#1D68D8] mb-1.5" />
-                      <span className="text-xs font-semibold text-slate-700">
-                        {companyDocName || "PDF ou documento Word (máx. 8MB)"}
-                      </span>
-                      <input
-                        type="file"
-                        accept=".pdf,.doc,.docx"
-                        onChange={handleCompanyDocUpload}
-                        className="hidden"
-                      />
-                    </label>
-                    <p className="text-[11px] text-slate-500 flex items-center gap-1.5 mt-1">
-                      <ShieldCheck size={13} className="text-slate-400 shrink-0" />
-                      <span>Documento seguro e privado — nunca guardado no dispositivo.</span>
-                    </p>
-                  </div>
-                </div>
-              )}
             </div>
           )}
         </section>

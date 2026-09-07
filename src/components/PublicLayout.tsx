@@ -121,7 +121,7 @@ function SiteFooter() {
   const year = new Date().getFullYear();
   const cols = [
     {
-      title: "Empresa",
+      title: "KONEKTA",
       links: [
         { to: "/sobre", label: "Sobre a KONEKTA" },
         { to: "/como-funciona", label: "Como funciona" },

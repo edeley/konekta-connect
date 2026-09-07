@@ -202,7 +202,7 @@ export function ServiceEditorModal({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm animate-in fade-in duration-200">
       <div className="relative w-full max-w-xl max-h-[92vh] overflow-y-auto bg-card rounded-2xl border border-emerald-500/30 shadow-2xl flex flex-col">
-        {/* Header com Identidade Verde KONEKTA PRO */}
+        {/* Header com Identidade Verde KONEKTA */}
         <div className="sticky top-0 z-10 flex items-center justify-between px-6 py-4 border-b border-border bg-card/95 backdrop-blur-md">
           <div className="flex items-center gap-2.5">
             <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-emerald-500/15 text-emerald-600 dark:text-emerald-400">
@@ -210,7 +210,7 @@ export function ServiceEditorModal({
             </span>
             <div>
               <h2 className="text-base font-bold text-foreground">
-                {serviceToEdit ? "Editar Serviço" : "Novo Serviço KONEKTA PRO"}
+                {serviceToEdit ? "Editar Serviço" : "Novo Serviço KONEKTA"}
               </h2>
               <p className="text-xs text-muted-foreground">
                 Configure preços, modelo de cobrança, deslocação e materiais

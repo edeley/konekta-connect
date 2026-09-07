@@ -1616,9 +1616,14 @@ export type STPPreciseLocation = {
   district: string;
   zone: string;
   street?: string;
+  houseNumber?: string;
+  neighborhood?: string;
+  landmark?: string;
   zoneType: string;
   distanceToZoneCenterMeters: number;
   formattedAddress: string;
+  plusCode?: string;
+  geocodingProvider?: string;
   mapsUrl: string;
   directionsUrl: string;
   wazeUrl: string;
@@ -1677,42 +1682,137 @@ export function identifySTPZone(
 }
 
 /**
- * Tenta obter detalhes da rua ou localidade por geocodificação inversa em tempo real
+ * Constrói um objeto completo de localização geográfica e endereço legível para São Tomé e Príncipe,
+ * integrando a API de Geocoding (Google, BigDataCloud, OSM) e base de dados cartográfica local.
  */
-async function fetchOnlineGeocode(
-  lat: number,
-  lng: number,
-): Promise<{ street?: string; district?: string } | null> {
-  try {
-    const controller = new AbortController();
-    const timer = setTimeout(() => controller.abort(), 3000);
-    const res = await fetch(
-      `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json&addressdetails=1`,
-      {
-        signal: controller.signal,
-        headers: { "Accept-Language": "pt,pt-PT;q=0.9,en;q=0.8" },
-      },
-    );
-    clearTimeout(timer);
-    if (res.ok) {
-      const data = await res.json();
-      const addr = data.address || {};
-      const street =
-        addr.road ||
-        addr.suburb ||
-        addr.neighbourhood ||
-        addr.hamlet ||
-        addr.village ||
-        addr.town ||
-        addr.city ||
-        addr.county;
-      const district = addr.state || addr.county || addr.city;
-      return { street, district };
-    }
-  } catch {
-    // Fallback silencioso para base local de STP
+export async function buildSTPLocationObject(
+  latitude: number,
+  longitude: number,
+  accuracy: number,
+  isFallback = false,
+): Promise<STPPreciseLocation> {
+  const isInsideSTP = latitude >= -0.15 && latitude <= 1.85 && longitude >= 6.3 && longitude <= 7.6;
+
+  let zone: STPZoneInfo;
+  let distanceMeters = 0;
+
+  if (isInsideSTP) {
+    const match = identifySTPZone(latitude, longitude);
+    zone = match.zone;
+    distanceMeters = match.distanceMeters;
+  } else {
+    zone = {
+      district: "Água Grande",
+      name: "Cidade de São Tomé",
+      type: "cidade",
+      lat: 0.3365,
+      lng: 6.7273,
+      description: "Centro Operacional KONEKTA (Coordenadas reais fora de STP)",
+    };
   }
-  return null;
+
+  let resolvedStreet: string | undefined;
+  let resolvedNeighborhood: string | undefined;
+  let houseNumber: string | undefined;
+  let formattedAddress = "";
+  let plusCode: string | undefined;
+  let geocodingProvider = "stp-local";
+
+  if (!isFallback) {
+    try {
+      const { reverseGeocodeCoordinates } = await import("./geocoding");
+      const geoResult = await reverseGeocodeCoordinates(latitude, longitude);
+      if (geoResult) {
+        resolvedStreet = geoResult.street;
+        houseNumber = geoResult.houseNumber;
+        resolvedNeighborhood = geoResult.neighborhood;
+        formattedAddress = geoResult.formattedAddress;
+        plusCode = geoResult.plusCode;
+        geocodingProvider = geoResult.provider;
+      }
+    } catch (err) {
+      console.warn("Erro ao invocar serviço de geocodificação inversa:", err);
+    }
+  }
+
+  const resolvedZoneName = resolvedStreet
+    ? `${resolvedStreet}${houseNumber ? ` nº ${houseNumber}` : ""}, ${resolvedNeighborhood || zone.name}`
+    : resolvedNeighborhood || zone.name;
+
+  const mapsUrl = `https://www.google.com/maps?q=${latitude},${longitude}&z=18`;
+  const directionsUrl = `https://www.google.com/maps/dir/?api=1&destination=${latitude},${longitude}&travelmode=driving`;
+  const wazeUrl = `https://waze.com/ul?ll=${latitude},${longitude}&navigate=yes`;
+  const appleMapsUrl = `maps://maps.apple.com/?daddr=${latitude},${longitude}&dirflg=d`;
+  const geoUri = `geo:${latitude},${longitude}?q=${latitude},${longitude}(Cliente+KONEKTA)`;
+
+  if (!formattedAddress) {
+    formattedAddress = isInsideSTP
+      ? `${resolvedZoneName}, ${zone.district}, São Tomé e Príncipe`
+      : `${resolvedZoneName}, São Tomé e Príncipe (GPS: ${latitude.toFixed(4)}, ${longitude.toFixed(4)})`;
+  }
+
+  const shareMessage = `📍 Localização Exata do Cliente (GPS Nativo):\n${formattedAddress}\nCoordenadas: ${latitude.toFixed(6)}, ${longitude.toFixed(6)} (Precisão: ±${Math.round(accuracy)}m)\n🧭 Iniciar Rota no Mapa: ${directionsUrl}`;
+
+  return {
+    latitude,
+    longitude,
+    accuracy,
+    district: zone.district,
+    zone: resolvedZoneName,
+    street: resolvedStreet,
+    houseNumber,
+    neighborhood: resolvedNeighborhood,
+    landmark: zone.name,
+    zoneType: zone.type,
+    distanceToZoneCenterMeters: distanceMeters,
+    formattedAddress,
+    plusCode,
+    geocodingProvider,
+    mapsUrl,
+    directionsUrl,
+    wazeUrl,
+    appleMapsUrl,
+    geoUri,
+    shareMessage,
+    timestamp: Date.now(),
+  };
+}
+
+/**
+ * Monitoriza continuamente o GPS do dispositivo em tempo real (Estilo Encontrar Dispositivo / Find My Device).
+ * Retorna uma função para cancelar a monitorização.
+ */
+export function watchSTPPreciseGPS(
+  onUpdate: (location: STPPreciseLocation) => void,
+  onError?: (err: GeolocationPositionError) => void,
+): () => void {
+  if (typeof window === "undefined" || !("geolocation" in navigator)) {
+    return () => {};
+  }
+
+  try {
+    const watchId = navigator.geolocation.watchPosition(
+      async (pos) => {
+        const { latitude, longitude, accuracy } = pos.coords;
+        const loc = await buildSTPLocationObject(latitude, longitude, accuracy || 10, false);
+        onUpdate(loc);
+      },
+      (err) => {
+        onError?.(err);
+      },
+      { enableHighAccuracy: true, timeout: 20000, maximumAge: 0 },
+    );
+
+    return () => {
+      try {
+        navigator.geolocation.clearWatch(watchId);
+      } catch {
+        // ignore
+      }
+    };
+  } catch {
+    return () => {};
+  }
 }
 
 /**
@@ -1724,107 +1824,12 @@ export async function getSTPPreciseGPS(): Promise<STPPreciseLocation | null> {
     return null;
   }
 
-  // Função auxiliar para construir objeto de localização STP
-  const buildLocationObject = async (
-    latitude: number,
-    longitude: number,
-    accuracy: number,
-    isFallback = false,
-  ): Promise<STPPreciseLocation> => {
-    // Verifica se as coordenadas estão dentro das fronteiras geográficas de São Tomé e Príncipe
-    // Coordenadas aproximadas de STP: Lat entre -0.1 e 1.85, Lng entre 6.3 e 7.6
-    const isInsideSTP =
-      latitude >= -0.15 && latitude <= 1.85 && longitude >= 6.3 && longitude <= 7.6;
-
-    let zone: STPZoneInfo;
-    let distanceMeters: number;
-
-    if (isInsideSTP) {
-      const match = identifySTPZone(latitude, longitude);
-      zone = match.zone;
-      distanceMeters = match.distanceMeters;
-    } else {
-      // O dispositivo está a aceder a partir do exterior (Portugal, Angola, etc.)
-      // Mantemos as coordenadas GPS reais do telemóvel para mapa/direções e associamos à capital para serviços
-      zone = {
-        district: "Água Grande",
-        name: "Cidade de São Tomé",
-        type: "cidade",
-        lat: 0.3365,
-        lng: 6.7273,
-        description: "Centro Operacional KONEKTA (Coordenadas de teste fora de STP)",
-      };
-      distanceMeters = 0;
-    }
-
-    let resolvedStreet: string | undefined;
-    if (!isFallback && isInsideSTP) {
-      try {
-        const onlineInfo = await fetchOnlineGeocode(latitude, longitude);
-        if (onlineInfo?.street) {
-          const rawStreet = onlineInfo.street.trim();
-          const isGenericOrConflict =
-            rawStreet.toLowerCase().includes("são tomé") ||
-            rawStreet.toLowerCase().includes("príncipe") ||
-            rawStreet.toLowerCase().includes("água grande") ||
-            rawStreet.toLowerCase().includes("mé-zóchi") ||
-            (rawStreet.toLowerCase() !== zone.name.toLowerCase() &&
-              STP_ZONES_DATABASE.some(
-                (z) =>
-                  z.name.toLowerCase() === rawStreet.toLowerCase() ||
-                  rawStreet.toLowerCase().includes(z.name.toLowerCase()),
-              ));
-
-          if (!isGenericOrConflict) {
-            resolvedStreet = rawStreet;
-          }
-        }
-      } catch {
-        // Ignora erro de rede na geocodificação inversa
-      }
-    }
-
-    const resolvedZoneName = resolvedStreet ? `${resolvedStreet}, ${zone.name}` : zone.name;
-    const mapsUrl = `https://www.google.com/maps?q=${latitude},${longitude}&z=18`;
-    const directionsUrl = `https://www.google.com/maps/dir/?api=1&destination=${latitude},${longitude}&travelmode=driving`;
-    const wazeUrl = `https://waze.com/ul?ll=${latitude},${longitude}&navigate=yes`;
-    // Protocolo nativo da Apple no iOS abre diretamente o Apple Maps com navegação passo-a-passo
-    const appleMapsUrl = `maps://maps.apple.com/?daddr=${latitude},${longitude}&dirflg=d`;
-    // Protocolo geo URI nativo do Android / mobile
-    const geoUri = `geo:${latitude},${longitude}?q=${latitude},${longitude}(Cliente+KONEKTA)`;
-
-    const formattedAddress = isInsideSTP
-      ? `${resolvedZoneName}, ${zone.district}, São Tomé e Príncipe`
-      : `${resolvedZoneName}, São Tomé e Príncipe (GPS: ${latitude.toFixed(4)}, ${longitude.toFixed(4)})`;
-
-    const shareMessage = `📍 Localização Exata do Cliente (GPS Nativo):\n${formattedAddress}\nCoordenadas: ${latitude.toFixed(6)}, ${longitude.toFixed(6)} (Precisão: ±${Math.round(accuracy)}m)\n🧭 Iniciar Rota no Mapa: ${directionsUrl}`;
-
-    return {
-      latitude,
-      longitude,
-      accuracy,
-      district: zone.district,
-      zone: resolvedZoneName,
-      street: resolvedStreet,
-      zoneType: zone.type,
-      distanceToZoneCenterMeters: distanceMeters,
-      formattedAddress,
-      mapsUrl,
-      directionsUrl,
-      wazeUrl,
-      appleMapsUrl,
-      geoUri,
-      shareMessage,
-      timestamp: Date.now(),
-    };
-  };
-
   // Se o dispositivo ou navegador não suportar API de geolocalização
   if (!("geolocation" in navigator)) {
     toast.warning(
       "O navegador não possui suporte a GPS nativo. A utilizar localização de São Tomé (Água Grande).",
     );
-    return buildLocationObject(0.3365, 6.7273, 50, true);
+    return buildSTPLocationObject(0.3365, 6.7273, 50, true);
   }
 
   // Tenta obter posição do hardware do telemóvel
@@ -1900,7 +1905,7 @@ export async function getSTPPreciseGPS(): Promise<STPPreciseLocation | null> {
             "Para detetar a sua posição exata com o GPS do telemóvel, permita o acesso à localização no cadeado do navegador.",
           duration: 5000,
         });
-        return await buildLocationObject(0.3365, 6.7273, 50, true);
+        return await buildSTPLocationObject(0.3365, 6.7273, 50, true);
       }
     } catch {
       // Nem todos os navegadores suportam a Permissions API — seguimos em frente
@@ -1926,7 +1931,7 @@ export async function getSTPPreciseGPS(): Promise<STPPreciseLocation | null> {
               "Para detetar a sua posição exata com o GPS do telemóvel, permita o acesso à localização no cadeado do navegador.",
             duration: 5000,
           });
-          return await buildLocationObject(0.3365, 6.7273, 50, true);
+          return await buildSTPLocationObject(0.3365, 6.7273, 50, true);
         }
 
         // 2ª Tentativa: precisão por rede (antenas CST/Unitel ou Wi-Fi)
@@ -1950,7 +1955,7 @@ export async function getSTPPreciseGPS(): Promise<STPPreciseLocation | null> {
       const isInsideSTP =
         latitude >= -0.15 && latitude <= 1.85 && longitude >= 6.3 && longitude <= 7.6;
 
-      const result = await buildLocationObject(latitude, longitude, accuracy || 10, false);
+      const result = await buildSTPLocationObject(latitude, longitude, accuracy || 10, false);
 
       if (isInsideSTP) {
         toast.success(`📍 GPS do Telemóvel: ${result.zone}`, {
@@ -1979,10 +1984,10 @@ export async function getSTPPreciseGPS(): Promise<STPPreciseLocation | null> {
       );
     }
 
-    return await buildLocationObject(0.3365, 6.7273, 40, true);
+    return await buildSTPLocationObject(0.3365, 6.7273, 40, true);
   } catch (err) {
     console.error("GPS unexpected error:", err);
     toast.info("Localização configurada para o centro de São Tomé.");
-    return await buildLocationObject(0.3365, 6.7273, 50, true);
+    return await buildSTPLocationObject(0.3365, 6.7273, 50, true);
   }
 }

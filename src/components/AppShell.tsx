@@ -4,6 +4,8 @@ import { Headphones } from "lucide-react";
 import { BottomNav } from "./BottomNav";
 import { AuthGate } from "./AuthGate";
 import { OfflineBanner } from "./konekta/kit";
+import { ActiveAlarmBanner } from "./konekta/ActiveAlarmBanner";
+import { useAlarmScheduler } from "@/lib/useAlarmScheduler";
 import { useStore, type UserRole } from "@/lib/store";
 import { cn } from "@/lib/utils";
 
@@ -42,9 +44,15 @@ export function AppShell({
   const online = useOnline();
   const routerState = useRouterState();
   const isAssistantRoute = routerState.location.pathname === "/assistente";
+  const { activeAlarm, dismissAlarm, snoozeAlarm } = useAlarmScheduler();
 
   return (
     <AuthGate roles={roles}>
+      <ActiveAlarmBanner
+        alarmInfo={activeAlarm}
+        onDismiss={dismissAlarm}
+        onSnooze={() => snoozeAlarm(5)}
+      />
       <div className="flex min-h-screen justify-center bg-surface">
         <div
           className={cn(

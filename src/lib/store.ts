@@ -33,10 +33,60 @@ export type { Order, OrderStatus };
 import { seedRequests, type Proposal, type RequestUrgency, type ServiceRequest } from "./requests";
 import { buildSanitizedUserContext } from "./chat-specialist-context";
 import { generateSpecialistResponse } from "./specialist-ai";
+import { soundAlerts } from "./sound-alerts";
 
 // Simple localStorage-backed store with pub/sub. No backend required for the MVP.
 
 export type UserRole = "cliente" | "prestador" | "admin" | "ambos";
+
+export type FavoriteClient = {
+  id: string;
+  name: string;
+  phone: string;
+  district: string;
+  avatar?: string;
+  totalServices: number;
+  totalSpentSTN: number;
+  notes?: string;
+  rating: number;
+  lastHiredDate?: string;
+};
+
+export const defaultFavoriteClients: FavoriteClient[] = [
+  {
+    id: "fc-1",
+    name: "Dra. Maria Sacramento",
+    phone: "+239 991 2345",
+    district: "Água Grande (Praça)",
+    totalServices: 4,
+    totalSpentSTN: 2450,
+    notes: "Cliente VIP, pontual. Pede habitualmente manutenção de canalização e sanitários.",
+    rating: 5.0,
+    lastHiredDate: "Ontem às 15:30",
+  },
+  {
+    id: "fc-2",
+    name: "Eng. Carlos Espírito Santo",
+    phone: "+239 992 6789",
+    district: "Mé-Zóchi (Trindade)",
+    totalServices: 3,
+    totalSpentSTN: 3800,
+    notes: "Proprietário de moradia em Trindade. Serviços de eletricidade e canalizações.",
+    rating: 5.0,
+    lastHiredDate: "12 de Agosto",
+  },
+  {
+    id: "fc-3",
+    name: "Helena de Oliveira",
+    phone: "+239 994 1122",
+    district: "Lobata (Guadalupe)",
+    totalServices: 2,
+    totalSpentSTN: 1200,
+    notes: "Pagamentos sempre imediatos no encerramento via Dobra 24.",
+    rating: 4.9,
+    lastHiredDate: "28 de Julho",
+  },
+];
 
 export type User = {
   id: string;
@@ -69,8 +119,7 @@ export type PortfolioItem = {
 
 export type ProviderProfile = {
   id?: string;
-  providerType?: "individual" | "empresa";
-  companyName?: string;
+  providerType?: "individual";
   businessName?: string;
   category: string;
   subcategory?: string;
@@ -278,37 +327,6 @@ export type InPersonCashDeclaration = {
   confirmedAt?: number;
 };
 
-export type CompanyTechnician = {
-  id: string;
-  name: string;
-  phone: string;
-  specialty: string;
-  specialties?: string[];
-  avatar?: string;
-  active: boolean;
-  isAvailable?: boolean;
-  assignedOrdersCount: number;
-  totalEarnings: number;
-  rating: number;
-  ok?: boolean;
-  message?: string;
-};
-
-export type CompanyProfile = {
-  companyName: string;
-  legalName?: string;
-  nif: string;
-  phone: string;
-  email: string;
-  bankName: string;
-  bankAccount: string;
-  iban?: string;
-  district: string;
-  address?: string;
-  technicians: CompanyTechnician[];
-  commissionPlan: "comissao" | "plano_mensal";
-};
-
 export type Message = {
   id: string;
   from: "me" | "them";
@@ -377,15 +395,15 @@ export type PlatformConfig = {
   officialEmail: string;
   clientWhatsappGroup: string;
   providerWhatsappGroup: string;
-  companyMonthlyPlanFee: number;
-  companyCommissionPct: number;
   technicalVisitFee: number;
   technicalVisitGuarantee: string;
-  debtBlockLimit: number; // Limite de 500 STN de dívida para suspensão
+  debtBlockLimit: number; // Limite de 300 STN de dívida para suspensão
 };
 
 export type TechnicalVisitStatus =
   | "pendente"
+  | "aguardando_aprovacao_admin"
+  | "aprovado_pelo_admin"
   | "aguardando_visita"
   | "orcamento_presencial_solicitado"
   | "confirmacao_cliente"
@@ -549,14 +567,6 @@ export type PayoutRequest = {
   adminNotes?: string;
 };
 
-export type CompanyMonetization = {
-  companyName?: string;
-  model: "comissao" | "plano_mensal";
-  planActive: boolean;
-  planExpiresAt?: number;
-  monthlyFee: number;
-};
-
 export type ProfileKind = "cliente" | "prestador";
 
 export type Profiles = { cliente: boolean; prestador: boolean };
@@ -570,8 +580,6 @@ type State = {
   requests: ServiceRequest[];
   technicalVisits: TechnicalVisit[];
   moderationDisputes: ModerationDispute[];
-  companyMonetization: CompanyMonetization;
-  companyProfile: CompanyProfile | null;
   inPersonDeclarations: InPersonCashDeclaration[];
   depositRequests: DepositRequest[];
   payoutRequests: PayoutRequest[];
@@ -586,6 +594,7 @@ type State = {
   isProviderBlockedForDebt: boolean; // Bloqueado se dívida >= 500 STN
   providerTransactions: Transaction[];
   favorites: string[];
+  favoriteClients: FavoriteClient[];
   notifications: AppNotification[];
   flags: FeatureFlags;
   settings: Settings;
@@ -823,61 +832,6 @@ export const seedPayoutRequests: PayoutRequest[] = [
   },
 ];
 
-export const seedCompanyProfile: CompanyProfile = {
-  companyName: "KONEKTA Obras & Serviços Lda",
-  legalName: "KONEKTA Obras & Serviços São Tomé Lda",
-  nif: "500892147",
-  phone: "+239 9944747",
-  email: "contato@konekta-stp.com",
-  bankName: "BISTP (Banco Internacional de S. Tomé e Príncipe)",
-  bankAccount: "ST53.0001.0000.1234.5678.9012.3",
-  district: "Água Grande",
-  address: "Avenida 12 de Julho, Edifício KONEKTA, São Tomé",
-  commissionPlan: "comissao",
-  technicians: [
-    {
-      id: "tech-1",
-      name: "Dércio Costa",
-      phone: "+239 9912345",
-      specialty: "Canalizador & Fugas de Água",
-      active: true,
-      assignedOrdersCount: 24,
-      totalEarnings: 18400,
-      rating: 4.9,
-    },
-    {
-      id: "tech-2",
-      name: "Edmilson Varela",
-      phone: "+239 9845678",
-      specialty: "Eletricista & Quadros Elétricos",
-      active: true,
-      assignedOrdersCount: 31,
-      totalEarnings: 26800,
-      rating: 5.0,
-    },
-    {
-      id: "tech-3",
-      name: "João Pedro Neves",
-      phone: "+239 9967890",
-      specialty: "Pintor & Revestimentos",
-      active: true,
-      assignedOrdersCount: 15,
-      totalEarnings: 12200,
-      rating: 4.8,
-    },
-    {
-      id: "tech-4",
-      name: "Maria Santos",
-      phone: "+239 9934567",
-      specialty: "Supervisora de Limpezas Profundas",
-      active: true,
-      assignedOrdersCount: 42,
-      totalEarnings: 31500,
-      rating: 4.9,
-    },
-  ],
-};
-
 const defaultState: State = {
   user: null,
   profiles: { cliente: true, prestador: false },
@@ -908,12 +862,6 @@ const defaultState: State = {
   requests: seedRequests,
   technicalVisits: seedTechnicalVisits,
   moderationDisputes: seedModerationDisputes,
-  companyMonetization: {
-    model: "comissao",
-    planActive: false,
-    monthlyFee: 1500,
-  },
-  companyProfile: seedCompanyProfile,
   inPersonDeclarations: [],
   depositRequests: seedDepositRequests,
   payoutRequests: seedPayoutRequests,
@@ -987,6 +935,7 @@ const defaultState: State = {
     },
   ],
   favorites: [],
+  favoriteClients: defaultFavoriteClients,
   notifications: [
     {
       id: "n1",
@@ -1026,11 +975,9 @@ const defaultState: State = {
     officialEmail: "edeleydamiao@gmail.com",
     clientWhatsappGroup: "https://chat.whatsapp.com/KONEKTA-Clientes-STP",
     providerWhatsappGroup: "https://chat.whatsapp.com/KONEKTA-Prestadores-STP",
-    companyMonthlyPlanFee: 1500,
-    companyCommissionPct: 0,
     technicalVisitFee: 150,
     technicalVisitGuarantee: "Garantia de deslocação Uber-style para avaliação no terreno",
-    debtBlockLimit: 500,
+    debtBlockLimit: 300,
   },
   onboarded: false,
 };
@@ -1043,14 +990,13 @@ function load(): State {
     const parsed = JSON.parse(raw) as Partial<State>;
     const debt = parsed.providerDebt ?? defaultState.providerDebt ?? 0;
     const isBlocked =
-      debt >= (parsed.config?.debtBlockLimit ?? defaultState.config.debtBlockLimit ?? 500);
+      debt >= (parsed.config?.debtBlockLimit ?? defaultState.config.debtBlockLimit ?? 300);
 
     return {
       ...defaultState,
       ...parsed,
       providerDebt: debt,
       isProviderBlockedForDebt: isBlocked,
-      companyProfile: parsed.companyProfile ?? defaultState.companyProfile,
       inPersonDeclarations: parsed.inPersonDeclarations ?? defaultState.inPersonDeclarations,
       depositRequests: parsed.depositRequests ?? defaultState.depositRequests,
       payoutRequests: parsed.payoutRequests ?? defaultState.payoutRequests,
@@ -1062,12 +1008,9 @@ function load(): State {
       flags: { ...defaultFlags, ...(parsed.flags ?? {}) },
       settings: { ...defaultSettings, ...(parsed.settings ?? {}) },
       config: { ...defaultState.config, ...(parsed.config ?? {}) },
-      companyMonetization: {
-        ...defaultState.companyMonetization,
-        ...(parsed.companyMonetization ?? {}),
-      },
       technicalVisits: parsed.technicalVisits ?? defaultState.technicalVisits,
       moderationDisputes: parsed.moderationDisputes ?? defaultState.moderationDisputes,
+      favoriteClients: parsed.favoriteClients ?? defaultState.favoriteClients,
     };
   } catch {
     return defaultState;
@@ -1565,13 +1508,35 @@ export const store = {
     });
   },
 
-  /** Alterna entre perfis sem terminar sessão. */
-  switchProfile(profile: ProfileKind) {
+  /** Alterna entre perfis com regulação estrita: apenas contas 'ambos' aprovadas podem aceder a prestador. */
+  switchProfile(profile: ProfileKind): boolean {
     if (!state.user) return false;
-    if (!state.profiles[profile]) return false;
-    if (profile === "prestador" && state.providerProfile?.status !== "aprovado") {
-      // permitido entrar, mas em modo limitado (conta em análise)
+    const isDual = state.profiles.cliente && state.profiles.prestador;
+
+    // Utilizadores simples não podem alternar sem perfil duplo
+    if (!isDual && state.user.role !== "ambos") {
+      notify({
+        title: "Registo de Prestador Necessário",
+        body: "A sua conta é de cliente simples. Para prestar serviços, adira como prestador no KONEKTA.",
+        tone: "info",
+        link: "/tornar-prestador",
+      });
+      return false;
     }
+
+    if (!state.profiles[profile]) return false;
+
+    // Regulação: prestador só pode aceder se verificado e aprovado pela administração KONEKTA STP
+    if (profile === "prestador" && state.providerProfile?.status !== "aprovado") {
+      notify({
+        title: "Acesso de Prestador Bloqueado",
+        body: "A sua conta de prestador ainda não foi aprovada pela administração KONEKTA STP. Poderá aceder assim que os seus documentos forem validados.",
+        tone: "warning",
+        link: "/pending-approval",
+      });
+      return false;
+    }
+
     set({ user: { ...state.user, role: profile } });
     return true;
   },
@@ -2006,27 +1971,25 @@ export const store = {
     });
   },
 
-  /** Chat com Especialista: bloqueia contactos externos antes do pagamento e responde como especialista humano com acesso seguro ao contexto do cliente (sem documentos). */
+  /** Chat com Especialista: bloqueia contactos externos, telefones, whatsapp e links para garantir proteção de custódia KONEKTA. */
   sendMessage(providerId: string, text: string): "sent" | "blocked" | "empty" {
     const trimmed = text.trim();
     if (!trimmed) return "empty";
     const prev = state.messages[providerId] ?? [];
-    const unlocked = store.isContactUnlocked(providerId);
 
-    if (!unlocked) {
-      const analysis = analyzeBlockedContent(trimmed);
-      if (analysis.blocked) {
-        const warn: Message = {
-          id: `m_${Date.now()}`,
-          from: "me",
-          text: analysis.reason ? `${analysis.reason}\n\n${BLOCK_NOTICE}` : BLOCK_NOTICE,
-          at: Date.now(),
-          status: "sent",
-          kind: "system",
-        };
-        set({ messages: { ...state.messages, [providerId]: [...prev, warn] } });
-        return "blocked";
-      }
+    // Segurança KONEKTA Blindada: análise anti-bypass e anti-desintermediação permanente
+    const analysis = analyzeBlockedContent(trimmed);
+    if (analysis.blocked) {
+      const warn: Message = {
+        id: `m_${Date.now()}`,
+        from: "me",
+        text: analysis.reason ? `${analysis.reason}\n\n${BLOCK_NOTICE}` : BLOCK_NOTICE,
+        at: Date.now(),
+        status: "sent",
+        kind: "system",
+      };
+      set({ messages: { ...state.messages, [providerId]: [...prev, warn] } });
+      return "blocked";
     }
 
     const msg: Message = {
@@ -2126,6 +2089,7 @@ export const store = {
           },
         });
         realtimeAudio.play("message");
+        soundAlerts.playMessageChime();
       }, typingTime);
     };
 
@@ -2466,11 +2430,9 @@ export const store = {
     store.patchQuote(providerId, quoteId, { status: "recusado" });
   },
 
-  /** Contactos externos só depois do pagamento retido. */
-  isContactUnlocked(providerId: string) {
-    return (state.messages[providerId] ?? []).some(
-      (m) => m.quote && (m.quote.status === "pago" || m.quote.status === "concluido"),
-    );
+  /** Contactos externos estão 100% blindados na plataforma KONEKTA para proteção de garantia e prevenção de evasão. */
+  isContactUnlocked(_providerId: string) {
+    return false;
   },
 
   sendAssistant(text: string, reply: string) {
@@ -2496,6 +2458,21 @@ export const store = {
       favorites: has
         ? state.favorites.filter((f) => f !== providerId)
         : [...state.favorites, providerId],
+    });
+  },
+
+  toggleFavoriteClient(client: FavoriteClient) {
+    const exists = state.favoriteClients.some((c) => c.id === client.id);
+    set({
+      favoriteClients: exists
+        ? state.favoriteClients.filter((c) => c.id !== client.id)
+        : [...state.favoriteClients, client],
+    });
+  },
+
+  removeFavoriteClient(clientId: string) {
+    set({
+      favoriteClients: state.favoriteClients.filter((c) => c.id !== clientId),
     });
   },
 
@@ -2657,7 +2634,7 @@ export const store = {
   },
 
   /** O cliente aceita a proposta de visita técnica e retém a taxa de deslocação em custódia.
-   * Transita para o estado 'aguardando_visita'.
+   * Transita para o estado 'aguardando_aprovacao_admin'.
    */
   clientAcceptTechnicalVisit(visitId: string): { ok: boolean; message: string } {
     const visit = state.technicalVisits.find((v) => v.id === visitId);
@@ -2684,7 +2661,7 @@ export const store = {
         ...state.transactions,
       ],
       technicalVisits: state.technicalVisits.map((v) =>
-        v.id === visitId ? { ...v, status: "aguardando_visita" } : v,
+        v.id === visitId ? { ...v, status: "aguardando_aprovacao_admin" } : v,
       ),
     });
 
@@ -2692,7 +2669,7 @@ export const store = {
     const chatMsg: Message = {
       id: `m_vis_acc_${Date.now()}`,
       from: "me",
-      text: `✅ Visita técnica aceite pelo cliente! Taxa de deslocação (${fee} Db) retida em custódia segura KONEKTA. Endereço e contacto desbloqueados para o técnico.`,
+      text: `🛡️ Visita técnica no terreno aceite pelo cliente! Taxa de deslocação (${fee} Db) retida em custódia segura KONEKTA. O pedido aguarda autorização da Administração KONEKTA para validar a deslocação no terreno.`,
       at: Date.now(),
       status: "sent",
       kind: "system",
@@ -2705,15 +2682,110 @@ export const store = {
     });
 
     notify({
-      title: "Visita Técnica Confirmada",
-      body: `A taxa de ${fee} Db está retida em custódia. O prestador foi notificado.`,
+      title: "Visita Técnica em Análise Administrativa",
+      body: `Taxa de ${fee} Db retida em custódia. A Administração KONEKTA está a validar a autorização de deslocação.`,
+      tone: "info",
+      link: `/chat/${visit.providerId}`,
+    });
+
+    return {
+      ok: true,
+      message: `Visita técnica aceite com taxa em custódia (${fee} Db). Aguardando autorização da Administração KONEKTA para a partida do técnico.`,
+    };
+  },
+
+  /** Administração KONEKTA aprova a saída do técnico para a visita técnica no terreno (estilo Uber). */
+  adminApproveTechnicalVisit(visitId: string): { ok: boolean; message: string } {
+    const visit = state.technicalVisits.find((v) => v.id === visitId);
+    if (!visit) return { ok: false, message: "Visita não encontrada." };
+
+    set({
+      technicalVisits: state.technicalVisits.map((v) =>
+        v.id === visitId ? { ...v, status: "aprovado_pelo_admin" } : v,
+      ),
+    });
+
+    const prevMsgs = state.messages[visit.providerId] ?? [];
+    const chatMsg: Message = {
+      id: `m_vis_adm_app_${Date.now()}`,
+      from: "me",
+      text: `✅ Deslocação no Terreno Aprovada pela Administração KONEKTA! O prestador (${visit.providerName}) está agora autorizado a iniciar a rota (estilo Uber) para efetuar a avaliação presencial.`,
+      at: Date.now(),
+      status: "sent",
+      kind: "system",
+    };
+    set({
+      messages: {
+        ...state.messages,
+        [visit.providerId]: [...prevMsgs, chatMsg],
+      },
+    });
+
+    notify({
+      title: "Visita no Terreno Aprovada!",
+      body: `A Administração KONEKTA aprovou a deslocação para ${visit.serviceTitle}. O prestador pode iniciar a rota.`,
       tone: "success",
       link: `/chat/${visit.providerId}`,
     });
 
     return {
       ok: true,
-      message: `Visita técnica confirmada com garantia de deslocação (${fee} Db em custódia).`,
+      message: "Visita técnica no terreno aprovada com sucesso!",
+    };
+  },
+
+  /** Administração KONEKTA rejeita a visita e reembolsa o cliente */
+  adminRejectTechnicalVisit(
+    visitId: string,
+    reason = "Inconformidade nos dados do pedido",
+  ): { ok: boolean; message: string } {
+    const visit = state.technicalVisits.find((v) => v.id === visitId);
+    if (!visit) return { ok: false, message: "Visita não encontrada." };
+    const fee = visit.visitFee || state.config.technicalVisitFee || 150;
+
+    set({
+      balance: state.balance + fee,
+      transactions: [
+        {
+          id: `t_vis_ref_${Date.now()}`,
+          kind: "in",
+          label: `Reembolso de Custódia: Visita Técnica Não Aprovada — ${visit.serviceTitle}`,
+          amount: fee,
+          at: Date.now(),
+        },
+        ...state.transactions,
+      ],
+      technicalVisits: state.technicalVisits.map((v) =>
+        v.id === visitId ? { ...v, status: "cancelado" } : v,
+      ),
+    });
+
+    const prevMsgs = state.messages[visit.providerId] ?? [];
+    const chatMsg: Message = {
+      id: `m_vis_adm_rej_${Date.now()}`,
+      from: "me",
+      text: `❌ Visita técnica não aprovada pela Administração KONEKTA: ${reason}. A taxa de deslocação (${fee} Db) foi 100% reembolsada para a carteira do cliente.`,
+      at: Date.now(),
+      status: "sent",
+      kind: "system",
+    };
+    set({
+      messages: {
+        ...state.messages,
+        [visit.providerId]: [...prevMsgs, chatMsg],
+      },
+    });
+
+    notify({
+      title: "Visita Técnica Recusada",
+      body: `O pedido de visita foi recusado e ${fee} Db foram devolvidos à carteira do cliente.`,
+      tone: "warn",
+      link: `/chat/${visit.providerId}`,
+    });
+
+    return {
+      ok: true,
+      message: `Visita técnica rejeitada e taxa de ${fee} Db reembolsada.`,
     };
   },
 
@@ -2735,14 +2807,38 @@ export const store = {
     return store.clientAcceptTechnicalVisit(visitId);
   },
 
-  startTechnicalVisit(visitId: string) {
+  startTechnicalVisit(visitId: string): { ok: boolean; message: string } {
     const visit = state.technicalVisits.find((v) => v.id === visitId);
-    if (!visit) return;
+    if (!visit) return { ok: false, message: "Visita não encontrada." };
+
+    if (visit.status !== "aprovado_pelo_admin" && visit.status !== "aguardando_visita") {
+      return {
+        ok: false,
+        message:
+          "A deslocação no terreno requer prévia aprovação do Administrador da plataforma KONEKTA.",
+      };
+    }
 
     set({
       technicalVisits: state.technicalVisits.map((v) =>
         v.id === visitId ? { ...v, status: "a_caminho" } : v,
       ),
+    });
+
+    const prevMsgs = state.messages[visit.providerId] ?? [];
+    const chatMsg: Message = {
+      id: `m_vis_onway_${Date.now()}`,
+      from: "me",
+      text: `🚗 O prestador (${visit.providerName}) iniciou a deslocação no terreno até ao seu endereço (${visit.district})! Acompanhe o trajeto em tempo real no radar do app.`,
+      at: Date.now(),
+      status: "sent",
+      kind: "system",
+    };
+    set({
+      messages: {
+        ...state.messages,
+        [visit.providerId]: [...prevMsgs, chatMsg],
+      },
     });
 
     notify({
@@ -2751,6 +2847,11 @@ export const store = {
       tone: "info",
       link: `/chat/${visit.providerId}`,
     });
+
+    return {
+      ok: true,
+      message: "Deslocação no terreno iniciada com sucesso (estilo Uber).",
+    };
   },
 
   /** Check-in presencial no local com GPS */
@@ -3351,82 +3452,11 @@ export const store = {
     });
   },
 
-  /* ----------------- Modelos de Cobrança: Empresas & Prestadores ----------------- */
-
-  subscribeCompanyPlan(months = 1): { ok: boolean; message: string } {
-    const monthlyFee = state.config.companyMonthlyPlanFee || 1500;
-    const total = monthlyFee * months;
-
-    if (state.providerBalance >= total) {
-      set({
-        providerBalance: state.providerBalance - total,
-        providerTransactions: [
-          {
-            id: `pt_plan_${Date.now()}`,
-            kind: "out",
-            label: `Subscrição Plano Empresa Pro (${months} mês/meses - 0% comissão)`,
-            amount: total,
-            at: Date.now(),
-          },
-          ...state.providerTransactions,
-        ],
-        companyMonetization: {
-          model: "plano_mensal",
-          planActive: true,
-          planExpiresAt: Date.now() + months * 30 * 86400_000,
-          monthlyFee,
-        },
-      });
-      return {
-        ok: true,
-        message: `Plano Empresa Pro ativado com sucesso! Isenção de comissões ativada.`,
-      };
-    } else if (state.balance >= total) {
-      set({
-        balance: state.balance - total,
-        transactions: [
-          {
-            id: `t_plan_${Date.now()}`,
-            kind: "out",
-            label: `Subscrição Plano Empresa Pro (${months} mês/meses)`,
-            amount: total,
-            at: Date.now(),
-          },
-          ...state.transactions,
-        ],
-        companyMonetization: {
-          model: "plano_mensal",
-          planActive: true,
-          planExpiresAt: Date.now() + months * 30 * 86400_000,
-          monthlyFee,
-        },
-      });
-      return { ok: true, message: `Plano Empresa Pro ativado com sucesso!` };
-    }
-
-    return {
-      ok: false,
-      message: `Saldo insuficiente (${total} Db necessários). Recarregue a carteira para subscrever o Plano Empresa.`,
-    };
-  },
-
-  switchMonetizationModel(model: "comissao" | "plano_mensal") {
-    set({
-      companyMonetization: {
-        ...state.companyMonetization,
-        model,
-      },
-    });
-  },
+  /* ----------------- Modelo de Ganhos: Prestadores KONEKTA ----------------- */
 
   /** Ganhos do prestador — carteira independente da carteira de cliente. */
   addEarning(label: string, amount: number) {
-    // Se a empresa tiver plano mensal ativo, comissão é 0% ou taxa reduzida
-    const isPlanActive =
-      state.companyMonetization.model === "plano_mensal" && state.companyMonetization.planActive;
-    const effectiveCommission = isPlanActive
-      ? state.config.companyCommissionPct
-      : state.config.commissionPct;
+    const effectiveCommission = state.config.commissionPct || 20;
     const commission = Math.round((amount * effectiveCommission) / 100);
     const net = amount - commission;
     set({
@@ -3480,7 +3510,7 @@ export const store = {
     }
     notify({
       title: "Serviço Adicionado",
-      body: `"${service.name}" foi publicado com sucesso no seu catálogo KONEKTA PRO.`,
+      body: `"${service.name}" foi publicado com sucesso no seu catálogo KONEKTA.`,
       tone: "success",
       link: "/pro",
     });
@@ -3659,7 +3689,7 @@ export const store = {
       newDebt += remainingUnpaid;
     }
 
-    const debtLimit = state.config.debtBlockLimit || 500;
+    const debtLimit = state.config.debtBlockLimit || 300;
     const isBlocked = newDebt >= debtLimit;
 
     // Atualiza declaração
@@ -3859,7 +3889,7 @@ export const store = {
       remainingForBalance = amount - debtLiquidated;
     }
 
-    const debtLimit = state.config.debtBlockLimit || 500;
+    const debtLimit = state.config.debtBlockLimit || 300;
     const isStillBlocked = currentDebt >= debtLimit;
 
     const newTransactions: Transaction[] = [];
@@ -3894,111 +3924,16 @@ export const store = {
     const msg =
       debtLiquidated > 0
         ? `Recarga de ${amount} STN processada! ${debtLiquidated} STN abateram na dívida pendente. ${remainingForBalance > 0 ? `${remainingForBalance} STN adicionados ao saldo.` : ""} Conta ${isStillBlocked ? "permanece em regularização" : "100% ativa e desbloqueada"}!`
-        : `Recarga de ${amount} STN adicionada com sucesso à sua carteira KONEKTA PRO!`;
+        : `Recarga de ${amount} STN adicionada com sucesso à sua carteira KONEKTA!`;
 
     notify({
-      title: "Recarga KONEKTA PRO Confirmada",
+      title: "Recarga KONEKTA Confirmada",
       body: msg,
       tone: "success",
       link: "/pro/ganhos",
     });
 
     return { ok: true, message: msg };
-  },
-
-  /* ----------------- Gestão de Perfis de Empresa & Multi-Técnicos ----------------- */
-
-  updateCompanyProfile(patch: Partial<CompanyProfile>) {
-    const cur = state.companyProfile || seedCompanyProfile;
-    set({
-      companyProfile: {
-        ...cur,
-        ...patch,
-      },
-    });
-    notify({
-      title: "Perfil da Empresa Atualizado",
-      body: "Os dados e definições da empresa foram guardados com sucesso.",
-      tone: "success",
-      link: "/pro/empresa",
-    });
-  },
-
-  addCompanyTechnician(tech: Partial<CompanyTechnician> & { name: string; phone: string }) {
-    const cur = state.companyProfile || seedCompanyProfile;
-    const specialty = tech.specialty || tech.specialties?.[0] || "Técnico Geral";
-    const newTech: CompanyTechnician = {
-      id: `tech-${Date.now()}`,
-      active: true,
-      assignedOrdersCount: 0,
-      totalEarnings: 0,
-      rating: 5.0,
-      ...tech,
-      specialty,
-      specialties: tech.specialties || [specialty],
-    };
-    set({
-      companyProfile: {
-        ...cur,
-        technicians: [newTech, ...cur.technicians],
-      },
-    });
-    notify({
-      title: "Técnico Adicionado à Equipa",
-      body: `${tech.name} (${specialty}) foi associado à conta da empresa.`,
-      tone: "success",
-      link: "/pro/empresa",
-    });
-    return newTech;
-  },
-
-  removeCompanyTechnician(id: string) {
-    const cur = state.companyProfile || seedCompanyProfile;
-    set({
-      companyProfile: {
-        ...cur,
-        technicians: cur.technicians.filter((t) => t.id !== id),
-      },
-    });
-    notify({
-      title: "Técnico Removido",
-      body: "O colaborador foi desvinculado da empresa.",
-      tone: "info",
-      link: "/pro/empresa",
-    });
-  },
-
-  toggleCompanyTechnician(id: string) {
-    const cur = state.companyProfile || seedCompanyProfile;
-    set({
-      companyProfile: {
-        ...cur,
-        technicians: cur.technicians.map((t) => (t.id === id ? { ...t, active: !t.active } : t)),
-      },
-    });
-  },
-
-  assignOrderToTechnician(orderId: string, technicianId: string) {
-    const cur = state.companyProfile || seedCompanyProfile;
-    const tech = cur.technicians.find((t) => t.id === technicianId);
-    if (!tech) return false;
-
-    set({
-      companyProfile: {
-        ...cur,
-        technicians: cur.technicians.map((t) =>
-          t.id === technicianId ? { ...t, assignedOrdersCount: t.assignedOrdersCount + 1 } : t,
-        ),
-      },
-    });
-
-    notify({
-      title: "Serviço Atribuído ao Técnico",
-      body: `O pedido ${orderId} foi delegado a ${tech.name}.`,
-      tone: "success",
-      link: "/pro/pedidos",
-    });
-    return true;
   },
 
   /* ----------------- Gestão de Depósitos, Recargas & Custódia Escrow ----------------- */
@@ -4130,7 +4065,7 @@ export const store = {
         remainingForBalance = deposit.amount - debtLiquidated;
       }
 
-      const debtLimit = state.config.debtBlockLimit || 500;
+      const debtLimit = state.config.debtBlockLimit || 300;
       const isStillBlocked = currentDebt >= debtLimit;
       const providerTxs: Transaction[] = [];
 
@@ -4163,7 +4098,7 @@ export const store = {
       });
 
       notify({
-        title: "Depósito KONEKTA PRO Validado",
+        title: "Depósito KONEKTA Validado",
         body: `Recarga de ${deposit.amount} STN aprovada pelo Administrador! Saldo disponível atualizado.`,
         tone: "success",
         link: "/pro/ganhos",
@@ -4397,11 +4332,24 @@ export const store = {
 
     // PIN Válido: Executar Split de Pagamento Escrow
     const totalAmount = order.total || 0;
-    const isCompanyPlan =
-      state.companyMonetization.model === "plano_mensal" && state.companyMonetization.planActive;
-    const commPct = isCompanyPlan ? 0 : state.config.commissionPct || 20;
+    const commPct = state.config.commissionPct || 10;
     const commAmount = Math.round(totalAmount * (commPct / 100));
     const netEarnings = totalAmount - commAmount;
+
+    // Se o prestador possuir dívida acumulada de comissões em dinheiro (providerDebt > 0),
+    // o valor líquido do serviço digital abaterá AUTOMATICAMENTE a sua dívida primeiro!
+    let currentDebt = state.providerDebt;
+    let debtAbated = 0;
+    let creditedToBalance = netEarnings;
+
+    if (currentDebt > 0) {
+      debtAbated = Math.min(netEarnings, currentDebt);
+      currentDebt -= debtAbated;
+      creditedToBalance = netEarnings - debtAbated;
+    }
+
+    const debtLimit = state.config.debtBlockLimit || 300;
+    const isStillBlocked = currentDebt >= debtLimit;
 
     // Atualizar pedido
     const updatedOrders = state.orders.map((o) =>
@@ -4415,19 +4363,33 @@ export const store = {
         : o,
     );
 
-    const providerTx: Transaction = {
+    const providerTxs: Transaction[] = [];
+
+    if (debtAbated > 0) {
+      providerTxs.push({
+        id: `pt_debt_escrow_${Date.now()}`,
+        kind: "out",
+        label: `Amortização Automática de Dívida de Comissões (Escrow OTP · ${order.id})`,
+        amount: debtAbated,
+        at: Date.now(),
+      });
+    }
+
+    providerTxs.push({
       id: `pt_settle_${Date.now()}`,
       kind: "in",
       label: `Liquidação Escrow OTP — ${order.service} (${order.id})`,
       amount: netEarnings,
-      at: Date.now(),
-    };
+      at: Date.now() + 1,
+    });
 
     set({
       orders: updatedOrders,
-      providerBalance: state.providerBalance + netEarnings,
+      providerBalance: state.providerBalance + creditedToBalance,
+      providerDebt: currentDebt,
+      isProviderBlockedForDebt: isStillBlocked,
       providerPendingBalance: Math.max(0, state.providerPendingBalance - totalAmount),
-      providerTransactions: [providerTx, ...state.providerTransactions],
+      providerTransactions: [...providerTxs, ...state.providerTransactions],
     });
 
     try {
@@ -4436,16 +4398,24 @@ export const store = {
       // ignore
     }
 
+    const notifyBody =
+      debtAbated > 0
+        ? `Código OTP validado! Ganho de ${netEarnings} STN: ${debtAbated} STN abateram automaticamente na dívida pendente de comissões. ${creditedToBalance > 0 ? `${creditedToBalance} STN creditados no saldo disponível.` : ""} Conta ${isStillBlocked ? "em regularização" : "desbloqueada e 100% ativa"}!`
+        : `Código OTP validado com sucesso! ${netEarnings} STN creditados no seu saldo disponível (comissão KONEKTA retida: ${commAmount} STN).`;
+
     notify({
       title: "Serviço Finalizado & Pago!",
-      body: `Código OTP validado com sucesso! ${netEarnings} STN creditados no seu saldo disponível (comissão KONEKTA retida: ${commAmount} STN).`,
+      body: notifyBody,
       tone: "success",
       link: "/pro/ganhos",
     });
 
     return {
       ok: true,
-      message: `Código validado! O valor de ${netEarnings} STN foi transferido para o seu saldo disponível.`,
+      message:
+        debtAbated > 0
+          ? `Código validado! ${netEarnings} STN faturados: ${debtAbated} STN abateram na sua dívida e ${creditedToBalance} STN foram transferidos para o saldo disponível.`
+          : `Código validado! O valor de ${netEarnings} STN foi transferido para o seu saldo disponível.`,
       netEarnings,
       commissionAmount: commAmount,
     };

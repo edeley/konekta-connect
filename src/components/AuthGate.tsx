@@ -5,6 +5,7 @@ import { useStore, type UserRole } from "@/lib/store";
 export function AuthGate({ children, roles }: { children: ReactNode; roles?: UserRole[] }) {
   const user = useStore((s) => s.user);
   const onboarded = useStore((s) => s.onboarded);
+  const providerProfile = useStore((s) => s.providerProfile);
   const navigate = useNavigate();
   const [hydrated, setHydrated] = useState(false);
 
@@ -24,8 +25,13 @@ export function AuthGate({ children, roles }: { children: ReactNode; roles?: Use
     }
     if (roles && !roles.includes(user.role)) {
       navigate({ to: "/", replace: true });
+      return;
     }
-  }, [hydrated, user, onboarded, roles, navigate]);
+    // Regulação KONEKTA STP: Se a rota exige prestador, o prestador tem de estar aprovado pela empresa
+    if (roles?.includes("prestador") && providerProfile?.status !== "aprovado") {
+      navigate({ to: "/pending-approval", replace: true });
+    }
+  }, [hydrated, user, onboarded, roles, providerProfile?.status, navigate]);
 
   if (!hydrated) {
     return (
@@ -36,5 +42,6 @@ export function AuthGate({ children, roles }: { children: ReactNode; roles?: Use
   }
   if (!user) return null;
   if (roles && !roles.includes(user.role)) return null;
+  if (roles?.includes("prestador") && providerProfile?.status !== "aprovado") return null;
   return <>{children}</>;
 }
