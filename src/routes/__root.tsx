@@ -37,7 +37,7 @@ function NotFoundComponent() {
   );
 }
 
-function ErrorComponent({ error, reset }: { error: Error; reset?: () => void }) {
+function ErrorComponent({ error, reset }: ErrorComponentProps) {
   console.error("Root Error caught:", error);
   const router = useRouter();
   useEffect(() => {
@@ -74,7 +74,7 @@ function ErrorComponent({ error, reset }: { error: Error; reset?: () => void }) 
             onClick={() => {
               try {
                 router.invalidate();
-                reset();
+                reset?.();
               } catch {
                 window.location.reload();
               }
