@@ -44,6 +44,7 @@ import {
   getStpDistrictData,
   type ServiceQuickTemplate,
 } from "@/lib/stp-order-intelligence";
+import { analyzeRequestText, scoreRequestQuality } from "@/lib/smart-intent";
 
 export const Route = createFileRoute("/novo-pedido")({
   head: () => ({
@@ -118,6 +119,7 @@ function NewRequest() {
   const [photos, setPhotos] = useState<string[]>([]);
   const [isCameraModalOpen, setIsCameraModalOpen] = useState(false);
   const [viewingPhoto, setViewingPhoto] = useState<string | null>(null);
+  const [smartText, setSmartText] = useState("");
   const [isLocatingGPS, setIsLocatingGPS] = useState(false);
   const [detectedGps, setDetectedGps] = useState<{
     zone: string;
@@ -132,6 +134,29 @@ function NewRequest() {
 
   // Obter referências geográficas locais para o distrito atual
   const localGeo = useMemo(() => getStpDistrictData(district), [district]);
+
+  // Leitura inteligente da frase escrita pelo cliente
+  const smartRead = useMemo(
+    () => (smartText.trim().length >= 6 ? analyzeRequestText(smartText) : null),
+    [smartText],
+  );
+  const smartCategory = smartRead?.categorySlug
+    ? categories.find((c) => c.slug === smartRead.categorySlug)
+    : undefined;
+
+  const applySmartRead = () => {
+    if (!smartRead || !smartCategory) return;
+    setCategorySlug(smartCategory.slug);
+    setUrgency(smartRead.urgency);
+    setTitle(smartRead.template?.title || smartRead.suggestedTitle || `Serviço de ${smartCategory.name}`);
+    setDescription(smartText.trim());
+    if (smartRead.template) setMaterialStatus(smartRead.template.materialStatus);
+    if (smartRead.suggestedBudget) setBudgetEstimate(String(smartRead.suggestedBudget));
+    toast.success(`Entendi: ${smartCategory.name}`, {
+      description: "Preenchi o pedido por si. Confirme os detalhes.",
+    });
+    setStep(2);
+  };
 
   // Modelos pré-configurados para a categoria selecionada
   const categoryTemplates = useMemo(() => {
@@ -221,6 +246,15 @@ function NewRequest() {
     : (step === 1 && !!categorySlug) ||
       (step === 2 && (title.trim().length >= 3 || !!category) && description.trim().length >= 5) ||
       step === 3;
+
+  const quality = scoreRequestQuality({
+    title,
+    description,
+    photos: photos.length,
+    address,
+    reference,
+    budget: budgetEstimate ? Number(budgetEstimate) : undefined,
+  });
 
   const getTimeLabel = () => {
     if (timeSlot === "exato") return `às ${exactTime}`;
@@ -360,6 +394,64 @@ function NewRequest() {
       {/* PASSO 1: CATEGORIA + MODELOS FREQUENTES DE STP */}
       {step === 1 && (
         <div className="space-y-4">
+          <Section title="Diga por palavras suas o que precisa">
+            <div className="space-y-2.5">
+              <textarea
+                value={smartText}
+                onChange={(e) => setSmartText(e.target.value)}
+                rows={3}
+                placeholder="Ex.: A minha bomba de água parou e não tenho água em casa, é urgente."
+                className="w-full rounded-2xl bg-card p-3.5 text-xs leading-relaxed border border-border shadow-soft outline-none ring-primary/30 focus:ring-2"
+              />
+
+              {smartRead && smartCategory ? (
+                <KCard className="space-y-2.5 border border-primary/25 bg-primary/[0.04]">
+                  <div className="flex items-center gap-2">
+                    <Lightbulb size={15} className="text-primary" />
+                    <span className="text-xs font-bold text-foreground">
+                      Sugestão automática: {categoryEmoji[smartCategory.slug] ?? "🛠️"}{" "}
+                      {smartCategory.name}
+                    </span>
+                  </div>
+                  <div className="flex flex-wrap gap-1.5">
+                    <span className="rounded-full bg-card px-2 py-0.5 text-[10px] font-bold text-muted-foreground border border-border">
+                      {urgencyLabel[smartRead.urgency]}
+                    </span>
+                    {smartRead.suggestedBudget ? (
+                      <span className="rounded-full bg-card px-2 py-0.5 text-[10px] font-bold text-muted-foreground border border-border">
+                        Estimativa ~{smartRead.suggestedBudget.toLocaleString("pt-PT")} STN
+                      </span>
+                    ) : null}
+                    <span className="rounded-full bg-card px-2 py-0.5 text-[10px] font-bold text-muted-foreground border border-border">
+                      Confiança {Math.round(smartRead.confidence * 100)}%
+                    </span>
+                  </div>
+                  {smartRead.followUps.length > 0 && (
+                    <ul className="space-y-1">
+                      {smartRead.followUps.map((q) => (
+                        <li key={q} className="text-[11px] text-muted-foreground flex gap-1.5">
+                          <span className="text-primary">•</span>
+                          <span>{q}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                  <Button
+                    className="h-10 w-full rounded-xl text-xs font-bold cursor-pointer"
+                    onClick={applySmartRead}
+                  >
+                    Preencher pedido automaticamente
+                  </Button>
+                </KCard>
+              ) : (
+                <p className="text-[11px] text-muted-foreground">
+                  Escreva o problema e a KONEKTA escolhe a categoria, a urgência e a estimativa por
+                  si. Também pode escolher manualmente em baixo.
+                </p>
+              )}
+            </div>
+          </Section>
+
           <Section title="Que tipo de profissional precisa?">
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
               {categories.map((c) => {
@@ -1038,6 +1130,32 @@ function NewRequest() {
       {/* PASSO 3 (parte final): REVISÃO COMPLETA COM GARANTIA KONEKTA */}
       {step === 3 && (
         <Section title="Rever e Publicar Pedido">
+          <KCard className="mb-3 space-y-2.5">
+            <div className="flex items-center justify-between gap-2">
+              <span className="text-xs font-bold text-foreground">Qualidade do pedido</span>
+              <span className="text-sm font-black text-primary">{quality.score}%</span>
+            </div>
+            <div className="h-2 w-full overflow-hidden rounded-full bg-muted">
+              <div
+                className="h-full rounded-full bg-primary transition-all"
+                style={{ width: `${quality.score}%` }}
+              />
+            </div>
+            {quality.tips.length > 0 ? (
+              <ul className="space-y-1">
+                {quality.tips.map((tip) => (
+                  <li key={tip} className="flex gap-1.5 text-[11px] text-muted-foreground">
+                    <Lightbulb size={12} className="mt-0.5 shrink-0 text-amber-500" />
+                    <span>{tip}</span>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p className="text-[11px] font-semibold text-emerald-600 dark:text-emerald-400">
+                Pedido completo — vai receber propostas mais rápido.
+              </p>
+            )}
+          </KCard>
           <KCard className="space-y-3.5">
             <Row label="Categoria" value={category?.name ?? "—"} />
             <Row label="Título" value={title} />
