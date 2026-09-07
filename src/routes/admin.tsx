@@ -34,7 +34,7 @@ import {
   Lock,
 } from "lucide-react";
 import { AppShell } from "@/components/AppShell";
-import { Section, KCard, StatusPill } from "@/components/konekta/kit";
+import { Section, KCard, StatusPill, KButton } from "@/components/konekta/kit";
 import {
   store,
   useStore,
@@ -1277,7 +1277,7 @@ export default function AdminPage() {
                             : v.status === "a_caminho" || v.status === "aprovado_pelo_admin"
                               ? "primary"
                               : v.status === "aguardando_aprovacao_admin"
-                                ? "warn"
+                                ? "warning"
                                 : v.status === "cancelado"
                                   ? "danger"
                                   : "neutral"
