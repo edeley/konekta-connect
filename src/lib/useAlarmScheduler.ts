@@ -46,7 +46,7 @@ export function useAlarmScheduler() {
 
       const activeOrders = orders.filter(
         (o) =>
-          (o.status === "pendente" || o.status === "aceite" || o.status === "em_andamento") &&
+          (o.status === "pendente" || o.status === "aceite" || o.status === "em-execucao") &&
           !triggered.includes(o.id),
       );
 

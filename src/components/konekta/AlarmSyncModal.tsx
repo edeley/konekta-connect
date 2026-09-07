@@ -56,7 +56,7 @@ export function AlarmSyncModal({ open, onClose, orderToSync }: AlarmSyncModalPro
   const upcomingOrders = orderToSync
     ? [orderToSync]
     : orders.filter(
-        (o) => o.status === "pendente" || o.status === "aceite" || o.status === "em_andamento",
+        (o) => o.status === "pendente" || o.status === "aceite" || o.status === "em-execucao",
       );
 
   const handleSavePreferences = () => {

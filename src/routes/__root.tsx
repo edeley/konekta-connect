@@ -2,6 +2,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import {
   Outlet,
   Link,
+  type ErrorComponentProps,
   createRootRouteWithContext,
   useRouter,
   HeadContent,
@@ -37,7 +38,8 @@ function NotFoundComponent() {
   );
 }
 
-function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
+function ErrorComponent({ error, reset }: ErrorComponentProps) {
+  const err = error as Error;
   console.error("Root Error caught:", error);
   const router = useRouter();
   useEffect(() => {
@@ -62,9 +64,9 @@ function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
           recarregar ou regressar ao início.
         </p>
 
-        {error?.message && (
+        {err?.message && (
           <div className="p-3 bg-muted rounded-xl text-left text-xs font-mono text-muted-foreground overflow-auto max-h-24">
-            {error.message}
+            {err.message}
           </div>
         )}
 
@@ -74,7 +76,7 @@ function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
             onClick={() => {
               try {
                 router.invalidate();
-                reset();
+                reset?.();
               } catch {
                 window.location.reload();
               }

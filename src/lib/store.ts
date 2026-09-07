@@ -2779,7 +2779,7 @@ export const store = {
     notify({
       title: "Visita Técnica Recusada",
       body: `O pedido de visita foi recusado e ${fee} Db foram devolvidos à carteira do cliente.`,
-      tone: "warn",
+      tone: "warning",
       link: `/chat/${visit.providerId}`,
     });
 
