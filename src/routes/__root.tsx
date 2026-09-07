@@ -64,9 +64,9 @@ function ErrorComponent({ error, reset }: ErrorComponentProps) {
           recarregar ou regressar ao início.
         </p>
 
-        {error?.message && (
+        {err?.message && (
           <div className="p-3 bg-muted rounded-xl text-left text-xs font-mono text-muted-foreground overflow-auto max-h-24">
-            {error.message}
+            {err.message}
           </div>
         )}
 
