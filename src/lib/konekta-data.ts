@@ -394,7 +394,7 @@ export const providers: Provider[] = [
       {
         id: "ms-3",
         title: "Manutenção de Escritório Comercial",
-        description: "Limpeza diária de postos de trabalho e áreas comuns em empresa na capital.",
+        description: "Limpeza diária de postos de trabalho e áreas comuns num escritório na capital.",
         image:
           "https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&w=800&q=80",
         category: "Escritórios",

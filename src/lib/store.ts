@@ -42,7 +42,7 @@ export type UserRole = "cliente" | "prestador" | "admin" | "ambos";
 export type FavoriteClient = {
   id: string;
   name: string;
-  phone: string;
+  phone?: string;
   district: string;
   avatar?: string;
   totalServices: number;
@@ -116,8 +116,6 @@ export type PortfolioItem = {
 
 export type ProviderProfile = {
   id?: string;
-  providerType?: "individual";
-  businessName?: string;
   category: string;
   subcategory?: string;
   subcategories?: string[];
@@ -185,7 +183,6 @@ export const defaultProviderProfile: ProviderProfile = {
   radiusKm: 25,
   status: "aprovado",
   submittedAt: Date.now() - 30 * 86400000,
-  businessName: "EletroSoluções STP",
   portfolio: defaultProviderPortfolio,
 };
 
@@ -2078,11 +2075,7 @@ export const store = {
       (state.user?.role === "prestador" ? state.user?.id : undefined) ||
       state.providerProfile?.id ||
       "edmilson-varela";
-    const providerName =
-      input.providerName ||
-      state.providerProfile?.businessName ||
-      state.user?.name ||
-      "Edmilson Varela";
+    const providerName = input.providerName || state.user?.name || "Edmilson Varela";
 
     const newReview: ClientReview = {
       id: reviewId,
