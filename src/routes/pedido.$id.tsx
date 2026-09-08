@@ -120,6 +120,7 @@ function RequestOrOrderDetail() {
   // Pode ser uma Order ou um Request aberto
   const order = useStore((s) => s.orders.find((o) => o.id === id));
   const request = useStore((s) => s.requests.find((r) => r.id === id));
+  const favoriteClientsList = useStore((s) => s.favoriteClients);
 
   // Estados locais para modais e interações
   const [chosenProposal, setChosenProposal] = useState<Proposal | null>(null);
