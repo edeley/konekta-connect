@@ -37,6 +37,14 @@ export type ServiceRequest = {
   createdAt: number;
   proposals: Proposal[];
   acceptedProposalId?: string;
+  /** Validação do pedido publicado pela administração */
+  adminStatus?: "pendente" | "aprovado" | "rejeitado";
+  adminReason?: string;
+  adminReviewedAt?: number;
+  /** Prestadores que recusaram o pedido */
+  declinedBy?: string[];
+  /** Prestador que aceitou diretamente o pedido publicado */
+  acceptedProviderId?: string;
   /** Pedido direto e privado com um prestador específico */
   isDirect?: boolean;
   directProviderId?: string;

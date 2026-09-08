@@ -582,6 +582,20 @@ export type Order = {
     createdAt: number;
     status: "aberta" | "resolvida";
   };
+  /** Pedido publicado que originou este serviço (modelo de propostas) */
+  requestId?: string;
+  /** Confirmação de presença no local pelo prestador */
+  presenceConfirmedAt?: number;
+  /** Cobrança do prestador com comprovativo anexado */
+  charge?: {
+    amount: number;
+    proofImage?: string;
+    proofFileName?: string;
+    note?: string;
+    at: number;
+    status: "pendente" | "pago";
+    paidAt?: number;
+  };
 };
 
 export const orders: Order[] = [
