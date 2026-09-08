@@ -42,7 +42,7 @@ export type UserRole = "cliente" | "prestador" | "admin" | "ambos";
 export type FavoriteClient = {
   id: string;
   name: string;
-  phone: string;
+  phone?: string;
   district: string;
   avatar?: string;
   totalServices: number;
