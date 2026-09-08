@@ -68,6 +68,7 @@ function ProfilePage() {
   // Selected topic modal state
   const [activeTopic, setActiveTopic] = useState<TopicType>(null);
   const [openPortfolioModal, setOpenPortfolioModal] = useState(false);
+  const [portfolioModalMode, setPortfolioModalMode] = useState<"list" | "add">("list");
 
   // Email requirement modal state for notifications
   const [showEmailPromptModal, setShowEmailPromptModal] = useState(false);
@@ -310,8 +311,11 @@ function ProfilePage() {
           action={
             <button
               type="button"
-              onClick={() => setOpenPortfolioModal(true)}
-              className="inline-flex items-center gap-1.5 text-xs font-bold text-primary hover:underline"
+              onClick={() => {
+                setPortfolioModalMode("add");
+                setOpenPortfolioModal(true);
+              }}
+              className="inline-flex items-center gap-1.5 text-xs font-bold text-primary hover:underline cursor-pointer"
             >
               <Plus size={14} />
               Adicionar Foto
@@ -340,7 +344,10 @@ function ProfilePage() {
             {/* Grid de Pré-visualização das fotos */}
             {(profile?.portfolio ?? []).length === 0 ? (
               <div
-                onClick={() => setOpenPortfolioModal(true)}
+                onClick={() => {
+                  setPortfolioModalMode("add");
+                  setOpenPortfolioModal(true);
+                }}
                 className="p-5 rounded-xl border border-dashed border-border/80 bg-muted/20 text-center cursor-pointer hover:border-primary transition space-y-2"
               >
                 <div className="size-10 rounded-xl bg-primary/10 text-primary mx-auto grid place-items-center">
@@ -358,9 +365,10 @@ function ProfilePage() {
                   type="button"
                   onClick={(e) => {
                     e.stopPropagation();
+                    setPortfolioModalMode("add");
                     setOpenPortfolioModal(true);
                   }}
-                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-primary text-primary-foreground text-xs font-bold shadow-2xs"
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-primary text-primary-foreground text-xs font-bold shadow-2xs cursor-pointer"
                 >
                   <Plus size={13} />
                   Adicionar Fotos Agora
@@ -372,7 +380,10 @@ function ProfilePage() {
                   {(profile?.portfolio ?? []).slice(0, 3).map((item) => (
                     <div
                       key={item.id}
-                      onClick={() => setOpenPortfolioModal(true)}
+                      onClick={() => {
+                        setPortfolioModalMode("list");
+                        setOpenPortfolioModal(true);
+                      }}
                       className="group relative rounded-xl overflow-hidden aspect-square bg-muted cursor-pointer border border-border/60"
                     >
                       <img
@@ -390,11 +401,14 @@ function ProfilePage() {
                 <div className="flex items-center justify-between pt-1">
                   <button
                     type="button"
-                    onClick={() => setOpenPortfolioModal(true)}
-                    className="text-xs font-bold text-primary hover:underline flex items-center gap-1"
+                    onClick={() => {
+                      setPortfolioModalMode("list");
+                      setOpenPortfolioModal(true);
+                    }}
+                    className="text-xs font-bold text-primary hover:underline flex items-center gap-1 cursor-pointer"
                   >
                     <Layers size={13} />
-                    Gerir todas as {(profile?.portfolio ?? []).length} fotos
+                    Ver e gerir {(profile?.portfolio ?? []).length} fotos
                   </button>
 
                   <Link
@@ -885,6 +899,7 @@ function ProfilePage() {
       <PortfolioManagerModal
         open={openPortfolioModal}
         onClose={() => setOpenPortfolioModal(false)}
+        initialMode={portfolioModalMode}
       />
     </AppShell>
   );

@@ -24,7 +24,7 @@ import {
   Route,
 } from "lucide-react";
 import { toast } from "sonner";
-import { openWhatsApp, triggerDeviceVibration } from "@/lib/sync-manager";
+import { triggerDeviceVibration } from "@/lib/sync-manager";
 import { calculateDistanceKm, getSTPPreciseGPS, type STPPreciseLocation } from "@/lib/stp-geo";
 
 interface ClientGpsRadarCardProps {

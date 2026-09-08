@@ -4,6 +4,52 @@
  * Zero external audio assets required.
  */
 
+export interface AlarmToneOption {
+  id: string;
+  name: string;
+  description: string;
+  icon: string;
+  recommendedFor: string;
+}
+
+export const AVAILABLE_ALARM_TONES: AlarmToneOption[] = [
+  {
+    id: "konekta_energy",
+    name: "Toque Oficial KONEKTA",
+    description: "Pulso duplo penetrante e dinâmico, garantindo despertar imediato.",
+    icon: "⚡",
+    recommendedFor: "Padrão recomendado",
+  },
+  {
+    id: "classic_clock",
+    name: "Despertador Clássico STP",
+    description: "Bi-bip tradicional de relógio despertador de cabeceira.",
+    icon: "⏰",
+    recommendedFor: "Serviços matinais",
+  },
+  {
+    id: "gentle_chime",
+    name: "Sino Harmónico Suave",
+    description: "Acordes harmónicos relaxantes com decaimento suave.",
+    icon: "🔔",
+    recommendedFor: "Lembretes e mensagens",
+  },
+  {
+    id: "urgent_siren",
+    name: "Alarme de Urgência",
+    description: "Frequência modulada e acelerada para chamados imediatos no terreno.",
+    icon: "🚨",
+    recommendedFor: "Serviços SOS / Imediatos",
+  },
+  {
+    id: "sonar_radar",
+    name: "Radar de Proximidade",
+    description: "Pulsos acústicos estilo sonar GPS para técnicos a caminho.",
+    icon: "📡",
+    recommendedFor: "Deslocação no terreno",
+  },
+];
+
 class SoundAlertsEngine {
   private ctx: AudioContext | null = null;
   private alarmOscillators: OscillatorNode[] = [];
@@ -65,41 +111,137 @@ class SoundAlertsEngine {
   }
 
   /**
-   * Alarme de Horário de Serviço Agendado (Toque enérgico pulsado para despertar atenção)
+   * Toca uma pré-visualização curta (amostra de 2 segundos) de qualquer toque disponível.
    */
-  public playAlarmSound(durationSeconds = 8): void {
-    if (this.isAlarmPlaying) return;
+  public playToneSample(toneId: string): void {
+    this.stopAlarmSound();
+    this.playAlarmSound(2.5, toneId);
+  }
+
+  /**
+   * Alarme de Horário de Serviço Agendado com suporte a múltiplos toques
+   */
+  public playAlarmSound(durationSeconds = 8, requestedToneId?: string): void {
+    if (this.isAlarmPlaying) {
+      this.stopAlarmSound();
+    }
     this.isAlarmPlaying = true;
 
     try {
       const ctx = this.getContext();
       if (!ctx) return;
 
+      const toneId =
+        requestedToneId ||
+        (typeof window !== "undefined"
+          ? localStorage.getItem("knk_alarm_tone") || "konekta_energy"
+          : "konekta_energy");
+
+      let intervalMs = 280;
+
       const playPulse = () => {
-        if (!this.isAlarmPlaying) return;
-        const now = ctx.currentTime;
-        const osc = ctx.createOscillator();
-        const gain = ctx.createGain();
+        if (!this.isAlarmPlaying || !this.ctx) return;
+        const now = this.ctx.currentTime;
 
-        osc.type = "square";
-        // Frequência de alarme digital penetrante
-        osc.frequency.setValueAtTime(784, now); // G5
-        osc.frequency.setValueAtTime(987.77, now + 0.1); // B5
+        switch (toneId) {
+          case "classic_clock": {
+            // Bi-bip tradicional (880Hz e 1046Hz)
+            const osc = this.ctx.createOscillator();
+            const gain = this.ctx.createGain();
+            osc.type = "sine";
+            osc.frequency.setValueAtTime(880, now);
+            osc.frequency.setValueAtTime(1046, now + 0.08);
+            gain.gain.setValueAtTime(0.22, now);
+            gain.gain.exponentialRampToValueAtTime(0.01, now + 0.16);
+            osc.connect(gain);
+            gain.connect(this.ctx.destination);
+            osc.start(now);
+            osc.stop(now + 0.16);
+            break;
+          }
 
-        gain.gain.setValueAtTime(0.2, now);
-        gain.gain.exponentialRampToValueAtTime(0.01, now + 0.22);
+          case "gentle_chime": {
+            // Tríade harmónica suave (587Hz -> 740Hz -> 880Hz)
+            const osc1 = this.ctx.createOscillator();
+            const osc2 = this.ctx.createOscillator();
+            const gain = this.ctx.createGain();
+            osc1.type = "sine";
+            osc2.type = "triangle";
+            osc1.frequency.setValueAtTime(587.33, now);
+            osc1.frequency.exponentialRampToValueAtTime(740, now + 0.15);
+            osc2.frequency.setValueAtTime(880, now);
+            osc2.frequency.exponentialRampToValueAtTime(1174, now + 0.2);
+            gain.gain.setValueAtTime(0.18, now);
+            gain.gain.exponentialRampToValueAtTime(0.005, now + 0.35);
+            osc1.connect(gain);
+            osc2.connect(gain);
+            gain.connect(this.ctx.destination);
+            osc1.start(now);
+            osc2.start(now);
+            osc1.stop(now + 0.35);
+            osc2.stop(now + 0.35);
+            break;
+          }
 
-        osc.connect(gain);
-        gain.connect(ctx.destination);
+          case "urgent_siren": {
+            // Sirene modulada rápida (600Hz a 1200Hz)
+            const osc = this.ctx.createOscillator();
+            const gain = this.ctx.createGain();
+            osc.type = "sawtooth";
+            osc.frequency.setValueAtTime(600, now);
+            osc.frequency.linearRampToValueAtTime(1200, now + 0.12);
+            osc.frequency.linearRampToValueAtTime(600, now + 0.24);
+            gain.gain.setValueAtTime(0.18, now);
+            gain.gain.exponentialRampToValueAtTime(0.01, now + 0.24);
+            osc.connect(gain);
+            gain.connect(this.ctx.destination);
+            osc.start(now);
+            osc.stop(now + 0.24);
+            break;
+          }
 
-        osc.start(now);
-        osc.stop(now + 0.22);
+          case "sonar_radar": {
+            // Pulso sonar penetrante (1200Hz com eco)
+            const osc = this.ctx.createOscillator();
+            const gain = this.ctx.createGain();
+            osc.type = "sine";
+            osc.frequency.setValueAtTime(1200, now);
+            osc.frequency.exponentialRampToValueAtTime(600, now + 0.18);
+            gain.gain.setValueAtTime(0.25, now);
+            gain.gain.exponentialRampToValueAtTime(0.001, now + 0.22);
+            osc.connect(gain);
+            gain.connect(this.ctx.destination);
+            osc.start(now);
+            osc.stop(now + 0.22);
+            break;
+          }
+
+          case "konekta_energy":
+          default: {
+            // Padrão KONEKTA digital penetrante (G5 784Hz / B5 987Hz)
+            const osc = this.ctx.createOscillator();
+            const gain = this.ctx.createGain();
+            osc.type = "square";
+            osc.frequency.setValueAtTime(784, now);
+            osc.frequency.setValueAtTime(987.77, now + 0.08);
+            gain.gain.setValueAtTime(0.2, now);
+            gain.gain.exponentialRampToValueAtTime(0.01, now + 0.2);
+            osc.connect(gain);
+            gain.connect(this.ctx.destination);
+            osc.start(now);
+            osc.stop(now + 0.2);
+            break;
+          }
+        }
       };
 
-      // Toca pulsos a cada 280ms
+      if (toneId === "gentle_chime") intervalMs = 450;
+      else if (toneId === "sonar_radar") intervalMs = 380;
+      else if (toneId === "classic_clock") intervalMs = 260;
+      else intervalMs = 280;
+
       playPulse();
-      const interval = window.setInterval(playPulse, 280);
-      this.alarmInterval = interval;
+      this.alarmInterval = window.setInterval(playPulse, intervalMs);
 
       this.triggerVibration([250, 100, 250, 100, 400]);
 
@@ -147,14 +289,14 @@ export const soundAlerts = new SoundAlertsEngine();
  * Utilitário para gerar e descarregar ficheiro de evento de calendário (.ics) com ALARME nativo do telemóvel.
  * Compatível com iOS (Apple Calendar), Android (Google Calendar / Samsung Calendar) e computadores.
  */
-export function syncWithPhoneCalendarAndAlarms(appointment: {
+export async function syncWithPhoneCalendarAndAlarms(appointment: {
   title: string;
   description: string;
   location?: string;
   startDate: Date;
   durationMinutes?: number;
   reminderMinutesBefore?: number;
-}) {
+}): Promise<{ shared: boolean; googleUrl: string }> {
   const duration = appointment.durationMinutes || 60;
   const reminderMinutes = appointment.reminderMinutesBefore ?? 15;
   const endDate = new Date(appointment.startDate.getTime() + duration * 60 * 1000);
@@ -196,15 +338,70 @@ export function syncWithPhoneCalendarAndAlarms(appointment: {
     "END:VCALENDAR",
   ].join("\r\n");
 
-  const blob = new Blob([icsContent], { type: "text/calendar;charset=utf-8" });
-  const url = URL.createObjectURL(blob);
-  const link = document.createElement("a");
-  link.href = url;
-  link.setAttribute("download", `konekta-servico-${Date.now()}.ics`);
-  document.body.appendChild(link);
-  link.click();
-  document.body.removeChild(link);
-  URL.revokeObjectURL(url);
+  const fileName = `konekta-alarme-${Date.now()}.ics`;
+  const file = new File([icsContent], fileName, { type: "text/calendar;charset=utf-8" });
+  let sharedViaNative = false;
+
+  // 1. Tentar Web Share API nativo no Android/iOS (abre o Seletor do Sistema: Calendário / Alarme / Relógio)
+  if (typeof navigator !== "undefined" && navigator.share && navigator.canShare) {
+    try {
+      if (navigator.canShare({ files: [file] })) {
+        await navigator.share({
+          title: `Alarme KONEKTA: ${appointment.title}`,
+          text: `Agendamento e alarme sincronizado KONEKTA`,
+          files: [file],
+        });
+        sharedViaNative = true;
+      }
+    } catch {
+      // Utilizador cancelou partilha ou browser rejeitou
+    }
+  }
+
+  // 2. Se não partilhou nativamente, aciona descarregamento do ficheiro .ics
+  if (!sharedViaNative) {
+    const blob = new Blob([icsContent], { type: "text/calendar;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.setAttribute("download", fileName);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    setTimeout(() => URL.revokeObjectURL(url), 5000);
+  }
+
+  const googleUrl = getGoogleCalendarUrl(appointment);
+  return { shared: sharedViaNative, googleUrl };
+}
+
+/**
+ * Tenta configurar ou abrir o alarme nativo do telemóvel Android/iOS
+ */
+export function openNativeDeviceClock(startDate: Date, title: string): void {
+  const hours = startDate.getHours();
+  const minutes = startDate.getMinutes();
+
+  // No Android, dispara Intent do Relógio Nativo / Alarme
+  const isAndroid = typeof navigator !== "undefined" && /android/i.test(navigator.userAgent);
+  if (isAndroid) {
+    const msg = encodeURIComponent(`KONEKTA: ${title}`);
+    const intentUrl = `intent:#Intent;action=android.intent.action.SET_ALARM;i.android.intent.extra.HOUR=${hours};i.android.intent.extra.MINUTES=${minutes};s.android.intent.extra.MESSAGE=${msg};b.android.intent.extra.SKIP_UI=false;end`;
+    try {
+      window.location.href = intentUrl;
+      return;
+    } catch {
+      // fallback
+    }
+  }
+
+  // Fallback: Google Calendar
+  const gUrl = getGoogleCalendarUrl({
+    title: `Alarme KONEKTA: ${title}`,
+    description: `Serviço agendado no KONEKTA às ${hours.toString().padStart(2, "0")}:${minutes.toString().padStart(2, "0")}`,
+    startDate,
+  });
+  window.open(gUrl, "_blank");
 }
 
 /**

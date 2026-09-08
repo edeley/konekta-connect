@@ -8,6 +8,7 @@ import {
   Tag,
   Camera,
   X,
+  User,
 } from "lucide-react";
 import { BottomSheet } from "@/components/konekta/kit";
 import { store, useStore } from "@/lib/store";
@@ -25,6 +26,17 @@ const QUICK_TAGS = [
   "Excelente Trabalho",
 ];
 
+const CLIENT_TAGS = [
+  "Pagamento Imediato",
+  "Excelente Comunicação",
+  "Espaço Preparado",
+  "Pontualidade",
+  "Muito Educado",
+  "Instalações Acessíveis",
+  "Recomendo a Colegas",
+  "Trabalho Facilitado",
+];
+
 const RATING_DESCRIPTIONS: Record<number, { label: string; tone: string }> = {
   1: { label: "Muito Fraco — Tive problemas", tone: "text-destructive" },
   2: { label: "Razoável — Precisa de melhorias", tone: "text-amber-500" },
@@ -33,13 +45,29 @@ const RATING_DESCRIPTIONS: Record<number, { label: string; tone: string }> = {
   5: { label: "Excelente / Impecável! — Recomendo a 100%", tone: "text-forest font-semibold" },
 };
 
-interface ReviewModalProps {
+const CLIENT_RATING_DESCRIPTIONS: Record<number, { label: string; tone: string }> = {
+  1: { label: "Muito Difícil — Problemas graves ou divergências", tone: "text-destructive" },
+  2: { label: "Complicado — Atrasos ou divergências no local", tone: "text-amber-500" },
+  3: { label: "Normal — Cumpriu o acordado", tone: "text-sun" },
+  4: { label: "Bom Cliente — Acessível, educado e pontual", tone: "text-forest" },
+  5: {
+    label: "Excelente Cliente! — Pagamento pontual e impecável",
+    tone: "text-forest font-semibold",
+  },
+};
+
+export interface ReviewModalProps {
   open: boolean;
   onClose: () => void;
-  providerId: string;
-  providerName: string;
+  targetType?: "prestador" | "cliente";
+  providerId?: string;
+  providerName?: string;
   providerImage?: string;
   providerCategory?: string;
+  clientId?: string;
+  clientName?: string;
+  clientAvatar?: string;
+  clientPhone?: string;
   orderId?: string;
   serviceName?: string;
   initialRating?: number;
@@ -50,27 +78,39 @@ interface ReviewModalProps {
 export function ReviewModal({
   open,
   onClose,
+  targetType = "prestador",
   providerId,
-  providerName,
+  providerName = "Prestador de Serviços",
   providerImage,
   providerCategory,
+  clientId,
+  clientName,
+  clientAvatar,
+  clientPhone,
   orderId,
   serviceName,
   initialRating = 5,
   initialComment = "",
   onSuccess,
 }: ReviewModalProps) {
+  const isClientTarget = targetType === "cliente" || (!providerId && !!clientName);
   const user = useStore((s) => s.user);
   const [stars, setStars] = useState<number>(initialRating || 5);
   const [hoveredStars, setHoveredStars] = useState<number | null>(null);
   const [comment, setComment] = useState(initialComment || "");
-  const [selectedTags, setSelectedTags] = useState<string[]>(["Pontualidade", "Trabalho Limpo"]);
+  const [selectedTags, setSelectedTags] = useState<string[]>(
+    isClientTarget
+      ? ["Pagamento Imediato", "Excelente Comunicação"]
+      : ["Pontualidade", "Trabalho Limpo"],
+  );
   const [recommended, setRecommended] = useState<boolean>(true);
   const [reviewPhotos, setReviewPhotos] = useState<string[]>([]);
   const [photoUrlInput, setPhotoUrlInput] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const activeRating = hoveredStars ?? stars;
+  const ratingTexts = isClientTarget ? CLIENT_RATING_DESCRIPTIONS : RATING_DESCRIPTIONS;
+  const availableTags = isClientTarget ? CLIENT_TAGS : QUICK_TAGS;
 
   function toggleTag(tag: string) {
     setSelectedTags((prev) =>
@@ -111,21 +151,41 @@ export function ReviewModal({
     setIsSubmitting(true);
 
     try {
-      store.addReview({
-        providerId,
-        orderId,
-        rating: stars,
-        comment: comment.trim(),
-        tags: selectedTags,
-        recommended,
-        serviceName: serviceName || "Serviço Prestado",
-        district: user?.district,
-        photos: reviewPhotos,
-      });
+      if (isClientTarget) {
+        store.addClientReview({
+          clientName: clientName || "Cliente KONEKTA",
+          clientAvatar,
+          clientPhone,
+          orderId,
+          providerId,
+          rating: stars,
+          comment: comment.trim(),
+          tags: selectedTags,
+          recommended,
+          serviceName: serviceName || "Serviço Prestado",
+          district: user?.district,
+        });
 
-      toast.success("Avaliação enviada com sucesso!", {
-        description: "Obrigado por ajudar a comunidade KONEKTA!",
-      });
+        toast.success("Avaliação do cliente registada com sucesso!", {
+          description: "Obrigado por ajudar a manter a rede KONEKTA fiável!",
+        });
+      } else {
+        store.addReview({
+          providerId: providerId || "prestador",
+          orderId,
+          rating: stars,
+          comment: comment.trim(),
+          tags: selectedTags,
+          recommended,
+          serviceName: serviceName || "Serviço Prestado",
+          district: user?.district,
+          photos: reviewPhotos,
+        });
+
+        toast.success("Avaliação enviada com sucesso!", {
+          description: "Obrigado por ajudar a comunidade KONEKTA!",
+        });
+      }
 
       if (onSuccess) {
         onSuccess();
@@ -138,32 +198,40 @@ export function ReviewModal({
     }
   }
 
+  const displayName = isClientTarget ? clientName || "Cliente KONEKTA" : providerName;
+  const displayAvatar = isClientTarget ? clientAvatar : providerImage;
+  const displaySubtitle = isClientTarget
+    ? "Cliente KONEKTA"
+    : providerCategory || "Prestador de Serviços";
+
   return (
     <BottomSheet
       open={open}
       onClose={onClose}
-      title="Avaliar Prestador"
-      description="A sua opinião sincera ajuda a valorizar os bons profissionais em São Tomé e Príncipe."
+      title={isClientTarget ? "Avaliar Cliente" : "Avaliar Prestador"}
+      description={
+        isClientTarget
+          ? "Avalie o seu atendimento com este cliente. Ajuda a orientar colegas e reconhecer bons clientes."
+          : "A sua opinião sincera ajuda a valorizar os bons profissionais em São Tomé e Príncipe."
+      }
     >
       <form onSubmit={handleSubmit} className="space-y-4 pt-1 pb-1">
-        {/* Cartão do prestador */}
+        {/* Cartão do avaliado */}
         <div className="flex items-center gap-3 p-3 rounded-2xl bg-card ring-1 ring-border">
-          {providerImage ? (
+          {displayAvatar ? (
             <img
-              src={providerImage}
-              alt={providerName}
+              src={displayAvatar}
+              alt={displayName}
               className="size-12 rounded-xl object-cover ring-1 ring-border shrink-0"
             />
           ) : (
-            <div className="size-12 rounded-xl bg-terracotta/10 text-terracotta font-bold grid place-items-center shrink-0">
-              {providerName.slice(0, 2).toUpperCase()}
+            <div className="size-12 rounded-xl bg-primary/10 text-primary font-bold grid place-items-center shrink-0">
+              {displayName.slice(0, 2).toUpperCase()}
             </div>
           )}
           <div className="min-w-0 flex-1">
-            <h4 className="font-semibold text-sm text-foreground truncate">{providerName}</h4>
-            <p className="text-xs text-muted-foreground truncate">
-              {providerCategory || "Prestador de Serviços"}
-            </p>
+            <h4 className="font-semibold text-sm text-foreground truncate">{displayName}</h4>
+            <p className="text-xs text-muted-foreground truncate">{displaySubtitle}</p>
             {serviceName && (
               <span className="inline-block mt-0.5 px-2 py-0.5 rounded-full bg-ocean/10 text-ocean text-[10px] font-medium truncate max-w-full">
                 {serviceName}
@@ -188,7 +256,7 @@ export function ReviewModal({
                   onClick={() => setStars(n)}
                   onMouseEnter={() => setHoveredStars(n)}
                   onMouseLeave={() => setHoveredStars(null)}
-                  className="p-1 transition-transform hover:scale-110 active:scale-95 focus:outline-none"
+                  className="p-1 transition-transform hover:scale-110 active:scale-95 focus:outline-none cursor-pointer"
                 >
                   <Star
                     size={32}
@@ -202,9 +270,9 @@ export function ReviewModal({
               );
             })}
           </div>
-          {RATING_DESCRIPTIONS[activeRating] && (
-            <p className={`text-xs ${RATING_DESCRIPTIONS[activeRating].tone}`}>
-              {RATING_DESCRIPTIONS[activeRating].label}
+          {ratingTexts[activeRating] && (
+            <p className={`text-xs ${ratingTexts[activeRating].tone}`}>
+              {ratingTexts[activeRating].label}
             </p>
           )}
         </div>
@@ -212,19 +280,20 @@ export function ReviewModal({
         {/* Tags de Destaque */}
         <div className="space-y-1.5">
           <label className="text-xs font-semibold text-muted-foreground flex items-center gap-1">
-            <Tag size={12} /> Pontos fortes do serviço
+            <Tag size={12} />{" "}
+            {isClientTarget ? "Pontos fortes do cliente" : "Pontos fortes do serviço"}
           </label>
           <div className="flex flex-wrap gap-1.5">
-            {QUICK_TAGS.map((tag) => {
+            {availableTags.map((tag) => {
               const selected = selectedTags.includes(tag);
               return (
                 <button
                   key={tag}
                   type="button"
                   onClick={() => toggleTag(tag)}
-                  className={`px-3 py-1 rounded-full text-xs transition-colors ${
+                  className={`px-3 py-1 rounded-full text-xs transition-colors cursor-pointer ${
                     selected
-                      ? "bg-terracotta text-white font-medium shadow-2xs"
+                      ? "bg-primary text-primary-foreground font-medium shadow-2xs"
                       : "bg-card ring-1 ring-border text-muted-foreground hover:bg-muted"
                   }`}
                 >
@@ -239,7 +308,7 @@ export function ReviewModal({
         <div className="space-y-1.5">
           <div className="flex items-center justify-between">
             <label className="text-xs font-semibold text-muted-foreground flex items-center gap-1">
-              <MessageSquare size={12} /> Comentário sincero
+              <MessageSquare size={12} /> Comentário profissional
             </label>
             <span className="text-[10px] text-muted-foreground">{comment.length} caracteres</span>
           </div>
@@ -247,8 +316,12 @@ export function ReviewModal({
             rows={3}
             value={comment}
             onChange={(e) => setComment(e.target.value)}
-            placeholder="Conte como correu o serviço (ex: pontualidade, qualidade da reparação, educação)..."
-            className="w-full rounded-2xl bg-card ring-1 ring-border p-3.5 text-xs outline-none focus:ring-2 focus:ring-terracotta/40 placeholder:text-muted-foreground/60 transition-all"
+            placeholder={
+              isClientTarget
+                ? "Conte como correu o atendimento (ex: pontualidade, acolhimento, instalações preparadas, pagamento imediato)..."
+                : "Conte como correu o serviço (ex: pontualidade, qualidade da reparação, educação)..."
+            }
+            className="w-full rounded-2xl bg-card ring-1 ring-border p-3.5 text-xs outline-none focus:ring-2 focus:ring-primary/40 placeholder:text-muted-foreground/60 transition-all"
           />
           {(() => {
             const check = validateFormSafety({ Comentário: comment });
@@ -264,96 +337,104 @@ export function ReviewModal({
           })()}
         </div>
 
-        {/* Fotos do Trabalho Concluído */}
-        <div className="space-y-2">
-          <label className="text-xs font-semibold text-muted-foreground flex items-center justify-between">
-            <span className="flex items-center gap-1">
-              <Camera size={12} /> Fotos do trabalho (opcional)
-            </span>
-            <span className="text-[10px] text-muted-foreground">{reviewPhotos.length}/4 fotos</span>
-          </label>
+        {/* Fotos do Trabalho Concluído (se for para prestador ou opcional para trabalho) */}
+        {!isClientTarget && (
+          <div className="space-y-2">
+            <label className="text-xs font-semibold text-muted-foreground flex items-center justify-between">
+              <span className="flex items-center gap-1">
+                <Camera size={12} /> Fotos do trabalho (opcional)
+              </span>
+              <span className="text-[10px] text-muted-foreground">
+                {reviewPhotos.length}/4 fotos
+              </span>
+            </label>
 
-          {/* Fotos já adicionadas */}
-          {reviewPhotos.length > 0 && (
-            <div className="grid grid-cols-4 gap-2">
-              {reviewPhotos.map((p, idx) => (
-                <div
-                  key={idx}
-                  className="relative rounded-xl overflow-hidden aspect-square border border-border group"
-                >
-                  <img src={p} alt={`Foto ${idx + 1}`} className="w-full h-full object-cover" />
-                  <button
-                    type="button"
-                    onClick={() => removePhoto(idx)}
-                    className="absolute top-1 right-1 size-5 rounded-full bg-black/70 text-white flex items-center justify-center hover:bg-black transition"
-                    title="Remover foto"
+            {/* Fotos já adicionadas */}
+            {reviewPhotos.length > 0 && (
+              <div className="grid grid-cols-4 gap-2">
+                {reviewPhotos.map((p, idx) => (
+                  <div
+                    key={idx}
+                    className="relative rounded-xl overflow-hidden aspect-square border border-border group"
                   >
-                    <X size={12} />
-                  </button>
-                </div>
-              ))}
-            </div>
-          )}
-
-          {/* Adicionar rápida de fotos de amostra ou URL */}
-          {reviewPhotos.length < 4 && (
-            <div className="space-y-1.5">
-              <div className="flex gap-2">
-                <input
-                  type="url"
-                  value={photoUrlInput}
-                  onChange={(e) => setPhotoUrlInput(e.target.value)}
-                  placeholder="Colar link da foto (URL)..."
-                  className="flex-1 rounded-xl bg-card ring-1 ring-border px-3 py-2 text-xs outline-none focus:ring-2 focus:ring-terracotta/40"
-                />
-                <button
-                  type="button"
-                  onClick={() => addPhoto(photoUrlInput)}
-                  disabled={!photoUrlInput.trim()}
-                  className="px-3 rounded-xl bg-muted border border-border text-xs font-bold text-foreground hover:bg-muted/80 disabled:opacity-50"
-                >
-                  Anexar
-                </button>
-              </div>
-
-              <div className="flex items-center gap-1.5 overflow-x-auto py-1">
-                <span className="text-[10px] text-muted-foreground shrink-0">Exemplos:</span>
-                {[
-                  {
-                    name: "Trabalho Feito",
-                    url: "https://images.unsplash.com/photo-1581092160607-ee22621dd758?w=800&auto=format&fit=crop&q=80",
-                  },
-                  {
-                    name: "Resultado Limpo",
-                    url: "https://images.unsplash.com/photo-1505798577917-a65157d3320a?w=800&auto=format&fit=crop&q=80",
-                  },
-                  {
-                    name: "Reparação OK",
-                    url: "https://images.unsplash.com/photo-1585704032915-c3400ca199e7?w=800&auto=format&fit=crop&q=80",
-                  },
-                ].map((s) => (
-                  <button
-                    key={s.name}
-                    type="button"
-                    onClick={() => addPhoto(s.url)}
-                    className="px-2 py-0.5 rounded-full bg-muted border border-border text-[10px] text-muted-foreground hover:text-foreground shrink-0"
-                  >
-                    + {s.name}
-                  </button>
+                    <img src={p} alt={`Foto ${idx + 1}`} className="w-full h-full object-cover" />
+                    <button
+                      type="button"
+                      onClick={() => removePhoto(idx)}
+                      className="absolute top-1 right-1 size-5 rounded-full bg-black/70 text-white flex items-center justify-center hover:bg-black transition cursor-pointer"
+                      title="Remover foto"
+                    >
+                      <X size={12} />
+                    </button>
+                  </div>
                 ))}
               </div>
-            </div>
-          )}
-        </div>
+            )}
+
+            {/* Adicionar rápida de fotos de amostra ou URL */}
+            {reviewPhotos.length < 4 && (
+              <div className="space-y-1.5">
+                <div className="flex gap-2">
+                  <input
+                    type="url"
+                    value={photoUrlInput}
+                    onChange={(e) => setPhotoUrlInput(e.target.value)}
+                    placeholder="Colar link da foto (URL)..."
+                    className="flex-1 rounded-xl bg-card ring-1 ring-border px-3 py-2 text-xs outline-none focus:ring-2 focus:ring-primary/40"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => addPhoto(photoUrlInput)}
+                    disabled={!photoUrlInput.trim()}
+                    className="px-3 rounded-xl bg-muted border border-border text-xs font-bold text-foreground hover:bg-muted/80 disabled:opacity-50 cursor-pointer"
+                  >
+                    Anexar
+                  </button>
+                </div>
+
+                <div className="flex items-center gap-1.5 overflow-x-auto py-1">
+                  <span className="text-[10px] text-muted-foreground shrink-0">Exemplos:</span>
+                  {[
+                    {
+                      name: "Trabalho Feito",
+                      url: "https://images.unsplash.com/photo-1581092160607-ee22621dd758?w=800&auto=format&fit=crop&q=80",
+                    },
+                    {
+                      name: "Resultado Limpo",
+                      url: "https://images.unsplash.com/photo-1505798577917-a65157d3320a?w=800&auto=format&fit=crop&q=80",
+                    },
+                    {
+                      name: "Reparação OK",
+                      url: "https://images.unsplash.com/photo-1585704032915-c3400ca199e7?w=800&auto=format&fit=crop&q=80",
+                    },
+                  ].map((s) => (
+                    <button
+                      key={s.name}
+                      type="button"
+                      onClick={() => addPhoto(s.url)}
+                      className="px-2 py-0.5 rounded-full bg-muted border border-border text-[10px] text-muted-foreground hover:text-foreground shrink-0 cursor-pointer"
+                    >
+                      + {s.name}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        )}
 
         {/* Recomendação */}
         <div className="p-3 rounded-2xl bg-card ring-1 ring-border flex items-center justify-between gap-3">
-          <span className="text-xs text-foreground">Recomenda este profissional?</span>
+          <span className="text-xs text-foreground">
+            {isClientTarget
+              ? "Recomenda este cliente a outros prestadores?"
+              : "Recomenda este profissional?"}
+          </span>
           <div className="flex items-center gap-1.5 shrink-0">
             <button
               type="button"
               onClick={() => setRecommended(true)}
-              className={`flex items-center gap-1 px-3 py-1 rounded-xl text-xs font-medium transition-all ${
+              className={`flex items-center gap-1 px-3 py-1 rounded-xl text-xs font-medium transition-all cursor-pointer ${
                 recommended
                   ? "bg-forest text-white"
                   : "bg-card ring-1 ring-border text-muted-foreground hover:bg-muted"
@@ -364,7 +445,7 @@ export function ReviewModal({
             <button
               type="button"
               onClick={() => setRecommended(false)}
-              className={`flex items-center gap-1 px-3 py-1 rounded-xl text-xs font-medium transition-all ${
+              className={`flex items-center gap-1 px-3 py-1 rounded-xl text-xs font-medium transition-all cursor-pointer ${
                 !recommended
                   ? "bg-destructive text-white"
                   : "bg-card ring-1 ring-border text-muted-foreground hover:bg-muted"
@@ -380,17 +461,21 @@ export function ReviewModal({
           <button
             type="button"
             onClick={onClose}
-            className="h-11 flex-1 rounded-xl ring-1 ring-border bg-card font-medium text-xs text-foreground hover:bg-muted"
+            className="h-11 flex-1 rounded-xl ring-1 ring-border bg-card font-medium text-xs text-foreground hover:bg-muted cursor-pointer"
           >
             Cancelar
           </button>
           <button
             type="submit"
             disabled={isSubmitting}
-            className="h-11 flex-2 rounded-xl font-medium text-xs bg-terracotta text-white flex items-center justify-center gap-1.5 shadow-2xs hover:bg-terracotta/90 disabled:opacity-50 cursor-pointer"
+            className="h-11 flex-2 rounded-xl font-medium text-xs bg-primary text-primary-foreground flex items-center justify-center gap-1.5 shadow-2xs hover:bg-primary/90 disabled:opacity-50 cursor-pointer active:scale-98"
           >
             <CheckCircle2 size={15} />
-            {isSubmitting ? "A guardar..." : "Publicar Avaliação"}
+            {isSubmitting
+              ? "A guardar..."
+              : isClientTarget
+                ? "Guardar Avaliação do Cliente"
+                : "Publicar Avaliação"}
           </button>
         </div>
       </form>

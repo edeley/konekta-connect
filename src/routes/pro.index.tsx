@@ -21,9 +21,11 @@ import {
   Trash2,
   Sparkles,
   Search,
+  Layers,
+  Pencil,
 } from "lucide-react";
 import { AppShell } from "@/components/AppShell";
-import { store, useStore } from "@/lib/store";
+import { store, useStore, type PortfolioItem } from "@/lib/store";
 import { PortfolioManagerModal } from "@/components/konekta/PortfolioManagerModal";
 import { PortfolioBeforeAfterModal } from "@/components/konekta/PortfolioBeforeAfterModal";
 import { QuoteComposer } from "@/components/konekta/QuoteComposer";
@@ -150,6 +152,8 @@ function ProHome() {
 
   // Modais de Gestão
   const [openPortfolioModal, setOpenPortfolioModal] = useState(false);
+  const [portfolioModalMode, setPortfolioModalMode] = useState<"list" | "add" | "edit">("list");
+  const [editingPortfolioItem, setEditingPortfolioItem] = useState<PortfolioItem | null>(null);
   const [openBeforeAfterAddModal, setOpenBeforeAfterAddModal] = useState(false);
   const [openKycModal, setOpenKycModal] = useState(false);
   const [openComposer, setOpenComposer] = useState(false);
@@ -229,6 +233,19 @@ function ProHome() {
         },
       ],
     });
+  };
+
+  const handleEditPortfolioItem = (item: PortfolioItem) => {
+    setEditingPortfolioItem(item);
+    setPortfolioModalMode("edit");
+    setOpenPortfolioModal(true);
+  };
+
+  const handleDeletePortfolioItem = (item: PortfolioItem) => {
+    if (confirm(`Tem a certeza que deseja eliminar "${item.title}" do seu portfólio?`)) {
+      store.removePortfolioItem(item.id);
+      toast.success("Trabalho eliminado do portfólio.");
+    }
   };
 
   return (
@@ -619,21 +636,31 @@ function ProHome() {
                 </div>
 
                 <div className="flex items-center gap-1.5">
+                  {portfolio.length > 0 && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setEditingPortfolioItem(null);
+                        setPortfolioModalMode("list");
+                        setOpenPortfolioModal(true);
+                      }}
+                      className="px-2.5 py-1.5 rounded-xl bg-muted hover:bg-muted/80 text-foreground text-xs font-bold transition border border-border flex items-center gap-1 cursor-pointer"
+                    >
+                      <Layers size={12} />
+                      <span>Ver Portfólio ({portfolio.length})</span>
+                    </button>
+                  )}
                   <button
                     type="button"
-                    onClick={() => setOpenBeforeAfterAddModal(true)}
-                    className="px-2.5 py-1.5 rounded-xl bg-muted hover:bg-muted/80 text-foreground text-xs font-bold transition border border-border flex items-center gap-1 cursor-pointer"
+                    onClick={() => {
+                      setEditingPortfolioItem(null);
+                      setPortfolioModalMode("add");
+                      setOpenPortfolioModal(true);
+                    }}
+                    className="px-3.5 py-1.5 rounded-xl bg-primary text-primary-foreground text-xs font-bold hover:bg-primary/90 transition shadow-2xs flex items-center gap-1.5 cursor-pointer active:scale-95"
                   >
-                    <Plus size={12} />
-                    <span>Antes/Depois</span>
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setOpenPortfolioModal(true)}
-                    className="px-3 py-1.5 rounded-xl bg-primary text-primary-foreground text-xs font-bold hover:bg-primary/90 transition shadow-2xs flex items-center gap-1 cursor-pointer"
-                  >
-                    <Camera size={13} />
-                    <span>Adicionar Foto</span>
+                    <Plus size={14} />
+                    <span>Adicionar Portfólio</span>
                   </button>
                 </div>
               </div>
@@ -643,21 +670,57 @@ function ProHome() {
                   {portfolio.map((item) => (
                     <div
                       key={item.id}
-                      onClick={() => setOpenPortfolioModal(true)}
-                      className="rounded-2xl overflow-hidden border border-border bg-card shadow-2xs group cursor-pointer space-y-1.5 p-1.5"
+                      onClick={() => handleEditPortfolioItem(item)}
+                      className="rounded-2xl overflow-hidden border border-border bg-card shadow-2xs group cursor-pointer space-y-1.5 p-1.5 relative transition hover:border-primary/50"
                     >
                       <div className="aspect-square rounded-xl overflow-hidden bg-muted relative">
                         <img
                           src={item.image}
                           alt={item.title}
-                          className="size-full object-cover group-hover:scale-105 transition"
+                          className="size-full object-cover group-hover:scale-105 transition duration-300"
                         />
+                        {/* Botões Rápidos de Editar e Eliminar */}
+                        <div className="absolute top-1.5 right-1.5 flex items-center gap-1">
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleEditPortfolioItem(item);
+                            }}
+                            className="size-7 rounded-full bg-black/75 hover:bg-primary text-white grid place-items-center transition backdrop-blur-xs cursor-pointer shadow-xs"
+                            title="Editar trabalho"
+                          >
+                            <Pencil size={11} />
+                          </button>
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleDeletePortfolioItem(item);
+                            }}
+                            className="size-7 rounded-full bg-black/75 hover:bg-destructive text-white grid place-items-center transition backdrop-blur-xs cursor-pointer shadow-xs"
+                            title="Eliminar trabalho"
+                          >
+                            <Trash2 size={11} />
+                          </button>
+                        </div>
+
+                        {item.category && (
+                          <span className="absolute bottom-1.5 left-1.5 px-2 py-0.5 rounded-md bg-black/70 text-white text-[9px] font-bold backdrop-blur-xs">
+                            {item.category}
+                          </span>
+                        )}
                       </div>
                       <div className="px-1 pb-1">
                         <p className="text-xs font-bold text-foreground truncate">{item.title}</p>
-                        <p className="text-[10px] text-muted-foreground truncate">
-                          {item.category}
-                        </p>
+                        <div className="flex items-center justify-between mt-0.5">
+                          <p className="text-[10px] text-muted-foreground truncate">
+                            {item.description || item.category || "Trabalho realizado"}
+                          </p>
+                          <span className="text-[9px] text-primary font-bold ml-1 shrink-0">
+                            Editar
+                          </span>
+                        </div>
                       </div>
                     </div>
                   ))}
@@ -679,18 +742,15 @@ function ProHome() {
                   <div className="flex items-center justify-center gap-2 pt-1">
                     <button
                       type="button"
-                      onClick={() => setOpenPortfolioModal(true)}
+                      onClick={() => {
+                        setEditingPortfolioItem(null);
+                        setPortfolioModalMode("add");
+                        setOpenPortfolioModal(true);
+                      }}
                       className="px-4 py-2 rounded-xl bg-primary text-primary-foreground text-xs font-bold flex items-center gap-1.5 shadow-xs cursor-pointer hover:bg-primary/90"
                     >
-                      <Camera size={14} />
-                      <span>Tirar Foto Agora</span>
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setOpenBeforeAfterAddModal(true)}
-                      className="px-3.5 py-2 rounded-xl bg-muted text-foreground text-xs font-bold border border-border cursor-pointer hover:bg-muted/80"
-                    >
-                      <span>Adicionar Antes/Depois</span>
+                      <Plus size={14} />
+                      <span>Adicionar Portfólio</span>
                     </button>
                   </div>
                 </div>
@@ -823,10 +883,15 @@ function ProHome() {
         onSaveItem={handleSaveNewPortfolioItem}
       />
 
-      {/* MODAL DE GESTÃO DE FOTOS */}
+      {/* MODAL DE GESTÃO DE PORTFÓLIO (ADICIONAR, EDITAR, ELIMINAR) */}
       <PortfolioManagerModal
         open={openPortfolioModal}
-        onClose={() => setOpenPortfolioModal(false)}
+        onClose={() => {
+          setOpenPortfolioModal(false);
+          setEditingPortfolioItem(null);
+        }}
+        initialMode={portfolioModalMode}
+        initialItemToEdit={editingPortfolioItem}
       />
 
       {/* MODAL DE GESTÃO DE SERVIÇOS */}

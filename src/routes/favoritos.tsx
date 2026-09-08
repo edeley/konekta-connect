@@ -3,8 +3,6 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import {
   Heart,
   Star,
-  Phone,
-  MessageCircle,
   MapPin,
   CheckCircle2,
   Plus,
@@ -23,6 +21,7 @@ import { useStore, store, type FavoriteClient } from "@/lib/store";
 import { providers } from "@/lib/konekta-data";
 import { formatDb } from "@/lib/catalog";
 import { toast } from "sonner";
+import { ReviewModal } from "@/components/konekta/ReviewModal";
 
 export const Route = createFileRoute("/favoritos")({
   head: () => ({
@@ -49,17 +48,20 @@ function FavoritesPage() {
   const user = useStore((s) => s.user);
   const isProvider = user?.role === "prestador";
 
-  // Abas para quem tem perfil duplo ou quer alternar visualização
+  // O prestador só pode escolher clientes favoritos e não prestadores favoritos
+  // O cliente escolhe prestadores favoritos
   const [viewMode, setViewMode] = useState<"clientes" | "prestadores">(
     isProvider ? "clientes" : "prestadores",
   );
 
   const favorites = useStore((s) => s.favorites);
   const favoriteClients = useStore((s) => s.favoriteClients);
+  const clientReviews = useStore((s) => s.clientReviews);
   const orders = useStore((s) => s.orders);
 
   // Modal para adicionar cliente aos favoritos
   const [openAddClientModal, setOpenAddClientModal] = useState(false);
+  const [evaluatingClient, setEvaluatingClient] = useState<FavoriteClient | null>(null);
   const [newClientName, setNewClientName] = useState("");
   const [newClientDistrict, setNewClientDistrict] = useState("Água Grande");
   const [newClientNotes, setNewClientNotes] = useState("");
@@ -85,7 +87,6 @@ function FavoritesPage() {
     const newFav: FavoriteClient = {
       id: `fc_${Date.now()}`,
       name: newClientName.trim(),
-      phone: "Contacto Protegido KONEKTA",
       district: newClientDistrict,
       notes: newClientNotes.trim() || "Cliente adicionado aos favoritos",
       totalServices: 1,
@@ -105,7 +106,6 @@ function FavoritesPage() {
     const newFav: FavoriteClient = {
       id: `fc_${Date.now()}`,
       name: client.name,
-      phone: "Contacto Protegido KONEKTA",
       district: client.district,
       notes: "Cliente habitual de serviços KONEKTA",
       totalServices: 2,
@@ -120,50 +120,52 @@ function FavoritesPage() {
   return (
     <AppShell hideFab>
       <ScreenHeader
-        title="Favoritos"
+        title={isProvider ? "Clientes Favoritos" : "Favoritos"}
         subtitle={
-          viewMode === "clientes"
+          isProvider || viewMode === "clientes"
             ? `${favoriteClients.length} cliente(s) habitual(is) guardado(s)`
             : `${favoriteProvidersList.length} prestador(es) guardado(s)`
         }
       />
 
-      {/* SELETOR DE ABA (CLIENTES FAVORITOS vs PRESTADORES FAVORITOS) */}
-      <div className="px-4 pb-2">
-        <div className="grid grid-cols-2 p-1 rounded-2xl bg-muted/70 border border-border/40 text-xs font-bold">
-          <button
-            type="button"
-            onClick={() => setViewMode("clientes")}
-            className={`py-2.5 px-3 rounded-xl transition flex items-center justify-center gap-1.5 cursor-pointer ${
-              viewMode === "clientes"
-                ? "bg-card text-foreground shadow-xs"
-                : "text-muted-foreground hover:text-foreground"
-            }`}
-          >
-            <UserCheck size={14} />
-            <span>Clientes Favoritos</span>
-            <span className="ml-1 px-1.5 py-0.2 rounded-full text-[10px] bg-muted font-bold">
-              {favoriteClients.length}
-            </span>
-          </button>
+      {/* SELETOR DE ABA: APENAS PARA CLIENTES (PRESTADOR SÓ PODE TER CLIENTES FAVORITOS) */}
+      {!isProvider && (
+        <div className="px-4 pb-2">
+          <div className="grid grid-cols-2 p-1 rounded-2xl bg-muted/70 border border-border/40 text-xs font-bold">
+            <button
+              type="button"
+              onClick={() => setViewMode("prestadores")}
+              className={`py-2.5 px-3 rounded-xl transition flex items-center justify-center gap-1.5 cursor-pointer ${
+                viewMode === "prestadores"
+                  ? "bg-card text-foreground shadow-xs"
+                  : "text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              <Heart size={14} />
+              <span>Prestadores Favoritos</span>
+              <span className="ml-1 px-1.5 py-0.2 rounded-full text-[10px] bg-muted font-bold">
+                {favoriteProvidersList.length}
+              </span>
+            </button>
 
-          <button
-            type="button"
-            onClick={() => setViewMode("prestadores")}
-            className={`py-2.5 px-3 rounded-xl transition flex items-center justify-center gap-1.5 cursor-pointer ${
-              viewMode === "prestadores"
-                ? "bg-card text-foreground shadow-xs"
-                : "text-muted-foreground hover:text-foreground"
-            }`}
-          >
-            <Heart size={14} />
-            <span>Prestadores Favoritos</span>
-            <span className="ml-1 px-1.5 py-0.2 rounded-full text-[10px] bg-muted font-bold">
-              {favoriteProvidersList.length}
-            </span>
-          </button>
+            <button
+              type="button"
+              onClick={() => setViewMode("clientes")}
+              className={`py-2.5 px-3 rounded-xl transition flex items-center justify-center gap-1.5 cursor-pointer ${
+                viewMode === "clientes"
+                  ? "bg-card text-foreground shadow-xs"
+                  : "text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              <UserCheck size={14} />
+              <span>Clientes Favoritos</span>
+              <span className="ml-1 px-1.5 py-0.2 rounded-full text-[10px] bg-muted font-bold">
+                {favoriteClients.length}
+              </span>
+            </button>
+          </div>
         </div>
-      </div>
+      )}
 
       <Section>
         {/* ========================================================================= */}
@@ -251,7 +253,38 @@ function FavoritesPage() {
                       </div>
                     )}
 
-                    <div className="flex items-center justify-between pt-1 border-t border-border/40 text-xs text-muted-foreground">
+                    {/* Avaliações submetidas para este cliente */}
+                    {(() => {
+                      const clientHistory = clientReviews.filter(
+                        (cr) => cr.clientName.toLowerCase() === client.name.toLowerCase(),
+                      );
+                      if (clientHistory.length === 0) return null;
+                      const latest = clientHistory[0];
+                      return (
+                        <div className="p-2.5 rounded-xl bg-amber-500/10 border border-amber-500/20 text-xs space-y-1">
+                          <div className="flex items-center justify-between font-bold text-amber-900 dark:text-amber-300">
+                            <span className="flex items-center gap-1 text-[11px]">
+                              <CheckCircle2
+                                size={12}
+                                className="text-amber-600 dark:text-amber-400"
+                              />
+                              Avaliado por si
+                            </span>
+                            <span className="flex items-center gap-1">
+                              <Star size={12} className="fill-amber-500 text-amber-500" />
+                              {latest.rating}.0 ★
+                            </span>
+                          </div>
+                          {latest.comment && (
+                            <p className="text-foreground/80 italic text-[11px]">
+                              "{latest.comment}"
+                            </p>
+                          )}
+                        </div>
+                      );
+                    })()}
+
+                    <div className="flex flex-wrap items-center justify-between gap-2 pt-1 border-t border-border/40 text-xs text-muted-foreground">
                       <div className="flex items-center gap-1 text-amber-500 font-bold">
                         <Star size={13} className="fill-amber-500" />
                         <span>{client.rating.toFixed(1)}</span>
@@ -260,8 +293,17 @@ function FavoritesPage() {
                         </span>
                       </div>
 
-                      <div className="flex items-center gap-2">
-                        <span className="text-[10px] font-bold text-muted-foreground bg-muted px-2.5 py-1 rounded-xl border border-border/40 flex items-center gap-1.5">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <button
+                          type="button"
+                          onClick={() => setEvaluatingClient(client)}
+                          className="px-3 py-1.5 rounded-xl bg-amber-500/10 hover:bg-amber-500/20 text-amber-900 dark:text-amber-300 font-bold text-xs flex items-center gap-1.5 transition border border-amber-500/30 cursor-pointer"
+                        >
+                          <Star size={12} className="fill-amber-500 text-amber-500" />
+                          <span>Avaliar Cliente</span>
+                        </button>
+
+                        <span className="text-[10px] font-bold text-muted-foreground bg-muted px-2.5 py-1.5 rounded-xl border border-border/40 flex items-center gap-1.5">
                           <Lock size={11} className="text-primary" />
                           <span>Contacto Blindado</span>
                         </span>
@@ -410,7 +452,8 @@ function FavoritesPage() {
             <div>
               <p className="font-bold text-foreground">Contacto Blindado KONEKTA</p>
               <p className="text-muted-foreground text-[11px] leading-relaxed mt-0.5">
-                Por proteção de custódia e garantia de serviço, nenhum número pessoal fica exposto. Todas as propostas e conversas são asseguradas internamente.
+                Por proteção de custódia e garantia de serviço, nenhum número pessoal fica exposto.
+                Todas as propostas e conversas são asseguradas internamente.
               </p>
             </div>
           </div>
@@ -460,6 +503,22 @@ function FavoritesPage() {
           </div>
         </form>
       </BottomSheet>
+
+      {/* MODAL DE AVALIAÇÃO SIMÉTRICA DO CLIENTE PELO PRESTADOR */}
+      {evaluatingClient && (
+        <ReviewModal
+          open={!!evaluatingClient}
+          onClose={() => setEvaluatingClient(null)}
+          targetType="cliente"
+          clientName={evaluatingClient.name}
+          clientAvatar={evaluatingClient.avatar}
+          orderId=""
+          providerId={user?.id || "pro_1"}
+          serviceName="Serviço Habitual"
+          initialRating={Math.round(evaluatingClient.rating || 5)}
+          initialComment=""
+        />
+      )}
     </AppShell>
   );
 }

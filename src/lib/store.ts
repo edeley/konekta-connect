@@ -56,7 +56,6 @@ export const defaultFavoriteClients: FavoriteClient[] = [
   {
     id: "fc-1",
     name: "Dra. Maria Sacramento",
-    phone: "+239 991 2345",
     district: "Água Grande (Praça)",
     totalServices: 4,
     totalSpentSTN: 2450,
@@ -67,7 +66,6 @@ export const defaultFavoriteClients: FavoriteClient[] = [
   {
     id: "fc-2",
     name: "Eng. Carlos Espírito Santo",
-    phone: "+239 992 6789",
     district: "Mé-Zóchi (Trindade)",
     totalServices: 3,
     totalSpentSTN: 3800,
@@ -78,7 +76,6 @@ export const defaultFavoriteClients: FavoriteClient[] = [
   {
     id: "fc-3",
     name: "Helena de Oliveira",
-    phone: "+239 994 1122",
     district: "Lobata (Guadalupe)",
     totalServices: 2,
     totalSpentSTN: 1200,
@@ -141,6 +138,57 @@ export type ProviderProfile = {
   submittedAt: number;
 };
 
+export const defaultProviderPortfolio: PortfolioItem[] = [
+  {
+    id: "port-1",
+    title: "Substituição de Quadro Elétrico Geral",
+    image:
+      "https://images.unsplash.com/photo-1621905251189-08b45d6a269e?w=800&auto=format&fit=crop&q=80",
+    category: "Eletricidade",
+    description:
+      "Reestruturação completa de disjuntores e ligação de segurança à terra em moradia no Bairro do Hospital.",
+    date: "Ago 2026",
+  },
+  {
+    id: "port-2",
+    title: "Instalação de Iluminação LED Embutida",
+    image:
+      "https://images.unsplash.com/photo-1565814636199-ae8133055c1c?w=800&auto=format&fit=crop&q=80",
+    category: "Iluminação",
+    description:
+      "Montagem de calhas técnicas e spots LED de baixo consumo para escritório em Água Grande.",
+    date: "Jul 2026",
+  },
+  {
+    id: "port-3",
+    title: "Manutenção e Limpeza de Ar Condicionado Split",
+    image:
+      "https://images.unsplash.com/photo-1581092160607-ee22621dd758?w=800&auto=format&fit=crop&q=80",
+    category: "Climatização",
+    description:
+      "Higienização profunda de filtros e recarga de gás refrigerante em clínica médica.",
+    date: "Jun 2026",
+  },
+];
+
+export const defaultProviderProfile: ProviderProfile = {
+  category: "Eletricidade & Climatização",
+  yearsExperience: 7,
+  bio: "Técnico certificado em São Tomé e Príncipe. Especialista em instalações residenciais e comerciais, reparação de avarias e montagem de quadros elétricos com garantia.",
+  services: [
+    { name: "Diagnóstico e Reparação Elétrica", price: 350 },
+    { name: "Instalação de Quadro Geral", price: 650 },
+    { name: "Manutenção de Ar Condicionado", price: 450 },
+  ],
+  district: "Água Grande",
+  city: "São Tomé",
+  radiusKm: 25,
+  status: "aprovado",
+  submittedAt: Date.now() - 30 * 86400000,
+  businessName: "EletroSoluções STP",
+  portfolio: defaultProviderPortfolio,
+};
+
 export type ProviderReview = {
   id: string;
   orderId?: string;
@@ -160,6 +208,57 @@ export type ProviderReview = {
     at: number;
   };
 };
+
+/** Avaliação recíproca feita pelo prestador ao cliente */
+export type ClientReview = {
+  id: string;
+  orderId?: string;
+  clientName: string;
+  clientAvatar?: string;
+  clientPhone?: string;
+  providerId: string;
+  providerName: string;
+  rating: number; // 1 a 5
+  comment: string;
+  tags?: string[];
+  recommended?: boolean;
+  serviceName?: string;
+  district?: string;
+  createdAt: number;
+};
+
+export const seedClientReviews: ClientReview[] = [
+  {
+    id: "crev-1",
+    orderId: "KNK-1021",
+    clientName: "Dra. Maria Sacramento",
+    providerId: "edmilson-varela",
+    providerName: "Edmilson Varela",
+    rating: 5,
+    comment:
+      "Cliente excelente! Comunicação exemplar, espaço pronto para trabalhar e pagamento imediato na conclusão.",
+    tags: ["Pagamento Pontual", "Excelente Comunicação", "Muito Educado", "Recomendo a Colegas"],
+    recommended: true,
+    serviceName: "Reparação de Curto-Circuito",
+    district: "Água Grande",
+    createdAt: Date.now() - 86400_000 * 2,
+  },
+  {
+    id: "crev-2",
+    orderId: "KNK-1018",
+    clientName: "Eng. Carlos Espírito Santo",
+    providerId: "edmilson-varela",
+    providerName: "Edmilson Varela",
+    rating: 5,
+    comment:
+      "Trabalho muito agradável, especificou com clareza o que precisava e facilitou o acesso técnico.",
+    tags: ["Clareza nos Detalhes", "Instalações Prontas", "Pagamento Pontual"],
+    recommended: true,
+    serviceName: "Instalação de Quadro Elétrico",
+    district: "Mé-Zóchi",
+    createdAt: Date.now() - 86400_000 * 5,
+  },
+];
 
 export const seedReviews: ProviderReview[] = [
   {
@@ -577,6 +676,7 @@ type State = {
   providerProfile: ProviderProfile | null;
   orders: Order[];
   reviews: ProviderReview[];
+  clientReviews: ClientReview[];
   requests: ServiceRequest[];
   technicalVisits: TechnicalVisit[];
   moderationDisputes: ModerationDispute[];
@@ -835,7 +935,7 @@ export const seedPayoutRequests: PayoutRequest[] = [
 const defaultState: State = {
   user: null,
   profiles: { cliente: true, prestador: false },
-  providerProfile: null,
+  providerProfile: defaultProviderProfile,
   providerBalance: 1250,
   providerPendingBalance: 450,
   providerWithdrawnBalance: 8400,
@@ -859,6 +959,7 @@ const defaultState: State = {
   ],
   orders: seedOrders,
   reviews: seedReviews,
+  clientReviews: seedClientReviews,
   requests: seedRequests,
   technicalVisits: seedTechnicalVisits,
   moderationDisputes: seedModerationDisputes,
@@ -1010,7 +1111,21 @@ function load(): State {
       config: { ...defaultState.config, ...(parsed.config ?? {}) },
       technicalVisits: parsed.technicalVisits ?? defaultState.technicalVisits,
       moderationDisputes: parsed.moderationDisputes ?? defaultState.moderationDisputes,
-      favoriteClients: parsed.favoriteClients ?? defaultState.favoriteClients,
+      clientReviews: parsed.clientReviews ?? defaultState.clientReviews,
+      providerProfile: parsed.providerProfile
+        ? {
+            ...defaultProviderProfile,
+            ...parsed.providerProfile,
+            portfolio:
+              parsed.providerProfile.portfolio && parsed.providerProfile.portfolio.length > 0
+                ? parsed.providerProfile.portfolio
+                : defaultProviderPortfolio,
+          }
+        : defaultProviderProfile,
+      favoriteClients: (parsed.favoriteClients ?? defaultState.favoriteClients).map((fc) => ({
+        ...fc,
+        phone: undefined,
+      })),
     };
   } catch {
     return defaultState;
@@ -1942,6 +2057,97 @@ export const store = {
     return newReview;
   },
 
+  /** O prestador avalia o cliente da mesma forma recíproca que o cliente avalia o prestador */
+  addClientReview(input: {
+    clientName: string;
+    orderId?: string;
+    clientAvatar?: string;
+    clientPhone?: string;
+    providerId?: string;
+    providerName?: string;
+    rating: number;
+    comment: string;
+    tags?: string[];
+    recommended?: boolean;
+    serviceName?: string;
+    district?: string;
+  }) {
+    const reviewId = `crev_${Date.now()}_${Math.floor(Math.random() * 1000)}`;
+    const providerId =
+      input.providerId ||
+      (state.user?.role === "prestador" ? state.user?.id : undefined) ||
+      state.providerProfile?.id ||
+      "edmilson-varela";
+    const providerName =
+      input.providerName ||
+      state.providerProfile?.businessName ||
+      state.user?.name ||
+      "Edmilson Varela";
+
+    const newReview: ClientReview = {
+      id: reviewId,
+      orderId: input.orderId,
+      clientName: input.clientName.trim(),
+      clientAvatar: input.clientAvatar,
+      clientPhone: input.clientPhone,
+      providerId,
+      providerName,
+      rating: Math.max(1, Math.min(5, input.rating)),
+      comment: input.comment.trim(),
+      tags: input.tags ?? [],
+      recommended: input.recommended ?? true,
+      serviceName: input.serviceName,
+      district: input.district || state.user?.district,
+      createdAt: Date.now(),
+    };
+
+    // Atualiza o pedido se vinculado
+    if (input.orderId) {
+      const order = state.orders.find((o) => o.id === input.orderId);
+      if (order) {
+        store.updateOrder(input.orderId, {
+          clientRating: {
+            stars: newReview.rating,
+            comment: newReview.comment,
+            at: Date.now(),
+            tags: newReview.tags,
+            recommended: newReview.recommended,
+          },
+        });
+      }
+    }
+
+    // Se o cliente estiver na lista de favoritos, atualiza a sua classificação
+    const favIdx = state.favoriteClients.findIndex(
+      (c) =>
+        c.name.toLowerCase() === input.clientName.toLowerCase() ||
+        (input.clientPhone && c.phone === input.clientPhone),
+    );
+    if (favIdx >= 0) {
+      const copy = [...state.favoriteClients];
+      copy[favIdx] = {
+        ...copy[favIdx],
+        rating: newReview.rating,
+      };
+      set({ favoriteClients: copy });
+    }
+
+    set({
+      clientReviews: [newReview, ...(state.clientReviews || [])],
+    });
+
+    realtimeAudio.play("coin");
+
+    notify({
+      title: "Avaliação do Cliente Registada!",
+      body: `Avaliou o cliente ${newReview.clientName} com ${newReview.rating} estrelas.`,
+      tone: "success",
+      link: "/favoritos",
+    });
+
+    return newReview;
+  },
+
   replyToReview(reviewId: string, replyText: string) {
     const trimmed = replyText.trim();
     if (!trimmed) return;
@@ -2362,7 +2568,7 @@ export const store = {
           {
             id: `m_${Date.now() + 2}`,
             from: "them",
-            text: "Pagamento retido pela plataforma. Morada e telefone desbloqueados — contactos externos já são permitidos.",
+            text: "Pagamento retido com custódia segura KONEKTA. O serviço está coberto por garantia total. A comunicação e acompanhamento mantêm-se protegidos 100% dentro da aplicação KONEKTA.",
             at: Date.now(),
             status: "read",
             kind: "system",
@@ -2453,6 +2659,14 @@ export const store = {
   },
 
   toggleFavorite(providerId: string) {
+    if (state.user?.role === "prestador") {
+      notify({
+        title: "Ação reservada a clientes",
+        body: "Como prestador de serviços, apenas pode escolher e gerir Clientes Favoritos.",
+        tone: "warning",
+      });
+      return;
+    }
     const has = state.favorites.includes(providerId);
     set({
       favorites: has
@@ -2462,12 +2676,31 @@ export const store = {
   },
 
   toggleFavoriteClient(client: FavoriteClient) {
-    const exists = state.favoriteClients.some((c) => c.id === client.id);
-    set({
-      favoriteClients: exists
-        ? state.favoriteClients.filter((c) => c.id !== client.id)
-        : [...state.favoriteClients, client],
-    });
+    const exists = state.favoriteClients.some(
+      (c) => c.id === client.id || c.name.toLowerCase() === client.name.toLowerCase(),
+    );
+    if (exists) {
+      set({
+        favoriteClients: state.favoriteClients.filter(
+          (c) => c.id !== client.id && c.name.toLowerCase() !== client.name.toLowerCase(),
+        ),
+      });
+      notify({
+        title: "Cliente removido dos favoritos",
+        body: `${client.name} foi retirado da sua lista de clientes preferenciais.`,
+        tone: "info",
+      });
+    } else {
+      set({
+        favoriteClients: [...state.favoriteClients, client],
+      });
+      notify({
+        title: "Cliente adicionado aos favoritos!",
+        body: `${client.name} foi adicionado à sua lista de clientes de confiança.`,
+        tone: "success",
+        link: "/favoritos",
+      });
+    }
   },
 
   removeFavoriteClient(clientId: string) {

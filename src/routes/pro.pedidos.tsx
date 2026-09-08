@@ -1,12 +1,21 @@
 import { useState, useEffect } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { MessageCircle, CheckCircle2, ChevronRight, Lock, KeyRound } from "lucide-react";
+import {
+  MessageCircle,
+  CheckCircle2,
+  ChevronRight,
+  Lock,
+  KeyRound,
+  Star,
+  Heart,
+} from "lucide-react";
 import { toast } from "sonner";
 import { AppShell } from "@/components/AppShell";
 import { Section, KCard, StatusPill, EmptyState } from "@/components/konekta/kit";
-import { store, useStore } from "@/lib/store";
+import { store, useStore, type Order } from "@/lib/store";
 import { formatDb } from "@/lib/catalog";
 import { orderStateMeta } from "@/lib/states";
+import { ReviewModal } from "@/components/konekta/ReviewModal";
 
 export const Route = createFileRoute("/pro/pedidos")({
   head: () => ({
@@ -33,7 +42,9 @@ const tabs = [
 
 function ProOrders() {
   const orders = useStore((s) => s.orders);
+  const favoriteClients = useStore((s) => s.favoriteClients);
   const profile = useStore((s) => s.providerProfile);
+  const [reviewingOrder, setReviewingOrder] = useState<Order | null>(null);
   const [tab, setTab] = useState<(typeof tabs)[number]["key"]>(() => {
     if (typeof window !== "undefined") {
       const params = new URLSearchParams(window.location.search);
@@ -152,6 +163,61 @@ function ProOrders() {
                       </span>
                     )}
 
+                    {/* Ações para Pedido Concluído: Avaliar Cliente & Guardar nos Favoritos */}
+                    {isFinished && (
+                      <>
+                        <button
+                          type="button"
+                          onClick={() => setReviewingOrder(o)}
+                          className="h-10 px-3.5 rounded-full bg-amber-500/10 hover:bg-amber-500/20 text-amber-900 dark:text-amber-300 text-xs font-bold flex items-center gap-1.5 transition border border-amber-500/30 cursor-pointer"
+                        >
+                          <Star size={14} className="fill-amber-500 text-amber-500" />
+                          <span>{o.clientRating ? "Editar Avaliação" : "Avaliar Cliente"}</span>
+                        </button>
+
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const clientName = o.clientName || "Cliente KONEKTA";
+                            const isFav = favoriteClients.some((fc) => fc.name === clientName);
+                            store.toggleFavoriteClient({
+                              id: `fc_${o.id}`,
+                              name: clientName,
+                              district: o.address?.split(",")[0] || "Água Grande",
+                              totalServices: 1,
+                              totalSpentSTN: o.total,
+                              rating: o.clientRating?.stars || 5,
+                              lastHiredDate: "Serviço recente",
+                            });
+                            toast.success(
+                              isFav
+                                ? `${clientName} removido dos Clientes Favoritos`
+                                : `${clientName} guardado nos Clientes Favoritos!`,
+                            );
+                          }}
+                          title={
+                            favoriteClients.some(
+                              (fc) => fc.name === (o.clientName || "Cliente KONEKTA"),
+                            )
+                              ? "Cliente nos Favoritos"
+                              : "Adicionar aos Clientes Favoritos"
+                          }
+                          className="size-10 rounded-full bg-muted hover:bg-muted/80 flex items-center justify-center transition border border-border cursor-pointer"
+                        >
+                          <Heart
+                            size={15}
+                            className={
+                              favoriteClients.some(
+                                (fc) => fc.name === (o.clientName || "Cliente KONEKTA"),
+                              )
+                                ? "fill-destructive text-destructive"
+                                : "text-muted-foreground"
+                            }
+                          />
+                        </button>
+                      </>
+                    )}
+
                     {!isFinished &&
                       (o.status === "aguardando-codigo" ? (
                         <Link
@@ -198,6 +264,23 @@ function ProOrders() {
           })
         )}
       </Section>
+
+      {/* MODAL DE AVALIAÇÃO DO CLIENTE PELO PRESTADOR */}
+      {reviewingOrder && (
+        <ReviewModal
+          open={!!reviewingOrder}
+          onClose={() => setReviewingOrder(null)}
+          targetType="cliente"
+          clientName={reviewingOrder.clientName || "Cliente KONEKTA"}
+          clientAvatar={reviewingOrder.clientAvatar}
+          clientPhone={reviewingOrder.clientPhone}
+          orderId={reviewingOrder.id}
+          providerId={reviewingOrder.providerId}
+          serviceName={reviewingOrder.service}
+          initialRating={reviewingOrder.clientRating?.stars || 5}
+          initialComment={reviewingOrder.clientRating?.comment || ""}
+        />
+      )}
     </AppShell>
   );
 }

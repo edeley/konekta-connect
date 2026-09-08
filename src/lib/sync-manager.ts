@@ -283,9 +283,7 @@ export function cleanPhoneNumber(rawPhone: string): string {
 export function openWhatsApp(options: { phone?: string; message: string }) {
   // Apenas o número oficial da KONEKTA é permitido para suporte/mediação
   const officialPhone = "2399944747";
-  const encodedText = encodeURIComponent(
-    `[KONEKTA Central STP] ${options.message.trim()}`,
-  );
+  const encodedText = encodeURIComponent(`[KONEKTA Central STP] ${options.message.trim()}`);
   const waUrl = `https://wa.me/${officialPhone}?text=${encodedText}`;
 
   triggerDeviceVibration([40, 40]);

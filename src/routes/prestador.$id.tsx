@@ -24,7 +24,6 @@ import {
   Zap,
   Award,
   Lock,
-  Phone,
   Compass,
   MapPin,
   Layers,

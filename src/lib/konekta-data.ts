@@ -559,6 +559,14 @@ export type Order = {
   /** Código de validação OTP de 4 dígitos para o cliente fornecer ao prestador na conclusão */
   completionCode?: string;
   rating?: { stars: number; comment?: string; at: number; tags?: string[]; recommended?: boolean };
+  /** Avaliação mútua efetuada pelo prestador ao cliente após conclusão do serviço */
+  clientRating?: {
+    stars: number;
+    comment?: string;
+    at: number;
+    tags?: string[];
+    recommended?: boolean;
+  };
   clientName?: string;
   clientAvatar?: string;
   photos?: string[];

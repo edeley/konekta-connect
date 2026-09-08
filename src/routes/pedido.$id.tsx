@@ -7,12 +7,12 @@ import {
   Image as ImageIcon,
   X,
   Calendar,
-  Phone,
   Navigation,
   ShieldCheck,
   CheckCircle2,
   AlertTriangle,
   Star,
+  Heart,
   FileText,
   Lock,
   ArrowLeft,
@@ -60,6 +60,7 @@ import { EscrowCheckoutCard } from "@/components/konekta/EscrowCheckoutCard";
 import { DisputeDrawer } from "@/components/konekta/DisputeDrawer";
 import { CancelServiceModal } from "@/components/konekta/CancelServiceModal";
 import { ReviewAndPostServiceSheet } from "@/components/konekta/ReviewAndPostServiceSheet";
+import { ReviewModal } from "@/components/konekta/ReviewModal";
 import { ClientGpsRadarCard } from "@/components/konekta/ClientGpsRadarCard";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
@@ -124,6 +125,7 @@ function RequestOrOrderDetail() {
   const [chosenProposal, setChosenProposal] = useState<Proposal | null>(null);
   const [viewingPhoto, setViewingPhoto] = useState<string | null>(null);
   const [isReviewOpen, setIsReviewOpen] = useState(false);
+  const [isClientReviewOpen, setIsClientReviewOpen] = useState(false);
   const [isReceiptOpen, setIsReceiptOpen] = useState(false);
   const [isDisputeOpen, setIsDisputeOpen] = useState(false);
   const [isCancelOpen, setIsCancelOpen] = useState(false);
@@ -664,16 +666,90 @@ function RequestOrOrderDetail() {
               </div>
             )}
 
-            {/* Botão de Avaliação se Concluído */}
+            {/* Botão de Avaliação se Concluído (Cliente avalia Prestador) */}
             {!isProvider && (order.status === "concluido" || order.status === "avaliado") && (
               <button
                 type="button"
                 onClick={() => setIsReviewOpen(true)}
-                className="w-full h-11 rounded-2xl bg-amber-500/10 hover:bg-amber-500/20 text-amber-900 dark:text-amber-300 font-bold text-xs flex items-center justify-center gap-1.5 border border-amber-500/30 transition"
+                className="w-full h-11 rounded-2xl bg-amber-500/10 hover:bg-amber-500/20 text-amber-900 dark:text-amber-300 font-bold text-xs flex items-center justify-center gap-1.5 border border-amber-500/30 transition cursor-pointer"
               >
                 <Star size={15} className="fill-amber-500 text-amber-500" />
                 {order.rating ? "Editar Avaliação do Serviço" : "Avaliar Profissional"}
               </button>
+            )}
+
+            {/* Avaliação Simétrica: Prestador avalia Cliente se Concluído */}
+            {isProvider && (order.status === "concluido" || order.status === "avaliado") && (
+              <div className="space-y-2 pt-1">
+                <button
+                  type="button"
+                  onClick={() => setIsClientReviewOpen(true)}
+                  className="w-full h-11 rounded-2xl bg-amber-500/10 hover:bg-amber-500/20 text-amber-900 dark:text-amber-300 font-bold text-xs flex items-center justify-center gap-1.5 border border-amber-500/30 transition cursor-pointer"
+                >
+                  <Star size={15} className="fill-amber-500 text-amber-500" />
+                  {order.clientRating ? "Editar Avaliação do Cliente" : "Avaliar Cliente"}
+                </button>
+
+                {order.clientRating && (
+                  <div className="p-3 rounded-2xl bg-muted/50 border border-border/80 text-xs space-y-1">
+                    <div className="flex items-center justify-between">
+                      <span className="font-bold text-foreground">
+                        A sua avaliação deste cliente:
+                      </span>
+                      <span className="font-bold text-amber-500 flex items-center gap-1">
+                        <Star size={13} className="fill-amber-500" /> {order.clientRating.stars}.0 ★
+                      </span>
+                    </div>
+                    {order.clientRating.comment && (
+                      <p className="text-muted-foreground italic text-[11px]">
+                        "{order.clientRating.comment}"
+                      </p>
+                    )}
+                  </div>
+                )}
+
+                {/* Ação rápida: Guardar cliente nos favoritos */}
+                <button
+                  type="button"
+                  onClick={() => {
+                    const clientName = order.clientName || "Cliente KONEKTA";
+                    const isAlreadyFav = store.favoriteClients.some((fc) => fc.name === clientName);
+                    store.toggleFavoriteClient({
+                      id: `fc_${order.id}`,
+                      name: clientName,
+                      district: order.address?.split(",")[0] || "Água Grande",
+                      totalServices: 1,
+                      totalSpentSTN: order.total,
+                      rating: order.clientRating?.stars || 5,
+                      lastHiredDate: "Serviço recente",
+                    });
+                    toast.success(
+                      isAlreadyFav
+                        ? `${clientName} removido dos Clientes Favoritos`
+                        : `${clientName} guardado nos seus Clientes Favoritos!`,
+                    );
+                  }}
+                  className="w-full h-10 rounded-2xl bg-muted/60 hover:bg-muted text-foreground font-bold text-xs flex items-center justify-center gap-1.5 transition border border-border/80 cursor-pointer"
+                >
+                  <Heart
+                    size={14}
+                    className={
+                      store.favoriteClients.some(
+                        (fc) => fc.name === (order.clientName || "Cliente KONEKTA"),
+                      )
+                        ? "fill-destructive text-destructive"
+                        : "text-muted-foreground"
+                    }
+                  />
+                  <span>
+                    {store.favoriteClients.some(
+                      (fc) => fc.name === (order.clientName || "Cliente KONEKTA"),
+                    )
+                      ? "Cliente nos Seus Favoritos"
+                      : "Adicionar aos Clientes Favoritos"}
+                  </span>
+                </button>
+              </div>
             )}
 
             {/* Botão de Disputa / Cancelamento */}
@@ -712,6 +788,23 @@ function RequestOrOrderDetail() {
             providerName={provider.name}
             serviceTitle={order.service}
             totalAmount={order.total}
+          />
+        )}
+
+        {/* MODAL DE AVALIAÇÃO SIMÉTRICA DO CLIENTE PELO PRESTADOR */}
+        {isClientReviewOpen && (
+          <ReviewModal
+            open={isClientReviewOpen}
+            onClose={() => setIsClientReviewOpen(false)}
+            targetType="cliente"
+            clientName={order.clientName || "Cliente KONEKTA"}
+            clientAvatar={order.clientAvatar}
+            clientPhone={order.clientPhone}
+            orderId={order.id}
+            providerId={order.providerId}
+            serviceName={order.service}
+            initialRating={order.clientRating?.stars || 5}
+            initialComment={order.clientRating?.comment || ""}
           />
         )}
 

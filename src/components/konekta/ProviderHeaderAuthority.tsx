@@ -254,7 +254,8 @@ export function ProviderHeaderAuthority({
             <div className="flex items-center gap-2 text-muted-foreground">
               <Lock size={13} className="text-primary shrink-0" />
               <span className="text-[11px]">
-                Contacto Blindado: <strong className="text-foreground">Canal Oficial KONEKTA</strong>
+                Contacto Blindado:{" "}
+                <strong className="text-foreground">Canal Oficial KONEKTA</strong>
               </span>
             </div>
             <span className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-md">

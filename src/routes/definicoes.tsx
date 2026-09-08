@@ -7,6 +7,7 @@ import {
   Mail,
   Lock,
   Bell,
+  Volume2,
   Moon,
   Sun,
   ShieldCheck,
@@ -24,6 +25,7 @@ import {
 import { AppShell } from "@/components/AppShell";
 import { Section, KCard, BottomSheet } from "@/components/konekta/kit";
 import { ProfileSwitcher } from "@/components/konekta/ProfileSwitcher";
+import { AlarmSyncModal } from "@/components/konekta/AlarmSyncModal";
 import { store, useStore } from "@/lib/store";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
@@ -53,6 +55,7 @@ function SettingsPage() {
   const [logoutDialog, setLogoutDialog] = useState(false);
   const [securityModal, setSecurityModal] = useState(false);
   const [showEmailPromptModal, setShowEmailPromptModal] = useState(false);
+  const [alarmSyncModalOpen, setAlarmSyncModalOpen] = useState(false);
   const [inputEmail, setInputEmail] = useState("");
   const [savingEmail, setSavingEmail] = useState(false);
 
@@ -384,6 +387,29 @@ function SettingsPage() {
                 />
                 <div className="peer h-6 w-11 rounded-full bg-muted after:absolute after:left-[2px] after:top-[2px] after:h-5 after:w-5 after:rounded-full after:bg-white after:transition-all after:content-[''] peer-checked:bg-primary peer-checked:after:translate-x-full" />
               </label>
+            </div>
+
+            <div
+              onClick={() => setAlarmSyncModalOpen(true)}
+              className="flex items-center justify-between border-t border-border/60 pt-3 cursor-pointer group hover:opacity-90 transition-opacity"
+            >
+              <div className="flex items-center gap-3">
+                <span className="grid size-9 place-items-center rounded-2xl bg-emerald-50 text-emerald-600 dark:bg-emerald-950/40 dark:text-emerald-400">
+                  <Volume2 size={18} />
+                </span>
+                <div>
+                  <p className="text-sm font-semibold text-foreground group-hover:text-primary transition-colors">
+                    Toques de Alarme & Sincronização Telemóvel
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    Escolher som da notificação, alarme e sincronizar com o relógio do telemóvel
+                  </p>
+                </div>
+              </div>
+              <ChevronRight
+                size={18}
+                className="text-muted-foreground group-hover:text-primary transition-colors"
+              />
             </div>
 
             <Link
@@ -780,6 +806,9 @@ function SettingsPage() {
           </div>
         </form>
       </BottomSheet>
+
+      {/* MODAL DE CONFIGURAÇÃO DE TOQUES E ALARME TELEMÓVEL */}
+      <AlarmSyncModal open={alarmSyncModalOpen} onClose={() => setAlarmSyncModalOpen(false)} />
     </AppShell>
   );
 }

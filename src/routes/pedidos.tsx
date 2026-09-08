@@ -9,7 +9,6 @@ import {
   AlertTriangle,
   FileText,
   Clock,
-  Phone,
   X,
   Send,
   MessageSquare,
