@@ -713,7 +713,7 @@ function RequestOrOrderDetail() {
                   type="button"
                   onClick={() => {
                     const clientName = order.clientName || "Cliente KONEKTA";
-                    const isAlreadyFav = store.favoriteClients.some((fc) => fc.name === clientName);
+                    const isAlreadyFav = favoriteClientsList.some((fc) => fc.name === clientName);
                     store.toggleFavoriteClient({
                       id: `fc_${order.id}`,
                       name: clientName,
@@ -734,7 +734,7 @@ function RequestOrOrderDetail() {
                   <Heart
                     size={14}
                     className={
-                      store.favoriteClients.some(
+                      favoriteClientsList.some(
                         (fc) => fc.name === (order.clientName || "Cliente KONEKTA"),
                       )
                         ? "fill-destructive text-destructive"
@@ -742,7 +742,7 @@ function RequestOrOrderDetail() {
                     }
                   />
                   <span>
-                    {store.favoriteClients.some(
+                    {favoriteClientsList.some(
                       (fc) => fc.name === (order.clientName || "Cliente KONEKTA"),
                     )
                       ? "Cliente nos Seus Favoritos"
