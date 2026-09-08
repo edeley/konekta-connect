@@ -4646,4 +4646,252 @@ export const store = {
       commissionAmount: commAmount,
     };
   },
+
+  /* ----------------- Pedidos Publicados: Admin, Prestador e Cobrança ----------------- */
+
+  adminApproveRequest(requestId: string): { ok: boolean; message: string } {
+    const req = state.requests.find((r) => r.id === requestId);
+    if (!req) return { ok: false, message: "Pedido publicado não encontrado." };
+    set({
+      requests: state.requests.map((r) =>
+        r.id === requestId
+          ? { ...r, adminStatus: "aprovado" as const, adminReviewedAt: Date.now() }
+          : r,
+      ),
+    });
+    notify({
+      title: "Pedido aprovado pela administração",
+      body: `${req.id} — ${req.title} já está visível para os prestadores de ${req.categoryName}.`,
+      tone: "success",
+      link: "/pedidos",
+    });
+    return { ok: true, message: `Pedido ${req.id} aprovado e publicado aos prestadores.` };
+  },
+
+  adminRejectRequest(requestId: string, reason: string): { ok: boolean; message: string } {
+    const req = state.requests.find((r) => r.id === requestId);
+    if (!req) return { ok: false, message: "Pedido publicado não encontrado." };
+    set({
+      requests: state.requests.map((r) =>
+        r.id === requestId
+          ? {
+              ...r,
+              adminStatus: "rejeitado" as const,
+              adminReason: reason || "Pedido não cumpre as regras da KONEKTA.",
+              adminReviewedAt: Date.now(),
+              status: "fechado" as const,
+            }
+          : r,
+      ),
+    });
+    notify({
+      title: "Pedido recusado pela administração",
+      body: `${req.id} — ${reason || "Pedido não cumpre as regras da KONEKTA."}`,
+      tone: "error",
+      link: "/pedidos",
+    });
+    return { ok: true, message: `Pedido ${req.id} recusado. O cliente foi notificado.` };
+  },
+
+  providerDeclineRequest(requestId: string): { ok: boolean; message: string } {
+    const me = state.user?.id ?? "me";
+    const req = state.requests.find((r) => r.id === requestId);
+    if (!req) return { ok: false, message: "Pedido não encontrado." };
+    set({
+      requests: state.requests.map((r) =>
+        r.id === requestId ? { ...r, declinedBy: [...(r.declinedBy ?? []), me] } : r,
+      ),
+    });
+    return { ok: true, message: `Recusou o pedido ${req.id}. Deixa de aparecer na sua lista.` };
+  },
+
+  providerAcceptRequest(
+    requestId: string,
+    input?: { price?: number; scheduledFor?: string },
+  ): { ok: boolean; message: string; orderId?: string } {
+    const req = state.requests.find((r) => r.id === requestId);
+    if (!req) return { ok: false, message: "Pedido não encontrado." };
+    if ((req.adminStatus ?? "aprovado") !== "aprovado") {
+      return { ok: false, message: "Este pedido ainda aguarda validação da administração." };
+    }
+    if (req.status !== "aberto") {
+      return { ok: false, message: "Este pedido já não está disponível." };
+    }
+    const providerId = state.user?.id ?? "me";
+    const providerName = state.user?.name ?? "Prestador KONEKTA";
+    const price = input?.price ?? req.budget ?? 0;
+    const scheduledFor = input?.scheduledFor ?? req.scheduleSummary ?? "A combinar";
+
+    const order = store.createOrder({
+      providerId,
+      service: req.title,
+      total: price,
+      scheduledFor,
+      address: req.address,
+      district: req.district,
+      referencePoint: req.reference,
+      notes: req.description,
+      paymentMethod: "carteira",
+      latitude: req.latitude,
+      longitude: req.longitude,
+      accuracy: req.accuracy,
+      mapsUrl: req.mapsUrl,
+      directionsUrl: req.directionsUrl,
+    });
+
+    const thread = state.messages[providerId] ?? [];
+    set({
+      requests: state.requests.map((r) =>
+        r.id === requestId
+          ? { ...r, status: "adjudicado" as const, acceptedProviderId: providerId }
+          : r,
+      ),
+      orders: state.orders.map((o) =>
+        o.id === order.id ? { ...o, status: "aceite" as OrderStatus, requestId: req.id } : o,
+      ),
+      messages: {
+        ...state.messages,
+        [providerId]: [
+          ...thread,
+          {
+            id: `m_accept_${Date.now()}`,
+            from: "them",
+            text: `${providerName} aceitou o seu pedido "${req.title}" por ${price} Db. Vamos combinar o horário por aqui.`,
+            at: Date.now(),
+            kind: "system",
+          },
+        ],
+      },
+    });
+
+    notify({
+      title: "Pedido aceite",
+      body: `Aceitou "${req.title}". O chat com o cliente está aberto.`,
+      tone: "success",
+      link: `/chat/${providerId}`,
+    });
+
+    return { ok: true, message: `Pedido aceite! Serviço ${order.id} criado.`, orderId: order.id };
+  },
+
+  providerScheduleOrder(
+    orderId: string,
+    scheduledFor: string,
+  ): { ok: boolean; message: string } {
+    const order = state.orders.find((o) => o.id === orderId);
+    if (!order) return { ok: false, message: "Serviço não encontrado." };
+    if (!scheduledFor.trim()) return { ok: false, message: "Defina uma data e hora." };
+    set({
+      orders: state.orders.map((o) => (o.id === orderId ? { ...o, scheduledFor } : o)),
+    });
+    const thread = state.messages[order.providerId] ?? [];
+    set({
+      messages: {
+        ...state.messages,
+        [order.providerId]: [
+          ...thread,
+          {
+            id: `m_sched_${Date.now()}`,
+            from: "them",
+            text: `Horário confirmado para ${scheduledFor}.`,
+            at: Date.now(),
+            kind: "system",
+          },
+        ],
+      },
+    });
+    notify({
+      title: "Horário definido",
+      body: `${order.service} agendado para ${scheduledFor}.`,
+      tone: "info",
+      link: `/pedido/${orderId}`,
+    });
+    return { ok: true, message: `Horário definido: ${scheduledFor}.` };
+  },
+
+  providerConfirmPresence(orderId: string): { ok: boolean; message: string } {
+    const order = state.orders.find((o) => o.id === orderId);
+    if (!order) return { ok: false, message: "Serviço não encontrado." };
+    set({
+      orders: state.orders.map((o) =>
+        o.id === orderId
+          ? {
+              ...o,
+              status: "em-execucao" as OrderStatus,
+              presenceConfirmedAt: Date.now(),
+              startedAt: o.startedAt ?? Date.now(),
+            }
+          : o,
+      ),
+    });
+    notify({
+      title: "Presença confirmada",
+      body: `Chegou ao local do serviço ${order.id}. Boa execução!`,
+      tone: "success",
+      link: `/pedido/${orderId}`,
+    });
+    return { ok: true, message: "Presença confirmada no local do cliente." };
+  },
+
+  providerChargeOrder(input: {
+    orderId: string;
+    amount: number;
+    proofImage?: string;
+    proofFileName?: string;
+    note?: string;
+  }): { ok: boolean; message: string } {
+    const order = state.orders.find((o) => o.id === input.orderId);
+    if (!order) return { ok: false, message: "Serviço não encontrado." };
+    if (!input.amount || input.amount <= 0) {
+      return { ok: false, message: "Insira o valor cobrado ao cliente." };
+    }
+    if (!input.proofImage) {
+      return { ok: false, message: "Anexe o comprovativo ou recibo da cobrança." };
+    }
+    const thread = state.messages[order.providerId] ?? [];
+    set({
+      orders: state.orders.map((o) =>
+        o.id === input.orderId
+          ? {
+              ...o,
+              total: input.amount,
+              status: "aguardando-codigo" as OrderStatus,
+              finishedAt: Date.now(),
+              charge: {
+                amount: input.amount,
+                proofImage: input.proofImage,
+                proofFileName: input.proofFileName,
+                note: input.note,
+                at: Date.now(),
+                status: "pendente" as const,
+              },
+            }
+          : o,
+      ),
+      messages: {
+        ...state.messages,
+        [order.providerId]: [
+          ...thread,
+          {
+            id: `m_charge_${Date.now()}`,
+            from: "them",
+            text: `Trabalho concluído. Valor a cobrar: ${input.amount} Db. Comprovativo anexado${input.proofFileName ? ` (${input.proofFileName})` : ""}. Forneça o código de 4 dígitos para finalizar.`,
+            at: Date.now(),
+            kind: "system",
+            photos: input.proofImage.startsWith("data:image") ? [input.proofImage] : undefined,
+          },
+        ],
+      },
+    });
+    notify({
+      title: "Cobrança enviada ao cliente",
+      body: `${input.amount} Db cobrados no serviço ${order.id} com comprovativo anexado.`,
+      tone: "success",
+      link: `/pedido/${input.orderId}`,
+    });
+    return {
+      ok: true,
+      message: `Cobrança de ${input.amount} Db registada com comprovativo. Peça o código ao cliente.`,
+    };
+  },
 };
