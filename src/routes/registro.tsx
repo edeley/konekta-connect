@@ -868,7 +868,7 @@ function RegistoPage() {
             {
               category: selectedServices[0]?.category || "Serviços Gerais",
               subcategories: selectedServices.map((s) => s.name),
-                bio: proDescription.trim(),
+              bio: proDescription.trim(),
               experienceYears: Number(proExperience) || 1,
               yearsExperience: Number(proExperience) || 1,
               services: selectedServices.map((s) => ({
