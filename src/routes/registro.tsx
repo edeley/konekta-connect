@@ -428,7 +428,7 @@ function RegistoPage() {
   };
 
   // Section 2: Perfil profissional
-  const [proName, setProName] = useState(currentProvider?.businessName || currentUser?.name || "");
+  const [proName, setProName] = useState(currentUser?.name || "");
   const [proDescription, setProDescription] = useState(currentProvider?.bio || "");
   const [proExperience, setProExperience] = useState(
     currentProvider?.experienceYears ? String(currentProvider.experienceYears) : "",
@@ -835,7 +835,6 @@ function RegistoPage() {
             district: selectedDistricts[0] || "Água Grande",
           });
           store.updateProviderProfile({
-            businessName: proName.trim() || fullName.trim(),
             bio: proDescription.trim(),
             experienceYears: Number(proExperience) || undefined,
             coverageDistricts: selectedDistricts,
@@ -869,8 +868,7 @@ function RegistoPage() {
             {
               category: selectedServices[0]?.category || "Serviços Gerais",
               subcategories: selectedServices.map((s) => s.name),
-              businessName: proName.trim() || fullName.trim(),
-              bio: proDescription.trim(),
+                bio: proDescription.trim(),
               experienceYears: Number(proExperience) || 1,
               yearsExperience: Number(proExperience) || 1,
               services: selectedServices.map((s) => ({

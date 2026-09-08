@@ -116,8 +116,6 @@ export type PortfolioItem = {
 
 export type ProviderProfile = {
   id?: string;
-  providerType?: "individual";
-  businessName?: string;
   category: string;
   subcategory?: string;
   subcategories?: string[];
@@ -185,7 +183,6 @@ export const defaultProviderProfile: ProviderProfile = {
   radiusKm: 25,
   status: "aprovado",
   submittedAt: Date.now() - 30 * 86400000,
-  businessName: "EletroSoluções STP",
   portfolio: defaultProviderPortfolio,
 };
 
@@ -2080,7 +2077,6 @@ export const store = {
       "edmilson-varela";
     const providerName =
       input.providerName ||
-      state.providerProfile?.businessName ||
       state.user?.name ||
       "Edmilson Varela";
 

@@ -171,7 +171,7 @@ function ProHome() {
   const unreadNotifications = notifications.filter((n) => !n.read).length;
 
   const firstName = user?.name?.split(" ")[0] ?? "Prestador";
-  const displayName = providerProfile?.businessName || user?.name || firstName;
+  const displayName = user?.name || firstName;
 
   // KYC Status
   const kycStatus: KycStatus =

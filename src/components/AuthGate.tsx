@@ -27,7 +27,7 @@ export function AuthGate({ children, roles }: { children: ReactNode; roles?: Use
       navigate({ to: "/", replace: true });
       return;
     }
-    // Regulação KONEKTA STP: Se a rota exige prestador, o prestador tem de estar aprovado pela empresa
+    // Regulação KONEKTA STP: Se a rota exige prestador, o prestador tem de estar aprovado pela KONEKTA
     if (roles?.includes("prestador") && providerProfile?.status !== "aprovado") {
       navigate({ to: "/pending-approval", replace: true });
     }
