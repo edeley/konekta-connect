@@ -2075,10 +2075,7 @@ export const store = {
       (state.user?.role === "prestador" ? state.user?.id : undefined) ||
       state.providerProfile?.id ||
       "edmilson-varela";
-    const providerName =
-      input.providerName ||
-      state.user?.name ||
-      "Edmilson Varela";
+    const providerName = input.providerName || state.user?.name || "Edmilson Varela";
 
     const newReview: ClientReview = {
       id: reviewId,
