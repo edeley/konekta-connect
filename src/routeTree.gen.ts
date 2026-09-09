@@ -48,6 +48,7 @@ import { Route as ProAgendaRouteImport } from './routes/pro.agenda'
 import { Route as ProGanhosRouteImport } from './routes/pro.ganhos'
 import { Route as ProOportunidadesRouteImport } from './routes/pro.oportunidades'
 import { Route as ProPedidosRouteImport } from './routes/pro.pedidos'
+import { Route as ProTrabalhosRouteImport } from './routes/pro.trabalhos'
 import { Route as Char91DotmcpChar93InvokeToolToolRouteImport } from './routes/[.mcp]/invoke-tool/$tool'
 
 const IndexRoute = IndexRouteImport.update({
@@ -247,6 +248,11 @@ const ProPedidosRoute = ProPedidosRouteImport.update({
   path: '/pro/pedidos',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ProTrabalhosRoute = ProTrabalhosRouteImport.update({
+  id: '/pro/trabalhos',
+  path: '/pro/trabalhos',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const Char91DotmcpChar93InvokeToolToolRoute =
   Char91DotmcpChar93InvokeToolToolRouteImport.update({
     id: '/.mcp/invoke-tool/$tool',
@@ -291,6 +297,7 @@ export interface FileRoutesByFullPath {
   '/pro/ganhos': typeof ProGanhosRoute
   '/pro/oportunidades': typeof ProOportunidadesRoute
   '/pro/pedidos': typeof ProPedidosRoute
+  '/pro/trabalhos': typeof ProTrabalhosRoute
   '/categorias/': typeof CategoriasIndexRoute
   '/chat/': typeof ChatIndexRoute
   '/pro/': typeof ProIndexRoute
@@ -333,6 +340,7 @@ export interface FileRoutesByTo {
   '/pro/ganhos': typeof ProGanhosRoute
   '/pro/oportunidades': typeof ProOportunidadesRoute
   '/pro/pedidos': typeof ProPedidosRoute
+  '/pro/trabalhos': typeof ProTrabalhosRoute
   '/categorias': typeof CategoriasIndexRoute
   '/chat': typeof ChatIndexRoute
   '/pro': typeof ProIndexRoute
@@ -376,6 +384,7 @@ export interface FileRoutesById {
   '/pro/ganhos': typeof ProGanhosRoute
   '/pro/oportunidades': typeof ProOportunidadesRoute
   '/pro/pedidos': typeof ProPedidosRoute
+  '/pro/trabalhos': typeof ProTrabalhosRoute
   '/categorias/': typeof CategoriasIndexRoute
   '/chat/': typeof ChatIndexRoute
   '/pro/': typeof ProIndexRoute
@@ -420,6 +429,7 @@ export interface FileRouteTypes {
     | '/pro/ganhos'
     | '/pro/oportunidades'
     | '/pro/pedidos'
+    | '/pro/trabalhos'
     | '/categorias/'
     | '/chat/'
     | '/pro/'
@@ -462,6 +472,7 @@ export interface FileRouteTypes {
     | '/pro/ganhos'
     | '/pro/oportunidades'
     | '/pro/pedidos'
+    | '/pro/trabalhos'
     | '/categorias'
     | '/chat'
     | '/pro'
@@ -504,6 +515,7 @@ export interface FileRouteTypes {
     | '/pro/ganhos'
     | '/pro/oportunidades'
     | '/pro/pedidos'
+    | '/pro/trabalhos'
     | '/categorias/'
     | '/chat/'
     | '/pro/'
@@ -547,6 +559,7 @@ export interface RootRouteChildren {
   ProGanhosRoute: typeof ProGanhosRoute
   ProOportunidadesRoute: typeof ProOportunidadesRoute
   ProPedidosRoute: typeof ProPedidosRoute
+  ProTrabalhosRoute: typeof ProTrabalhosRoute
   CategoriasIndexRoute: typeof CategoriasIndexRoute
   ChatIndexRoute: typeof ChatIndexRoute
   ProIndexRoute: typeof ProIndexRoute
@@ -828,6 +841,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ProPedidosRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/pro/trabalhos': {
+      id: '/pro/trabalhos'
+      path: '/pro/trabalhos'
+      fullPath: '/pro/trabalhos'
+      preLoaderRoute: typeof ProTrabalhosRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/.mcp/invoke-tool/$tool': {
       id: '/.mcp/invoke-tool/$tool'
       path: '/.mcp/invoke-tool/$tool'
@@ -876,6 +896,7 @@ const rootRouteChildren: RootRouteChildren = {
   ProGanhosRoute: ProGanhosRoute,
   ProOportunidadesRoute: ProOportunidadesRoute,
   ProPedidosRoute: ProPedidosRoute,
+  ProTrabalhosRoute: ProTrabalhosRoute,
   CategoriasIndexRoute: CategoriasIndexRoute,
   ChatIndexRoute: ChatIndexRoute,
   ProIndexRoute: ProIndexRoute,
