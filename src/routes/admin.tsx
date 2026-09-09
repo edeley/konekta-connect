@@ -269,6 +269,24 @@ export default function AdminPage() {
         <div className="flex items-center gap-1.5 overflow-x-auto pb-1 no-scrollbar">
           <button
             type="button"
+            onClick={() => setActiveTab("requests")}
+            className={`px-3 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition cursor-pointer flex items-center gap-1.5 ${
+              activeTab === "requests"
+                ? "bg-primary text-primary-foreground shadow-2xs"
+                : "bg-muted/70 text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            <Briefcase size={14} />
+            Pedidos Publicados
+            {pendingRequests.length > 0 && (
+              <span className="size-4 rounded-full bg-amber-500 text-white text-[10px] grid place-items-center font-black">
+                {pendingRequests.length}
+              </span>
+            )}
+          </button>
+
+          <button
+            type="button"
             onClick={() => setActiveTab("deposits")}
             className={`px-3 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition cursor-pointer flex items-center gap-1.5 ${
               activeTab === "deposits"
