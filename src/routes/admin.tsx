@@ -65,17 +65,33 @@ export default function AdminPage() {
   const technicalVisits = useStore((s) => s.technicalVisits);
   const moderationDisputes = useStore((s) => s.moderationDisputes);
   const orders = useStore((s) => s.orders);
+  const requests = useStore((s) => s.requests);
   const depositRequests = useStore((s) => s.depositRequests || []);
   const payoutRequests = useStore((s) => s.payoutRequests || []);
 
+  const pendingRequests = requests.filter((r) => (r.adminStatus ?? "pendente") === "pendente");
+  const [requestFilter, setRequestFilter] = useState<
+    "pendentes" | "aprovados" | "rejeitados" | "todos"
+  >("pendentes");
+  const [rejectRequestId, setRejectRequestId] = useState<string | null>(null);
+  const [requestRejectReason, setRequestRejectReason] = useState("");
+
   // Tab Navigation State
   const [activeTab, setActiveTab] = useState<
-    "deposits" | "payouts" | "escrow" | "ledger" | "disputes" | "visits" | "config"
+    | "requests"
+    | "deposits"
+    | "payouts"
+    | "escrow"
+    | "ledger"
+    | "disputes"
+    | "visits"
+    | "config"
   >(() => {
     if (typeof window !== "undefined") {
       const params = new URLSearchParams(window.location.search);
       const t = params.get("tab");
       if (
+        t === "requests" ||
         t === "deposits" ||
         t === "payouts" ||
         t === "escrow" ||
@@ -87,8 +103,9 @@ export default function AdminPage() {
         return t;
       }
     }
-    return "deposits";
+    return "requests";
   });
+
 
   const transactions = useStore((s) => s.transactions);
   const [ledgerFilter, setLedgerFilter] = useState<"all" | "in" | "out">("all");
@@ -252,6 +269,24 @@ export default function AdminPage() {
         <div className="flex items-center gap-1.5 overflow-x-auto pb-1 no-scrollbar">
           <button
             type="button"
+            onClick={() => setActiveTab("requests")}
+            className={`px-3 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition cursor-pointer flex items-center gap-1.5 ${
+              activeTab === "requests"
+                ? "bg-primary text-primary-foreground shadow-2xs"
+                : "bg-muted/70 text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            <Briefcase size={14} />
+            Pedidos Publicados
+            {pendingRequests.length > 0 && (
+              <span className="size-4 rounded-full bg-amber-500 text-white text-[10px] grid place-items-center font-black">
+                {pendingRequests.length}
+              </span>
+            )}
+          </button>
+
+          <button
+            type="button"
             onClick={() => setActiveTab("deposits")}
             className={`px-3 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition cursor-pointer flex items-center gap-1.5 ${
               activeTab === "deposits"
@@ -357,6 +392,168 @@ export default function AdminPage() {
           </button>
         </div>
       </Section>
+
+      {/* ABA 0: PEDIDOS PUBLICADOS PELOS CLIENTES */}
+      {activeTab === "requests" && (
+        <Section>
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-3">
+            <div>
+              <h2 className="text-sm font-bold text-foreground flex items-center gap-1.5">
+                <Briefcase size={16} className="text-primary" />
+                Pedidos publicados pelos clientes
+              </h2>
+              <p className="text-[11px] text-muted-foreground">
+                Aprove um pedido para o tornar visível aos prestadores, ou recuse indicando o
+                motivo.
+              </p>
+            </div>
+            <div className="flex gap-1.5">
+              {(["pendentes", "aprovados", "rejeitados", "todos"] as const).map((f) => (
+                <button
+                  key={f}
+                  type="button"
+                  onClick={() => setRequestFilter(f)}
+                  className={`px-2.5 py-1.5 rounded-lg text-[11px] font-bold capitalize transition cursor-pointer ${
+                    requestFilter === f
+                      ? "bg-primary text-primary-foreground"
+                      : "bg-muted/70 text-muted-foreground hover:text-foreground"
+                  }`}
+                >
+                  {f}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div className="space-y-3">
+            {requests
+              .filter((r) => {
+                const st = r.adminStatus ?? "pendente";
+                if (requestFilter === "todos") return true;
+                if (requestFilter === "pendentes") return st === "pendente";
+                if (requestFilter === "aprovados") return st === "aprovado";
+                return st === "rejeitado";
+              })
+              .sort((a, b) => b.createdAt - a.createdAt)
+              .map((r) => {
+                const st = r.adminStatus ?? "pendente";
+                return (
+                  <KCard key={r.id} className="space-y-3">
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="min-w-0">
+                        <p className="truncate text-sm font-bold text-foreground">{r.title}</p>
+                        <p className="text-[11px] text-muted-foreground">
+                          {r.id} · {r.categoryName} · {r.clientName} · {r.district}
+                        </p>
+                      </div>
+                      <StatusPill
+                        tone={
+                          st === "aprovado" ? "success" : st === "rejeitado" ? "error" : "warning"
+                        }
+                      >
+                        {st === "aprovado"
+                          ? "Aprovado"
+                          : st === "rejeitado"
+                            ? "Rejeitado"
+                            : "Por validar"}
+                      </StatusPill>
+                    </div>
+
+                    <p className="text-xs text-muted-foreground line-clamp-3">{r.description}</p>
+
+                    {r.adminReason && (
+                      <p className="text-[11px] font-semibold text-destructive">
+                        Motivo da recusa: {r.adminReason}
+                      </p>
+                    )}
+
+                    <div className="flex flex-wrap items-center justify-between gap-3 border-t border-border/60 pt-2">
+                      <div>
+                        <span className="block text-[11px] text-muted-foreground">
+                          Valor indicado
+                        </span>
+                        <span className="font-mono text-base font-black text-primary">
+                          {r.budget ? formatDb(r.budget) : "A combinar"}
+                        </span>
+                      </div>
+
+                      {st === "pendente" && (
+                        <div className="flex gap-2">
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setRejectRequestId(r.id);
+                              setRequestRejectReason("");
+                            }}
+                            className="h-10 px-3 rounded-xl bg-muted text-xs font-bold text-muted-foreground hover:text-foreground cursor-pointer flex items-center gap-1.5"
+                          >
+                            <X size={14} /> Recusar
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const res = store.adminApproveRequest(r.id);
+                              res.ok ? toast.success(res.message) : toast.error(res.message);
+                            }}
+                            className="h-10 px-4 rounded-xl bg-primary text-primary-foreground text-xs font-bold cursor-pointer flex items-center gap-1.5"
+                          >
+                            <Check size={14} /> Aprovar
+                          </button>
+                        </div>
+                      )}
+                    </div>
+
+                    {rejectRequestId === r.id && (
+                      <div className="space-y-2 rounded-2xl bg-muted/50 p-3">
+                        <textarea
+                          value={requestRejectReason}
+                          onChange={(e) => setRequestRejectReason(e.target.value)}
+                          rows={2}
+                          placeholder="Motivo da recusa (visível ao cliente)"
+                          className="w-full rounded-xl bg-background p-3 text-xs outline-none ring-primary/30 focus:ring-2"
+                        />
+                        <div className="flex gap-2">
+                          <button
+                            type="button"
+                            onClick={() => setRejectRequestId(null)}
+                            className="h-9 flex-1 rounded-xl bg-muted text-xs font-bold cursor-pointer"
+                          >
+                            Cancelar
+                          </button>
+                          <button
+                            type="button"
+                            disabled={!requestRejectReason.trim()}
+                            onClick={() => {
+                              const res = store.adminRejectRequest(r.id, requestRejectReason.trim());
+                              res.ok ? toast.success(res.message) : toast.error(res.message);
+                              setRejectRequestId(null);
+                            }}
+                            className="h-9 flex-1 rounded-xl bg-destructive text-white text-xs font-bold disabled:opacity-50 cursor-pointer"
+                          >
+                            Confirmar recusa
+                          </button>
+                        </div>
+                      </div>
+                    )}
+                  </KCard>
+                );
+              })}
+
+            {requests.filter((r) => {
+              const st = r.adminStatus ?? "pendente";
+              if (requestFilter === "todos") return true;
+              if (requestFilter === "pendentes") return st === "pendente";
+              if (requestFilter === "aprovados") return st === "aprovado";
+              return st === "rejeitado";
+            }).length === 0 && (
+              <p className="rounded-2xl bg-muted/50 p-6 text-center text-xs text-muted-foreground">
+                Sem pedidos nesta lista.
+              </p>
+            )}
+          </div>
+        </Section>
+      )}
+
 
       {/* ABA 1: VALIDAÇÃO DE RECARGAS & DEPÓSITOS (ADMIN CONFIRMATION) */}
       {activeTab === "deposits" && (
