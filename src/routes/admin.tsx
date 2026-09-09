@@ -65,17 +65,33 @@ export default function AdminPage() {
   const technicalVisits = useStore((s) => s.technicalVisits);
   const moderationDisputes = useStore((s) => s.moderationDisputes);
   const orders = useStore((s) => s.orders);
+  const requests = useStore((s) => s.requests);
   const depositRequests = useStore((s) => s.depositRequests || []);
   const payoutRequests = useStore((s) => s.payoutRequests || []);
 
+  const pendingRequests = requests.filter((r) => (r.adminStatus ?? "pendente") === "pendente");
+  const [requestFilter, setRequestFilter] = useState<
+    "pendentes" | "aprovados" | "rejeitados" | "todos"
+  >("pendentes");
+  const [rejectRequestId, setRejectRequestId] = useState<string | null>(null);
+  const [requestRejectReason, setRequestRejectReason] = useState("");
+
   // Tab Navigation State
   const [activeTab, setActiveTab] = useState<
-    "deposits" | "payouts" | "escrow" | "ledger" | "disputes" | "visits" | "config"
+    | "requests"
+    | "deposits"
+    | "payouts"
+    | "escrow"
+    | "ledger"
+    | "disputes"
+    | "visits"
+    | "config"
   >(() => {
     if (typeof window !== "undefined") {
       const params = new URLSearchParams(window.location.search);
       const t = params.get("tab");
       if (
+        t === "requests" ||
         t === "deposits" ||
         t === "payouts" ||
         t === "escrow" ||
@@ -87,8 +103,9 @@ export default function AdminPage() {
         return t;
       }
     }
-    return "deposits";
+    return "requests";
   });
+
 
   const transactions = useStore((s) => s.transactions);
   const [ledgerFilter, setLedgerFilter] = useState<"all" | "in" | "out">("all");
