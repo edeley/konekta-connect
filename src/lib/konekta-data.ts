@@ -394,7 +394,8 @@ export const providers: Provider[] = [
       {
         id: "ms-3",
         title: "Manutenção de Escritório Comercial",
-        description: "Limpeza diária de postos de trabalho e áreas comuns num escritório na capital.",
+        description:
+          "Limpeza diária de postos de trabalho e áreas comuns num escritório na capital.",
         image:
           "https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&w=800&q=80",
         category: "Escritórios",
@@ -697,7 +698,16 @@ export const statusLabel: Record<OrderStatus, string> = {
 };
 
 export function getProvider(id: string) {
-  return providers.find((p) => p.id === id);
+  const found = providers.find((p) => p.id === id);
+  if (found) return found;
+  if (id === "me" || id === "usr-provider") {
+    return {
+      ...providers[0],
+      id,
+      name: "Edmilson Varela (Você)",
+    };
+  }
+  return providers[0];
 }
 
 export function getProviderServicesWithPricing(provider: Provider): ServiceItemDetail[] {

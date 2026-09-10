@@ -104,7 +104,7 @@ export const districts = [
   "Região Autónoma do Príncipe",
 ];
 
-export const categoryEmoji: Record<string, string> = {
+export const categoryDisplayName: Record<string, string> = {
   eletricista: "Eletricidade",
   canalizador: "Canalização",
   limpeza: "Limpeza",
@@ -112,8 +112,123 @@ export const categoryEmoji: Record<string, string> = {
   mecanico: "Mecânica & Geradores",
   jardinagem: "Jardinagem",
   "ar-condicionado": "Climatização",
-  beleza: "Estética",
+  beleza: "Estética & Beleza",
 };
+
+export const categoryEmoji: Record<string, string> = {
+  eletricista: "⚡",
+  canalizador: "🚰",
+  limpeza: "🧹",
+  pintor: "🎨",
+  mecanico: "⚙️",
+  jardinagem: "🌱",
+  "ar-condicionado": "❄️",
+  beleza: "✂️",
+};
+
+export function isProviderActive(p: Provider): boolean {
+  if (!p) return false;
+  if (p.verified === false) return false;
+  if (p.status === "inativo" || p.status === "suspenso" || p.status === "pendente") return false;
+  return true;
+}
+
+export function getActiveProviders(providerList?: Provider[]): Provider[] {
+  const source = providerList && providerList.length > 0 ? providerList : providers;
+  return source.filter(isProviderActive);
+}
+
+export type ActiveCategory = Category & {
+  displayName: string;
+  emoji: string;
+  count: number;
+  availableServices: string[];
+};
+
+export function getActiveCategories(
+  categoriesList?: Category[],
+  providerList?: Provider[],
+): ActiveCategory[] {
+  const cats = categoriesList && categoriesList.length > 0 ? categoriesList : categories;
+  const activeProvs = getActiveProviders(providerList);
+
+  return cats
+    .map((c) => {
+      const matchingProviders = activeProvs.filter(
+        (p) =>
+          p.categorySlug === c.slug ||
+          slugifyCategory(p.category) === c.slug ||
+          p.category.toLowerCase() === c.name.toLowerCase(),
+      );
+
+      // Extrai todos os serviços únicos oferecidos pelos prestadores ativos nesta categoria
+      const serviceSet = new Set<string>();
+      matchingProviders.forEach((p) => {
+        p.services?.forEach((s) => serviceSet.add(s));
+        p.detailedServices?.forEach((ds) => serviceSet.add(ds.name));
+      });
+
+      return {
+        ...c,
+        displayName: categoryDisplayName[c.slug] || c.name,
+        emoji: categoryEmoji[c.slug] || "🛠️",
+        count: matchingProviders.length,
+        availableServices: Array.from(serviceSet),
+      };
+    })
+    .filter((c) => c.count > 0); // REGRA CRÍTICA: Só mostra categorias com prestadores ativos!
+}
+
+export type AvailableServiceItem = {
+  id: string;
+  name: string;
+  categorySlug: string;
+  categoryName: string;
+  price: number;
+  billingLabel: string;
+  providerName: string;
+  providerId: string;
+  description?: string;
+};
+
+export function getAllActiveServices(providerList?: Provider[]): AvailableServiceItem[] {
+  const activeProvs = getActiveProviders(providerList);
+  const items: AvailableServiceItem[] = [];
+
+  activeProvs.forEach((p) => {
+    const catSlug = p.categorySlug || slugifyCategory(p.category);
+    if (p.detailedServices && p.detailedServices.length > 0) {
+      p.detailedServices.forEach((ds) => {
+        items.push({
+          id: ds.id,
+          name: ds.name,
+          categorySlug: catSlug,
+          categoryName: p.category,
+          price: ds.price,
+          billingLabel: ds.billingLabel || "Preço Fixo",
+          providerName: p.name,
+          providerId: p.id,
+          description: ds.description,
+        });
+      });
+    } else if (p.services) {
+      p.services.forEach((s, idx) => {
+        items.push({
+          id: `${p.id}-srv-${idx}`,
+          name: s,
+          categorySlug: catSlug,
+          categoryName: p.category,
+          price: p.priceFrom || 350,
+          billingLabel: "A partir de",
+          providerName: p.name,
+          providerId: p.id,
+        });
+      });
+    }
+  });
+
+  return items;
+}
 
 export function categoryBySlug(slug: string) {
   return categories.find((c) => c.slug === slug);
@@ -130,9 +245,17 @@ export function slugifyCategory(name: string) {
   );
 }
 
-export function searchProviders(query: string, categorySlug?: string): Provider[] {
+export function searchProviders(
+  query: string,
+  categorySlug?: string,
+  options?: { providerList?: Provider[]; onlyActive?: boolean },
+): Provider[] {
   const q = query.trim().toLowerCase();
-  return providers.filter((p) => {
+  const source =
+    options?.providerList && options.providerList.length > 0 ? options.providerList : providers;
+  const list = options?.onlyActive === false ? source : source.filter(isProviderActive);
+
+  return list.filter((p) => {
     const matchesCategory =
       !categorySlug ||
       p.categorySlug === categorySlug ||

@@ -32,6 +32,7 @@ import {
   Receipt,
   UserCheck,
   Lock,
+  ShieldAlert,
 } from "lucide-react";
 import { AppShell } from "@/components/AppShell";
 import { Section, KCard, StatusPill, KButton } from "@/components/konekta/kit";
@@ -41,9 +42,13 @@ import {
   type ModerationDispute,
   type DepositRequest,
   type PayoutRequest,
+  type SecurityIncident,
 } from "@/lib/store";
+import { scanAllChatMessages } from "@/lib/chat-monitoring-listener";
 import { formatDb } from "@/lib/catalog";
 import { getCategoryBenchmark } from "@/lib/price-benchmark";
+import { providers as catalogProviders, type Provider } from "@/lib/konekta-data";
+import { notifyProviderOnRequestApproved } from "@/lib/external-notifications";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/admin")({
@@ -79,9 +84,11 @@ export default function AdminPage() {
   // Tab Navigation State
   const [activeTab, setActiveTab] = useState<
     | "requests"
+    | "prestadores"
     | "deposits"
     | "payouts"
     | "escrow"
+    | "security"
     | "ledger"
     | "disputes"
     | "visits"
@@ -92,9 +99,11 @@ export default function AdminPage() {
       const t = params.get("tab");
       if (
         t === "requests" ||
+        t === "prestadores" ||
         t === "deposits" ||
         t === "payouts" ||
         t === "escrow" ||
+        t === "security" ||
         t === "ledger" ||
         t === "disputes" ||
         t === "visits" ||
@@ -106,6 +115,15 @@ export default function AdminPage() {
     return "requests";
   });
 
+  const securityIncidents = useStore((s) => s.securityIncidents || []);
+  const unresolvedSecurityIncidents = securityIncidents.filter((inc) => inc.status === "flagged");
+  const [securityFilter, setSecurityFilter] = useState<
+    "todos" | "flagged" | "reviewed" | "dismissed"
+  >("flagged");
+
+  const [providerFilter, setProviderFilter] = useState<"todos" | "ativo" | "pendente" | "suspenso">(
+    "todos",
+  );
 
   const transactions = useStore((s) => s.transactions);
   const [ledgerFilter, setLedgerFilter] = useState<"all" | "in" | "out">("all");
@@ -287,6 +305,19 @@ export default function AdminPage() {
 
           <button
             type="button"
+            onClick={() => setActiveTab("prestadores")}
+            className={`px-3 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition cursor-pointer flex items-center gap-1.5 ${
+              activeTab === "prestadores"
+                ? "bg-primary text-primary-foreground shadow-2xs"
+                : "bg-muted/70 text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            <Users size={14} />
+            Prestadores Inscritos ({catalogProviders.length})
+          </button>
+
+          <button
+            type="button"
             onClick={() => setActiveTab("deposits")}
             className={`px-3 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition cursor-pointer flex items-center gap-1.5 ${
               activeTab === "deposits"
@@ -332,6 +363,27 @@ export default function AdminPage() {
           >
             <Lock size={14} />
             Custódia Escrow ({orders.filter((o) => o.status !== "concluido").length})
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setActiveTab("security")}
+            className={`px-3 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition cursor-pointer flex items-center gap-1.5 ${
+              activeTab === "security"
+                ? "bg-primary text-primary-foreground shadow-2xs"
+                : "bg-muted/70 text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            <ShieldAlert
+              size={14}
+              className={unresolvedSecurityIncidents.length > 0 ? "text-amber-500" : ""}
+            />
+            Monitorização Anti-Fuga
+            {unresolvedSecurityIncidents.length > 0 && (
+              <span className="size-4 rounded-full bg-red-500 text-white text-[10px] grid place-items-center font-black animate-pulse">
+                {unresolvedSecurityIncidents.length}
+              </span>
+            )}
           </button>
 
           <button
@@ -493,7 +545,21 @@ export default function AdminPage() {
                             type="button"
                             onClick={() => {
                               const res = store.adminApproveRequest(r.id);
-                              res.ok ? toast.success(res.message) : toast.error(res.message);
+                              if (res.ok) {
+                                toast.success(res.message);
+                                notifyProviderOnRequestApproved({
+                                  requestId: r.id,
+                                  requestTitle: r.title,
+                                  categoryName: r.categoryName,
+                                  district: r.district,
+                                  budget: r.budget,
+                                  providerName: `Prestadores de ${r.categoryName}`,
+                                  providerPhone: "+2399845678",
+                                  providerEmail: "prestador@konekta-stp.com",
+                                });
+                              } else {
+                                toast.error(res.message);
+                              }
                             }}
                             className="h-10 px-4 rounded-xl bg-primary text-primary-foreground text-xs font-bold cursor-pointer flex items-center gap-1.5"
                           >
@@ -524,8 +590,15 @@ export default function AdminPage() {
                             type="button"
                             disabled={!requestRejectReason.trim()}
                             onClick={() => {
-                              const res = store.adminRejectRequest(r.id, requestRejectReason.trim());
-                              res.ok ? toast.success(res.message) : toast.error(res.message);
+                              const res = store.adminRejectRequest(
+                                r.id,
+                                requestRejectReason.trim(),
+                              );
+                              if (res.ok) {
+                                toast.success(res.message);
+                              } else {
+                                toast.error(res.message);
+                              }
                               setRejectRequestId(null);
                             }}
                             className="h-9 flex-1 rounded-xl bg-destructive text-white text-xs font-bold disabled:opacity-50 cursor-pointer"
@@ -554,6 +627,163 @@ export default function AdminPage() {
         </Section>
       )}
 
+      {/* ABA: PRESTADORES INSCRITOS (MONITORIZAÇÃO & ESTADO) */}
+      {activeTab === "prestadores" && (
+        <Section>
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
+            <div>
+              <h2 className="text-sm font-bold text-foreground flex items-center gap-1.5">
+                <Users size={16} className="text-primary" />
+                Prestadores Inscritos no KONEKTA
+              </h2>
+              <p className="text-[11px] text-muted-foreground">
+                Monitorização de profissionais registados, distritos de atuação e estado da conta.
+              </p>
+            </div>
+
+            <div className="flex items-center gap-1 bg-muted/60 p-1 rounded-xl self-start sm:self-auto">
+              <button
+                type="button"
+                onClick={() => setProviderFilter("todos")}
+                className={`px-2.5 py-1 rounded-lg text-[11px] font-bold transition cursor-pointer ${
+                  providerFilter === "todos"
+                    ? "bg-card text-foreground shadow-2xs"
+                    : "text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                Todos ({catalogProviders.length})
+              </button>
+              <button
+                type="button"
+                onClick={() => setProviderFilter("ativo")}
+                className={`px-2.5 py-1 rounded-lg text-[11px] font-bold transition cursor-pointer ${
+                  providerFilter === "ativo"
+                    ? "bg-card text-foreground shadow-2xs"
+                    : "text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                Ativos ({catalogProviders.filter((p) => p.verified).length})
+              </button>
+              <button
+                type="button"
+                onClick={() => setProviderFilter("pendente")}
+                className={`px-2.5 py-1 rounded-lg text-[11px] font-bold transition cursor-pointer ${
+                  providerFilter === "pendente"
+                    ? "bg-card text-foreground shadow-2xs"
+                    : "text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                Em Análise ({catalogProviders.filter((p) => !p.verified).length})
+              </button>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            {catalogProviders
+              .filter((p) => {
+                if (providerFilter === "todos") return true;
+                if (providerFilter === "ativo") return p.verified;
+                if (providerFilter === "pendente") return !p.verified;
+                return true;
+              })
+              .map((p) => (
+                <KCard key={p.id} className="p-4 space-y-3">
+                  <div className="flex items-start gap-3">
+                    <div className="relative shrink-0">
+                      <img
+                        src={p.image}
+                        alt={p.name}
+                        className="size-12 rounded-2xl object-cover ring-1 ring-border"
+                      />
+                      <span
+                        className={`absolute -bottom-0.5 -right-0.5 size-3.5 rounded-full ring-2 ring-card ${
+                          p.verified ? "bg-emerald-500" : "bg-amber-500"
+                        }`}
+                        title={p.verified ? "Online e Ativo" : "Em Validação"}
+                      />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center justify-between gap-1">
+                        <h3 className="text-sm font-bold text-foreground truncate">{p.name}</h3>
+                        <span
+                          className={`text-[10px] font-bold px-2 py-0.5 rounded-full shrink-0 ${
+                            p.verified
+                              ? "bg-emerald-500/10 text-emerald-700 dark:text-emerald-300"
+                              : "bg-amber-500/10 text-amber-700 dark:text-amber-300"
+                          }`}
+                        >
+                          {p.verified ? "Ativo" : "Em Análise"}
+                        </span>
+                      </div>
+                      <p className="text-xs text-primary font-medium">{p.category}</p>
+                      <div className="flex items-center gap-2 text-[11px] text-muted-foreground mt-0.5">
+                        <span className="font-semibold text-foreground">
+                          ★ {p.rating.toFixed(1)}
+                        </span>
+                        <span>({p.reviews} avaliações)</span>
+                        <span>·</span>
+                        <span>{p.experienceYears || 5} anos exp.</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="space-y-1.5 rounded-xl bg-muted/40 p-2.5 text-[11px]">
+                    <div className="flex items-center justify-between text-muted-foreground">
+                      <span className="flex items-center gap-1">
+                        <Compass size={12} className="text-primary" /> Distrito de Cobertura:
+                      </span>
+                      <span className="font-semibold text-foreground">
+                        {p.district || "Água Grande"}
+                      </span>
+                    </div>
+                    <div className="flex items-center justify-between text-muted-foreground">
+                      <span className="flex items-center gap-1">
+                        <Phone size={12} className="text-primary" /> Telefone / WhatsApp:
+                      </span>
+                      <span className="font-semibold text-foreground font-mono">
+                        {p.phone || "+239 9845678"}
+                      </span>
+                    </div>
+                    <div className="flex items-center justify-between text-muted-foreground">
+                      <span className="flex items-center gap-1">
+                        <Banknote size={12} className="text-primary" /> Tarifa Base:
+                      </span>
+                      <span className="font-semibold text-foreground">
+                        {formatDb(p.priceFrom || 300)}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-2 pt-1">
+                    <Link
+                      to="/pro/$id"
+                      params={{ id: p.id }}
+                      className="flex-1 h-9 rounded-xl bg-muted hover:bg-muted/80 text-foreground text-xs font-bold flex items-center justify-center gap-1.5 transition"
+                    >
+                      <ExternalLink size={13} /> Perfil
+                    </Link>
+                    <Link
+                      to="/chat/$id"
+                      params={{ id: p.id }}
+                      className="flex-1 h-9 rounded-xl bg-primary/10 hover:bg-primary/20 text-primary text-xs font-bold flex items-center justify-center gap-1.5 transition"
+                    >
+                      <MessageSquare size={13} /> Chat KONEKTA
+                    </Link>
+                    <a
+                      href={`https://wa.me/${(p.phone || "+2399845678").replace(/[^0-9]/g, "")}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="h-9 px-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold flex items-center justify-center gap-1 transition shadow-2xs"
+                      title="Contactar via WhatsApp"
+                    >
+                      <Phone size={13} /> WA
+                    </a>
+                  </div>
+                </KCard>
+              ))}
+          </div>
+        </Section>
+      )}
 
       {/* ABA 1: VALIDAÇÃO DE RECARGAS & DEPÓSITOS (ADMIN CONFIRMATION) */}
       {activeTab === "deposits" && (
@@ -1076,6 +1306,318 @@ export default function AdminPage() {
                 </KCard>
               );
             })}
+          </div>
+        </Section>
+      )}
+
+      {/* ABA: MONITORIZAÇÃO DE SEGURANÇA & BLINDAGEM ANTI-FUGA */}
+      {activeTab === "security" && (
+        <Section>
+          <div className="space-y-4">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-card border border-border/80 p-4 rounded-2xl shadow-2xs">
+              <div>
+                <h2 className="text-sm font-bold text-foreground flex items-center gap-2">
+                  <ShieldAlert size={18} className="text-amber-500" />
+                  Monitorização de Segurança & Blindagem Anti-Fuga
+                </h2>
+                <p className="text-[11px] text-muted-foreground mt-0.5 max-w-xl">
+                  Detetor em segundo plano para salvaguarda de comissões e proteção de utilizadores:
+                  identifica números de telefone, menções a redes sociais, WhatsApp e propostas de
+                  pagamento por fora da plataforma.
+                </p>
+              </div>
+
+              <div className="flex items-center gap-2 shrink-0">
+                <button
+                  type="button"
+                  onClick={() => {
+                    const count = scanAllChatMessages();
+                    if (count > 0) {
+                      toast.warning(
+                        `${count} novo(s) indício(s) de contacto externo sinalizado(s)!`,
+                      );
+                    } else {
+                      toast.success(
+                        "Varredura concluída: todas as conversas estão em conformidade.",
+                      );
+                    }
+                  }}
+                  className="px-3 py-1.5 rounded-xl bg-primary text-primary-foreground text-xs font-bold hover:opacity-95 transition flex items-center gap-1.5 shadow-2xs cursor-pointer"
+                >
+                  <RefreshCw size={12} />
+                  <span>Verificar Todas as Conversas</span>
+                </button>
+
+                {securityIncidents.length > 0 && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (
+                        window.confirm("Deseja limpar todo o histórico de incidentes de segurança?")
+                      ) {
+                        store.clearSecurityIncidents();
+                        toast.info("Histórico de incidentes de segurança limpo.");
+                      }
+                    }}
+                    className="px-2.5 py-1.5 rounded-xl bg-muted hover:bg-muted/80 text-muted-foreground hover:text-foreground text-xs font-semibold border border-border transition cursor-pointer"
+                    title="Limpar incidentes"
+                  >
+                    Limpar
+                  </button>
+                )}
+              </div>
+            </div>
+
+            {/* Matriz de Métricas Anti-Fuga */}
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+              <div className="p-3 rounded-2xl bg-card border border-border space-y-1 shadow-2xs">
+                <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+                  Pendentes de Revisão
+                </p>
+                <p className="text-xl font-black text-amber-800 dark:text-amber-300">
+                  {unresolvedSecurityIncidents.length}
+                </p>
+                <p className="text-[10px] text-muted-foreground">
+                  {securityIncidents.length} detetados no total
+                </p>
+              </div>
+
+              <div className="p-3 rounded-2xl bg-card border border-border space-y-1 shadow-2xs">
+                <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+                  Tentativas Pagamento Fora
+                </p>
+                <p className="text-xl font-black text-red-500">
+                  {securityIncidents.filter((i) => i.category === "outside_payment").length}
+                </p>
+                <p className="text-[10px] text-muted-foreground">Risco de evasão de comissão</p>
+              </div>
+
+              <div className="p-3 rounded-2xl bg-card border border-border space-y-1 shadow-2xs">
+                <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+                  Telefones Detectados
+                </p>
+                <p className="text-xl font-black text-foreground">
+                  {securityIncidents.filter((i) => i.category === "phone").length}
+                </p>
+                <p className="text-[10px] text-muted-foreground">Padrões STP (+239) e ofuscados</p>
+              </div>
+
+              <div className="p-3 rounded-2xl bg-card border border-border space-y-1 shadow-2xs">
+                <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+                  Redes & WhatsApp
+                </p>
+                <p className="text-xl font-black text-foreground">
+                  {securityIncidents.filter((i) => i.category === "social_app").length}
+                </p>
+                <p className="text-[10px] text-muted-foreground">WhatsApp, Telegram, perfis</p>
+              </div>
+            </div>
+
+            {/* Filtros de Incidentes */}
+            <div className="flex items-center gap-1.5 overflow-x-auto pb-1">
+              {(
+                [
+                  {
+                    id: "flagged",
+                    label: "Sinalizados",
+                    count: unresolvedSecurityIncidents.length,
+                  },
+                  { id: "todos", label: "Todos", count: securityIncidents.length },
+                  {
+                    id: "reviewed",
+                    label: "Analisados",
+                    count: securityIncidents.filter((i) => i.status === "reviewed").length,
+                  },
+                  {
+                    id: "dismissed",
+                    label: "Descartados",
+                    count: securityIncidents.filter((i) => i.status === "dismissed").length,
+                  },
+                ] as const
+              ).map((f) => (
+                <button
+                  key={f.id}
+                  type="button"
+                  onClick={() => setSecurityFilter(f.id)}
+                  className={`px-3 py-1.5 rounded-xl text-xs font-bold transition whitespace-nowrap cursor-pointer ${
+                    securityFilter === f.id
+                      ? "bg-primary text-primary-foreground shadow-2xs"
+                      : "bg-muted/60 text-muted-foreground hover:text-foreground"
+                  }`}
+                >
+                  {f.label} ({f.count})
+                </button>
+              ))}
+            </div>
+
+            {/* Lista de Incidentes Sinalizados */}
+            {securityIncidents.filter((inc) =>
+              securityFilter === "todos" ? true : inc.status === securityFilter,
+            ).length === 0 ? (
+              <div className="p-8 rounded-2xl bg-card border border-border/80 text-center space-y-2">
+                <div className="size-10 mx-auto rounded-full bg-emerald-500/10 text-emerald-800 dark:text-emerald-300 grid place-items-center font-bold">
+                  <ShieldCheck size={20} />
+                </div>
+                <p className="text-xs font-bold text-foreground">
+                  Nenhum incidente nesta categoria
+                </p>
+                <p className="text-[11px] text-muted-foreground max-w-sm mx-auto">
+                  O listener em segundo plano está ativo e monitorizará em tempo real qualquer
+                  tentativa de partilha de contacto ou evasão de custódia.
+                </p>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {securityIncidents
+                  .filter((inc) =>
+                    securityFilter === "todos" ? true : inc.status === securityFilter,
+                  )
+                  .map((inc) => {
+                    const provider = catalogProviders.find((p) => p.id === inc.providerId);
+                    const providerName = provider ? provider.name : `Prestador #${inc.providerId}`;
+
+                    return (
+                      <KCard key={inc.id} className="p-4 space-y-3 border-l-4 border-l-amber-500">
+                        <div className="flex items-start justify-between gap-3">
+                          <div className="space-y-1">
+                            <div className="flex items-center gap-2 flex-wrap">
+                              <span
+                                className={`px-2 py-0.5 rounded-lg text-[10px] font-black uppercase tracking-wider ${
+                                  inc.category === "outside_payment"
+                                    ? "bg-red-500/15 text-red-500 border border-red-500/30"
+                                    : inc.category === "phone"
+                                      ? "bg-amber-500/15 text-amber-800 dark:text-amber-300 border border-amber-500/30"
+                                      : "bg-blue-500/15 text-blue-500 border border-blue-500/30"
+                                }`}
+                              >
+                                {inc.category === "outside_payment" && "💰 Pagamento por Fora"}
+                                {inc.category === "phone" && "📱 Telefone Detectado"}
+                                {inc.category === "social_app" && "💬 Rede Social / Zap"}
+                                {inc.category === "contact_request" && "👤 Pedido de Contacto"}
+                                {inc.category === "email_link" && "🔗 Link / E-mail Externo"}
+                              </span>
+
+                              <span
+                                className={`text-[10px] font-bold px-2 py-0.5 rounded-md ${
+                                  inc.severity === "critical"
+                                    ? "bg-red-500 text-white"
+                                    : inc.severity === "high"
+                                      ? "bg-amber-500 text-white"
+                                      : "bg-muted text-muted-foreground"
+                                }`}
+                              >
+                                {inc.severity === "critical"
+                                  ? "Gravidade Crítica"
+                                  : inc.severity === "high"
+                                    ? "Gravidade Alta"
+                                    : "Gravidade Média"}
+                              </span>
+
+                              <span className="text-[10px] text-muted-foreground flex items-center gap-1">
+                                <Clock size={10} />
+                                {new Date(inc.timestamp).toLocaleString("pt-PT")}
+                              </span>
+                            </div>
+
+                            <p className="text-xs font-bold text-foreground">
+                              Remetente:{" "}
+                              <span className="text-primary font-bold">
+                                {inc.senderName || (inc.from === "me" ? "Cliente" : "Prestador")}
+                              </span>{" "}
+                              · Conversa com: <span className="font-semibold">{providerName}</span>
+                            </p>
+                          </div>
+
+                          <span
+                            className={`px-2 py-0.5 rounded-full text-[10px] font-bold shrink-0 ${
+                              inc.status === "flagged"
+                                ? "bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300"
+                                : inc.status === "reviewed"
+                                  ? "bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300"
+                                  : "bg-muted text-muted-foreground"
+                            }`}
+                          >
+                            {inc.status === "flagged" && "Pendente de Revisão"}
+                            {inc.status === "reviewed" && "Analisado"}
+                            {inc.status === "dismissed" && "Descartado"}
+                          </span>
+                        </div>
+
+                        {/* Conteúdo Exato Sinalizado */}
+                        <div className="rounded-xl bg-muted/60 p-3 border border-border space-y-1">
+                          <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">
+                            Conteúdo Interceptado no Chat:
+                          </p>
+                          <blockquote className="text-xs text-foreground italic border-l-2 border-primary pl-2.5">
+                            "{inc.textSnippet}"
+                          </blockquote>
+                          {inc.matchedText && (
+                            <p className="text-[11px] font-bold text-amber-800 dark:text-amber-300 pt-0.5">
+                              Termo / Padrão correspondente:{" "}
+                              <code className="bg-background px-1.5 py-0.5 rounded text-[11px] font-mono border border-border">
+                                {inc.matchedText}
+                              </code>
+                            </p>
+                          )}
+                        </div>
+
+                        {/* Justificação Algorítmica */}
+                        <p className="text-[11px] text-muted-foreground">
+                          <strong>Motivo:</strong> {inc.reason}
+                        </p>
+
+                        {/* Ações Administrativas */}
+                        <div className="flex items-center justify-between pt-1 gap-2 flex-wrap border-t border-border/40">
+                          <div className="flex items-center gap-2">
+                            {inc.status !== "reviewed" && (
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  store.resolveSecurityIncident(
+                                    inc.id,
+                                    "reviewed",
+                                    "Verificado pela equipa de moderação KONEKTA",
+                                  );
+                                  toast.success("Incidente marcado como analisado!");
+                                }}
+                                className="px-2.5 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-[11px] font-bold transition flex items-center gap-1 shadow-2xs cursor-pointer"
+                              >
+                                <Check size={11} />
+                                <span>Marcar como Analisado</span>
+                              </button>
+                            )}
+
+                            {inc.status !== "dismissed" && (
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  store.resolveSecurityIncident(
+                                    inc.id,
+                                    "dismissed",
+                                    "Falso positivo descartado",
+                                  );
+                                  toast.info("Incidente descartado.");
+                                }}
+                                className="px-2.5 py-1 rounded-lg bg-muted hover:bg-muted/80 text-muted-foreground hover:text-foreground text-[11px] font-semibold border border-border transition cursor-pointer"
+                              >
+                                Descartar
+                              </button>
+                            )}
+                          </div>
+
+                          <Link
+                            to={`/chat/${inc.providerId}`}
+                            className="text-xs font-bold text-primary hover:underline flex items-center gap-1"
+                          >
+                            <span>Abrir Conversa do Chat</span>
+                            <ExternalLink size={12} />
+                          </Link>
+                        </div>
+                      </KCard>
+                    );
+                  })}
+              </div>
+            )}
           </div>
         </Section>
       )}

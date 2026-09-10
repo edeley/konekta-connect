@@ -183,13 +183,13 @@ export function SkeletonList({ count = 3 }: { count?: number }) {
 const toneMap = {
   neutral: "bg-muted text-muted-foreground",
   default: "bg-muted text-muted-foreground",
-  primary: "bg-accent text-accent-foreground",
-  accent: "bg-primary/10 text-primary",
-  success: "bg-success/12 text-success",
-  warning: "bg-warning/15 text-warning",
-  error: "bg-destructive/12 text-destructive",
-  danger: "bg-destructive/12 text-destructive",
-  info: "bg-blue-500/15 text-blue-600 dark:text-blue-400",
+  primary: "bg-accent text-accent-foreground font-bold",
+  accent: "bg-primary/10 text-primary font-bold",
+  success: "bg-primary/10 text-primary font-bold",
+  warning: "bg-muted text-foreground/80 font-medium",
+  error: "bg-destructive/10 text-destructive font-semibold",
+  danger: "bg-destructive/10 text-destructive font-semibold",
+  info: "bg-accent text-primary font-bold",
 } as const;
 
 export type Tone = keyof typeof toneMap;

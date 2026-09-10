@@ -256,10 +256,7 @@ function ProviderPage() {
                 <div className="space-y-1.5">
                   {liveContract.personalInfo.certifications.map((cert, idx) => (
                     <div key={idx} className="flex items-center gap-2 text-xs text-foreground">
-                      <ShieldCheck
-                        size={14}
-                        className="text-emerald-600 dark:text-emerald-400 shrink-0"
-                      />
+                      <ShieldCheck size={14} className="text-primary shrink-0" />
                       <span className="text-[11px]">{cert}</span>
                     </div>
                   ))}

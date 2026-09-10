@@ -7,6 +7,7 @@ import { OfflineBanner } from "./konekta/kit";
 import { ActiveAlarmBanner } from "./konekta/ActiveAlarmBanner";
 import { useAlarmScheduler } from "@/lib/useAlarmScheduler";
 import { useStore, type UserRole } from "@/lib/store";
+import { useChatMonitoringListener } from "@/lib/chat-monitoring-listener";
 import { cn } from "@/lib/utils";
 
 function useOnline() {
@@ -43,8 +44,29 @@ export function AppShell({
   const assistantOn = useStore((s) => s.flags.assistente);
   const online = useOnline();
   const routerState = useRouterState();
-  const isAssistantRoute = routerState.location.pathname === "/assistente";
+  const pathname = routerState.location.pathname;
+  const isAssistantRoute = pathname === "/assistente";
   const { activeAlarm, dismissAlarm, snoozeAlarm } = useAlarmScheduler();
+  useChatMonitoringListener();
+
+  // Determinação rigorosa da identidade visual:
+  // - Cliente: Azul e Branco
+  // - Prestador: Verde e Branco
+  const isProRoute = pathname.startsWith("/pro") || pathname === "/tornar-prestador";
+  const isClientExclusive =
+    pathname === "/" ||
+    pathname.startsWith("/novo-pedido") ||
+    pathname.startsWith("/categorias") ||
+    pathname.startsWith("/favoritos");
+
+  const activeRole: "prestador" | "cliente" =
+    isProRoute || (!isClientExclusive && role === "prestador") ? "prestador" : "cliente";
+
+  useEffect(() => {
+    if (typeof document !== "undefined") {
+      document.documentElement.setAttribute("data-role", activeRole);
+    }
+  }, [activeRole]);
 
   return (
     <AuthGate roles={roles}>
@@ -53,7 +75,10 @@ export function AppShell({
         onDismiss={dismissAlarm}
         onSnooze={() => snoozeAlarm(5)}
       />
-      <div className="flex min-h-screen justify-center bg-surface">
+      <div
+        data-role={activeRole}
+        className="flex min-h-screen justify-center bg-surface transition-colors duration-150"
+      >
         <div
           className={cn(
             "relative w-full bg-surface pb-28",
@@ -68,16 +93,13 @@ export function AppShell({
                 <Link
                   to="/assistente"
                   aria-label="Apoio ao Cliente KONEKTA"
-                  className="press fixed bottom-24 right-[max(1rem,calc(50%-13rem))] z-40 flex items-center gap-2 rounded-full bg-slate-900 dark:bg-white text-white dark:text-slate-900 px-3.5 py-2.5 shadow-lg border border-slate-800/20 dark:border-slate-200/20 active:scale-95 transition-all hover:opacity-90"
+                  className="press fixed bottom-24 right-[max(1rem,calc(50%-13rem))] z-40 flex items-center gap-2 rounded-full bg-primary text-primary-foreground px-3.5 py-2.5 shadow-lg active:scale-95 transition-all hover:opacity-95"
                 >
-                  <Headphones
-                    size={17}
-                    className="text-emerald-400 dark:text-emerald-600 shrink-0"
-                  />
+                  <Headphones size={17} className="text-primary-foreground shrink-0" />
                   <span className="text-xs font-bold tracking-tight">Apoio</span>
                 </Link>
               )}
-              <BottomNav role={role} wide={wide} />
+              <BottomNav role={activeRole} wide={wide} />
             </>
           )}
         </div>

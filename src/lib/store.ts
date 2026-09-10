@@ -1,4 +1,5 @@
 import { useSyncExternalStore } from "react";
+import { toast } from "sonner";
 import {
   BLOCK_NOTICE,
   analyzeBlockedContent,
@@ -27,13 +28,32 @@ import {
   providers as catalogProviders,
   type Order,
   type OrderStatus,
+  type Provider,
 } from "./konekta-data";
 
-export type { Order, OrderStatus };
+export type { Order, OrderStatus, Provider };
 import { seedRequests, type Proposal, type RequestUrgency, type ServiceRequest } from "./requests";
 import { buildSanitizedUserContext } from "./chat-specialist-context";
 import { generateSpecialistResponse } from "./specialist-ai";
 import { soundAlerts } from "./sound-alerts";
+import { getActiveCategories, isProviderActive, type ActiveCategory } from "./catalog";
+
+export type UnservedServiceRequest = {
+  id: string;
+  clientId?: string;
+  clientName: string;
+  clientPhone: string;
+  clientEmail?: string;
+  serviceName: string;
+  categoryName?: string;
+  district: string;
+  description?: string;
+  urgency?: "urgente" | "esta-semana" | "sem-pressa";
+  createdAt: number;
+  status: "pendente_procura_prestador" | "prestador_recrutado" | "categoria_disponivel";
+  notifiedClientAt?: number;
+  adminNotes?: string;
+};
 
 // Simple localStorage-backed store with pub/sub. No backend required for the MVP.
 
@@ -434,6 +454,25 @@ export type Message = {
   quote?: Quote;
   quoteRequest?: QuoteRequestData;
   inPersonDeclaration?: InPersonCashDeclaration;
+  flaggedForReview?: boolean;
+  flagReason?: string;
+  flaggedCategory?: "phone" | "social_app" | "outside_payment" | "email_link" | "contact_request";
+};
+
+export type SecurityIncident = {
+  id: string;
+  providerId: string;
+  messageId: string;
+  from: "me" | "them";
+  senderName?: string;
+  textSnippet: string;
+  matchedText: string;
+  category: "phone" | "social_app" | "outside_payment" | "email_link" | "contact_request";
+  reason: string;
+  severity: "medium" | "high" | "critical";
+  timestamp: number;
+  status: "flagged" | "reviewed" | "dismissed";
+  notes?: string;
 };
 
 export type AssistantMessage = {
@@ -441,6 +480,15 @@ export type AssistantMessage = {
   from: "me" | "ai";
   text: string;
   at: number;
+  role?: "concierge" | "specialist" | "fast" | "maps";
+  model?: string;
+  groundingPlaces?: Array<{ title: string; uri?: string; snippet?: string }>;
+  isMapsGrounded?: boolean;
+  actionLink?: {
+    label: string;
+    url: string;
+    icon?: string;
+  };
 };
 
 export type Transaction = {
@@ -692,7 +740,10 @@ type State = {
   providerTransactions: Transaction[];
   favorites: string[];
   favoriteClients: FavoriteClient[];
+  providers: Provider[];
+  unservedServiceRequests: UnservedServiceRequest[];
   notifications: AppNotification[];
+  securityIncidents: SecurityIncident[];
   flags: FeatureFlags;
   settings: Settings;
   config: PlatformConfig;
@@ -929,6 +980,32 @@ export const seedPayoutRequests: PayoutRequest[] = [
   },
 ];
 
+export const seedUnservedServiceRequests: UnservedServiceRequest[] = [
+  {
+    id: "UNS-101",
+    clientName: "Domingos Sacramento",
+    clientPhone: "+239 9941122",
+    serviceName: "Reparação de Ar Condicionado e Frio Comercial",
+    categoryName: "Climatização",
+    district: "Água Grande",
+    description:
+      "Preciso de reparar um split no escritório que deixou de arrefecer e verificar gás.",
+    createdAt: Date.now() - 3600_000 * 5,
+    status: "pendente_procura_prestador",
+  },
+  {
+    id: "UNS-102",
+    clientName: "Helena de Ceita",
+    clientPhone: "+239 9883344",
+    serviceName: "Marcenaria e Reparação de Móveis de Madeira",
+    categoryName: "Carpintaria & Marcenaria",
+    district: "Mé-Zóchi",
+    description: "Restauro de mesa de jantar em mogno e portas de armário embutido.",
+    createdAt: Date.now() - 3600_000 * 18,
+    status: "pendente_procura_prestador",
+  },
+];
+
 const defaultState: State = {
   user: null,
   profiles: { cliente: true, prestador: false },
@@ -1034,6 +1111,12 @@ const defaultState: State = {
   ],
   favorites: [],
   favoriteClients: defaultFavoriteClients,
+  providers: catalogProviders.map((p) => ({
+    ...p,
+    verified: p.verified ?? true,
+    status: p.status ?? "ativo",
+  })),
+  unservedServiceRequests: seedUnservedServiceRequests,
   notifications: [
     {
       id: "n1",
@@ -1063,6 +1146,7 @@ const defaultState: State = {
       link: "/pedidos",
     },
   ],
+  securityIncidents: [],
   flags: defaultFlags,
   settings: defaultSettings,
   config: {
@@ -1108,6 +1192,7 @@ function load(): State {
       config: { ...defaultState.config, ...(parsed.config ?? {}) },
       technicalVisits: parsed.technicalVisits ?? defaultState.technicalVisits,
       moderationDisputes: parsed.moderationDisputes ?? defaultState.moderationDisputes,
+      securityIncidents: parsed.securityIncidents ?? defaultState.securityIncidents,
       clientReviews: parsed.clientReviews ?? defaultState.clientReviews,
       providerProfile: parsed.providerProfile
         ? {
@@ -1123,6 +1208,12 @@ function load(): State {
         ...fc,
         phone: undefined,
       })),
+      providers:
+        parsed.providers && parsed.providers.length > 0 ? parsed.providers : defaultState.providers,
+      unservedServiceRequests:
+        parsed.unservedServiceRequests && parsed.unservedServiceRequests.length > 0
+          ? parsed.unservedServiceRequests
+          : defaultState.unservedServiceRequests,
     };
   } catch {
     return defaultState;
@@ -1218,7 +1309,147 @@ function seedProviderPool(categoryName: string) {
 
 export const store = {
   get: () => state,
+  getState: () => state,
   notify,
+
+  /* --------- Gestão de Prestadores e Categorias Ativas --------- */
+  getProviders: () => state.providers,
+  getActiveProviders: (district?: string) => {
+    const active = state.providers.filter(isProviderActive);
+    if (!district) return active;
+    return active.filter((p) => !p.district || p.district.toLowerCase() === district.toLowerCase());
+  },
+  getActiveCategories: () => {
+    return getActiveCategories(undefined, state.providers);
+  },
+
+  /* --------- Pedido de Serviço Inexistente / Sem Prestadores Ativos --------- */
+  requestUnservedService: (input: {
+    clientName: string;
+    clientPhone: string;
+    clientEmail?: string;
+    serviceName: string;
+    categoryName?: string;
+    district: string;
+    description?: string;
+    urgency?: "urgente" | "esta-semana" | "sem-pressa";
+  }) => {
+    const id = `UNS-${Date.now()}`;
+    const newReq: UnservedServiceRequest = {
+      id,
+      clientId: state.user?.id,
+      clientName: input.clientName,
+      clientPhone: input.clientPhone,
+      clientEmail: input.clientEmail,
+      serviceName: input.serviceName,
+      categoryName: input.categoryName,
+      district: input.district,
+      description: input.description,
+      urgency: input.urgency || "esta-semana",
+      createdAt: Date.now(),
+      status: "pendente_procura_prestador",
+    };
+
+    // Alerta automático para o Administrador KONEKTA
+    const adminNotification: AppNotification = {
+      id: `n_admin_${Date.now()}`,
+      title: "🚨 Novo Serviço Solicitado por Cliente",
+      body: `O cliente ${input.clientName} (+239 ${input.clientPhone}) solicitou o serviço "${input.serviceName}" em ${input.district}. A equipa deve recrutar um prestador credenciado para ativar esta categoria.`,
+      at: Date.now(),
+      read: false,
+      tone: "warning",
+      link: "/admin",
+    };
+
+    set({
+      unservedServiceRequests: [newReq, ...state.unservedServiceRequests],
+      notifications: [adminNotification, ...state.notifications],
+    });
+
+    toast.success(
+      "Pedido enviado à administração! Iremos procurar um prestador e avisar assim que estiver disponível.",
+    );
+    return newReq;
+  },
+
+  // Administrador notifica cliente que o serviço / categoria já está disponível
+  notifyClientServiceAvailable: (requestId: string, categorySlugOrName?: string) => {
+    const req = state.unservedServiceRequests.find((r) => r.id === requestId);
+    if (!req) return;
+
+    const updated = state.unservedServiceRequests.map((r) =>
+      r.id === requestId
+        ? {
+            ...r,
+            status: "categoria_disponivel" as const,
+            notifiedClientAt: Date.now(),
+            categoryName: categorySlugOrName || r.categoryName || r.serviceName,
+          }
+        : r,
+    );
+
+    // Notificação ao cliente com ligação para novo pedido
+    const clientNotification: AppNotification = {
+      id: `n_client_${Date.now()}`,
+      title: "🎉 Especialidade Já Disponível na KONEKTA!",
+      body: `Olá ${req.clientName}! A especialidade "${req.serviceName}" que solicitou já foi ativada na KONEKTA com prestadores credenciados. Já pode publicar o seu pedido!`,
+      at: Date.now(),
+      read: false,
+      tone: "success",
+      link: "/novo-pedido",
+    };
+
+    set({
+      unservedServiceRequests: updated,
+      notifications: [clientNotification, ...state.notifications],
+    });
+
+    toast.success(`Cliente ${req.clientName} notificado com sucesso!`);
+  },
+
+  // Administrador adiciona novo prestador
+  addProvider: (providerData: Omit<Provider, "id"> & { id?: string }) => {
+    const id = providerData.id || `prov-${Date.now()}`;
+    const newProv: Provider = {
+      ...providerData,
+      id,
+      verified: providerData.verified ?? true,
+      status: providerData.status ?? "ativo",
+      rating: providerData.rating ?? 5.0,
+      reviews: providerData.reviews ?? 0,
+      priceFrom: providerData.priceFrom ?? 350,
+      services:
+        providerData.services && providerData.services.length > 0
+          ? providerData.services
+          : [providerData.category],
+    };
+
+    set({
+      providers: [newProv, ...state.providers],
+    });
+
+    toast.success(`Prestador ${newProv.name} (${newProv.category}) adicionado e ativo!`);
+    return newProv;
+  },
+
+  // Alterar status de prestador (ativo / inativo / suspenso / verificado)
+  updateProviderStatus: (
+    providerId: string,
+    status: "ativo" | "inativo" | "suspenso",
+    verified?: boolean,
+  ) => {
+    const updated = state.providers.map((p) => {
+      if (p.id !== providerId) return p;
+      return {
+        ...p,
+        status,
+        ...(verified !== undefined ? { verified } : {}),
+      };
+    });
+
+    set({ providers: updated });
+    toast.success("Estado do prestador atualizado!");
+  },
 
   /* --------- Pedido Direto e Privado a um Prestador Específico -------- */
 
@@ -2634,15 +2865,40 @@ export const store = {
     return false;
   },
 
-  sendAssistant(text: string, reply: string) {
+  sendAssistant(
+    text: string,
+    reply: string,
+    meta?: {
+      role?: "concierge" | "specialist" | "fast" | "maps";
+      model?: string;
+      groundingPlaces?: Array<{ title: string; uri?: string; snippet?: string }>;
+      isMapsGrounded?: boolean;
+      actionLink?: {
+        label: string;
+        url: string;
+        icon?: string;
+      };
+    },
+  ) {
     const t = text.trim();
     if (!t) return;
-    const me: AssistantMessage = { id: `am_${Date.now()}`, from: "me", text: t, at: Date.now() };
+    const me: AssistantMessage = {
+      id: `am_${Date.now()}`,
+      from: "me",
+      text: t,
+      at: Date.now(),
+      role: meta?.role,
+    };
     const ai: AssistantMessage = {
       id: `am_${Date.now() + 1}`,
       from: "ai",
       text: reply,
       at: Date.now() + 1,
+      role: meta?.role,
+      model: meta?.model,
+      groundingPlaces: meta?.groundingPlaces,
+      isMapsGrounded: meta?.isMapsGrounded,
+      actionLink: meta?.actionLink,
     };
     set({ assistantMessages: [...state.assistantMessages, me, ai] });
   },
@@ -2750,6 +3006,95 @@ export const store = {
 
   clearNotifications() {
     set({ notifications: [] });
+  },
+
+  addNotification(
+    notification: Omit<AppNotification, "id" | "at" | "read"> & {
+      id?: string;
+      at?: number;
+      read?: boolean;
+    },
+  ) {
+    const newNotif: AppNotification = {
+      id: notification.id || `notif_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
+      title: notification.title,
+      body: notification.body,
+      at: notification.at || Date.now(),
+      read: notification.read ?? false,
+      tone: notification.tone,
+      link: notification.link,
+    };
+    set({ notifications: [newNotif, ...state.notifications] });
+  },
+
+  flagSecurityIncident(
+    incident: Omit<SecurityIncident, "id" | "timestamp" | "status"> & {
+      id?: string;
+      timestamp?: number;
+      status?: SecurityIncident["status"];
+    },
+  ): SecurityIncident {
+    const existing = state.securityIncidents.find(
+      (inc) => inc.providerId === incident.providerId && inc.messageId === incident.messageId,
+    );
+    if (existing) return existing;
+
+    const newIncident: SecurityIncident = {
+      id: incident.id || `inc_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
+      providerId: incident.providerId,
+      messageId: incident.messageId,
+      from: incident.from,
+      senderName: incident.senderName,
+      textSnippet: incident.textSnippet,
+      matchedText: incident.matchedText,
+      category: incident.category,
+      reason: incident.reason,
+      severity: incident.severity,
+      timestamp: incident.timestamp || Date.now(),
+      status: incident.status || "flagged",
+      notes: incident.notes,
+    };
+
+    // Atualiza a mensagem na conversa para sinalizar à equipa
+    const convo = state.messages[incident.providerId] ?? [];
+    const updatedConvo = convo.map((m) =>
+      m.id === incident.messageId
+        ? {
+            ...m,
+            flaggedForReview: true,
+            flagReason: incident.reason,
+            flaggedCategory: incident.category,
+          }
+        : m,
+    );
+
+    set({
+      securityIncidents: [newIncident, ...state.securityIncidents],
+      messages: {
+        ...state.messages,
+        [incident.providerId]: updatedConvo,
+      },
+    });
+
+    return newIncident;
+  },
+
+  resolveSecurityIncident(incidentId: string, status: "reviewed" | "dismissed", notes?: string) {
+    set({
+      securityIncidents: state.securityIncidents.map((inc) =>
+        inc.id === incidentId
+          ? {
+              ...inc,
+              status,
+              notes: notes || inc.notes,
+            }
+          : inc,
+      ),
+    });
+  },
+
+  clearSecurityIncidents() {
+    set({ securityIncidents: [] });
   },
 
   setFlag(key: keyof FeatureFlags, value: boolean) {
@@ -4774,10 +5119,7 @@ export const store = {
     return { ok: true, message: `Pedido aceite! Serviço ${order.id} criado.`, orderId: order.id };
   },
 
-  providerScheduleOrder(
-    orderId: string,
-    scheduledFor: string,
-  ): { ok: boolean; message: string } {
+  providerScheduleOrder(orderId: string, scheduledFor: string): { ok: boolean; message: string } {
     const order = state.orders.find((o) => o.id === orderId);
     if (!order) return { ok: false, message: "Serviço não encontrado." };
     if (!scheduledFor.trim()) return { ok: false, message: "Defina uma data e hora." };

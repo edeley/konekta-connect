@@ -63,6 +63,7 @@ import {
 } from "@/lib/sync-manager";
 import { ClientGpsRadarCard } from "@/components/konekta/ClientGpsRadarCard";
 import { toast } from "sonner";
+import { AudioRecorderButton } from "@/components/konekta/AudioRecorderButton";
 
 export const Route = createFileRoute("/chat/$id")({
   head: ({ params }) => {
@@ -184,9 +185,7 @@ function ChatDetail() {
     }
   }
   const [photoModalOpen, setPhotoModalOpen] = useState(false);
-  const [selectedPhotoUrl, setSelectedPhotoUrl] = useState(
-    "https://images.unsplash.com/photo-1581092160607-ee22621dd758?w=800&auto=format&fit=crop&q=80",
-  );
+  const [selectedPhotoUrl, setSelectedPhotoUrl] = useState("");
   const [photoCaption, setPhotoCaption] = useState("");
   const [isUploadingPhoto, setIsUploadingPhoto] = useState(false);
   const [cancelModalOrder, setCancelModalOrder] = useState<Order | null>(null);
@@ -494,15 +493,30 @@ function ChatDetail() {
   function handleSendPhotoDiagnostic(e: React.FormEvent) {
     e.preventDefault();
     if (!selectedPhotoUrl) {
-      toast.error("Selecione ou anexe uma foto para diagnóstico.");
+      toast.error("Tire uma foto com a câmara ou selecione da galeria.");
       return;
     }
+
+    if (photoCaption.trim()) {
+      const safety = analyzeBlockedContent(photoCaption);
+      if (safety.blocked) {
+        toast.error("Descrição Bloqueada por Segurança", {
+          description:
+            safety.reason ||
+            "É proibido partilhar contactos externos, telefones ou combinar pagamentos fora da plataforma.",
+          duration: 6000,
+        });
+        return;
+      }
+    }
+
     setIsUploadingPhoto(true);
     setTimeout(() => {
       store.sendPhotoMessage(id, selectedPhotoUrl, photoCaption);
       setIsUploadingPhoto(false);
       setPhotoModalOpen(false);
       setPhotoCaption("");
+      setSelectedPhotoUrl("");
       toast.success("Foto para diagnóstico enviada com sucesso!", {
         description: "O prestador foi notificado e irá analisar a avaria.",
       });
@@ -1262,6 +1276,12 @@ function ChatDetail() {
                     }`}
                   >
                     <p className="leading-relaxed">{m.text}</p>
+                    {m.flaggedForReview && (
+                      <div className="mt-1.5 flex items-center gap-1 text-[10px] font-bold text-amber-800 dark:text-amber-300 bg-amber-500/10 px-2 py-0.5 rounded-lg border border-amber-500/20">
+                        <ShieldAlert size={10} className="shrink-0 text-amber-500" />
+                        <span>Sinalizado pela monitorização anti-fuga KONEKTA</span>
+                      </div>
+                    )}
                     <p
                       className={`text-[9px] mt-1 text-right opacity-70 ${
                         isMe ? "text-primary-foreground" : "text-muted-foreground"
@@ -1407,17 +1427,28 @@ function ChatDetail() {
                       className={isLocatingGPS ? "animate-spin text-primary" : ""}
                     />
                   </button>
-                  <input
-                    value={text}
-                    onChange={(e) => setText(e.target.value)}
-                    placeholder="Escreva uma mensagem no chat protegido..."
-                    maxLength={500}
-                    className={`flex-1 py-2.5 px-3.5 bg-surface ring-1 rounded-xl text-xs focus:outline-none focus:ring-2 text-foreground placeholder:text-muted-foreground ${
-                      !unlocked && text.trim().length > 2 && containsBlockedContent(text)
-                        ? "ring-amber-500/60 focus:ring-amber-500/40"
-                        : "ring-border focus:ring-primary/40"
-                    }`}
-                  />
+                  <div className="relative flex-1">
+                    <input
+                      value={text}
+                      onChange={(e) => setText(e.target.value)}
+                      placeholder="Escreva uma mensagem no chat protegido..."
+                      maxLength={500}
+                      className={`w-full py-2.5 pl-3.5 pr-10 bg-surface ring-1 rounded-xl text-xs focus:outline-none focus:ring-2 text-foreground placeholder:text-muted-foreground ${
+                        !unlocked && text.trim().length > 2 && containsBlockedContent(text)
+                          ? "ring-amber-500/60 focus:ring-amber-500/40"
+                          : "ring-border focus:ring-primary/40"
+                      }`}
+                    />
+                    <div className="absolute right-1.5 top-1/2 -translate-y-1/2">
+                      <AudioRecorderButton
+                        onTranscription={(transcribed) => {
+                          setText((prev) => (prev ? `${prev} ${transcribed}` : transcribed));
+                          toast.success("Áudio transcrito com Gemini 3.5!");
+                        }}
+                        promptContext="Conversa entre cliente e prestador de serviços em São Tomé e Príncipe"
+                      />
+                    </div>
+                  </div>
                   <button
                     type="submit"
                     disabled={!text.trim()}
@@ -1947,11 +1978,9 @@ function ChatDetail() {
         description="Envie uma foto clara do problema para o técnico avaliar se precisa de peças ou visita antes de se deslocar no terreno."
       >
         <form onSubmit={handleSendPhotoDiagnostic} className="space-y-4">
-          {/* Opção 1: Upload Direto da Câmara ou Galeria do Telemóvel */}
+          {/* Selecionar Foto: Câmara ou Galeria */}
           <div className="space-y-2">
-            <label className="text-xs font-bold text-foreground block">
-              1. Carregar Foto do Dispositivo ou Tirar Foto
-            </label>
+            <label className="text-xs font-bold text-foreground block">Fotografia da Avaria</label>
             {/* Inputs nativos para acionar diretamente câmara ou galeria do telemóvel */}
             <input
               type="file"
@@ -1988,92 +2017,49 @@ function ChatDetail() {
             </div>
           </div>
 
-          <div>
-            <label className="text-xs font-bold text-foreground block mb-1.5">
-              2. Ou selecione um exemplo comum de avaria em São Tomé
-            </label>
-            <div className="grid grid-cols-2 gap-2">
-              {[
-                {
-                  label: "Tubo / Torneira com fuga",
-                  url: "https://images.unsplash.com/photo-1585704032915-c3400ca199e7?w=800&auto=format&fit=crop&q=80",
-                },
-                {
-                  label: "Quadro elétrico / Disjuntor",
-                  url: "https://images.unsplash.com/photo-1621905251189-08b45d6a269e?w=800&auto=format&fit=crop&q=80",
-                },
-                {
-                  label: "Ar Condicionado / Climatização",
-                  url: "https://images.unsplash.com/photo-1631545806609-43c391796d19?w=800&auto=format&fit=crop&q=80",
-                },
-                {
-                  label: "Humidade / Parede / Teto",
-                  url: "https://images.unsplash.com/photo-1513694203232-719a280e022f?w=800&auto=format&fit=crop&q=80",
-                },
-              ].map((sample) => (
+          {/* Pré-visualização da Foto Capturada ou Selecionada */}
+          {selectedPhotoUrl ? (
+            <div className="relative rounded-xl overflow-hidden border border-border bg-black/5">
+              <img
+                src={selectedPhotoUrl}
+                alt="Pré-visualização da avaria"
+                className="w-full h-44 object-cover"
+              />
+              <div className="absolute top-2 right-2">
                 <button
-                  key={sample.url}
                   type="button"
-                  onClick={() => setSelectedPhotoUrl(sample.url)}
-                  className={`p-2 rounded-xl border text-left flex flex-col gap-1.5 transition ${
-                    selectedPhotoUrl === sample.url
-                      ? "border-primary bg-primary/10 ring-2 ring-primary/30"
-                      : "border-border bg-card hover:bg-muted"
-                  }`}
+                  onClick={() => setSelectedPhotoUrl("")}
+                  className="px-2.5 py-1 rounded-lg bg-black/75 hover:bg-black text-white text-[11px] font-semibold flex items-center gap-1 backdrop-blur cursor-pointer shadow-md transition"
                 >
-                  <img
-                    src={sample.url}
-                    alt={sample.label}
-                    className="w-full h-16 rounded-lg object-cover"
-                  />
-                  <span className="text-[11px] font-bold text-foreground line-clamp-1">
-                    {sample.label}
-                  </span>
+                  <X size={13} />
+                  <span>Remover / Trocar</span>
                 </button>
-              ))}
+              </div>
+              <div className="absolute bottom-2 left-2 px-2.5 py-1 rounded-md bg-black/70 text-white text-[10px] font-semibold">
+                Foto Carregada com Sucesso
+              </div>
             </div>
-          </div>
+          ) : (
+            <div className="p-3.5 rounded-xl border border-dashed border-border/80 bg-muted/30 text-center">
+              <p className="text-xs text-muted-foreground">
+                Tire uma fotografia nítida com a câmara ou anexe uma foto da galeria para o
+                profissional analisar.
+              </p>
+            </div>
+          )}
 
           <div>
             <label className="text-xs font-bold text-foreground block mb-1">
-              Link da Imagem ou URL da Foto
-            </label>
-            <input
-              type="url"
-              value={selectedPhotoUrl}
-              onChange={(e) => setSelectedPhotoUrl(e.target.value)}
-              placeholder="https://..."
-              className="w-full h-10 px-3 rounded-xl bg-muted text-xs font-medium text-foreground outline-none focus:ring-2 focus:ring-primary/20"
-              required
-            />
-          </div>
-
-          <div>
-            <label className="text-xs font-bold text-foreground block mb-1">
-              Descrição ou Sintoma da Avaria
+              Descrição do Problema (Opcional)
             </label>
             <textarea
               value={photoCaption}
               onChange={(e) => setPhotoCaption(e.target.value)}
               rows={2}
-              placeholder="Ex: A torneira começou a pingar e verte água na base do armário..."
+              placeholder="Descreva o que aconteceu ou o sintoma da avaria..."
               className="w-full p-2.5 rounded-xl bg-muted text-xs font-medium text-foreground outline-none focus:ring-2 focus:ring-primary/20"
             />
           </div>
-
-          {/* Pré-visualização da Imagem Selecionada */}
-          {selectedPhotoUrl && (
-            <div className="relative rounded-xl overflow-hidden border border-border">
-              <img
-                src={selectedPhotoUrl}
-                alt="Pré-visualização do diagnóstico"
-                className="w-full h-36 object-cover"
-              />
-              <div className="absolute bottom-2 left-2 px-2 py-0.5 rounded-md bg-black/70 text-white text-[10px] font-semibold">
-                Pré-visualização
-              </div>
-            </div>
-          )}
 
           <div className="p-3 rounded-xl bg-blue-500/10 border border-blue-500/20 text-blue-950 dark:text-blue-200 text-xs flex items-center gap-2">
             <ShieldCheck size={16} className="text-blue-600 dark:text-blue-400 shrink-0" />

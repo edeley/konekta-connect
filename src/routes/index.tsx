@@ -24,9 +24,14 @@ import {
   ShieldCheck,
   FileCheck2,
   Headphones,
+  Sparkles,
+  Layers,
 } from "lucide-react";
 import { AppShell } from "@/components/AppShell";
-import { categories, providers } from "@/lib/konekta-data";
+import { categories } from "@/lib/konekta-data";
+import { getActiveCategories, isProviderActive } from "@/lib/catalog";
+import { RequestUnservedServiceModal } from "@/components/konekta/RequestUnservedServiceModal";
+import { Button } from "@/components/ui/button";
 import { useStore } from "@/lib/store";
 import { useSTPClock } from "@/lib/stp-time";
 import { STP_DISTRICTS } from "@/lib/auth-schemas";
@@ -108,11 +113,19 @@ const STP_SEARCH_ROTATOR = [
 function Home() {
   const user = useStore((s) => s.user);
   const unread = useStore((s) => s.notifications.filter((n) => !n.read).length);
+  const providers = useStore((s) => s.providers);
   const [query, setQuery] = useState("");
   const [selectedDistrict, setSelectedDistrict] = useState<string>("Todos");
   const [isDistrictModalOpen, setIsDistrictModalOpen] = useState(false);
   const [isLocatingGPS, setIsLocatingGPS] = useState(false);
   const [placeholderIndex, setPlaceholderIndex] = useState(0);
+  const [isUnservedModalOpen, setIsUnservedModalOpen] = useState(false);
+  const [unservedInitialName, setUnservedInitialName] = useState("");
+
+  const activeCategories = useMemo(
+    () => getActiveCategories({ providerList: providers }),
+    [providers],
+  );
 
   const { greeting, timeShort } = useSTPClock();
 
@@ -146,7 +159,7 @@ function Home() {
   };
 
   const filteredProviders = useMemo(() => {
-    let list = providers;
+    let list = providers.filter((p) => isProviderActive(p));
     if (selectedDistrict !== "Todos") {
       const matchLower = selectedDistrict.toLowerCase();
       list = list.filter(
@@ -158,18 +171,20 @@ function Home() {
       );
     }
     return list;
-  }, [selectedDistrict]);
+  }, [providers, selectedDistrict]);
 
   const searchResults = useMemo(() => {
     const q = query.trim().toLowerCase();
     if (!q) return [];
-    return providers.filter(
-      (p) =>
-        p.name.toLowerCase().includes(q) ||
-        p.category.toLowerCase().includes(q) ||
-        p.services.some((s) => s.toLowerCase().includes(q)),
-    );
-  }, [query]);
+    return providers
+      .filter((p) => isProviderActive(p))
+      .filter(
+        (p) =>
+          p.name.toLowerCase().includes(q) ||
+          p.category.toLowerCase().includes(q) ||
+          p.services.some((s) => s.toLowerCase().includes(q)),
+      );
+  }, [providers, query]);
 
   return (
     <AppShell>
@@ -183,7 +198,7 @@ function Home() {
             onClick={() => setIsDistrictModalOpen(true)}
             className="flex items-center gap-2.5 text-left group hover:opacity-90 transition cursor-pointer max-w-[65%]"
           >
-            <div className="size-8 rounded-lg bg-emerald-950/80 border border-emerald-500/30 flex items-center justify-center text-emerald-400 shrink-0">
+            <div className="size-8 rounded-lg bg-primary/20 border border-primary/40 flex items-center justify-center text-primary shrink-0">
               <MapPin size={16} />
             </div>
             <div className="min-w-0">
@@ -211,7 +226,7 @@ function Home() {
             )}
 
             <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-slate-800/90 border border-slate-700/60 text-[11px] font-semibold text-slate-200">
-              <span className="size-1.5 rounded-full bg-emerald-400" />
+              <span className="size-1.5 rounded-full bg-primary" />
               <span>{timeShort}</span>
               <span className="text-[9px] text-slate-400">GMT</span>
             </div>
@@ -223,7 +238,7 @@ function Home() {
             >
               <Bell size={15} />
               {unread > 0 && (
-                <span className="absolute -top-0.5 -right-0.5 size-2.5 rounded-full bg-emerald-500 ring-2 ring-slate-900" />
+                <span className="absolute -top-0.5 -right-0.5 size-2.5 rounded-full bg-primary ring-2 ring-slate-900" />
               )}
             </Link>
           </div>
@@ -231,7 +246,7 @@ function Home() {
 
         {/* Título & Proposta de Valor Executiva */}
         <div className="mt-4 space-y-1">
-          <div className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded bg-emerald-950 text-emerald-300 border border-emerald-800/40 text-[10px] font-bold uppercase tracking-wider">
+          <div className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded bg-primary/20 text-blue-200 border border-primary/30 text-[10px] font-bold uppercase tracking-wider">
             <ShieldCheck size={12} />
             <span>Rede Credenciada STP • Garantia de Custódia</span>
           </div>
@@ -291,7 +306,7 @@ function Home() {
                   className={cn(
                     "text-[11px] font-semibold px-2.5 py-1 rounded-md transition-all shrink-0 border cursor-pointer",
                     active
-                      ? "bg-emerald-600 text-white border-emerald-500 shadow-xs"
+                      ? "bg-primary text-white border-primary shadow-xs"
                       : "bg-slate-800/80 hover:bg-slate-800 text-slate-300 border-slate-700/80",
                   )}
                 >
@@ -423,7 +438,7 @@ function Home() {
                     alt={p.name}
                     className="size-full rounded-lg object-cover border border-border"
                   />
-                  <span className="absolute -bottom-1 -right-1 size-4 rounded-full bg-emerald-700 text-white flex items-center justify-center ring-2 ring-card">
+                  <span className="absolute -bottom-1 -right-1 size-4 rounded-full bg-primary text-white flex items-center justify-center ring-2 ring-card">
                     <Check size={10} strokeWidth={3} />
                   </span>
                 </div>
@@ -433,7 +448,7 @@ function Home() {
                     <p className="truncate text-sm font-bold text-foreground group-hover:text-primary transition-colors">
                       {p.name}
                     </p>
-                    <span className="text-[10px] font-bold px-1.5 py-0.2 rounded bg-emerald-50 text-emerald-900 border border-emerald-200">
+                    <span className="text-[10px] font-bold px-1.5 py-0.2 rounded bg-primary/10 text-primary border border-primary/20">
                       BI STP Validado
                     </span>
                   </div>
@@ -458,39 +473,56 @@ function Home() {
           </div>
 
           {searchResults.length === 0 && (
-            <div className="rounded-xl border border-border bg-card p-8 text-center space-y-3">
-              <div className="size-12 rounded-full bg-muted text-muted-foreground flex items-center justify-center mx-auto">
+            <div className="rounded-2xl border border-border bg-card p-8 text-center space-y-3 shadow-2xs">
+              <div className="size-12 rounded-full bg-amber-500/10 text-amber-600 flex items-center justify-center mx-auto">
                 <Search size={22} />
               </div>
               <p className="text-sm font-bold text-foreground">
-                Nenhum técnico específico localizado para “{query}”
+                Nenhum técnico ativo localizado para “{query}”
               </p>
-              <p className="text-xs text-muted-foreground max-w-xs mx-auto">
-                Publique o seu pedido aberto com fotos e descrição da avaria. Os técnicos
-                credenciados em São Tomé responderão com propostas de orçamento.
+              <p className="text-xs text-muted-foreground max-w-sm mx-auto leading-relaxed">
+                A KONEKTA nunca apresenta serviços sem profissionais credenciados prontos a atender.
+                Deseja que a administração recrute um prestador idóneo para este trabalho?
               </p>
-              <Link
-                to="/novo-pedido"
-                className="inline-flex items-center gap-1.5 px-4 py-2.5 bg-primary text-white text-xs font-bold rounded-xl hover:bg-brand-dark transition shadow-sm"
-              >
-                <span>Publicar Pedido Aberto</span>
-                <ArrowRight size={14} />
-              </Link>
+              <div className="flex flex-wrap items-center justify-center gap-2 pt-1">
+                <Button
+                  type="button"
+                  onClick={() => {
+                    setUnservedInitialName(query);
+                    setIsUnservedModalOpen(true);
+                  }}
+                  className="inline-flex items-center gap-1.5 px-4 py-2 bg-primary text-white text-xs font-bold rounded-xl shadow-xs"
+                >
+                  <Sparkles size={14} />
+                  <span>Solicitar “{query}” ao Administrador</span>
+                </Button>
+                <Link
+                  to="/novo-pedido"
+                  className="inline-flex items-center gap-1.5 px-4 py-2 bg-muted text-foreground text-xs font-bold rounded-xl hover:bg-muted/80 transition"
+                >
+                  <span>Publicar Pedido Aberto</span>
+                  <ArrowRight size={14} />
+                </Link>
+              </div>
             </div>
           )}
         </main>
       ) : (
         /* HOME PRINCIPAL ELEVADA */
         <main className="space-y-6 pt-5">
-          {/* ================= ESPECIALIDADES EM GRADE ================= */}
+          {/* ================= ESPECIALIDADES EM GRADE (SOMENTE ATIVAS) ================= */}
           <section className="px-4 sm:px-6">
             <div className="flex items-center justify-between mb-3">
               <div>
-                <h2 className="text-sm font-bold uppercase tracking-wider text-foreground">
-                  Especialidades Técnicas
+                <h2 className="text-sm font-bold uppercase tracking-wider text-foreground flex items-center gap-2">
+                  <span>Especialidades Técnicas Ativas</span>
+                  <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-primary/10 text-primary">
+                    <span className="size-1.5 rounded-full bg-primary animate-pulse" />
+                    {activeCategories.length} disponíveis
+                  </span>
                 </h2>
                 <p className="text-[11px] text-muted-foreground">
-                  Selecione o setor de intervenção para consultar profissionais
+                  Apenas exibimos especialidades com técnicos ativos e verificados em STP
                 </p>
               </div>
               <Link
@@ -502,8 +534,8 @@ function Home() {
               </Link>
             </div>
 
-            <div className="grid grid-cols-4 gap-2.5">
-              {categories.slice(0, 8).map((c) => {
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+              {activeCategories.map((c) => {
                 const conf = categoryIconMap[c.slug] ?? {
                   icon: Wrench,
                   tag: "Geral",
@@ -520,11 +552,33 @@ function Home() {
                       <Icon size={20} />
                     </span>
                     <span className="text-[11px] font-bold leading-tight text-foreground line-clamp-1">
-                      {c.name}
+                      {c.displayName || c.name}
+                    </span>
+                    <span className="text-[10px] text-primary font-semibold inline-flex items-center gap-1">
+                      <span className="size-1.5 rounded-full bg-primary animate-pulse" />
+                      {c.count} {c.count === 1 ? "ativo" : "ativos"}
                     </span>
                   </Link>
                 );
               })}
+            </div>
+
+            {/* Aviso sobre serviços não listados */}
+            <div className="mt-3 p-3 rounded-xl border border-dashed border-border bg-muted/20 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs">
+              <span className="text-muted-foreground text-[11px]">
+                Precisa de uma especialidade não listada (Marceneiro, TV Satélite, etc.)?
+              </span>
+              <button
+                type="button"
+                onClick={() => {
+                  setUnservedInitialName("");
+                  setIsUnservedModalOpen(true);
+                }}
+                className="text-xs font-bold text-primary hover:underline inline-flex items-center gap-1 cursor-pointer self-start sm:self-auto"
+              >
+                <Sparkles size={12} />
+                <span>Solicitar à Administração</span>
+              </button>
             </div>
           </section>
 
@@ -591,7 +645,7 @@ function Home() {
                           loading="lazy"
                           className="size-full rounded-lg object-cover border border-border"
                         />
-                        <span className="absolute -bottom-1 -right-1 size-4 rounded-full bg-emerald-700 text-white flex items-center justify-center ring-2 ring-card">
+                        <span className="absolute -bottom-1 -right-1 size-4 rounded-full bg-primary text-white flex items-center justify-center ring-2 ring-card">
                           <Check size={10} strokeWidth={3} />
                         </span>
                       </div>
@@ -603,7 +657,7 @@ function Home() {
                         <span className="text-[10px] font-semibold text-muted-foreground block truncate">
                           {p.category}
                         </span>
-                        <div className="flex items-center gap-1 text-[11px] text-amber-700 font-bold mt-0.5">
+                        <div className="flex items-center gap-1 text-[11px] text-foreground font-bold mt-0.5">
                           <Star size={11} className="fill-amber-500 text-amber-500" />
                           <span>{p.rating}</span>
                           <span className="text-muted-foreground font-normal">({p.reviews})</span>
@@ -617,7 +671,7 @@ function Home() {
                         <MapPin size={11} className="text-primary shrink-0" />
                         <span className="truncate">Água Grande & Mé-Zóchi</span>
                       </div>
-                      <div className="flex items-center gap-1 text-emerald-800 font-medium">
+                      <div className="flex items-center gap-1 text-primary font-medium">
                         <Clock size={11} className="shrink-0" />
                         <span>Resposta média ~15 min</span>
                       </div>
@@ -697,8 +751,8 @@ function Home() {
             <div className="rounded-xl bg-slate-900 text-white p-4 flex items-center justify-between gap-3 border border-slate-800 shadow-sm">
               <div className="space-y-1 min-w-0">
                 <div className="flex items-center gap-1.5">
-                  <span className="size-2 rounded-full bg-emerald-400" />
-                  <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-300">
+                  <span className="size-2 rounded-full bg-primary" />
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-blue-300">
                     Linha de Apoio & Mediação STP
                   </span>
                 </div>
@@ -715,7 +769,7 @@ function Home() {
                 href="https://wa.me/2399944747?text=Olá,%20preciso%20de%20assistência%20na%20plataforma%20KONEKTA%20STP"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="px-3.5 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shrink-0 transition-colors"
+                className="px-3.5 py-2 rounded-lg bg-primary hover:opacity-90 text-white font-bold text-xs shrink-0 transition-opacity"
               >
                 Contactar
               </a>
@@ -723,6 +777,13 @@ function Home() {
           </section>
         </main>
       )}
+      {/* Modal para Solicitar Serviço sem Prestador Ativo */}
+      <RequestUnservedServiceModal
+        isOpen={isUnservedModalOpen}
+        onClose={() => setIsUnservedModalOpen(false)}
+        initialServiceName={unservedInitialName}
+        initialDistrict={selectedDistrict === "Todos" ? undefined : selectedDistrict}
+      />
     </AppShell>
   );
 }

@@ -231,7 +231,7 @@ function RequestOrOrderDetail() {
 
             <div className="rounded-2xl bg-muted/40 p-3.5 border border-border/60">
               <p className="text-xs text-foreground font-medium leading-relaxed">{meta.message}</p>
-              <div className="mt-2.5 flex items-center gap-2 text-[11px] text-emerald-800 dark:text-emerald-300 font-bold">
+              <div className="mt-2.5 flex items-center gap-2 text-[11px] text-primary font-bold">
                 <ShieldCheck size={14} className="shrink-0" />
                 <span>
                   {isFinished
@@ -370,7 +370,7 @@ function RequestOrOrderDetail() {
               {order.status === "aceite" && (
                 <Button
                   onClick={handleAdvance}
-                  className="w-full h-12 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-sm"
+                  className="w-full h-12 rounded-2xl bg-primary text-primary-foreground font-bold text-sm cursor-pointer shadow-sm hover:opacity-90"
                 >
                   <Navigation size={16} /> Iniciar Deslocação (A Caminho)
                 </Button>
@@ -379,7 +379,7 @@ function RequestOrOrderDetail() {
               {order.status === "a-caminho" && (
                 <Button
                   onClick={handleAdvance}
-                  className="w-full h-12 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-sm"
+                  className="w-full h-12 rounded-2xl bg-primary text-primary-foreground font-bold text-sm cursor-pointer shadow-sm hover:opacity-90"
                 >
                   <Wrench size={16} /> Cheguei ao Local · Check-in GPS & Iniciar
                 </Button>
@@ -388,7 +388,7 @@ function RequestOrOrderDetail() {
               {order.status === "em-execucao" && (
                 <Button
                   onClick={handleAdvance}
-                  className="w-full h-12 rounded-2xl bg-amber-600 hover:bg-amber-700 text-white font-bold text-sm"
+                  className="w-full h-12 rounded-2xl bg-primary text-primary-foreground font-bold text-sm cursor-pointer shadow-sm hover:opacity-90"
                 >
                   <CheckCircle2 size={16} /> Concluir Serviço & Solicitar PIN
                 </Button>
@@ -448,14 +448,11 @@ function RequestOrOrderDetail() {
             )}
 
             {/* Garantia do Serviço */}
-            <div className="rounded-2xl bg-emerald-500/10 p-3 border border-emerald-500/25 flex items-start gap-2.5 text-xs text-emerald-950 dark:text-emerald-200">
-              <Shield
-                size={16}
-                className="text-emerald-800 dark:text-emerald-400 shrink-0 mt-0.5"
-              />
+            <div className="rounded-2xl bg-primary/10 p-3 border border-primary/20 flex items-start gap-2.5 text-xs text-primary">
+              <Shield size={16} className="text-primary shrink-0 mt-0.5" />
               <div>
                 <p className="font-bold">Garantia & Qualidade KONEKTA</p>
-                <p className="mt-0.5 text-[11px] opacity-90">
+                <p className="mt-0.5 text-[11px] opacity-90 text-foreground">
                   {order.warranty ||
                     "Garantia de conformidade KONEKTA STP. O valor só é libertado após validação por código PIN."}
                 </p>
@@ -571,7 +568,7 @@ function RequestOrOrderDetail() {
 
               <div className="flex items-center justify-between py-1.5">
                 <span className="text-muted-foreground">Taxa de Proteção KONEKTA Escrow (5%)</span>
-                <span className="font-bold text-emerald-800 dark:text-emerald-300">
+                <span className="font-bold text-primary">
                   {formatDb(order.breakdown?.escrowFee || Math.round(order.total * 0.05))}{" "}
                   (Incluída)
                 </span>
@@ -613,10 +610,7 @@ function RequestOrOrderDetail() {
                   <div className="min-w-0">
                     <div className="flex items-center gap-1.5">
                       <p className="truncate text-sm font-bold text-foreground">{provider.name}</p>
-                      <UserCheck
-                        size={14}
-                        className="text-emerald-700 dark:text-emerald-400 shrink-0"
-                      />
+                      <UserCheck size={14} className="text-primary shrink-0" />
                     </div>
                     <p className="text-xs text-muted-foreground">{provider.category}</p>
                     <div className="flex items-center gap-1 text-[11px] text-amber-500 font-bold mt-0.5">
@@ -631,7 +625,7 @@ function RequestOrOrderDetail() {
                 <Link
                   to="/chat/$id"
                   params={{ id: provider.id }}
-                  className="h-10 px-3.5 rounded-xl bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-800 dark:text-emerald-300 text-xs font-bold flex items-center gap-1.5 transition border border-emerald-500/25 shrink-0"
+                  className="h-10 px-3.5 rounded-xl bg-primary/10 hover:bg-primary/20 text-primary text-xs font-bold flex items-center gap-1.5 transition border border-primary/25 shrink-0"
                 >
                   <MessageCircle size={15} />
                   <span>Falar no Chat</span>
@@ -650,7 +644,7 @@ function RequestOrOrderDetail() {
                     <p className="truncate text-sm font-bold text-foreground">
                       {order.clientName || "Cliente KONEKTA"}
                     </p>
-                    <p className="text-xs text-emerald-800 dark:text-emerald-300 font-bold flex items-center gap-1">
+                    <p className="text-xs text-primary font-bold flex items-center gap-1">
                       <ShieldCheck size={12} /> Cliente Verificado STP
                     </p>
                   </div>
@@ -659,7 +653,7 @@ function RequestOrOrderDetail() {
                 <Link
                   to="/chat/$id"
                   params={{ id: order.providerId }}
-                  className="h-10 px-3.5 rounded-xl bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-800 dark:text-emerald-300 text-xs font-bold flex items-center gap-1.5 transition border border-emerald-500/25 shrink-0"
+                  className="h-10 px-3.5 rounded-xl bg-primary/10 hover:bg-primary/20 text-primary text-xs font-bold flex items-center gap-1.5 transition border border-primary/25 shrink-0"
                 >
                   <MessageCircle size={15} />
                   <span>Falar no Chat</span>
@@ -879,7 +873,7 @@ function RequestOrOrderDetail() {
                 </div>
                 <div className="flex justify-between py-1 border-b border-border/60">
                   <span className="text-muted-foreground">Estado do Pagamento:</span>
-                  <span className="font-bold text-emerald-800 dark:text-emerald-300">
+                  <span className="font-bold text-primary">
                     {order.status === "concluido" || order.status === "avaliado"
                       ? "Liquidado ao Prestador"
                       : "Retido em Custódia Segura"}

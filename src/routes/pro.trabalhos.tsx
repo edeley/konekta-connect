@@ -105,10 +105,12 @@ function ProJobsPage() {
   function confirmSchedule() {
     if (!scheduling) return;
     const res = store.providerScheduleOrder(scheduling.id, scheduleValue);
-    res.ok ? toast.success(res.message) : toast.error(res.message);
     if (res.ok) {
+      toast.success(res.message);
       setScheduling(null);
       setScheduleValue("");
+    } else {
+      toast.error(res.message);
     }
   }
 
@@ -256,7 +258,11 @@ function ProJobsPage() {
                         type="button"
                         onClick={() => {
                           const res = store.providerDeclineRequest(r.id);
-                          res.ok ? toast(res.message) : toast.error(res.message);
+                          if (res.ok) {
+                            toast(res.message);
+                          } else {
+                            toast.error(res.message);
+                          }
                         }}
                         className="press flex h-11 items-center gap-1.5 rounded-xl bg-muted px-3 text-xs font-bold text-muted-foreground hover:text-foreground"
                       >
@@ -350,7 +356,11 @@ function ProJobsPage() {
                           className="h-10 rounded-full px-4 text-xs font-bold"
                           onClick={() => {
                             const res = store.providerConfirmPresence(o.id);
-                            res.ok ? toast.success(res.message) : toast.error(res.message);
+                            if (res.ok) {
+                              toast.success(res.message);
+                            } else {
+                              toast.error(res.message);
+                            }
                           }}
                         >
                           <CheckCircle2 size={14} /> Confirmar presença

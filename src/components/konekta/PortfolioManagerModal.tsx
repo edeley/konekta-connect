@@ -529,7 +529,7 @@ export function PortfolioManagerModal({
                 <label className="text-xs font-bold text-foreground flex items-center justify-between">
                   <span>Foto do Trabalho</span>
                   {imagePreview && (
-                    <span className="text-emerald-600 dark:text-emerald-400 font-bold text-[11px] flex items-center gap-1">
+                    <span className="text-primary font-bold text-[11px] flex items-center gap-1">
                       <CheckCircle2 size={12} /> Foto anexada
                     </span>
                   )}
@@ -547,7 +547,7 @@ export function PortfolioManagerModal({
                         <span className="truncate max-w-[200px]">
                           {imageFileName || "Foto carregada"}
                         </span>
-                        <span className="text-emerald-300 font-bold shrink-0">✓ Pronta</span>
+                        <span className="text-primary-foreground font-bold shrink-0">✓ Pronta</span>
                       </div>
                     </div>
 
@@ -576,9 +576,9 @@ export function PortfolioManagerModal({
                       <button
                         type="button"
                         onClick={() => cameraInputRef.current?.click()}
-                        className="p-4 rounded-2xl border-2 border-dashed border-emerald-500/50 bg-emerald-500/5 hover:bg-emerald-500/10 text-center transition flex flex-col items-center justify-center gap-2 active:scale-98 cursor-pointer group"
+                        className="p-4 rounded-2xl border-2 border-dashed border-primary/40 bg-primary/5 hover:bg-primary/10 text-center transition flex flex-col items-center justify-center gap-2 active:scale-98 cursor-pointer group"
                       >
-                        <div className="size-11 rounded-2xl bg-emerald-500/20 text-emerald-700 dark:text-emerald-300 grid place-items-center group-hover:scale-110 transition-transform">
+                        <div className="size-11 rounded-2xl bg-primary/20 text-primary grid place-items-center group-hover:scale-110 transition-transform">
                           <Camera size={22} />
                         </div>
                         <div>
@@ -660,7 +660,7 @@ export function PortfolioManagerModal({
                       2. Foto de DEPOIS
                     </span>
                     {afterPreview ? (
-                      <div className="relative aspect-square rounded-2xl border-2 border-emerald-500/40 overflow-hidden bg-black/5 shadow-2xs">
+                      <div className="relative aspect-square rounded-2xl border-2 border-primary/40 overflow-hidden bg-black/5 shadow-2xs">
                         <img src={afterPreview} alt="Depois" className="size-full object-cover" />
                         <button
                           type="button"

@@ -70,51 +70,129 @@
   --popover: #ffffff;
   --popover-foreground: #0f172a;
 
-  --primary: #0f3d2e;
+  /* Cliente (Padrão): Azul e Branco — Psicologia: Confiança, Segurança, Institucional */
+  --primary: #2563eb;
   --primary-foreground: #ffffff;
-  --brand-dark: #09261d;
+  --brand-dark: #1d4ed8;
 
-  --success: #0f3d2e;
+  --success: #2563eb;
   --success-foreground: #ffffff;
-  --warning: #b45309;
+  --warning: #475569;
   --warning-foreground: #ffffff;
-  --info: #0369a1;
+  --info: #2563eb;
 
   --secondary: #f1f5f9;
   --secondary-foreground: #0f172a;
   --muted: #f1f5f9;
   --muted-foreground: #475569;
-  --accent: #e8f2ed;
-  --accent-foreground: #0f3d2e;
+  --accent: #eff6ff;
+  --accent-foreground: #1d4ed8;
   --destructive: #dc2626;
   --destructive-foreground: #ffffff;
   --border: #e2e8f0;
   --input: #e2e8f0;
-  --ring: #0f3d2e;
+  --ring: #2563eb;
+}
+
+[data-role="cliente"] {
+  /* Cliente: Azul e Branco */
+  --primary: #2563eb;
+  --primary-foreground: #ffffff;
+  --brand-dark: #1d4ed8;
+
+  --success: #2563eb;
+  --success-foreground: #ffffff;
+  --warning: #475569;
+  --warning-foreground: #ffffff;
+  --info: #2563eb;
+
+  --secondary: #f1f5f9;
+  --secondary-foreground: #0f172a;
+  --muted: #f1f5f9;
+  --muted-foreground: #475569;
+  --accent: #eff6ff;
+  --accent-foreground: #1d4ed8;
+  --destructive: #dc2626;
+  --destructive-foreground: #ffffff;
+  --border: #e2e8f0;
+  --input: #e2e8f0;
+  --ring: #2563eb;
+}
+
+[data-role="prestador"] {
+  /* Prestador: Verde e Branco — Psicologia: Crescimento, Execução, Prosperidade */
+  --primary: #059669;
+  --primary-foreground: #ffffff;
+  --brand-dark: #047857;
+
+  --success: #059669;
+  --success-foreground: #ffffff;
+  --warning: #475569;
+  --warning-foreground: #ffffff;
+  --info: #059669;
+
+  --secondary: #f1f5f9;
+  --secondary-foreground: #0f172a;
+  --muted: #f1f5f9;
+  --muted-foreground: #475569;
+  --accent: #ecfdf5;
+  --accent-foreground: #047857;
+  --destructive: #dc2626;
+  --destructive-foreground: #ffffff;
+  --border: #e2e8f0;
+  --input: #e2e8f0;
+  --ring: #059669;
 }
 
 .dark {
-  --surface: #090e11;
-  --background: #090e11;
+  --surface: #090d16;
+  --background: #090d16;
   --foreground: #f8fafc;
-  --card: #111a1f;
+  --card: #0f172a;
   --card-foreground: #f8fafc;
-  --popover: #111a1f;
+  --popover: #0f172a;
+  --popover-foreground: #f8fafc;
+  --primary: #3b82f6;
+  --primary-foreground: #ffffff;
+  --brand-dark: #2563eb;
+  --success: #3b82f6;
+  --warning: #94a3b8;
+  --destructive: #ef4444;
+  --secondary: #1e293b;
+  --secondary-foreground: #f8fafc;
+  --muted: #1e293b;
+  --muted-foreground: #94a3b8;
+  --accent: #172554;
+  --accent-foreground: #93c5fd;
+  --border: #1e293b;
+  --input: #1e293b;
+  --ring: #3b82f6;
+}
+
+.dark[data-role="prestador"],
+[data-role="prestador"].dark,
+[data-role="prestador"] .dark {
+  --surface: #07150e;
+  --background: #07150e;
+  --foreground: #f8fafc;
+  --card: #0f241a;
+  --card-foreground: #f8fafc;
+  --popover: #0f241a;
   --popover-foreground: #f8fafc;
   --primary: #10b981;
-  --primary-foreground: #041f16;
+  --primary-foreground: #ffffff;
   --brand-dark: #059669;
   --success: #10b981;
-  --warning: #f59e0b;
+  --warning: #94a3b8;
   --destructive: #ef4444;
-  --secondary: #1a262e;
+  --secondary: #132e22;
   --secondary-foreground: #f8fafc;
-  --muted: #1a262e;
+  --muted: #132e22;
   --muted-foreground: #94a3b8;
-  --accent: #112a20;
+  --accent: #064e3b;
   --accent-foreground: #6ee7b7;
-  --border: #23353f;
-  --input: #23353f;
+  --border: #193d2c;
+  --input: #193d2c;
   --ring: #10b981;
 }
 

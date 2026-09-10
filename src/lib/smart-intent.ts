@@ -282,10 +282,10 @@ export function analyzeRequestText(text: string): SmartIntentResult {
   }
 
   const confidence = Math.min(1, bestScore / 6);
-  const followUps = [...(bestSlug ? (FOLLOW_UP_BY_CATEGORY[bestSlug] ?? []) : []), ...GENERIC_FOLLOW_UPS].slice(
-    0,
-    3,
-  );
+  const followUps = [
+    ...(bestSlug ? (FOLLOW_UP_BY_CATEGORY[bestSlug] ?? []) : []),
+    ...GENERIC_FOLLOW_UPS,
+  ].slice(0, 3);
 
   const cleaned = text.trim().replace(/\s+/g, " ");
   const suggestedTitle =

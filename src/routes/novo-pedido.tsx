@@ -21,6 +21,15 @@ import {
   ChevronRight,
   Lightbulb,
   ExternalLink,
+  Droplets,
+  Paintbrush,
+  Scissors,
+  Wind,
+  Sprout,
+  Sparkles,
+  Layers,
+  Search,
+  AlertCircle,
 } from "lucide-react";
 import { toast } from "sonner";
 import { AppShell } from "@/components/AppShell";
@@ -28,11 +37,21 @@ import { ScreenHeader, Section, KCard, ProgressSteps } from "@/components/konekt
 import { Button } from "@/components/ui/button";
 import { CameraCaptureModal } from "@/components/CameraCaptureModal";
 import { categories } from "@/lib/konekta-data";
-import { categoryEmoji, districts } from "@/lib/catalog";
-import { store } from "@/lib/store";
+import {
+  categoryDisplayName,
+  categoryEmoji,
+  districts,
+  getActiveCategories,
+  getAllActiveServices,
+  type ActiveCategory,
+  type AvailableServiceItem,
+} from "@/lib/catalog";
+import { store, useStore } from "@/lib/store";
 import { urgencyLabel, type RequestUrgency } from "@/lib/requests";
 import { cn } from "@/lib/utils";
 import { validateFormSafety } from "@/lib/escrow";
+import { AudioRecorderButton } from "@/components/konekta/AudioRecorderButton";
+import { RequestUnservedServiceModal } from "@/components/konekta/RequestUnservedServiceModal";
 import {
   type SyncScheduleEvent,
   registerEventAndAlarms,
@@ -88,6 +107,37 @@ function formatDatePt(dateStr: string) {
   }
 }
 
+function CategoryIcon({ slug, className }: { slug: string; className?: string }) {
+  switch (slug) {
+    case "eletricista":
+      return <Zap className={className} />;
+    case "canalizador":
+      return <Droplets className={className} />;
+    case "limpeza":
+      return <Sparkles className={className} />;
+    case "pintor":
+      return <Paintbrush className={className} />;
+    case "mecanico":
+      return <Wrench className={className} />;
+    case "jardinagem":
+      return <Sprout className={className} />;
+    case "ar-condicionado":
+      return <Wind className={className} />;
+    case "beleza":
+      return <Scissors className={className} />;
+    default:
+      return <Wrench className={className} />;
+  }
+}
+
+const categoryColors: Record<string, { bg: string; text: string; border: string }> = {
+  default: {
+    bg: "bg-primary/10",
+    text: "text-primary",
+    border: "border-primary/20",
+  },
+};
+
 function NewRequest() {
   const navigate = useNavigate();
   const galleryInputRef = useRef<HTMLInputElement>(null);
@@ -99,8 +149,17 @@ function NewRequest() {
   tomorrowDate.setDate(tomorrowDate.getDate() + 1);
   const tomorrowStr = tomorrowDate.toISOString().split("T")[0];
 
+  const providers = useStore((s) => s.providers);
+  const activeCategories = useMemo(() => getActiveCategories(undefined, providers), [providers]);
+  const allActiveServices = useMemo(() => getAllActiveServices(providers), [providers]);
+
   const [step, setStep] = useState(1);
   const [categorySlug, setCategorySlug] = useState<string | null>(null);
+  const [activeTabMode, setActiveTabMode] = useState<"categorias" | "servicos">("categorias");
+  const [serviceSearch, setServiceSearch] = useState("");
+  const [isRequestUnservedModalOpen, setIsRequestUnservedModalOpen] = useState(false);
+  const [unservedModalInitialName, setUnservedModalInitialName] = useState("");
+
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [district, setDistrict] = useState(districts[0]);
@@ -140,29 +199,49 @@ function NewRequest() {
     () => (smartText.trim().length >= 6 ? analyzeRequestText(smartText) : null),
     [smartText],
   );
-  const smartCategory = smartRead?.categorySlug
-    ? categories.find((c) => c.slug === smartRead.categorySlug)
-    : undefined;
+  const smartCategory = useMemo(() => {
+    if (!smartRead?.categorySlug) return undefined;
+    return (
+      activeCategories.find((c) => c.slug === smartRead.categorySlug) ||
+      categories.find((c) => c.slug === smartRead.categorySlug)
+    );
+  }, [smartRead, activeCategories]);
+
+  const smartCategoryIsActive = useMemo(() => {
+    if (!smartCategory) return false;
+    return activeCategories.some((c) => c.slug === smartCategory.slug);
+  }, [smartCategory, activeCategories]);
 
   const applySmartRead = () => {
     if (!smartRead || !smartCategory) return;
     setCategorySlug(smartCategory.slug);
     setUrgency(smartRead.urgency);
-    setTitle(smartRead.template?.title || smartRead.suggestedTitle || `Serviço de ${smartCategory.name}`);
+    setTitle(
+      smartRead.template?.title ||
+        smartRead.suggestedTitle ||
+        `Serviço de ${smartCategory.displayName || smartCategory.name}`,
+    );
     setDescription(smartText.trim());
     if (smartRead.template) setMaterialStatus(smartRead.template.materialStatus);
     if (smartRead.suggestedBudget) setBudgetEstimate(String(smartRead.suggestedBudget));
-    toast.success(`Entendi: ${smartCategory.name}`, {
-      description: "Preenchi o pedido por si. Confirme os detalhes.",
-    });
+    toast.success(
+      `Especialidade identificada: ${smartCategory.displayName || smartCategory.name}`,
+      {
+        description: "Preenchi o pedido por si. Confirme os detalhes.",
+      },
+    );
     setStep(2);
   };
 
-  // Modelos pré-configurados para a categoria selecionada
+  // Modelos pré-configurados para a categoria selecionada (apenas com prestadores ativos)
   const categoryTemplates = useMemo(() => {
-    if (!categorySlug) return STP_QUICK_SERVICE_TEMPLATES.slice(0, 6);
-    return STP_QUICK_SERVICE_TEMPLATES.filter((t) => t.categorySlug === categorySlug);
-  }, [categorySlug]);
+    const activeSlugs = new Set(activeCategories.map((c) => c.slug));
+    const activeTemplates = STP_QUICK_SERVICE_TEMPLATES.filter((t) =>
+      activeSlugs.has(t.categorySlug),
+    );
+    if (!categorySlug) return activeTemplates.slice(0, 6);
+    return activeTemplates.filter((t) => t.categorySlug === categorySlug);
+  }, [categorySlug, activeCategories]);
 
   const applyTemplate = (tpl: ServiceQuickTemplate) => {
     setCategorySlug(tpl.categorySlug);
@@ -232,7 +311,12 @@ function NewRequest() {
     }
   };
 
-  const category = categories.find((c) => c.slug === categorySlug);
+  const category = useMemo(
+    () =>
+      activeCategories.find((c) => c.slug === categorySlug) ||
+      categories.find((c) => c.slug === categorySlug),
+    [categorySlug, activeCategories],
+  );
 
   const formSafety = validateFormSafety({
     Título: title,
@@ -391,137 +475,458 @@ function NewRequest() {
         <ProgressSteps step={step} total={3} />
       </Section>
 
-      {/* PASSO 1: CATEGORIA + MODELOS FREQUENTES DE STP */}
+      {/* PASSO 1: CATEGORIA + SERVIÇOS DISPONÍVEIS + MODELOS FREQUENTES DE STP */}
       {step === 1 && (
         <div className="space-y-4">
           <Section title="Diga por palavras suas o que precisa">
             <div className="space-y-2.5">
-              <textarea
-                value={smartText}
-                onChange={(e) => setSmartText(e.target.value)}
-                rows={3}
-                placeholder="Ex.: A minha bomba de água parou e não tenho água em casa, é urgente."
-                className="w-full rounded-2xl bg-card p-3.5 text-xs leading-relaxed border border-border shadow-soft outline-none ring-primary/30 focus:ring-2"
-              />
+              <div className="relative">
+                <textarea
+                  value={smartText}
+                  onChange={(e) => setSmartText(e.target.value)}
+                  rows={3}
+                  placeholder="Ex.: A minha bomba de água parou e não tenho água em casa, é urgente."
+                  className="w-full rounded-2xl bg-card p-3.5 pr-14 text-xs leading-relaxed border border-border shadow-soft outline-none ring-primary/30 focus:ring-2"
+                />
+                <div className="absolute right-2.5 bottom-2.5">
+                  <AudioRecorderButton
+                    onTranscription={(text) => {
+                      setSmartText(text);
+                      toast.success("Áudio transcrito com Gemini 3.5!");
+                    }}
+                    promptContext="Descrição falada de avaria, reparação ou serviço em São Tomé e Príncipe"
+                  />
+                </div>
+              </div>
 
               {smartRead && smartCategory ? (
-                <KCard className="space-y-2.5 border border-primary/25 bg-primary/[0.04]">
-                  <div className="flex items-center gap-2">
-                    <Lightbulb size={15} className="text-primary" />
-                    <span className="text-xs font-bold text-foreground">
-                      Sugestão automática: {categoryEmoji[smartCategory.slug] ?? "🛠️"}{" "}
-                      {smartCategory.name}
-                    </span>
-                  </div>
-                  <div className="flex flex-wrap gap-1.5">
-                    <span className="rounded-full bg-card px-2 py-0.5 text-[10px] font-bold text-muted-foreground border border-border">
-                      {urgencyLabel[smartRead.urgency]}
-                    </span>
-                    {smartRead.suggestedBudget ? (
-                      <span className="rounded-full bg-card px-2 py-0.5 text-[10px] font-bold text-muted-foreground border border-border">
-                        Estimativa ~{smartRead.suggestedBudget.toLocaleString("pt-PT")} STN
+                smartCategoryIsActive ? (
+                  <KCard className="space-y-2.5 border border-primary/25 bg-primary/[0.04]">
+                    <div className="flex items-center gap-2">
+                      <Lightbulb size={15} className="text-primary" />
+                      <span className="text-xs font-bold text-foreground">
+                        Sugestão automática: {smartCategory.displayName || smartCategory.name}
                       </span>
-                    ) : null}
-                    <span className="rounded-full bg-card px-2 py-0.5 text-[10px] font-bold text-muted-foreground border border-border">
-                      Confiança {Math.round(smartRead.confidence * 100)}%
-                    </span>
-                  </div>
-                  {smartRead.followUps.length > 0 && (
-                    <ul className="space-y-1">
-                      {smartRead.followUps.map((q) => (
-                        <li key={q} className="text-[11px] text-muted-foreground flex gap-1.5">
-                          <span className="text-primary">•</span>
-                          <span>{q}</span>
-                        </li>
-                      ))}
-                    </ul>
-                  )}
-                  <Button
-                    className="h-10 w-full rounded-xl text-xs font-bold cursor-pointer"
-                    onClick={applySmartRead}
-                  >
-                    Preencher pedido automaticamente
-                  </Button>
-                </KCard>
+                      <span className="inline-flex items-center gap-1 text-[10px] text-primary font-semibold ml-auto">
+                        <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
+                        Prestador Ativo
+                      </span>
+                    </div>
+                    <div className="flex flex-wrap gap-1.5">
+                      <span className="rounded-full bg-card px-2 py-0.5 text-[10px] font-bold text-muted-foreground border border-border">
+                        {urgencyLabel[smartRead.urgency]}
+                      </span>
+                      {smartRead.suggestedBudget ? (
+                        <span className="rounded-full bg-card px-2 py-0.5 text-[10px] font-bold text-muted-foreground border border-border">
+                          Estimativa ~{smartRead.suggestedBudget.toLocaleString("pt-PT")} STN
+                        </span>
+                      ) : null}
+                      <span className="rounded-full bg-card px-2 py-0.5 text-[10px] font-bold text-muted-foreground border border-border">
+                        Confiança {Math.round(smartRead.confidence * 100)}%
+                      </span>
+                    </div>
+                    {smartRead.followUps.length > 0 && (
+                      <ul className="space-y-1">
+                        {smartRead.followUps.map((q) => (
+                          <li key={q} className="text-[11px] text-muted-foreground flex gap-1.5">
+                            <span className="text-primary">•</span>
+                            <span>{q}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+                    <Button
+                      className="h-10 w-full rounded-xl text-xs font-bold cursor-pointer"
+                      onClick={applySmartRead}
+                    >
+                      Preencher pedido automaticamente
+                    </Button>
+                  </KCard>
+                ) : (
+                  <KCard className="space-y-3 border border-border bg-muted/30">
+                    <div className="flex items-start gap-2.5">
+                      <AlertCircle className="w-5 h-5 text-primary shrink-0 mt-0.5" />
+                      <div>
+                        <h4 className="text-xs font-bold text-foreground">
+                          Especialidade sem prestadores ativos:{" "}
+                          {smartCategory.displayName || smartCategory.name}
+                        </h4>
+                        <p className="text-[11px] text-muted-foreground mt-1 leading-relaxed">
+                          Para proteger a sua segurança e garantir que o seu pedido nunca fica sem
+                          resposta, a KONEKTA nunca mostra nem publica pedidos de serviços que não
+                          têm prestadores ativos credenciados. Deseja que a administração recrute um
+                          prestador para si?
+                        </p>
+                      </div>
+                    </div>
+                    <Button
+                      type="button"
+                      size="sm"
+                      onClick={() => {
+                        setUnservedModalInitialName(
+                          smartCategory.displayName || smartCategory.name,
+                        );
+                        setIsRequestUnservedModalOpen(true);
+                      }}
+                      className="h-9 w-full rounded-xl text-xs font-bold gap-1.5 bg-primary text-white hover:opacity-90"
+                    >
+                      <Sparkles className="w-3.5 h-3.5" />
+                      Solicitar este serviço ao Administrador
+                    </Button>
+                  </KCard>
+                )
               ) : (
                 <p className="text-[11px] text-muted-foreground">
-                  Escreva o problema e a KONEKTA escolhe a categoria, a urgência e a estimativa por
-                  si. Também pode escolher manualmente em baixo.
+                  Escreva ou grave a voz e a KONEKTA identifica a especialidade ativa, a urgência e
+                  a estimativa de preço por si.
                 </p>
               )}
             </div>
           </Section>
 
-          <Section title="Que tipo de profissional precisa?">
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
-              {categories.map((c) => {
-                const active = categorySlug === c.slug;
-                return (
+          {/* SELEÇÃO: ESPECIALIDADES ATIVAS vs TODOS OS SERVIÇOS */}
+          <Section>
+            <div className="space-y-3">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-border pb-2.5">
+                <div>
+                  <h3 className="text-sm font-bold text-foreground flex items-center gap-2">
+                    <span>Especialidades e Serviços Disponíveis</span>
+                    <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-primary/10 text-primary">
+                      <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
+                      {providers.filter((p) => p.verified && p.status !== "inativo").length}{" "}
+                      prestadores ativos
+                    </span>
+                  </h3>
+                  <p className="text-[11px] text-muted-foreground">
+                    Apenas mostramos especialidades e serviços com prestadores credenciados e
+                    prontos a atender em STP.
+                  </p>
+                </div>
+
+                <div className="flex items-center gap-1 bg-muted/60 p-1 rounded-xl shrink-0 self-start sm:self-auto">
                   <button
-                    key={c.slug}
                     type="button"
-                    onClick={() => {
-                      setCategorySlug(c.slug);
-                      if (!title.trim()) setTitle(`Serviço de ${c.name}`);
-                      setStep(2);
-                    }}
+                    onClick={() => setActiveTabMode("categorias")}
                     className={cn(
-                      "press flex flex-col items-center justify-center text-center gap-1.5 rounded-2xl p-3.5 shadow-soft transition-all cursor-pointer border",
-                      active
-                        ? "bg-primary text-primary-foreground border-primary shadow-sm scale-[1.02]"
-                        : "bg-card text-foreground border-border hover:border-primary/40",
+                      "px-3 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1.5",
+                      activeTabMode === "categorias"
+                        ? "bg-card text-foreground shadow-xs"
+                        : "text-muted-foreground hover:text-foreground",
                     )}
                   >
-                    <span className="text-2xl">{categoryEmoji[c.slug] ?? "🛠️"}</span>
-                    <span className="text-xs font-bold leading-tight line-clamp-1">{c.name}</span>
+                    <Layers size={13} />
+                    <span>Por Especialidade ({activeCategories.length})</span>
                   </button>
-                );
-              })}
+                  <button
+                    type="button"
+                    onClick={() => setActiveTabMode("servicos")}
+                    className={cn(
+                      "px-3 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1.5",
+                      activeTabMode === "servicos"
+                        ? "bg-card text-foreground shadow-xs"
+                        : "text-muted-foreground hover:text-foreground",
+                    )}
+                  >
+                    <Wrench size={13} />
+                    <span>Todos os Serviços ({allActiveServices.length})</span>
+                  </button>
+                </div>
+              </div>
+
+              {/* MODO 1: POR ESPECIALIDADE */}
+              {activeTabMode === "categorias" && (
+                <div className="space-y-4">
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+                    {activeCategories.map((c) => {
+                      const active = categorySlug === c.slug;
+                      const colors = categoryColors[c.slug] || {
+                        bg: "bg-primary/10",
+                        text: "text-primary",
+                        border: "border-primary/20",
+                      };
+
+                      return (
+                        <button
+                          key={c.slug}
+                          type="button"
+                          onClick={() => {
+                            setCategorySlug(c.slug);
+                            if (!title.trim()) setTitle(`Serviço de ${c.displayName || c.name}`);
+                          }}
+                          className={cn(
+                            "press flex flex-col items-center justify-center text-center gap-2 rounded-2xl p-3.5 shadow-soft transition-all cursor-pointer border text-left",
+                            active
+                              ? "bg-primary text-primary-foreground border-primary shadow-sm scale-[1.02]"
+                              : "bg-card text-foreground border-border hover:border-primary/40",
+                          )}
+                        >
+                          <div
+                            className={cn(
+                              "w-11 h-11 rounded-xl flex items-center justify-center transition-colors shadow-2xs",
+                              active
+                                ? "bg-white/20 text-white"
+                                : `${colors.bg} ${colors.text} border ${colors.border}`,
+                            )}
+                          >
+                            <CategoryIcon slug={c.slug} className="w-5 h-5" />
+                          </div>
+                          <div className="space-y-0.5">
+                            <span className="text-xs font-bold leading-tight block truncate">
+                              {c.displayName || c.name}
+                            </span>
+                            <span
+                              className={cn(
+                                "inline-flex items-center gap-1 text-[10px] font-semibold",
+                                active
+                                  ? "text-primary-foreground/90"
+                                  : "text-emerald-600 dark:text-emerald-400",
+                              )}
+                            >
+                              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                              {c.count} {c.count === 1 ? "ativo" : "ativos"}
+                            </span>
+                          </div>
+                        </button>
+                      );
+                    })}
+                  </div>
+
+                  {/* Detalhe de Serviços da Categoria Selecionada */}
+                  {categorySlug && (
+                    <div className="p-4 rounded-2xl bg-card border border-border shadow-soft space-y-3">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <h4 className="text-xs font-bold text-foreground flex items-center gap-1.5">
+                            <Wrench size={14} className="text-primary" />
+                            Serviços disponíveis em {category?.displayName || category?.name}:
+                          </h4>
+                          <p className="text-[11px] text-muted-foreground">
+                            Toque num serviço para preencher ou clique em "Continuar com Pedido".
+                          </p>
+                        </div>
+                        <Button
+                          type="button"
+                          size="sm"
+                          onClick={() => setStep(2)}
+                          className="rounded-xl text-xs font-bold h-8 px-3 gap-1"
+                        >
+                          <span>Continuar</span>
+                          <ChevronRight size={14} />
+                        </Button>
+                      </div>
+
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                        {allActiveServices
+                          .filter((s) => s.categorySlug === categorySlug)
+                          .map((srv, idx) => (
+                            <button
+                              key={idx}
+                              type="button"
+                              onClick={() => {
+                                setTitle(srv.name);
+                                if (srv.price) setBudgetEstimate(srv.price.toString());
+                                setStep(2);
+                              }}
+                              className="p-3 rounded-xl border border-border hover:border-primary/50 bg-muted/20 hover:bg-muted/40 transition text-left flex items-center justify-between gap-2 group cursor-pointer"
+                            >
+                              <div className="min-w-0">
+                                <p className="text-xs font-bold text-foreground group-hover:text-primary transition truncate">
+                                  {srv.name}
+                                </p>
+                                <p className="text-[10px] text-muted-foreground truncate">
+                                  Por {srv.providerName} (★ {srv.rating.toFixed(1)})
+                                </p>
+                              </div>
+                              <div className="text-right shrink-0">
+                                <span className="text-[11px] font-black text-primary block">
+                                  {srv.price
+                                    ? `${srv.price} STN`
+                                    : `A partir de ${srv.priceFrom} STN`}
+                                </span>
+                                <span className="text-[9px] text-muted-foreground font-semibold">
+                                  {srv.isFixedPrice ? "Preço Fixo" : "Orçamento base"}
+                                </span>
+                              </div>
+                            </button>
+                          ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* MODO 2: TODOS OS SERVIÇOS DISPONÍVEIS NA APP */}
+              {activeTabMode === "servicos" && (
+                <div className="space-y-3">
+                  <div className="relative">
+                    <Search className="w-4 h-4 text-muted-foreground absolute left-3.5 top-3" />
+                    <input
+                      type="search"
+                      value={serviceSearch}
+                      onChange={(e) => setServiceSearch(e.target.value)}
+                      placeholder={`Pesquisar entre todos os ${allActiveServices.length} serviços com prestadores ativos...`}
+                      className="w-full h-10 pl-9 pr-3 text-xs bg-card border border-border rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary text-foreground"
+                    />
+                  </div>
+
+                  {(() => {
+                    const q = serviceSearch.trim().toLowerCase();
+                    const filtered = allActiveServices.filter(
+                      (s) =>
+                        !q ||
+                        s.name.toLowerCase().includes(q) ||
+                        s.categoryName.toLowerCase().includes(q) ||
+                        s.providerName.toLowerCase().includes(q),
+                    );
+
+                    if (filtered.length === 0) {
+                      return (
+                        <div className="p-6 rounded-2xl border border-dashed border-border bg-card text-center space-y-3">
+                          <div className="w-12 h-12 rounded-full bg-amber-500/10 text-amber-600 flex items-center justify-center mx-auto">
+                            <AlertCircle className="w-6 h-6" />
+                          </div>
+                          <div>
+                            <h4 className="text-sm font-bold text-foreground">
+                              Nenhum serviço ativo encontrado para "{serviceSearch}"
+                            </h4>
+                            <p className="text-xs text-muted-foreground mt-1 max-w-md mx-auto leading-relaxed">
+                              A KONEKTA nunca mostra serviços sem prestadores ativos no terreno para
+                              evitar que o seu pedido fique esquecido. Quer que a nossa equipa
+                              recrute um profissional para este trabalho?
+                            </p>
+                          </div>
+                          <Button
+                            type="button"
+                            onClick={() => {
+                              setUnservedModalInitialName(serviceSearch);
+                              setIsRequestUnservedModalOpen(true);
+                            }}
+                            className="rounded-xl text-xs font-bold gap-1.5 h-10 px-4"
+                          >
+                            <Sparkles className="w-4 h-4" />
+                            Solicitar "{serviceSearch}" ao Administrador
+                          </Button>
+                        </div>
+                      );
+                    }
+
+                    return (
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-[380px] overflow-y-auto pr-1">
+                        {filtered.map((srv, idx) => (
+                          <div
+                            key={idx}
+                            onClick={() => {
+                              setCategorySlug(srv.categorySlug);
+                              setTitle(srv.name);
+                              if (srv.price) setBudgetEstimate(srv.price.toString());
+                              setStep(2);
+                            }}
+                            className="p-3 rounded-xl border border-border bg-card hover:border-primary/60 hover:bg-muted/30 transition cursor-pointer flex items-center justify-between gap-3 group"
+                          >
+                            <div className="space-y-1 min-w-0">
+                              <div className="flex items-center gap-1.5">
+                                <span className="px-2 py-0.5 rounded-md bg-primary/10 text-primary text-[10px] font-bold">
+                                  {srv.categoryName}
+                                </span>
+                                <span className="text-[10px] text-muted-foreground truncate">
+                                  {srv.providerName}
+                                </span>
+                              </div>
+                              <h5 className="text-xs font-bold text-foreground group-hover:text-primary transition truncate">
+                                {srv.name}
+                              </h5>
+                            </div>
+                            <div className="text-right shrink-0">
+                              <span className="text-xs font-black text-foreground block">
+                                {srv.price ? `${srv.price} STN` : `~${srv.priceFrom} STN`}
+                              </span>
+                              <span className="text-[10px] text-primary font-bold inline-flex items-center gap-0.5">
+                                Escolher <ChevronRight size={12} />
+                              </span>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    );
+                  })()}
+                </div>
+              )}
             </div>
           </Section>
 
-          {/* Modelos Inteligentes Mais Pedidos em STP */}
-          <Section title="Pedidos Mais Frequentes em STP (Preenchimento Rápido)">
-            <p className="text-xs text-muted-foreground -mt-2 mb-3">
-              Toque num modelo para preencher a descrição, materiais e estimativa automaticamente.
-            </p>
-            <div className="space-y-2">
-              {categoryTemplates.map((tpl) => (
-                <div
-                  key={tpl.id}
-                  onClick={() => applyTemplate(tpl)}
-                  className="p-3.5 rounded-2xl bg-card border border-border hover:border-primary/50 shadow-soft cursor-pointer transition-all hover:bg-muted/30 group"
-                >
-                  <div className="flex items-start justify-between gap-2">
-                    <div className="space-y-1">
-                      <div className="flex items-center gap-2">
-                        <span className="px-2 py-0.5 rounded-md bg-primary/10 text-primary text-[10px] font-bold">
-                          {tpl.badge}
+          {/* BANNER: PROCURA OUTRO SERVIÇO? AVISO AO ADMINISTRADOR */}
+          <div className="rounded-2xl border border-primary/20 bg-gradient-to-br from-primary/[0.06] via-transparent to-accent/[0.04] p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-soft">
+            <div className="space-y-1">
+              <div className="flex items-center gap-1.5 text-xs font-bold text-foreground">
+                <ShieldCheck className="w-4 h-4 text-primary" />
+                <span>Precisa de uma especialidade que não vê na lista?</span>
+              </div>
+              <p className="text-[11px] text-muted-foreground leading-relaxed max-w-md">
+                A KONEKTA nunca mostra serviços sem prestadores ativos. Se procura um serviço novo
+                (ex: Marceneiro, Técnico de TV Satélite, Serralharia), solicite aqui e o
+                Administrador irá recrutar um profissional qualificado para si e avisar-lhe assim
+                que estiver disponível!
+              </p>
+            </div>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => {
+                setUnservedModalInitialName("");
+                setIsRequestUnservedModalOpen(true);
+              }}
+              className="rounded-xl border-primary/40 text-primary hover:bg-primary/10 font-bold shrink-0 text-xs h-9 gap-1.5"
+            >
+              <Sparkles className="w-3.5 h-3.5" />
+              Solicitar Novo Serviço
+            </Button>
+          </div>
+
+          {/* Modelos Inteligentes Mais Pedidos em STP (Apenas Categorias Ativas) */}
+          {categoryTemplates.length > 0 && (
+            <Section title="Pedidos Mais Frequentes em STP (Preenchimento Rápido)">
+              <p className="text-xs text-muted-foreground -mt-2 mb-3">
+                Toque num modelo para preencher a descrição, materiais e estimativa automaticamente.
+              </p>
+              <div className="space-y-2">
+                {categoryTemplates.map((tpl) => (
+                  <div
+                    key={tpl.id}
+                    onClick={() => applyTemplate(tpl)}
+                    className="p-3.5 rounded-2xl bg-card border border-border hover:border-primary/50 shadow-soft cursor-pointer transition-all hover:bg-muted/30 group"
+                  >
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="space-y-1">
+                        <div className="flex items-center gap-2">
+                          <span className="px-2 py-0.5 rounded-md bg-primary/10 text-primary text-[10px] font-bold">
+                            {tpl.badge}
+                          </span>
+                          <span className="text-[11px] text-muted-foreground font-semibold">
+                            {tpl.categoryName}
+                          </span>
+                        </div>
+                        <h4 className="text-xs font-bold text-foreground group-hover:text-primary transition">
+                          {tpl.title}
+                        </h4>
+                        <p className="text-[11px] text-muted-foreground line-clamp-2">
+                          {tpl.suggestedDesc}
+                        </p>
+                      </div>
+                      <div className="text-right shrink-0">
+                        <span className="text-xs font-black text-foreground block">
+                          ~{tpl.estimatedBudgetSTN} STN
                         </span>
-                        <span className="text-[11px] text-muted-foreground font-semibold">
-                          {tpl.categoryName}
+                        <span className="text-[10px] text-primary font-bold inline-flex items-center gap-0.5 mt-1">
+                          Usar <ChevronRight size={12} />
                         </span>
                       </div>
-                      <h4 className="text-xs font-bold text-foreground group-hover:text-primary transition">
-                        {tpl.title}
-                      </h4>
-                      <p className="text-[11px] text-muted-foreground line-clamp-2">
-                        {tpl.suggestedDesc}
-                      </p>
-                    </div>
-                    <div className="text-right shrink-0">
-                      <span className="text-xs font-black text-foreground block">
-                        ~{tpl.estimatedBudgetSTN} STN
-                      </span>
-                      <span className="text-[10px] text-primary font-bold inline-flex items-center gap-0.5 mt-1">
-                        Usar <ChevronRight size={12} />
-                      </span>
                     </div>
                   </div>
-                </div>
-              ))}
-            </div>
-          </Section>
+                ))}
+              </div>
+            </Section>
+          )}
         </div>
       )}
 
@@ -551,13 +956,24 @@ function NewRequest() {
                   Mínimo 10 caracteres
                 </span>
               </label>
-              <textarea
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
-                rows={4}
-                placeholder="Explique o que aconteceu, se tem água/luz no local e dimensões aproximadas. Quanto mais detalhe der, mais precisos serão os orçamentos dos prestadores."
-                className="w-full rounded-2xl bg-card p-3.5 text-xs leading-relaxed border border-border shadow-soft outline-none ring-primary/30 focus:ring-2"
-              />
+              <div className="relative">
+                <textarea
+                  value={description}
+                  onChange={(e) => setDescription(e.target.value)}
+                  rows={4}
+                  placeholder="Explique o que aconteceu, se tem água/luz no local e dimensões aproximadas. Quanto mais detalhe der, mais precisos serão os orçamentos dos prestadores."
+                  className="w-full rounded-2xl bg-card p-3.5 pr-14 text-xs leading-relaxed border border-border shadow-soft outline-none ring-primary/30 focus:ring-2"
+                />
+                <div className="absolute right-2.5 bottom-2.5">
+                  <AudioRecorderButton
+                    onTranscription={(text) => {
+                      setDescription((prev) => (prev ? `${prev}\n${text}` : text));
+                      toast.success("Áudio adicionado à descrição com Gemini 3.5!");
+                    }}
+                    promptContext="Detalhes técnicos da avaria, peças necessárias e condições do local em São Tomé"
+                  />
+                </div>
+              </div>
             </div>
 
             {/* Situação dos Materiais de Construção / Peças (Específico de STP) */}
@@ -777,19 +1193,19 @@ function NewRequest() {
               </div>
 
               {detectedGps && (
-                <div className="p-3 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 text-xs space-y-2.5">
+                <div className="p-3 rounded-2xl bg-primary/10 border border-primary/20 text-xs space-y-2.5">
                   <div className="flex items-center justify-between">
-                    <span className="font-bold text-emerald-800 dark:text-emerald-300 flex items-center gap-1.5">
+                    <span className="font-bold text-primary flex items-center gap-1.5">
                       📍 GPS Exato: {detectedGps.street || detectedGps.zone} ({detectedGps.district}
                       )
                     </span>
-                    <span className="text-[10px] text-emerald-700 dark:text-emerald-400 font-mono font-bold bg-emerald-500/20 px-2 py-0.5 rounded-full">
+                    <span className="text-[10px] text-primary font-mono font-bold bg-primary/20 px-2 py-0.5 rounded-full">
                       ±{Math.round(detectedGps.accuracy)}m
                     </span>
                   </div>
 
                   {/* Google Maps Embed Mini */}
-                  <div className="relative w-full h-36 rounded-xl overflow-hidden border border-emerald-500/25 bg-slate-950">
+                  <div className="relative w-full h-36 rounded-xl overflow-hidden border border-primary/20 bg-slate-950">
                     <iframe
                       title="Pré-visualização Google Maps Localização"
                       width="100%"
@@ -799,12 +1215,12 @@ function NewRequest() {
                       loading="lazy"
                       referrerPolicy="no-referrer-when-downgrade"
                     />
-                    <div className="absolute bottom-1.5 right-1.5 px-2 py-0.5 rounded-lg bg-slate-900/90 text-emerald-300 text-[10px] font-bold flex items-center gap-1 shadow-xs pointer-events-none">
+                    <div className="absolute bottom-1.5 right-1.5 px-2 py-0.5 rounded-lg bg-slate-900/90 text-blue-300 text-[10px] font-bold flex items-center gap-1 shadow-xs pointer-events-none">
                       <span>Google Maps Ativo</span>
                     </div>
                   </div>
 
-                  <div className="flex items-center justify-between text-[11px] text-muted-foreground pt-1 border-t border-emerald-500/20">
+                  <div className="flex items-center justify-between text-[11px] text-muted-foreground pt-1 border-t border-primary/20">
                     <span className="font-mono text-foreground font-semibold">
                       {detectedGps.latitude.toFixed(6)}, {detectedGps.longitude.toFixed(6)}
                     </span>
@@ -1213,11 +1629,8 @@ function NewRequest() {
           </KCard>
 
           {/* Garantia KONEKTA de São Tomé e Príncipe */}
-          <div className="mt-3.5 p-3.5 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-900 dark:text-emerald-200 text-xs flex items-start gap-2.5">
-            <ShieldCheck
-              size={18}
-              className="text-emerald-600 dark:text-emerald-400 shrink-0 mt-0.5"
-            />
+          <div className="mt-3.5 p-3.5 rounded-2xl bg-primary/10 border border-primary/20 text-primary text-xs flex items-start gap-2.5">
+            <ShieldCheck size={18} className="text-primary shrink-0 mt-0.5" />
             <div className="space-y-0.5">
               <p className="font-bold">Proteção & Pagamento Seguro em STP</p>
               <p className="text-[11px] leading-relaxed opacity-90">
@@ -1282,6 +1695,13 @@ function NewRequest() {
           </div>
         </div>
       )}
+      {/* Modal para Solicitar Serviço sem Prestador Ativo */}
+      <RequestUnservedServiceModal
+        isOpen={isRequestUnservedModalOpen}
+        onClose={() => setIsRequestUnservedModalOpen(false)}
+        initialServiceName={unservedModalInitialName}
+        initialDistrict={district}
+      />
     </AppShell>
   );
 }
