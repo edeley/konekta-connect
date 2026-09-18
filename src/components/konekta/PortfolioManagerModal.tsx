@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import {
   Camera,
   Plus,
@@ -59,53 +59,7 @@ export function PortfolioManagerModal({
   const afterCameraRef = useRef<HTMLInputElement | null>(null);
   const afterGalleryRef = useRef<HTMLInputElement | null>(null);
 
-  useEffect(() => {
-    if (open) {
-      if (initialItemToEdit) {
-        startEdit(initialItemToEdit);
-      } else {
-        setMode(initialMode);
-        if (initialMode === "add") {
-          resetFormFields();
-        }
-      }
-    }
-  }, [open, initialMode, initialItemToEdit]);
-
-  const isProvider = user?.role === "prestador";
-
-  if (open && !isProvider) {
-    return (
-      <BottomSheet
-        open={open}
-        onClose={onClose}
-        title="Área Exclusiva de Prestadores"
-        description="A gestão e publicação de portfólio de serviços é reservada exclusivamente a prestadores de serviços registados."
-      >
-        <div className="p-6 text-center space-y-3">
-          <div className="size-12 rounded-2xl bg-muted grid place-items-center mx-auto text-muted-foreground">
-            <ImageIcon size={24} />
-          </div>
-          <p className="text-sm font-semibold text-foreground">
-            Apenas profissionais podem publicar portfólios
-          </p>
-          <p className="text-xs text-muted-foreground">
-            Os clientes visualizam as fotos e trabalhos realizados nas páginas públicas dos
-            prestadores.
-          </p>
-          <button
-            type="button"
-            onClick={onClose}
-            className="w-full py-2.5 rounded-xl bg-primary text-primary-foreground text-xs font-bold"
-          >
-            Entendido
-          </button>
-        </div>
-      </BottomSheet>
-    );
-  }
-
-  function resetFormFields() {
+  const resetFormFields = useCallback(() => {
     setTitle("");
     setDescription("");
     setImagePreview(null);
@@ -120,18 +74,34 @@ export function PortfolioManagerModal({
       }),
     );
     setEditingItem(null);
-  }
+  }, [profile?.category]);
 
-  function startEdit(item: PortfolioItem) {
-    setEditingItem(item);
-    setTitle(item.title);
-    setDescription(item.description || "");
-    setCategory(item.category || profile?.category || "Serviços Gerais");
-    setDate(item.date || "Recente");
-    setImagePreview(item.image);
-    setImageFileName(null);
-    setMode("edit");
-  }
+  const startEdit = useCallback(
+    (item: PortfolioItem) => {
+      setEditingItem(item);
+      setTitle(item.title);
+      setDescription(item.description || "");
+      setCategory(item.category || profile?.category || "Serviços Gerais");
+      setDate(item.date || "Recente");
+      setImagePreview(item.image);
+      setImageFileName(null);
+      setMode("edit");
+    },
+    [profile?.category],
+  );
+
+  useEffect(() => {
+    if (open) {
+      if (initialItemToEdit) {
+        startEdit(initialItemToEdit);
+      } else {
+        setMode(initialMode);
+        if (initialMode === "add") {
+          resetFormFields();
+        }
+      }
+    }
+  }, [open, initialMode, initialItemToEdit, resetFormFields, startEdit]);
 
   function handleFileChange(
     e: React.ChangeEvent<HTMLInputElement>,
@@ -263,6 +233,39 @@ export function PortfolioManagerModal({
       }
       toast.success("Trabalho eliminado do portfólio.");
     }
+  }
+
+  const isProvider = user?.role === "prestador";
+
+  if (open && !isProvider) {
+    return (
+      <BottomSheet
+        open={open}
+        onClose={onClose}
+        title="Área Exclusiva de Prestadores"
+        description="A gestão e publicação de portfólio de serviços é reservada exclusivamente a prestadores de serviços registados."
+      >
+        <div className="p-6 text-center space-y-3">
+          <div className="size-12 rounded-2xl bg-muted grid place-items-center mx-auto text-muted-foreground">
+            <ImageIcon size={24} />
+          </div>
+          <p className="text-sm font-semibold text-foreground">
+            Apenas profissionais podem publicar portfólios
+          </p>
+          <p className="text-xs text-muted-foreground">
+            Os clientes visualizam as fotos e trabalhos realizados nas páginas públicas dos
+            prestadores.
+          </p>
+          <button
+            type="button"
+            onClick={onClose}
+            className="w-full py-2.5 rounded-xl bg-primary text-primary-foreground text-xs font-bold"
+          >
+            Entendido
+          </button>
+        </div>
+      </BottomSheet>
+    );
   }
 
   return (

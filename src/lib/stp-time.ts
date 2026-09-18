@@ -291,9 +291,10 @@ export function useSTPClock() {
   const [time, setTime] = useState(() => new Date());
 
   useEffect(() => {
+    // Atualiza o relógio a cada 30 segundos para evitar re-renderizações contínuas do ecrã
     const interval = setInterval(() => {
       setTime(new Date());
-    }, 1000);
+    }, 30000);
     return () => clearInterval(interval);
   }, []);
 

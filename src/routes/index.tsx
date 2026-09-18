@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useMemo, useState, useEffect } from "react";
+import { memo, useMemo, useState, useEffect } from "react";
 import {
   Bell,
   Search,
@@ -110,9 +110,20 @@ const STP_SEARCH_ROTATOR = [
   "Canalização e desentupimento de esgotos",
 ];
 
+const STPHeaderClock = memo(function STPHeaderClock() {
+  const { timeShort } = useSTPClock();
+  return (
+    <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-slate-800/90 border border-slate-700/60 text-[11px] font-semibold text-slate-200">
+      <span className="size-1.5 rounded-full bg-primary" />
+      <span>{timeShort}</span>
+      <span className="text-[9px] text-slate-400">GMT</span>
+    </div>
+  );
+});
+
 function Home() {
   const user = useStore((s) => s.user);
-  const unread = useStore((s) => s.notifications.filter((n) => !n.read).length);
+  const unread = useStore((s) => s.notifications.reduce((acc, n) => acc + (n.read ? 0 : 1), 0));
   const providers = useStore((s) => s.providers);
   const [query, setQuery] = useState("");
   const [selectedDistrict, setSelectedDistrict] = useState<string>("Todos");
@@ -126,8 +137,6 @@ function Home() {
     () => getActiveCategories({ providerList: providers }),
     [providers],
   );
-
-  const { greeting, timeShort } = useSTPClock();
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -225,11 +234,7 @@ function Home() {
               </div>
             )}
 
-            <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-slate-800/90 border border-slate-700/60 text-[11px] font-semibold text-slate-200">
-              <span className="size-1.5 rounded-full bg-primary" />
-              <span>{timeShort}</span>
-              <span className="text-[9px] text-slate-400">GMT</span>
-            </div>
+            <STPHeaderClock />
 
             <Link
               to="/notificacoes"
@@ -430,12 +435,15 @@ function Home() {
                 key={p.id}
                 to="/prestador/$id"
                 params={{ id: p.id }}
+                preload="intent"
                 className="card-triider flex items-center gap-3.5 p-3.5 group rounded-xl"
               >
                 <div className="relative size-14 shrink-0">
                   <img
                     src={p.image}
                     alt={p.name}
+                    loading="lazy"
+                    decoding="async"
                     className="size-full rounded-lg object-cover border border-border"
                   />
                   <span className="absolute -bottom-1 -right-1 size-4 rounded-full bg-primary text-white flex items-center justify-center ring-2 ring-card">
@@ -546,6 +554,7 @@ function Home() {
                     key={c.slug}
                     to="/categorias/$slug"
                     params={{ slug: c.slug }}
+                    preload="intent"
                     className="flex flex-col items-center gap-1.5 p-3 rounded-xl border border-border bg-card hover:border-primary/40 hover:shadow-soft transition-all text-center group press"
                   >
                     <span className="grid size-11 place-items-center rounded-lg bg-primary/10 text-primary border border-primary/15 group-hover:bg-primary group-hover:text-white transition-colors">
@@ -643,6 +652,7 @@ function Home() {
                           src={p.image}
                           alt={p.name}
                           loading="lazy"
+                          decoding="async"
                           className="size-full rounded-lg object-cover border border-border"
                         />
                         <span className="absolute -bottom-1 -right-1 size-4 rounded-full bg-primary text-white flex items-center justify-center ring-2 ring-card">
@@ -690,6 +700,7 @@ function Home() {
                     <Link
                       to="/prestador/$id"
                       params={{ id: p.id }}
+                      preload="intent"
                       className="px-3 py-1.5 rounded-lg bg-primary text-white text-[11px] font-bold hover:bg-brand-dark transition-colors"
                     >
                       Consultar

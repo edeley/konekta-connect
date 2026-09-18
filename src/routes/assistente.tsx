@@ -68,16 +68,37 @@ interface AssistantResponse {
 }
 
 const QUICK_PROMPTS = [
-  "Preciso de um eletricista urgente em São Tomé",
-  "Como cancelar um serviço e quais são os riscos?",
-  "Como funciona o pagamento protegido e o PIN?",
-  "Quanto custa reparar um ar condicionado ou fuga?",
-  "Prestadores que atendem em Mé-Zóchi ou Trindade",
-  "Falar com um atendente humano por telefone",
+  "Minha geladeira não gela: que profissional devo chamar?",
+  "Curto-circuito ou disjuntor a disparar no quadro",
+  "Bomba de água a trabalhar sem puxar água",
+  "Ar condicionado split a pingar água para dentro",
+  "Qual o meu saldo na carteira e fundos em custódia?",
+  "Conselhos para orçamentos e preços de serviços em STN",
+  "Onde comprar peças e materiais na Baixa e Sococil?",
+  "Como funciona o código PIN de 4 dígitos e a garantia?",
 ];
 
 function generateIntelligentResponse(text: string): AssistantResponse {
   const lower = text.toLowerCase().trim();
+
+  // 0. Avarias em Frigoríficos, Geladeiras e Eletrodomésticos
+  if (
+    lower.includes("geladeira") ||
+    lower.includes("frigorífico") ||
+    lower.includes("frigorifico") ||
+    lower.includes("frio") ||
+    lower.includes("congelador") ||
+    lower.includes("não gela") ||
+    lower.includes("nao gela")
+  ) {
+    return {
+      text: `**Diagnóstico Técnico KONEKTA CONNECT · Refrigeração:**\n\n• **Profissional Ideal**: Deve chamar um **Técnico de Frio e Climatização**.\n• **Causas Frequentes em São Tomé**:\n  1. *Relé Térmico / PTC ou Capacitor*: Oscilações de tensão da rede EMAE desarmam o relé e o motor não consegue arrancar (ouve-se um "estalido" a cada 2 minutos).\n  2. *Fuga de Gás Refrigerante (R134a / R600a)*: O motor trabalha continuamente mas as grelhas não aquecem e o interior não arrefece.\n  3. *Borrachas de Vedação*: A humidade e calor tropical ressequem as borrachas, permitindo a entrada de ar quente.\n• **O que fazer agora**: Desligue o aparelho se estiver a deitar cheiro a queimado ou zumbido contínuo e agende a **Visita Técnica Tabelada de 150 STN** para medição de pressão do gás e teste de compressor.`,
+      actions: [
+        { label: "Pedir Técnico de Frio (150 STN)", link: "/novo-pedido" },
+        { label: "Ver Preços de Climatização", link: "/como-funciona" },
+      ],
+    };
+  }
 
   // 1. Cancelamento e Riscos
   if (
@@ -355,6 +376,17 @@ function AssistantPage() {
   const user = useStore((s) => s.user);
   const orders = useStore((s) => s.orders);
   const technicalVisits = useStore((s) => s.technicalVisits);
+  const balance = useStore((s) => s.balance);
+  const providerBalance = useStore((s) => s.providerBalance);
+  const providerPendingBalance = useStore((s) => s.providerPendingBalance);
+  const providerWithdrawnBalance = useStore((s) => s.providerWithdrawnBalance);
+  const providerDebt = useStore((s) => s.providerDebt);
+  const isProviderBlockedForDebt = useStore((s) => s.isProviderBlockedForDebt);
+  const transactions = useStore((s) => s.transactions);
+  const providerTransactions = useStore((s) => s.providerTransactions);
+  const providerProfile = useStore((s) => s.providerProfile);
+  const requests = useStore((s) => s.requests);
+
   const [text, setText] = useState("");
   const [typing, setTyping] = useState(false);
   const [userLocation, setUserLocation] = useState<{ latitude: number; longitude: number } | null>(
@@ -362,6 +394,40 @@ function AssistantPage() {
   );
   const scrollRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
+
+  const userContext = useMemo(
+    () =>
+      buildSanitizedUserContext({
+        user,
+        orders,
+        technicalVisits,
+        balance,
+        providerBalance,
+        providerPendingBalance,
+        providerWithdrawnBalance,
+        providerDebt,
+        isProviderBlockedForDebt,
+        transactions,
+        providerTransactions,
+        providerProfile,
+        requests,
+      }),
+    [
+      user,
+      orders,
+      technicalVisits,
+      balance,
+      providerBalance,
+      providerPendingBalance,
+      providerWithdrawnBalance,
+      providerDebt,
+      isProviderBlockedForDebt,
+      transactions,
+      providerTransactions,
+      providerProfile,
+      requests,
+    ],
+  );
 
   useEffect(() => {
     if (navigator.geolocation && !userLocation) {
@@ -389,12 +455,6 @@ function AssistantPage() {
     if (!t || typing) return;
     setText("");
     setTyping(true);
-
-    const userContext = buildSanitizedUserContext({
-      user,
-      orders,
-      technicalVisits,
-    });
 
     // Detecção invisível e inteligente da especialidade de acordo com a dúvida do utilizador
     const lower = t.toLowerCase();
@@ -462,13 +522,29 @@ function AssistantPage() {
 
       if (res.ok) {
         const data = await res.json();
-        store.sendAssistant(t, data.text, {
-          role: detectedRole,
-          model: data.model,
-          groundingPlaces: data.groundingPlaces,
-          isMapsGrounded: data.isMapsGrounded,
-          actionLink: data.actionLink,
-        });
+        if (data.text) {
+          store.sendAssistant(t, data.text, {
+            role: detectedRole,
+            model: data.model,
+            groundingPlaces: data.groundingPlaces,
+            isMapsGrounded: data.isMapsGrounded,
+            actionLink: data.actionLink,
+          });
+        } else {
+          const fallback = generateConciergeResponse({ text: t, userContext });
+          store.sendAssistant(t, fallback.text, {
+            role: detectedRole,
+            model: "KONEKTA Motor Local",
+            actionLink: fallback.actions?.[0]
+              ? {
+                  label: fallback.actions[0].label,
+                  url:
+                    fallback.actions[0].link ||
+                    (fallback.actions[0].phone ? `tel:${fallback.actions[0].phone}` : "/pedidos"),
+                }
+              : undefined,
+          });
+        }
       } else {
         // Fallback para heurísticas locais se offline ou erro do servidor
         const fallback = generateConciergeResponse({ text: t, userContext });
@@ -524,15 +600,15 @@ function AssistantPage() {
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2.5">
                   <div className="size-8 rounded-xl bg-primary text-primary-foreground grid place-items-center shadow-2xs">
-                    <Headphones size={16} />
+                    <Wrench size={16} />
                   </div>
                   <div>
                     <p className="text-sm font-bold leading-tight text-foreground">
-                      Apoio ao Cliente & Concierge
+                      Assistente Técnico & Consultor
                     </p>
                     <p className="text-[11px] text-emerald-800 dark:text-emerald-300 font-bold leading-tight flex items-center gap-1">
                       <span className="size-1.5 rounded-full bg-emerald-500 inline-block animate-pulse" />
-                      Atendimento Oficial · São Tomé e Príncipe
+                      Konekta Connect · Especialista STP
                     </p>
                   </div>
                 </div>
@@ -570,6 +646,75 @@ function AssistantPage() {
               >
                 Ligar
               </a>
+            </div>
+
+            {/* Painel de Estado Financeiro & Contexto KONEKTA */}
+            <div className="rounded-2xl bg-card border border-border p-3 space-y-2 shadow-2xs">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-1.5">
+                  <Wallet size={13} className="text-primary" />
+                  <span className="text-xs font-bold text-foreground">Estado da Minha Conta</span>
+                </div>
+                <Link
+                  to="/carteira"
+                  className="text-[11px] font-bold text-primary hover:underline flex items-center gap-0.5"
+                >
+                  <span>Ver Carteira</span>
+                  <ArrowRight size={10} />
+                </Link>
+              </div>
+              <div className="grid grid-cols-2 gap-2 pt-0.5">
+                <div className="rounded-xl bg-muted/50 p-2 border border-border/50">
+                  <p className="text-[10px] text-muted-foreground uppercase font-bold tracking-wider">
+                    Saldo Disponível
+                  </p>
+                  <p className="text-sm font-black text-foreground">
+                    {userContext.financialState.walletBalance} STN
+                  </p>
+                </div>
+                <div className="rounded-xl bg-muted/50 p-2 border border-border/50">
+                  <p className="text-[10px] text-muted-foreground uppercase font-bold tracking-wider">
+                    Custódia Segura
+                  </p>
+                  <p className="text-sm font-black text-emerald-600 dark:text-emerald-400">
+                    {userContext.financialState.escrowInCustody} STN
+                  </p>
+                </div>
+              </div>
+              {/* Filtros Rápidos de Diagnóstico Técnico e Finanças */}
+              <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar pt-1">
+                {[
+                  {
+                    label: "❄️ Frigorífico / Frio",
+                    prompt:
+                      "Minha geladeira não gela: que profissional devo chamar e qual a causa?",
+                  },
+                  {
+                    label: "⚡ Eletricidade",
+                    prompt: "Curto-circuito ou disjuntor a disparar: como resolver com segurança?",
+                  },
+                  {
+                    label: "💧 Bomba de Água",
+                    prompt: "Bomba de água sem puxar água ou com pressão fraca em São Tomé",
+                  },
+                  {
+                    label: "💰 Minhas Finanças",
+                    prompt: "Qual é o meu saldo na carteira e fundos em custódia protegida?",
+                  },
+                  {
+                    label: "📍 Onde Comprar Peças",
+                    prompt: "Onde posso comprar peças e ferramentas em São Tomé (Sococil, Baixa)?",
+                  },
+                ].map((item) => (
+                  <button
+                    key={item.label}
+                    onClick={() => send(item.prompt)}
+                    className="whitespace-nowrap px-2.5 py-1 rounded-lg bg-muted/80 hover:bg-muted text-[11px] font-medium text-foreground border border-border transition shrink-0 cursor-pointer"
+                  >
+                    {item.label}
+                  </button>
+                ))}
+              </div>
             </div>
 
             {/* Contexto do Perfil e Pedidos Ativos do Utilizador */}

@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { GoogleGenAI } from "@google/genai";
+import { geminiEngine } from "../lib/gemini-service";
 import {
   stripAnyDocumentFields,
   type SanitizedUserChatContext,
@@ -18,7 +18,7 @@ export const Route = createFileRoute("/api/chat")({
           JSON.stringify({
             status: "ok",
             endpoint: "/api/chat",
-            model: "gemini-3.8-flash",
+            model: "gemini-3.8-flash / gemini-3.1-flash-lite",
             hasApiKey: Boolean(process.env.GEMINI_API_KEY),
           }),
           {
@@ -59,12 +59,9 @@ export const Route = createFileRoute("/api/chat")({
           const bio = provider?.bio;
           const district = provider?.district || "Água Grande";
 
-          const apiKey = process.env.GEMINI_API_KEY;
-
-          // 1. Se existir GEMINI_API_KEY configurada no servidor, utiliza o SDK @google/genai com gemini-3.8-flash
-          if (apiKey && apiKey.trim().length > 0) {
+          // 1. Se existir GEMINI_API_KEY configurada no servidor, utiliza o motor resiliente Gemini
+          if (process.env.GEMINI_API_KEY) {
             try {
-              const ai = new GoogleGenAI({ apiKey });
               const systemInstruction = buildGeminiSpecialistSystemPrompt({
                 providerName,
                 category,
@@ -77,22 +74,23 @@ export const Route = createFileRoute("/api/chat")({
                 ? `[O cliente ${safeUserContext.firstName || "Cliente"} acabou de enviar uma fotografia da avaria/local para diagnóstico técnico. A legenda ou mensagem enviada com a foto é: "${message || "Foto da avaria"}". Analisa a situação com rigor técnico e responde como especialista.]`
                 : message;
 
-              const response = await ai.models.generateContent({
-                model: "gemini-3.8-flash",
+              const cascadeRes = await geminiEngine.generateWithCascade({
                 contents: [userPrompt],
                 config: {
                   systemInstruction,
                   temperature: 0.7,
                 },
+                models: ["gemini-3.8-flash", "gemini-3.1-flash-lite"],
+                cacheCategory: `specialist-${providerId}`,
+                rawUserQuery: message,
               });
 
-              const replyText = response.text?.trim();
-              if (replyText) {
+              if (cascadeRes.text) {
                 return new Response(
                   JSON.stringify({
                     success: true,
-                    text: replyText,
-                    source: "gemini-3.8-flash",
+                    text: cascadeRes.text,
+                    source: cascadeRes.model,
                   }),
                   {
                     headers: { "Content-Type": "application/json" },
@@ -101,7 +99,7 @@ export const Route = createFileRoute("/api/chat")({
               }
             } catch (geminiError) {
               console.warn(
-                "Aviso: Chamada à API Gemini falhou ou excedeu limites. A usar o motor especialista local de contingência:",
+                "Aviso: Motor Gemini falhou ou atingiu limite transitório. A usar motor especialista local de contingência STP:",
                 geminiError,
               );
             }
@@ -119,7 +117,7 @@ export const Route = createFileRoute("/api/chat")({
             JSON.stringify({
               success: true,
               text: localResult.text,
-              source: "specialist_engine",
+              source: "specialist_engine_local_stp",
             }),
             {
               headers: { "Content-Type": "application/json" },

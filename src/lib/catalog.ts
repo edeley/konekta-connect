@@ -111,7 +111,7 @@ export const categoryDisplayName: Record<string, string> = {
   pintor: "Pintura",
   mecanico: "Mecânica & Geradores",
   jardinagem: "Jardinagem",
-  "ar-condicionado": "Climatização",
+  "ar-condicionado": "Climatização & Frio (Geladeiras e AC)",
   beleza: "Estética & Beleza",
 };
 
@@ -185,43 +185,69 @@ export type AvailableServiceItem = {
   categorySlug: string;
   categoryName: string;
   price: number;
+  priceFrom: number;
   billingLabel: string;
   providerName: string;
   providerId: string;
+  providerImage?: string;
+  rating: number;
+  reviews: number;
+  isFixedPrice: boolean;
   description?: string;
 };
 
-export function getAllActiveServices(providerList?: Provider[]): AvailableServiceItem[] {
+export function getAllActiveServices(
+  optionsOrList?: Provider[] | { providerList?: Provider[] },
+): AvailableServiceItem[] {
+  const providerList = Array.isArray(optionsOrList) ? optionsOrList : optionsOrList?.providerList;
   const activeProvs = getActiveProviders(providerList);
   const items: AvailableServiceItem[] = [];
 
   activeProvs.forEach((p) => {
     const catSlug = p.categorySlug || slugifyCategory(p.category);
+    const providerRating = typeof p.rating === "number" && !Number.isNaN(p.rating) ? p.rating : 5.0;
+    const providerReviews =
+      typeof p.reviews === "number" && !Number.isNaN(p.reviews) ? p.reviews : 0;
+    const defaultPriceFrom =
+      typeof p.priceFrom === "number" && !Number.isNaN(p.priceFrom) ? p.priceFrom : 350;
+
     if (p.detailedServices && p.detailedServices.length > 0) {
       p.detailedServices.forEach((ds) => {
+        const itemPrice =
+          typeof ds.price === "number" && !Number.isNaN(ds.price) ? ds.price : defaultPriceFrom;
         items.push({
           id: ds.id,
           name: ds.name,
           categorySlug: catSlug,
           categoryName: p.category,
-          price: ds.price,
+          price: itemPrice,
+          priceFrom: itemPrice,
           billingLabel: ds.billingLabel || "Preço Fixo",
           providerName: p.name,
           providerId: p.id,
+          providerImage: p.image,
+          rating: providerRating,
+          reviews: providerReviews,
+          isFixedPrice: ds.billingMethod === "fixo" || ds.billingLabel === "Preço Fixo",
           description: ds.description,
         });
       });
-    } else if (p.services) {
+    } else if (p.services && p.services.length > 0) {
       p.services.forEach((s, idx) => {
         items.push({
           id: `${p.id}-srv-${idx}`,
           name: s,
           categorySlug: catSlug,
           categoryName: p.category,
-          price: p.priceFrom || 350,
+          price: defaultPriceFrom,
+          priceFrom: defaultPriceFrom,
           billingLabel: "A partir de",
           providerName: p.name,
           providerId: p.id,
+          providerImage: p.image,
+          rating: providerRating,
+          reviews: providerReviews,
+          isFixedPrice: false,
         });
       });
     }

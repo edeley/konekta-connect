@@ -625,6 +625,7 @@ function RequestOrOrderDetail() {
                 <Link
                   to="/chat/$id"
                   params={{ id: provider.id }}
+                  search={{ orderId: order.id }}
                   className="h-10 px-3.5 rounded-xl bg-primary/10 hover:bg-primary/20 text-primary text-xs font-bold flex items-center gap-1.5 transition border border-primary/25 shrink-0"
                 >
                   <MessageCircle size={15} />
@@ -653,6 +654,7 @@ function RequestOrOrderDetail() {
                 <Link
                   to="/chat/$id"
                   params={{ id: order.providerId }}
+                  search={{ orderId: order.id }}
                   className="h-10 px-3.5 rounded-xl bg-primary/10 hover:bg-primary/20 text-primary text-xs font-bold flex items-center gap-1.5 transition border border-primary/25 shrink-0"
                 >
                   <MessageCircle size={15} />
@@ -1188,6 +1190,7 @@ function RequestOrOrderDetail() {
                           <Link
                             to="/chat/$id"
                             params={{ id: p.providerId }}
+                            search={{ requestId: request.id }}
                             className="press flex h-11 flex-1 items-center justify-center gap-2 rounded-xl bg-muted text-sm font-semibold"
                           >
                             <MessageCircle size={16} /> Falar no Chat

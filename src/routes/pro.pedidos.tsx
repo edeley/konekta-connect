@@ -68,8 +68,8 @@ function ProOrders() {
     tab === "novos"
       ? o.status === "pendente"
       : tab === "ativos"
-        ? ["aceite", "a-caminho", "em-execucao"].includes(o.status)
-        : ["concluido", "avaliado"].includes(o.status),
+        ? ["aceite", "a-caminho", "em-execucao", "aguardando-codigo"].includes(o.status)
+        : ["concluido", "avaliado", "cancelado"].includes(o.status),
   );
 
   return (
@@ -146,22 +146,16 @@ function ProOrders() {
                       <ChevronRight size={14} />
                     </Link>
 
-                    {/* Botão de Chat Seguro: disponível apenas enquanto o pedido estiver ativo / em execução */}
-                    {!isFinished ? (
-                      <Link
-                        to="/chat/$id"
-                        params={{ id: o.providerId }}
-                        className="h-10 px-3.5 rounded-full bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-700 dark:text-emerald-300 text-xs font-bold flex items-center gap-1.5 transition border border-emerald-500/25"
-                      >
-                        <MessageCircle size={15} />
-                        Falar no Chat
-                      </Link>
-                    ) : (
-                      <span className="h-10 px-3 rounded-full bg-muted text-muted-foreground text-[11px] font-semibold flex items-center gap-1.5">
-                        <Lock size={12} />
-                        Chat Encerrado
-                      </span>
-                    )}
+                    {/* Botão de Chat Seguro: disponível para negociação e acompanhamento */}
+                    <Link
+                      to="/chat/$id"
+                      params={{ id: o.providerId }}
+                      search={{ orderId: o.id }}
+                      className="h-10 px-3.5 rounded-full bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-700 dark:text-emerald-300 text-xs font-bold flex items-center gap-1.5 transition border border-emerald-500/25"
+                    >
+                      <MessageCircle size={15} />
+                      <span>{isFinished ? "Ver Conversa" : "Falar no Chat"}</span>
+                    </Link>
 
                     {/* Ações para Pedido Concluído: Avaliar Cliente & Guardar nos Favoritos */}
                     {isFinished && (

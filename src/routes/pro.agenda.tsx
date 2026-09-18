@@ -32,7 +32,9 @@ function ProAgenda() {
   const orders = useStore((s) => s.orders);
   const [open, setOpen] = useState<string[]>(["Seg", "Ter", "Qua", "Qui", "Sex"]);
   const { time: stpTime, timeShort: stpTimeShort, dateFormatted: stpDateFormatted } = useSTPClock();
-  const scheduled = orders.filter((o) => ["aceite", "a-caminho", "em-execucao"].includes(o.status));
+  const scheduled = orders.filter((o) =>
+    ["aceite", "a-caminho", "em-execucao", "aguardando-codigo"].includes(o.status),
+  );
 
   function toggle(d: string) {
     setOpen((prev) => (prev.includes(d) ? prev.filter((x) => x !== d) : [...prev, d]));

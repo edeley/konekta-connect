@@ -71,8 +71,7 @@ function OrdersPage() {
   const openRequests = requests.filter((r) => r.status !== "fechado");
 
   function handleReleasePayment(order: Order) {
-    store.updateOrder(order.id, { status: "concluido" });
-    const net = store.addEarning(`Serviço ${order.id} - ${order.service}`, order.total);
+    store.clientReleasePayment(order.id);
     toast.success("Pagamento liberado com sucesso!", {
       description: `${formatDb(order.total)} transferidos da custódia para o prestador.`,
     });
@@ -147,6 +146,7 @@ function OrdersPage() {
                       key={r.id}
                       to="/chat/$id"
                       params={{ id: r.directProviderId }}
+                      search={{ requestId: r.id }}
                       className="block"
                     >
                       <KCard className="border border-border/80 shadow-2xs hover:border-primary/50 transition-all">
@@ -312,6 +312,7 @@ function OrdersPage() {
                       <Link
                         to="/chat/$id"
                         params={{ id: o.providerId }}
+                        search={{ orderId: o.id }}
                         className="press flex h-10 flex-1 items-center justify-center gap-1.5 rounded-xl bg-card border border-border text-xs font-bold text-foreground hover:bg-muted"
                       >
                         <MessageCircle size={14} /> Falar no Chat

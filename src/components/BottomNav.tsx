@@ -42,6 +42,7 @@ export function BottomNav({ role = "cliente", wide = false }: { role?: UserRole;
               <Link
                 key={to}
                 to={to}
+                preload="intent"
                 className={cn(
                   "press flex flex-1 flex-col items-center gap-0.5 rounded-xl py-1 transition-colors",
                   active ? "text-primary font-bold" : "text-muted-foreground hover:text-foreground",
@@ -87,6 +88,7 @@ export function BottomNav({ role = "cliente", wide = false }: { role?: UserRole;
               <Link
                 key={to}
                 to={to}
+                preload="intent"
                 className={cn(
                   "press flex flex-1 flex-col items-center gap-0.5 rounded-xl py-1 transition-colors",
                   active ? "text-primary font-bold" : "text-muted-foreground hover:text-foreground",
@@ -121,6 +123,7 @@ export function BottomNav({ role = "cliente", wide = false }: { role?: UserRole;
         {/* Início */}
         <Link
           to="/"
+          preload="intent"
           className={cn(
             "press flex flex-1 flex-col items-center gap-0.5 py-1 transition-colors",
             pathname === "/"
@@ -142,6 +145,7 @@ export function BottomNav({ role = "cliente", wide = false }: { role?: UserRole;
         {/* Categorias / Buscar */}
         <Link
           to="/categorias"
+          preload="intent"
           className={cn(
             "press flex flex-1 flex-col items-center gap-0.5 py-1 transition-colors",
             pathname.startsWith("/categorias")
@@ -163,6 +167,7 @@ export function BottomNav({ role = "cliente", wide = false }: { role?: UserRole;
         {/* Central Triider Action: Pedir Orçamento */}
         <Link
           to="/novo-pedido"
+          preload="intent"
           className="press flex flex-col items-center -mt-4 px-2"
           aria-label="Pedir Orçamento Grátis"
         >
@@ -177,6 +182,7 @@ export function BottomNav({ role = "cliente", wide = false }: { role?: UserRole;
         {/* Pedidos */}
         <Link
           to="/pedidos"
+          preload="intent"
           className={cn(
             "press flex flex-1 flex-col items-center gap-0.5 py-1 transition-colors",
             pathname.startsWith("/pedidos") || pathname.startsWith("/pedido/")
@@ -200,6 +206,7 @@ export function BottomNav({ role = "cliente", wide = false }: { role?: UserRole;
         {/* Perfil */}
         <Link
           to="/perfil"
+          preload="intent"
           className={cn(
             "press flex flex-1 flex-col items-center gap-0.5 py-1 transition-colors",
             pathname.startsWith("/perfil") || pathname.startsWith("/carteira")

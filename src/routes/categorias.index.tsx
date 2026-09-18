@@ -27,6 +27,15 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/categorias/")({
+  validateSearch: (
+    search: Record<string, unknown>,
+  ): { tab?: "categorias" | "servicos"; q?: string } => ({
+    tab:
+      search.tab === "servicos" || search.tab === "categorias"
+        ? (search.tab as "categorias" | "servicos")
+        : undefined,
+    q: typeof search.q === "string" ? search.q : undefined,
+  }),
   head: () => ({
     meta: [
       { title: "Categorias e Serviços Ativos — KONEKTA STP" },
@@ -73,8 +82,11 @@ const descriptions: Record<string, string> = {
 };
 
 function CategoriasPage() {
-  const [query, setQuery] = useState("");
-  const [activeTab, setActiveTab] = useState<"categorias" | "servicos">("categorias");
+  const searchParams = Route.useSearch();
+  const [query, setQuery] = useState(searchParams.q ?? "");
+  const [activeTab, setActiveTab] = useState<"categorias" | "servicos">(
+    searchParams.tab ?? "categorias",
+  );
   const [isUnservedModalOpen, setIsUnservedModalOpen] = useState(false);
   const [unservedInitialName, setUnservedInitialName] = useState("");
 
@@ -87,10 +99,7 @@ function CategoriasPage() {
   );
 
   // Todos os serviços individuais oferecidos por prestadores ativos
-  const allActiveServices = useMemo(
-    () => getAllActiveServices({ providerList: providers }),
-    [providers],
-  );
+  const allActiveServices = useMemo(() => getAllActiveServices(providers), [providers]);
 
   // Filtro de Categorias Ativas
   const filteredCategories = useMemo(() => {
@@ -351,54 +360,67 @@ function CategoriasPage() {
               </div>
             ) : (
               <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-                {filteredServices.map((srv, idx) => (
-                  <div
-                    key={idx}
-                    className="p-4 rounded-2xl border border-border bg-card shadow-2xs hover:border-primary/50 transition-all flex flex-col justify-between gap-3 group"
-                  >
-                    <div className="space-y-1.5">
-                      <div className="flex items-center justify-between gap-2">
-                        <span className="px-2 py-0.5 rounded-md bg-primary/10 text-primary text-[10px] font-bold">
-                          {srv.categoryName}
-                        </span>
-                        <span className="text-[11px] font-black text-primary">
-                          {srv.price ? `${srv.price} STN` : `A partir de ${srv.priceFrom} STN`}
-                        </span>
-                      </div>
-                      <h4 className="text-xs sm:text-sm font-bold text-foreground group-hover:text-primary transition">
-                        {srv.name}
-                      </h4>
-                      <p className="text-[11px] text-muted-foreground">
-                        Oferecido por{" "}
-                        <strong className="text-foreground">{srv.providerName}</strong> (★{" "}
-                        {srv.rating.toFixed(1)})
-                      </p>
-                    </div>
+                {filteredServices.map((srv, idx) => {
+                  const safeRating =
+                    typeof srv.rating === "number" && !Number.isNaN(srv.rating) ? srv.rating : 5.0;
+                  const effectivePrice = srv.price || srv.priceFrom || 350;
 
-                    <div className="pt-2 border-t border-border flex items-center justify-between gap-2">
-                      <Link
-                        to="/prestador/$id"
-                        params={{ id: srv.providerId }}
-                        className="text-[11px] font-bold text-muted-foreground hover:text-foreground inline-flex items-center gap-1"
-                      >
-                        <span>Ver Perfil</span>
-                        <ExternalLink size={12} />
-                      </Link>
-                      <Link
-                        to="/novo-pedido"
-                        search={{
-                          categoria: srv.categorySlug,
-                          titulo: srv.name,
-                          orcamento: srv.price ? srv.price.toString() : srv.priceFrom.toString(),
-                        }}
-                        className="px-3 py-1.5 rounded-xl bg-primary text-primary-foreground text-xs font-bold shadow-2xs hover:bg-brand-dark transition inline-flex items-center gap-1"
-                      >
-                        <span>Pedir Serviço</span>
-                        <ChevronRight size={13} />
-                      </Link>
+                  return (
+                    <div
+                      key={srv.id || `${srv.providerId}-${idx}`}
+                      className="p-4 rounded-2xl border border-border bg-card shadow-2xs hover:border-primary/50 transition-all flex flex-col justify-between gap-3 group"
+                    >
+                      <div className="space-y-1.5">
+                        <div className="flex items-center justify-between gap-2">
+                          <span className="px-2 py-0.5 rounded-md bg-primary/10 text-primary text-[10px] font-bold">
+                            {srv.categoryName}
+                          </span>
+                          <span className="text-[11px] font-black text-primary">
+                            {srv.isFixedPrice
+                              ? formatDb(srv.price)
+                              : `A partir de ${formatDb(effectivePrice)}`}
+                          </span>
+                        </div>
+                        <h4 className="text-xs sm:text-sm font-bold text-foreground group-hover:text-primary transition">
+                          {srv.name}
+                        </h4>
+                        {srv.description && (
+                          <p className="text-[11px] text-muted-foreground line-clamp-2 leading-relaxed">
+                            {srv.description}
+                          </p>
+                        )}
+                        <p className="text-[11px] text-muted-foreground">
+                          Oferecido por{" "}
+                          <strong className="text-foreground">{srv.providerName}</strong> (★{" "}
+                          {safeRating.toFixed(1)})
+                        </p>
+                      </div>
+
+                      <div className="pt-2 border-t border-border flex items-center justify-between gap-2">
+                        <Link
+                          to="/prestador/$id"
+                          params={{ id: srv.providerId }}
+                          className="text-[11px] font-bold text-muted-foreground hover:text-foreground inline-flex items-center gap-1"
+                        >
+                          <span>Ver Perfil</span>
+                          <ExternalLink size={12} />
+                        </Link>
+                        <Link
+                          to="/novo-pedido"
+                          search={{
+                            categoria: srv.categorySlug,
+                            titulo: srv.name,
+                            orcamento: effectivePrice.toString(),
+                          }}
+                          className="px-3 py-1.5 rounded-xl bg-primary text-primary-foreground text-xs font-bold shadow-2xs hover:bg-brand-dark transition inline-flex items-center gap-1"
+                        >
+                          <span>Pedir Serviço</span>
+                          <ChevronRight size={13} />
+                        </Link>
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             )}
           </div>

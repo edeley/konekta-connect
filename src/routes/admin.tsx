@@ -71,8 +71,8 @@ export default function AdminPage() {
   const moderationDisputes = useStore((s) => s.moderationDisputes);
   const orders = useStore((s) => s.orders);
   const requests = useStore((s) => s.requests);
-  const depositRequests = useStore((s) => s.depositRequests || []);
-  const payoutRequests = useStore((s) => s.payoutRequests || []);
+  const depositRequests = useStore((s) => s.depositRequests);
+  const payoutRequests = useStore((s) => s.payoutRequests);
 
   const pendingRequests = requests.filter((r) => (r.adminStatus ?? "pendente") === "pendente");
   const [requestFilter, setRequestFilter] = useState<
@@ -115,7 +115,7 @@ export default function AdminPage() {
     return "requests";
   });
 
-  const securityIncidents = useStore((s) => s.securityIncidents || []);
+  const securityIncidents = useStore((s) => s.securityIncidents);
   const unresolvedSecurityIncidents = securityIncidents.filter((inc) => inc.status === "flagged");
   const [securityFilter, setSecurityFilter] = useState<
     "todos" | "flagged" | "reviewed" | "dismissed"
@@ -126,6 +126,7 @@ export default function AdminPage() {
   );
 
   const transactions = useStore((s) => s.transactions);
+  const adminAlerts = useStore((s) => s.adminAlerts);
   const [ledgerFilter, setLedgerFilter] = useState<"all" | "in" | "out">("all");
 
   // Filters
@@ -281,6 +282,52 @@ export default function AdminPage() {
           </div>
         </div>
       </Section>
+
+      {/* Alertas Administrativos de Bloqueio & Saldo Devedor */}
+      {adminAlerts.length > 0 && (
+        <Section title="Alertas de Sistema & Prestadores Bloqueados">
+          <div className="space-y-2">
+            {adminAlerts.map((alt) => (
+              <div
+                key={alt.id}
+                className={`p-3.5 rounded-2xl border flex items-start justify-between gap-3 text-xs ${
+                  alt.type === "ALERTA_PRESTADOR_BLOQUEADO"
+                    ? "bg-rose-500/10 border-rose-500/30 text-rose-900 dark:text-rose-200"
+                    : "bg-emerald-500/10 border-emerald-500/30 text-emerald-900 dark:text-emerald-200"
+                }`}
+              >
+                <div className="flex items-start gap-2.5">
+                  <div className="mt-0.5">
+                    {alt.type === "ALERTA_PRESTADOR_BLOQUEADO" ? (
+                      <Lock size={16} className="text-rose-600" />
+                    ) : (
+                      <Check size={16} className="text-emerald-600" />
+                    )}
+                  </div>
+                  <div>
+                    <p className="font-bold text-xs">
+                      {alt.type === "ALERTA_PRESTADOR_BLOQUEADO"
+                        ? "🔒 Conta de Prestador Bloqueada (Saldo <= -50 Dobras)"
+                        : "🔓 Conta Reativada Após Recarga"}
+                    </p>
+                    <p className="text-[11px] mt-0.5">{alt.reason}</p>
+                    <p className="text-[10px] text-muted-foreground mt-1">
+                      Prestador: <strong>{alt.providerName}</strong> ({alt.providerPhone}) · Saldo:{" "}
+                      <strong>{formatDb(alt.currentNegativeBalance)}</strong>
+                    </p>
+                  </div>
+                </div>
+                <span className="text-[10px] font-mono text-muted-foreground whitespace-nowrap">
+                  {new Date(alt.createdAt).toLocaleTimeString("pt-PT", {
+                    hour: "2-digit",
+                    minute: "2-digit",
+                  })}
+                </span>
+              </div>
+            ))}
+          </div>
+        </Section>
+      )}
 
       {/* Tabs de Navegação Admin */}
       <Section>

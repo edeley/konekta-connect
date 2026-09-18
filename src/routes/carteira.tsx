@@ -27,6 +27,7 @@ import {
   Eye,
   EyeOff,
   Filter,
+  Wallet,
 } from "lucide-react";
 import { AppShell } from "@/components/AppShell";
 import { store, useStore } from "@/lib/store";
@@ -34,6 +35,8 @@ import { toast } from "sonner";
 import { ProofUpload } from "@/components/konekta/ProofUpload";
 import { payoutLabel } from "@/lib/escrow";
 import { SmsOtpVerificationModal } from "@/components/konekta/SmsOtpVerificationModal";
+import { SaoWalletRechargeModal } from "@/components/konekta/SaoWalletRechargeModal";
+import { SaoWalletWithdrawModal } from "@/components/konekta/SaoWalletWithdrawModal";
 
 export const Route = createFileRoute("/carteira")({
   head: () => ({
@@ -89,19 +92,42 @@ const DOBRA24_AGENTS = [
 ];
 
 function WalletPage() {
-  const balance = useStore((s) => s.balance);
-  const transactions = useStore((s) => s.transactions);
-  const orders = useStore((s) => s.orders);
   const user = useStore((s) => s.user);
-  const depositRequests = useStore((s) => s.depositRequests || []);
+  const isProvider = user?.role === "prestador";
+  const clientBalance = useStore((s) => s.balance);
+  const providerBalance = useStore((s) => s.providerBalance);
+  const rawBalance = isProvider ? providerBalance : clientBalance;
+  const balance = typeof rawBalance === "number" && Number.isFinite(rawBalance) ? rawBalance : 0;
+
+  const clientTransactions = useStore((s) => s.transactions);
+  const providerTransactions = useStore((s) => s.providerTransactions);
+  const transactions = isProvider ? providerTransactions : clientTransactions;
+
+  const orders = useStore((s) => s.orders);
+  const allDepositRequests = useStore((s) => s.depositRequests);
+  const depositRequests = allDepositRequests.filter((d) =>
+    isProvider ? d.userRole === "prestador" : d.userRole === "cliente",
+  );
 
   const [showTopUp, setShowTopUp] = useState(false);
   const [showWithdraw, setShowWithdraw] = useState(false);
+  const [saoWalletRechargeOpen, setSaoWalletRechargeOpen] = useState(false);
+  const [saoWalletWithdrawOpen, setSaoWalletWithdrawOpen] = useState(false);
+  const [showCashDeclModal, setShowCashDeclModal] = useState(false);
+  const [showBalance, setShowBalance] = useState(true);
   const [showHelp, setShowHelp] = useState(false);
   const [showFlowGuide, setShowFlowGuide] = useState(false);
   const [copiedNib, setCopiedNib] = useState(false);
   const [txFilter, setTxFilter] = useState<"all" | "in" | "out" | "escrow">("all");
   const [selectedTx, setSelectedTx] = useState<(typeof transactions)[0] | null>(null);
+
+  // Cash Declaration Form State
+  const [cashDeclClientName, setCashDeclClientName] = useState("");
+  const [cashDeclServiceTitle, setCashDeclServiceTitle] = useState("");
+  const [cashDeclAmount, setCashDeclAmount] = useState("");
+  const [cashDeclNotes, setCashDeclNotes] = useState("");
+  const providerDebt = useStore((s) => s.providerDebt || 0);
+  const commission = useStore((s) => s.config?.commissionPct || 10);
 
   // Top-Up Form State
   const [topUpMethod, setTopUpMethod] = useState<"dobra24" | "transferencia" | "agente">("dobra24");
@@ -161,9 +187,9 @@ function WalletPage() {
     };
 
     const res = store.createDepositRequest({
-      userId: user?.id || "usr-client",
-      userName: user?.name || "Manuel Trindade",
-      userRole: "cliente",
+      userId: user?.id || (isProvider ? "pro-current" : "usr-client"),
+      userName: user?.name || (isProvider ? "Edmilson Varela" : "Manuel Trindade"),
+      userRole: isProvider ? "prestador" : "cliente",
       userPhone: user?.phone || dobra24Phone || "+239 9918273",
       amount: n,
       method:
@@ -237,6 +263,43 @@ function WalletPage() {
     }
   }
 
+  function handleDeclareCashPayment(e: React.FormEvent) {
+    e.preventDefault();
+    const val = Number(cashDeclAmount);
+    if (!val || val <= 0) {
+      toast.error("Insira um valor numérico válido recebido em dinheiro.");
+      return;
+    }
+    if (!cashDeclClientName.trim()) {
+      toast.error("Insira o nome do cliente ou pagador.");
+      return;
+    }
+
+    const targetService = cashDeclServiceTitle.trim() || "Serviço Presencial Concluído";
+    const commPct = commission;
+    const commAmount = Math.round(val * (commPct / 100));
+
+    store.declareInPersonCashPayment({
+      providerId: user?.id || (isProvider ? "edmilson-varela" : undefined),
+      providerName: user?.name || (isProvider ? "Edmilson Varela" : "Cliente KONEKTA"),
+      clientName: cashDeclClientName.trim(),
+      serviceTitle: targetService,
+      amountReceived: val,
+      commissionAmount: commAmount,
+      notes: cashDeclNotes.trim() || undefined,
+    });
+
+    toast.success(`Pagamento presencial de ${val.toLocaleString("pt-PT")} STN declarado!`, {
+      description: `Comissão KONEKTA de ${commAmount.toLocaleString("pt-PT")} STN (${commPct}%) adicionada ao extrato.`,
+    });
+
+    setShowCashDeclModal(false);
+    setCashDeclClientName("");
+    setCashDeclServiceTitle("");
+    setCashDeclAmount("");
+    setCashDeclNotes("");
+  }
+
   // Filtragem de transações
   const filteredTxs = transactions.filter((t) => {
     if (txFilter === "in") return t.kind === "in";
@@ -258,25 +321,68 @@ function WalletPage() {
       <header className="pt-7 pb-3 px-5 flex items-center justify-between">
         <div>
           <div className="flex items-center gap-2">
-            <span className="text-[10px] uppercase tracking-wider font-extrabold px-2 py-0.5 rounded-full bg-primary/10 text-primary">
-              Carteira Digital Closed-Loop
+            <span className="text-[10px] uppercase tracking-wider font-extrabold px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-700 dark:text-emerald-300">
+              {isProvider ? "• Conta Profissional STP" : "• Conta Cliente STP"}
             </span>
           </div>
           <h1 className="text-2xl font-black tracking-tight text-foreground mt-1">
-            Carteira KONEKTA
+            A Minha Carteira
           </h1>
           <p className="text-xs text-muted-foreground font-medium">
-            Pagamentos por Dobra 24 e bancos locais com Custódia Escrow em São Tomé
+            Gestão de ganhos, custódia e levantamentos bancários em Dobras (Db).
           </p>
         </div>
-        <button
-          onClick={() => setShowHelp(true)}
-          className="size-9 rounded-full bg-muted flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
-          aria-label="Como funciona o pagamento seguro"
-        >
-          <HelpCircle size={18} />
-        </button>
+        <div className="flex items-center gap-1.5">
+          <button
+            onClick={() => setShowBalance(!showBalance)}
+            className="size-9 rounded-full bg-muted flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
+            title={showBalance ? "Ocultar saldos" : "Mostrar saldos"}
+            aria-label="Alternar visibilidade do saldo"
+          >
+            {showBalance ? <Eye size={18} /> : <EyeOff size={18} />}
+          </button>
+          <button
+            onClick={() => setShowHelp(true)}
+            className="size-9 rounded-full bg-muted flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
+            aria-label="Como funciona o pagamento seguro"
+            title="Como funciona a custódia e pagamentos"
+          >
+            <HelpCircle size={18} />
+          </button>
+        </div>
       </header>
+
+      {/* AVISO DE COMISSÕES PENDENTES SE FOR PRESTADOR COM DÍVIDA */}
+      {isProvider && providerDebt > 0 && (
+        <section className="px-5 mt-2">
+          <div className="rounded-2xl bg-rose-500/10 border border-rose-500/30 p-3.5 space-y-2">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <AlertCircle size={16} className="text-rose-600 dark:text-rose-400" />
+                <span className="text-xs font-bold text-rose-700 dark:text-rose-300">
+                  Comissão Pendente de Pagamentos em Dinheiro
+                </span>
+              </div>
+              <span className="text-xs font-mono font-black text-rose-600 dark:text-rose-400">
+                {showBalance ? `${providerDebt.toLocaleString("pt-PT")} STN` : "••••••"}
+              </span>
+            </div>
+            <p className="text-[11px] text-muted-foreground">
+              Possui valores de taxa KONEKTA a liquidar de trabalhos recebidos em mão. Regularize
+              carregando a carteira.
+            </p>
+            <button
+              onClick={() => {
+                setTopUpAmount(String(providerDebt));
+                setShowTopUp(true);
+              }}
+              className="w-full py-2 rounded-xl bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs flex items-center justify-center gap-1.5 shadow-xs transition cursor-pointer"
+            >
+              <Plus size={14} /> Regularizar Agora ({providerDebt.toLocaleString("pt-PT")} STN)
+            </button>
+          </div>
+        </section>
+      )}
 
       {/* BANNER DO FLUXO CLOSED-LOOP EM 5 ETAPAS */}
       <section className="px-5 mt-1">
@@ -346,76 +452,142 @@ function WalletPage() {
         </div>
       </section>
 
-      {/* CARD PRINCIPAL DE SALDO & CUSTÓDIA */}
+      {/* CARTÃO FINANCEIRO PRINCIPAL (VERDE ESCURO & DOURADO DISFARÇADO) */}
       <section className="px-5 mt-4">
-        <div className="bg-gradient-to-br from-primary via-emerald-800 to-teal-950 text-primary-foreground rounded-3xl p-5.5 relative overflow-hidden shadow-md space-y-4">
-          <div className="flex items-center justify-between">
-            <span className="text-[11px] uppercase tracking-widest text-primary-foreground/75 font-bold">
-              Resumo da Carteira
-            </span>
-            <span className="inline-flex items-center gap-1 text-[10px] bg-white/20 backdrop-blur-md px-2.5 py-1 rounded-full font-bold text-white shadow-2xs">
+        <div className="relative rounded-3xl bg-gradient-to-br from-[#021f14] via-[#052e1e] to-[#083b27] text-white p-6 shadow-xl border border-amber-400/35 space-y-4 overflow-hidden">
+          {/* Efeitos sutis de iluminação ambiente dourada e esmeralda */}
+          <div
+            className="absolute -top-16 -right-16 w-56 h-56 rounded-full bg-amber-400/10 blur-3xl pointer-events-none"
+            aria-hidden="true"
+          />
+          <div
+            className="absolute -bottom-16 -left-16 w-48 h-48 rounded-full bg-emerald-500/10 blur-3xl pointer-events-none"
+            aria-hidden="true"
+          />
+
+          {/* Topo do Cartão */}
+          <div className="relative flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <div className="size-8 rounded-xl bg-[#032316] text-amber-300 grid place-items-center border border-amber-400/30 shadow-inner">
+                <Wallet size={15} />
+              </div>
+              <span className="text-[11px] font-black tracking-wider uppercase text-amber-300">
+                KONEKTA STP
+              </span>
+              <span className="text-[10px] text-amber-400/40">•</span>
+              <span className="text-[10px] uppercase tracking-widest text-emerald-100/75 font-bold">
+                Resumo da Carteira
+              </span>
+            </div>
+
+            <span className="inline-flex items-center gap-1 text-[10px] bg-amber-400/15 px-2.5 py-1 rounded-full font-bold text-amber-200 border border-amber-400/30 shadow-2xs backdrop-blur-xs">
               <ShieldCheck size={12} className="text-amber-300" />
               100% Protegido em STP
             </span>
           </div>
 
-          <div className="grid grid-cols-2 gap-3 pt-1">
+          {/* Identificação do Titular da Conta */}
+          <div className="relative flex items-center justify-between pt-1 border-b border-emerald-800/60 pb-2">
+            <div>
+              <span className="text-[10px] text-amber-300/80 font-bold uppercase tracking-wider block">
+                Titular da Conta
+              </span>
+              <span className="text-sm font-extrabold text-white tracking-wide">Edeley Damião</span>
+            </div>
+            <div className="text-right">
+              <span className="text-[10px] text-emerald-300/80 font-bold uppercase tracking-wider block">
+                Nº da Conta / App
+              </span>
+              <span className="text-xs font-mono font-bold text-amber-200">+239 9944747</span>
+            </div>
+          </div>
+
+          {/* DUAL METRICS: Saldo Disponível & Em Custódia Lado a Lado */}
+          <div className="relative grid grid-cols-2 gap-3 pt-1">
             {/* Saldo Disponível */}
-            <div className="p-3 rounded-2xl bg-white/10 backdrop-blur-xs border border-white/10 space-y-1">
-              <span className="text-[10px] text-primary-foreground/80 font-bold uppercase tracking-wider block">
+            <div className="p-4 rounded-2xl bg-[#031d12]/85 border border-amber-400/25 space-y-1.5 shadow-inner backdrop-blur-xs">
+              <span className="text-[10px] text-amber-300/90 font-bold uppercase tracking-wider block">
                 Saldo Disponível
               </span>
-              <div className="flex items-baseline gap-1.5">
-                <p className="text-2xl font-black tracking-tight">
-                  {balance.toLocaleString("pt-PT")}
+              <div className="flex items-baseline gap-1.5 flex-wrap">
+                <p className="text-2xl sm:text-3xl font-black font-mono tracking-tight text-white">
+                  {showBalance ? balance.toLocaleString("pt-PT") : "••••••••"}
                 </p>
-                <span className="text-xs font-bold text-primary-foreground/80">STN</span>
+                <span className="text-xs font-bold text-amber-300/80">STN</span>
               </div>
-              <span className="text-[9px] text-emerald-200 block">Livre para contratação</span>
+              <span className="text-[10px] text-emerald-200/80 font-medium block">
+                {isProvider
+                  ? "Disponível para levantamento imediato"
+                  : "Disponível para contratação imediata"}
+              </span>
             </div>
 
-            {/* Saldo Bloqueado em Custódia */}
-            <div className="p-3 rounded-2xl bg-amber-400/15 backdrop-blur-xs border border-amber-400/25 space-y-1">
-              <span className="text-[10px] text-amber-200 font-bold uppercase tracking-wider block flex items-center gap-1">
-                <Lock size={10} /> Em Custódia
+            {/* Saldo Bloqueado em Custódia Protegida */}
+            <div className="p-4 rounded-2xl bg-[#031d12]/60 border border-emerald-700/50 hover:border-amber-400/25 space-y-1.5 shadow-inner backdrop-blur-xs transition-colors">
+              <span className="text-[10px] text-emerald-300/90 font-bold uppercase tracking-wider flex items-center gap-1">
+                <Lock size={10} className="text-amber-300/80" /> Em Custódia
               </span>
-              <div className="flex items-baseline gap-1.5">
-                <p className="text-2xl font-black tracking-tight text-amber-300">
-                  {escrowAmount.toLocaleString("pt-PT")}
+              <div className="flex items-baseline gap-1.5 flex-wrap">
+                <p className="text-2xl sm:text-3xl font-black font-mono tracking-tight text-emerald-100">
+                  {showBalance ? escrowAmount.toLocaleString("pt-PT") : "••••••••"}
                 </p>
-                <span className="text-xs font-bold text-amber-200">STN</span>
+                <span className="text-xs font-bold text-emerald-300/75">STN</span>
               </div>
-              <span className="text-[9px] text-amber-200/90 block">
-                {activeEscrowOrders.length} serviço(s) ativo(s)
+              <span className="text-[10px] text-emerald-200/70 font-medium block">
+                {isProvider
+                  ? "Trabalhos ativos em execução"
+                  : `${activeEscrowOrders.length} serviço(s) ativo(s)`}
               </span>
             </div>
           </div>
 
-          {/* Total Geral */}
-          <div className="pt-2 border-t border-white/15 flex items-center justify-between text-xs">
-            <span className="text-primary-foreground/80 font-medium">
+          {/* Total Geral da Carteira */}
+          <div className="relative pt-2.5 border-t border-emerald-800/70 flex items-center justify-between text-xs">
+            <span className="text-emerald-200/85 font-medium">
               Total na Carteira (Disponível + Retido):
             </span>
-            <strong className="text-sm font-black text-white">
-              {totalWalletValue.toLocaleString("pt-PT")} STN
+            <strong className="text-sm font-black text-amber-200 font-mono tracking-tight">
+              {showBalance ? `${totalWalletValue.toLocaleString("pt-PT")} STN` : "••••••••"}
             </strong>
           </div>
 
-          {/* Botões de Ação */}
-          <div className="pt-2 flex gap-2.5">
+          <p className="relative text-[11px] text-emerald-300/70 font-medium">
+            Transferência direta para a sua conta BISTP, BGFI ou Dobra 24
+          </p>
+
+          {/* AÇÕES DA CARTEIRA: CLIENTE (2 BOTÕES) / PRESTADOR (3 BOTÕES COM DECLARAR EM DINHEIRO) */}
+          <div
+            className={`relative grid ${isProvider ? "grid-cols-3" : "grid-cols-2"} gap-2 pt-2 border-t border-emerald-800/70`}
+          >
             <button
-              onClick={() => setShowTopUp(true)}
-              className="flex-1 bg-white text-primary rounded-xl py-3 text-xs font-black flex items-center justify-center gap-1.5 shadow-sm active:scale-98 transition-transform cursor-pointer"
+              type="button"
+              onClick={() => setSaoWalletRechargeOpen(true)}
+              className="py-3 px-2 rounded-2xl bg-gradient-to-r from-emerald-700 to-emerald-800 hover:from-emerald-600 hover:to-emerald-700 text-amber-100 font-bold text-xs flex flex-col items-center justify-center gap-1 border border-amber-400/40 shadow-md active:scale-98 transition cursor-pointer text-center"
             >
-              <Plus size={16} /> Carregar Carteira
+              <Plus size={16} className="text-amber-300" />
+              <span>Carregar Carteira</span>
             </button>
+
             <button
-              onClick={() => setShowWithdraw(true)}
+              type="button"
+              onClick={() => setSaoWalletWithdrawOpen(true)}
               disabled={balance <= 0}
-              className="flex-1 bg-primary-foreground/15 hover:bg-primary-foreground/25 backdrop-blur text-primary-foreground rounded-xl py-3 text-xs font-bold border border-primary-foreground/20 active:scale-98 transition-transform disabled:opacity-50 cursor-pointer"
+              className="py-3 px-2 rounded-2xl bg-[#032417]/90 hover:bg-[#063321] text-emerald-100 font-bold text-xs flex flex-col items-center justify-center gap-1 border border-emerald-700/80 hover:border-amber-400/35 active:scale-98 transition disabled:opacity-40 cursor-pointer shadow-2xs text-center"
             >
-              Levantar Saldo
+              <ArrowUpRight size={16} className="text-amber-300/80" />
+              <span>Levantar Dinheiro</span>
             </button>
+
+            {isProvider && (
+              <button
+                type="button"
+                onClick={() => setShowCashDeclModal(true)}
+                className="py-3 px-2 rounded-2xl bg-[#032417]/90 hover:bg-[#063321] text-emerald-100 font-bold text-xs flex flex-col items-center justify-center gap-1 border border-emerald-700/80 hover:border-amber-400/35 active:scale-98 transition cursor-pointer shadow-2xs text-center"
+              >
+                <Banknote size={15} className="text-amber-300/80" />
+                <span>Declarar em Dinheiro</span>
+              </button>
+            )}
           </div>
         </div>
       </section>
@@ -813,7 +985,7 @@ function WalletPage() {
                   />
                 </div>
                 <p>
-                  <strong>Beneficiário:</strong> Konekta Serviços Lda · BISTP / BGFI Bank
+                  <strong>Titular da Conta:</strong> Edeley Damião (KONEKTA STP) · BISTP
                 </p>
               </div>
             )}
@@ -994,7 +1166,7 @@ function WalletPage() {
                 <input
                   type="number"
                   min={50}
-                  max={balance}
+                  max={balance > 0 ? balance : undefined}
                   value={withdrawAmount}
                   onChange={(e) => setWithdrawAmount(e.target.value)}
                   placeholder={`Máximo disponível: ${balance.toLocaleString("pt-PT")} STN`}
@@ -1049,6 +1221,134 @@ function WalletPage() {
         </div>
       )}
 
+      {/* MODAL DE DECLARAÇÃO DE PAGAMENTO EM DINHEIRO VIVO (PRESENCIAL - APENAS PRESTADOR) */}
+      {showCashDeclModal && isProvider && (
+        <div
+          className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-end sm:items-center justify-center p-0 sm:p-4"
+          onClick={() => setShowCashDeclModal(false)}
+        >
+          <div
+            className="w-full max-w-md bg-card rounded-t-3xl sm:rounded-3xl p-5 space-y-4 max-h-[90vh] overflow-y-auto border border-border shadow-xl animate-in slide-in-from-bottom"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between border-b border-border pb-3">
+              <div>
+                <h3 className="text-base font-bold text-foreground">Declarar em Dinheiro</h3>
+                <p className="text-xs text-muted-foreground">
+                  Registe o pagamento em dinheiro vivo recebido em mão no terreno
+                </p>
+              </div>
+              <button
+                onClick={() => setShowCashDeclModal(false)}
+                className="size-8 rounded-full bg-muted grid place-items-center text-muted-foreground hover:text-foreground cursor-pointer"
+              >
+                <X size={16} />
+              </button>
+            </div>
+
+            <form onSubmit={handleDeclareCashPayment} className="space-y-3.5">
+              <div>
+                <label className="text-xs font-bold text-foreground block mb-1">
+                  Nome do Cliente ou Pagador *
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={cashDeclClientName}
+                  onChange={(e) => setCashDeclClientName(e.target.value)}
+                  placeholder="Ex: Maria Fernandes ou Dr. Manuel"
+                  className="w-full h-11 px-3.5 rounded-xl bg-muted text-xs font-medium text-foreground outline-none border border-border focus:ring-2 focus:ring-primary"
+                />
+              </div>
+
+              <div>
+                <label className="text-xs font-bold text-foreground block mb-1">
+                  Serviço ou Referência *
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={cashDeclServiceTitle}
+                  onChange={(e) => setCashDeclServiceTitle(e.target.value)}
+                  placeholder="Ex: Instalação Elétrica, Reparação ou Visita Técnica"
+                  className="w-full h-11 px-3.5 rounded-xl bg-muted text-xs font-medium text-foreground outline-none border border-border focus:ring-2 focus:ring-primary"
+                />
+              </div>
+
+              <div>
+                <label className="text-xs font-bold text-foreground block mb-1">
+                  Valor Recebido em Dinheiro (Db / STN) *
+                </label>
+                <input
+                  type="number"
+                  required
+                  min="10"
+                  value={cashDeclAmount}
+                  onChange={(e) => setCashDeclAmount(e.target.value)}
+                  placeholder="Ex: 850"
+                  className="w-full h-11 px-3.5 rounded-xl bg-muted text-sm font-extrabold text-foreground outline-none border border-border focus:ring-2 focus:ring-primary font-mono"
+                />
+              </div>
+
+              {Number(cashDeclAmount) > 0 && (
+                <div className="p-3.5 rounded-2xl bg-amber-500/10 border border-amber-500/30 text-xs space-y-1 text-foreground">
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Valor em Dinheiro:</span>
+                    <strong className="font-mono">
+                      {Number(cashDeclAmount).toLocaleString("pt-PT")} STN
+                    </strong>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Comissão KONEKTA ({commission}%):</span>
+                    <strong className="text-destructive font-mono">
+                      {Math.round(Number(cashDeclAmount) * (commission / 100)).toLocaleString(
+                        "pt-PT",
+                      )}{" "}
+                      STN
+                    </strong>
+                  </div>
+                  <div className="flex justify-between border-t border-amber-500/30 pt-1 text-[11px] text-muted-foreground">
+                    <span>Registo no Extrato:</span>
+                    <span className="font-bold text-foreground">
+                      Documentado com garantia de segurança
+                    </span>
+                  </div>
+                </div>
+              )}
+
+              <div>
+                <label className="text-xs font-bold text-foreground block mb-1">
+                  Observações (opcional)
+                </label>
+                <textarea
+                  value={cashDeclNotes}
+                  onChange={(e) => setCashDeclNotes(e.target.value)}
+                  placeholder="Ex: Trabalho concluído com satisfação do cliente"
+                  rows={2}
+                  className="w-full p-3 rounded-xl bg-muted text-xs text-foreground outline-none border border-border focus:ring-2 focus:ring-primary resize-none"
+                />
+              </div>
+
+              <div className="pt-2 flex gap-2">
+                <button
+                  type="button"
+                  onClick={() => setShowCashDeclModal(false)}
+                  className="flex-1 py-3 rounded-xl bg-muted text-foreground text-xs font-bold hover:bg-muted/80 transition cursor-pointer"
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="submit"
+                  className="flex-1 py-3 rounded-xl bg-primary text-primary-foreground text-xs font-bold hover:opacity-95 transition shadow-sm cursor-pointer"
+                >
+                  Confirmar Declaração
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
       {/* Modal de Confirmação SMS OTP de Levantamento */}
       <SmsOtpVerificationModal
         open={showWithdrawOtp}
@@ -1057,6 +1357,21 @@ function WalletPage() {
         title="Confirmar Levantamento por SMS OTP"
         reason={`Autorização de débito de ${Number(withdrawAmount || 0).toLocaleString("pt-PT")} STN`}
         onVerified={executeWithdrawAfterOtp}
+      />
+
+      {/* MODAL OFICIAL SÃO WALLET — RECARGA */}
+      <SaoWalletRechargeModal
+        isOpen={saoWalletRechargeOpen}
+        onClose={() => setSaoWalletRechargeOpen(false)}
+        isPro={isProvider}
+        defaultAmount={500}
+      />
+
+      {/* MODAL OFICIAL SÃO WALLET — LEVANTAMENTO */}
+      <SaoWalletWithdrawModal
+        isOpen={saoWalletWithdrawOpen}
+        onClose={() => setSaoWalletWithdrawOpen(false)}
+        isPro={isProvider}
       />
     </AppShell>
   );

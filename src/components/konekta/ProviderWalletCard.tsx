@@ -94,24 +94,24 @@ export function ProviderWalletCard({
     <>
       <div
         className={cn(
-          "rounded-3xl bg-gradient-to-br from-slate-900 via-slate-900 to-emerald-950 text-white p-5 shadow-xl border border-slate-800 space-y-4 relative overflow-hidden",
+          "rounded-3xl bg-white text-slate-900 p-5 shadow-xs border-2 border-emerald-200/90 space-y-4 relative overflow-hidden",
           className,
         )}
       >
-        {/* Subtle background glow */}
-        <div className="absolute -top-12 -right-12 size-36 rounded-full bg-emerald-500/10 blur-2xl pointer-events-none" />
+        {/* Subtle background decorative tint */}
+        <div className="absolute -top-12 -right-12 size-36 rounded-full bg-emerald-100/40 blur-2xl pointer-events-none" />
 
         {/* HEADER DO CARD */}
         <div className="flex items-center justify-between relative z-10">
           <div className="flex items-center gap-2.5">
-            <div className="size-9 rounded-xl bg-white/10 text-emerald-400 flex items-center justify-center backdrop-blur-xs">
+            <div className="size-9 rounded-xl bg-emerald-50 text-emerald-700 border border-emerald-200/70 flex items-center justify-center shadow-2xs">
               <Wallet size={18} />
             </div>
             <div>
-              <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-300">
+              <span className="text-[10px] font-black uppercase tracking-wider text-emerald-700">
                 Finanças KONEKTA
               </span>
-              <h3 className="text-xs font-semibold text-slate-300">Resumo dos seus ganhos</h3>
+              <h3 className="text-xs font-bold text-slate-800">Resumo dos seus ganhos</h3>
             </div>
           </div>
 
@@ -119,14 +119,14 @@ export function ProviderWalletCard({
             <button
               type="button"
               onClick={() => setHideBalance(!hideBalance)}
-              className="size-8 rounded-full bg-white/10 hover:bg-white/20 text-slate-300 hover:text-white flex items-center justify-center transition cursor-pointer"
+              className="size-8 rounded-full bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200/70 flex items-center justify-center transition cursor-pointer shadow-2xs"
               title={hideBalance ? "Mostrar saldos" : "Ocultar saldos por privacidade"}
             >
               {hideBalance ? <EyeOff size={14} /> : <Eye size={14} />}
             </button>
             <Link
               to="/pro/ganhos"
-              className="px-2.5 py-1 rounded-full bg-white/10 hover:bg-white/20 text-white text-[11px] font-bold flex items-center gap-1 transition"
+              className="px-2.5 py-1 rounded-full bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200/70 text-[11px] font-bold flex items-center gap-1 transition shadow-2xs"
             >
               <span>Ver Carteira</span>
               <ChevronRight size={13} />
@@ -134,30 +134,30 @@ export function ProviderWalletCard({
           </div>
         </div>
 
-        {/* VALORES PRINCIPAIS */}
+        {/* VALORES PRINCIPAIS (BRANCO & VERDE) */}
         <div className="grid grid-cols-2 gap-3 pt-1 relative z-10">
           {/* SALDO DISPONÍVEL */}
-          <div className="p-3.5 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-xs space-y-1">
-            <span className="text-[11px] text-emerald-300 font-semibold flex items-center gap-1">
-              <CheckCircle2 size={12} className="text-emerald-400" /> Disponível para Saque
+          <div className="p-3.5 rounded-2xl bg-emerald-50/70 border border-emerald-200 space-y-1 shadow-2xs">
+            <span className="text-[11px] text-emerald-800 font-bold flex items-center gap-1">
+              <CheckCircle2 size={12} className="text-emerald-600" /> Disponível para Saque
             </span>
-            <p className="text-2xl font-black font-mono tracking-tight text-white">
+            <p className="text-2xl font-black font-mono tracking-tight text-emerald-950">
               {hideBalance ? "••••••" : formatDb(balance)}
             </p>
-            <span className="text-[10px] text-slate-400 block truncate">
+            <span className="text-[10px] text-emerald-700/90 font-medium block truncate">
               Livre para transferência STP
             </span>
           </div>
 
           {/* SALDO EM CUSTÓDIA */}
-          <div className="p-3.5 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-xs space-y-1">
-            <span className="text-[11px] text-amber-300 font-semibold flex items-center gap-1">
-              <Lock size={12} className="text-amber-400" /> Em Custódia (Escrow)
+          <div className="p-3.5 rounded-2xl bg-emerald-50/35 border border-emerald-200/80 space-y-1 shadow-2xs">
+            <span className="text-[11px] text-emerald-800 font-bold flex items-center gap-1">
+              <Lock size={12} className="text-emerald-600" /> Em Custódia (Escrow)
             </span>
-            <p className="text-2xl font-black font-mono tracking-tight text-amber-200">
+            <p className="text-2xl font-black font-mono tracking-tight text-emerald-900">
               {hideBalance ? "••••••" : formatDb(escrow)}
             </p>
-            <span className="text-[10px] text-slate-400 block truncate">
+            <span className="text-[10px] text-emerald-700/80 font-medium block truncate">
               Libera com validação do OTP
             </span>
           </div>
@@ -167,12 +167,12 @@ export function ProviderWalletCard({
         {debt > 0 ? (
           <div className="p-3 rounded-2xl bg-amber-500/15 border border-amber-500/30 flex items-center justify-between gap-3 text-xs">
             <div className="flex items-center gap-2 min-w-0">
-              <AlertTriangle size={15} className="text-amber-400 shrink-0" />
+              <AlertTriangle size={15} className="text-amber-500 shrink-0" />
               <div className="min-w-0">
-                <span className="text-[11px] font-bold text-amber-200 block">
+                <span className="text-[11px] font-bold text-amber-900 block">
                   Comissões de serviços a liquidar: {formatDb(debt)}
                 </span>
-                <span className="text-[10px] text-amber-300/80 block truncate">
+                <span className="text-[10px] text-amber-800/80 block truncate font-medium">
                   {debt >= 500
                     ? "Limite de 500 Db atingido. Regularize para reativar novos chamados."
                     : "Amortize a comissão bancária quando for conveniente."}
@@ -181,28 +181,28 @@ export function ProviderWalletCard({
             </div>
             <Link
               to="/pro/ganhos"
-              className="px-3 py-1.5 rounded-xl bg-amber-500 text-slate-950 font-bold text-xs shrink-0 hover:bg-amber-400 transition"
+              className="px-3 py-1.5 rounded-xl bg-emerald-600 text-white font-bold text-xs shrink-0 hover:bg-emerald-700 transition shadow-2xs"
             >
               Regularizar
             </Link>
           </div>
         ) : (
-          <div className="flex items-center justify-between text-[11px] text-slate-400 pt-1 border-t border-white/10">
-            <span className="flex items-center gap-1.5 text-emerald-300">
-              <ShieldCheck size={13} className="text-emerald-400" /> Conta 100% regularizada (0 Db
+          <div className="flex items-center justify-between text-[11px] text-slate-500 pt-1 border-t border-emerald-100">
+            <span className="flex items-center gap-1.5 text-emerald-700 font-semibold">
+              <ShieldCheck size={14} className="text-emerald-600" /> Conta 100% regularizada (0 Db
               em dívida)
             </span>
-            <span className="text-[10px] text-slate-400">Protegido por OTP</span>
+            <span className="text-[10px] text-slate-500 font-medium">Protegido por OTP</span>
           </div>
         )}
 
-        {/* BOTÕES DE AÇÃO RÁPIDA */}
+        {/* BOTÕES DE AÇÃO RÁPIDA (BRANCO & VERDE) */}
         <div className="grid grid-cols-2 gap-2 pt-1 relative z-10">
           <button
             type="button"
             onClick={() => setIsPayoutOpen(true)}
             disabled={balance <= 0 || isBlocked}
-            className="h-11 rounded-2xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs flex items-center justify-center gap-1.5 transition cursor-pointer shadow-md disabled:opacity-50 disabled:cursor-not-allowed active:scale-98"
+            className="h-11 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs flex items-center justify-center gap-1.5 transition cursor-pointer shadow-xs disabled:opacity-50 disabled:cursor-not-allowed active:scale-98"
           >
             <ArrowUpRight size={15} />
             <span>Levantar Dinheiro</span>
@@ -212,17 +212,17 @@ export function ProviderWalletCard({
             <button
               type="button"
               onClick={onDeclareCashClick}
-              className="h-11 rounded-2xl bg-white/10 hover:bg-white/15 text-white font-bold text-xs flex items-center justify-center gap-1.5 transition cursor-pointer border border-white/15 active:scale-98"
+              className="h-11 rounded-2xl bg-white hover:bg-emerald-50 text-emerald-800 font-bold text-xs flex items-center justify-center gap-1.5 transition cursor-pointer border border-emerald-300 shadow-2xs active:scale-98"
             >
-              <Banknote size={15} className="text-emerald-400" />
+              <Banknote size={15} className="text-emerald-700" />
               <span>Declarar em Dinheiro</span>
             </button>
           ) : (
             <Link
               to="/pro/ganhos"
-              className="h-11 rounded-2xl bg-white/10 hover:bg-white/15 text-white font-bold text-xs flex items-center justify-center gap-1.5 transition cursor-pointer border border-white/15 active:scale-98"
+              className="h-11 rounded-2xl bg-white hover:bg-emerald-50 text-emerald-800 font-bold text-xs flex items-center justify-center gap-1.5 transition cursor-pointer border border-emerald-300 shadow-2xs active:scale-98"
             >
-              <Wallet size={15} className="text-emerald-400" />
+              <Wallet size={15} className="text-emerald-700" />
               <span>Ver Extrato Completo</span>
             </Link>
           )}

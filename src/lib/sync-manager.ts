@@ -728,7 +728,7 @@ export function initAlarmWatcher() {
     }
   };
 
-  // Check every 20 seconds
-  setInterval(checkAlarms, 20000);
+  // Check every 60 seconds (otimizado para bateria e CPU em dispositivos móveis)
+  setInterval(checkAlarms, 60000);
   checkAlarms();
 }

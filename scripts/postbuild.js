@@ -37,15 +37,18 @@ function ensureDistOutput() {
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
-    <title>KONEKTA — Serviços em São Tomé e Príncipe</title>
-    <meta name="description" content="Plataforma segura para contratar profissionais em São Tomé e Príncipe." />
-    <meta property="og:title" content="KONEKTA" />
-    <meta property="og:description" content="Serviços de confiança em São Tomé e Príncipe." />
+    <title>Konekta Connect — Serviços Verificados em São Tomé e Príncipe</title>
+    <meta name="description" content="Plataforma de contratação de serviços profissionais verificados e custódia financeira em São Tomé e Príncipe." />
+    <meta property="og:title" content="Konekta Connect" />
+    <meta property="og:description" content="Plataforma de contratação de serviços profissionais verificados e custódia financeira em São Tomé e Príncipe." />
     <meta property="og:type" content="website" />
     <meta name="twitter:card" content="summary_large_image" />
+    <meta name="theme-color" content="#0284c7" />
+    <link rel="dns-prefetch" href="//fonts.googleapis.com" />
+    <link rel="dns-prefetch" href="//fonts.gstatic.com" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous" />
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" />
     ${cssFile ? `<link rel="stylesheet" href="/assets/${cssFile}" />` : ""}
     <link rel="icon" href="/favicon.ico" type="image/x-icon" />
   </head>

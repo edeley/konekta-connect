@@ -207,34 +207,57 @@ function ProfilePage() {
             </div>
           </div>
 
-          <div className="flex items-center justify-between pt-3 border-t border-border/60">
-            <div className="inline-flex items-center gap-2 rounded-full bg-primary/10 px-3 py-1.5 text-xs font-bold text-primary">
-              <span className="size-2 rounded-full bg-primary" />
-              <span>Perfil {isProvider ? "Prestador" : "Cliente"}</span>
+          <div className="flex flex-wrap items-center justify-between gap-2 pt-3 border-t border-border/60">
+            <div className="flex items-center gap-2">
+              <div className="inline-flex items-center gap-2 rounded-full bg-primary/10 px-3 py-1.5 text-xs font-bold text-primary">
+                <span className="size-2 rounded-full bg-primary" />
+                <span>Modo {isProvider ? "Prestador" : "Cliente"}</span>
+              </div>
+
+              {profiles.prestador && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    const newRole = isProvider ? "cliente" : "prestador";
+                    store.switchRole(newRole);
+                    toast.success(
+                      newRole === "prestador"
+                        ? "Mudou para o Modo Prestador (PRO)"
+                        : "Mudou para o Modo Cliente",
+                    );
+                  }}
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-primary text-primary-foreground text-xs font-bold shadow-2xs hover:opacity-90 active:scale-95 transition cursor-pointer"
+                >
+                  <Briefcase size={13} />
+                  <span>Alternar para {isProvider ? "Cliente" : "Prestador"}</span>
+                </button>
+              )}
             </div>
 
-            {profiles.prestador && (
-              <StatusPill tone={documentStateMeta[docState].tone}>
-                {documentStateMeta[docState].label}
-              </StatusPill>
-            )}
+            <div className="flex items-center gap-2">
+              {profiles.prestador && (
+                <StatusPill tone={documentStateMeta[docState].tone}>
+                  {documentStateMeta[docState].label}
+                </StatusPill>
+              )}
 
-            <button
-              type="button"
-              onClick={() => {
-                navigate({
-                  to: "/registro",
-                  search: {
-                    role: isProvider ? "prestador" : "cliente",
-                    edit: true,
-                  },
-                });
-              }}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-muted text-xs font-bold text-foreground hover:bg-muted/80 transition-colors active:scale-95"
-            >
-              <UserCog size={13} />
-              Editar dados
-            </button>
+              <button
+                type="button"
+                onClick={() => {
+                  navigate({
+                    to: "/registro",
+                    search: {
+                      role: isProvider ? "prestador" : "cliente",
+                      edit: true,
+                    },
+                  });
+                }}
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-muted text-xs font-bold text-foreground hover:bg-muted/80 transition-colors active:scale-95"
+              >
+                <UserCog size={13} />
+                Editar dados
+              </button>
+            </div>
           </div>
         </div>
       </Section>

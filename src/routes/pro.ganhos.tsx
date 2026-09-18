@@ -42,6 +42,10 @@ import { store, useStore, type Transaction } from "@/lib/store";
 import { formatDb } from "@/lib/catalog";
 import { walletStateMeta } from "@/lib/states";
 import { isPayoutDay, payoutLabel } from "@/lib/escrow";
+import { ProofUpload } from "@/components/konekta/ProofUpload";
+import { SaoWalletRechargeModal } from "@/components/konekta/SaoWalletRechargeModal";
+import { SaoWalletWithdrawModal } from "@/components/konekta/SaoWalletWithdrawModal";
+import { SAO_WALLET_COMPANY } from "@/lib/store";
 
 export const Route = createFileRoute("/pro/ganhos")({
   head: () => ({
@@ -80,6 +84,8 @@ function ProEarnings() {
   const [showBalance, setShowBalance] = useState(true);
   const [payoutOpen, setPayoutOpen] = useState(false);
   const [topUpOpen, setTopUpOpen] = useState(false);
+  const [saoWalletRechargeOpen, setSaoWalletRechargeOpen] = useState(false);
+  const [saoWalletWithdrawOpen, setSaoWalletWithdrawOpen] = useState(false);
   const [amount, setAmount] = useState("");
   const [payoutMethod, setPayoutMethod] = useState<
     "bistp" | "bgfi" | "afriland" | "dobra24" | "cst_money" | "pix" | "iban"
@@ -93,6 +99,10 @@ function ProEarnings() {
     "bistp",
   );
   const [transferProofRef, setTransferProofRef] = useState("");
+  const [proofImage, setProofImage] = useState<string | null>(null);
+
+  const depositRequests = useStore((s) => s.depositRequests);
+  const providerDeposits = depositRequests.filter((d) => d.userRole === "prestador");
 
   // Transação selecionada para BottomSheet de Detalhes
   const [selectedTx, setSelectedTx] = useState<Transaction | null>(null);
@@ -183,10 +193,11 @@ function ProEarnings() {
       bistp: "BISTP (Banco Internacional de STP)",
       bgfi: "BGFI Bank STP",
       afriland: "Afriland First Bank",
-      dobra24: "Dobra 24 Móvel",
+      dobra24: "Dobra 24 Móvel STP",
     };
 
     const res = store.createDepositRequest({
+      userId: user?.id || "pro-current",
       userRole: "prestador",
       userName: user?.name || "Edmilson Varela",
       userPhone: user?.phone || "+239 9845678",
@@ -194,17 +205,19 @@ function ProEarnings() {
       method: selectedBank === "dobra24" ? "dobra24" : "transferencia_bancaria",
       bankOrProviderName: bankLabels[selectedBank] || selectedBank.toUpperCase(),
       referenceOrPhone: transferProofRef.trim() || `TRF-${Date.now().toString().slice(-6)}`,
+      proofImage: proofImage || undefined,
       notes: "Recarga de carteira e regularização de comissões KONEKTA",
     });
 
     if (res.ok) {
       toast.success("Comprovativo de Recarga Submetido!", {
         description:
-          "O montante será creditado na sua carteira assim que o administrador confirmar o pagamento.",
+          "O montante será creditado na sua carteira assim que o administrador validar o comprovativo.",
       });
       setTopUpOpen(false);
       setTopUpAmount("");
       setTransferProofRef("");
+      setProofImage(null);
     } else {
       toast.error(res.message);
     }
@@ -297,51 +310,118 @@ function ProEarnings() {
         </div>
       )}
 
-      {/* CARTÃO FINANCEIRO PRINCIPAL (DESIGN MODERNO FINTECH) */}
+      {/* CARTÃO FINANCEIRO PRINCIPAL FUNDIDO (BRANCO & VERDE - DESIGN STP) */}
       <div className="px-5 pt-3">
-        <div className="relative rounded-3xl bg-gradient-to-br from-emerald-950 via-slate-900 to-emerald-900 text-white p-6 shadow-lg overflow-hidden border border-emerald-800/40">
-          {/* Efeito decorativo sutil de fundo */}
-          <div className="absolute -right-12 -bottom-12 size-48 rounded-full bg-emerald-500/10 blur-2xl pointer-events-none" />
-          <div className="absolute -left-12 -top-12 size-40 rounded-full bg-teal-400/10 blur-xl pointer-events-none" />
-
+        <div className="relative rounded-3xl bg-white text-slate-900 p-6 shadow-xs border-2 border-emerald-200/90 space-y-4">
           {/* Topo do Cartão */}
-          <div className="relative flex items-center justify-between mb-4">
+          <div className="relative flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <div className="size-7 rounded-lg bg-emerald-500/20 text-emerald-300 grid place-items-center border border-emerald-400/30">
+              <div className="size-7 rounded-lg bg-emerald-50 text-emerald-700 grid place-items-center border border-emerald-200 shadow-2xs">
                 <Wallet size={14} />
               </div>
-              <span className="text-[11px] font-bold tracking-wider uppercase text-emerald-200/90">
+              <span className="text-[11px] font-black tracking-wider uppercase text-emerald-700">
                 KONEKTA STP
+              </span>
+              <span className="text-[10px] text-slate-300">•</span>
+              <span className="text-[10px] uppercase tracking-widest text-slate-500 font-bold">
+                Resumo da Carteira
               </span>
             </div>
 
-            <span className="text-[10px] font-bold px-2.5 py-1 rounded-full bg-emerald-500/20 text-emerald-200 border border-emerald-400/25">
-              Saldo Líquido
+            <span className="inline-flex items-center gap-1 text-[10px] bg-emerald-50 px-2.5 py-1 rounded-full font-bold text-emerald-800 border border-emerald-200/80 shadow-2xs">
+              <ShieldCheck size={12} className="text-emerald-600" />
+              100% Protegido em STP
             </span>
           </div>
 
-          {/* Montante Principal */}
-          <div className="relative space-y-1 mb-6">
-            <p className="text-xs text-emerald-200/80 font-medium">
-              Disponível para Levantamento Imediato
-            </p>
-            <div className="flex items-baseline gap-2">
-              <span className="text-3xl sm:text-4xl font-black font-mono tracking-tight text-white">
-                {showBalance ? formatDb(balance) : "••••••••"}
+          {/* DUAL METRICS: Saldo Disponível & Em Custódia Lado a Lado */}
+          <div className="relative grid grid-cols-2 gap-3 pt-1">
+            {/* Saldo Disponível */}
+            <div className="p-3.5 rounded-2xl bg-emerald-50/70 border border-emerald-200 space-y-1 shadow-2xs">
+              <span className="text-[10px] text-emerald-800 font-bold uppercase tracking-wider block">
+                Saldo Disponível
+              </span>
+              <div className="flex items-baseline gap-1.5">
+                <p className="text-2xl font-black font-mono tracking-tight text-emerald-950">
+                  {showBalance ? formatDb(balance) : "••••••••"}
+                </p>
+              </div>
+              <span className="text-[10px] text-emerald-700/90 font-medium block">
+                Disponível para levantamento imediato
               </span>
             </div>
-            <p className="text-[11px] text-emerald-300/70">
-              Transferência direta para a sua conta BISTP, BGFI ou Dobra 24
-            </p>
+
+            {/* Saldo Bloqueado em Custódia Segura */}
+            <div className="p-3.5 rounded-2xl bg-emerald-50/35 border border-emerald-200/80 space-y-1 shadow-2xs">
+              <span className="text-[10px] text-emerald-800 font-bold uppercase tracking-wider flex items-center gap-1">
+                <Lock size={10} className="text-emerald-600" /> Em Custódia
+              </span>
+              <div className="flex items-baseline gap-1.5">
+                <p className="text-2xl font-black font-mono tracking-tight text-emerald-900">
+                  {showBalance ? formatDb(pendingBalance) : "••••••••"}
+                </p>
+              </div>
+              <span className="text-[10px] text-emerald-700/90 font-medium block">
+                Trabalhos ativos em execução
+              </span>
+            </div>
           </div>
 
-          {/* Ações Rápidas no Cartão */}
-          <div className="relative grid grid-cols-2 gap-2.5 pt-2 border-t border-emerald-800/60">
+          {/* Total Geral da Carteira */}
+          <div className="relative pt-2 border-t border-emerald-100 flex items-center justify-between text-xs">
+            <span className="text-slate-600 font-medium">
+              Total na Carteira (Disponível + Retido):
+            </span>
+            <strong className="text-sm font-black text-emerald-950 font-mono">
+              {showBalance ? formatDb(balance + pendingBalance) : "••••••••"}
+            </strong>
+          </div>
+
+          <p className="relative text-[11px] text-slate-500 font-medium">
+            Carregamentos e levantamentos via São Wallet (App & Agentes) ou transferência BISTP/BGFI
+          </p>
+
+          {/* DADOS CORPORATIVOS SÃO WALLET KONEKTA */}
+          <div className="relative p-3 rounded-2xl bg-emerald-50/70 border border-emerald-200/80 flex items-center justify-between text-xs text-emerald-950">
+            <div className="flex items-center gap-2.5">
+              <div className="w-8 h-8 rounded-xl bg-emerald-600 text-white flex items-center justify-center shrink-0">
+                <Smartphone size={16} />
+              </div>
+              <div>
+                <p className="font-bold text-[11px] leading-tight text-emerald-950">
+                  Conta São Wallet Oficial ({SAO_WALLET_COMPANY.name})
+                </p>
+                <p className="text-[10px] text-emerald-800 font-mono mt-0.5">
+                  Nº da APP: <strong>{SAO_WALLET_COMPANY.phone}</strong> · Titular:{" "}
+                  <strong>{SAO_WALLET_COMPANY.name}</strong>
+                </p>
+              </div>
+            </div>
             <button
               type="button"
-              onClick={() => setPayoutOpen(true)}
+              onClick={() => setSaoWalletRechargeOpen(true)}
+              className="px-2.5 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-[10px] shrink-0 shadow-xs cursor-pointer"
+            >
+              Recarregar
+            </button>
+          </div>
+
+          {/* AS 3 AÇÕES UNIFICADAS DA CARTEIRA: CARREGAR, LEVANTAR, DECLARAR EM DINHEIRO */}
+          <div className="relative grid grid-cols-3 gap-2 pt-2 border-t border-emerald-100">
+            <button
+              type="button"
+              onClick={() => setSaoWalletRechargeOpen(true)}
+              className="py-3 px-2 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs flex flex-col sm:flex-row items-center justify-center gap-1 shadow-xs active:scale-98 transition cursor-pointer text-center"
+            >
+              <Plus size={16} />
+              <span>Carregar Carteira</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setSaoWalletWithdrawOpen(true)}
               disabled={balance <= 0 || isProviderBlockedForDebt}
-              className="py-3 px-4 rounded-2xl bg-white text-slate-950 hover:bg-emerald-50 font-black text-xs flex items-center justify-center gap-1.5 shadow-md active:scale-98 transition disabled:opacity-50 cursor-pointer"
+              className="py-3 px-2 rounded-2xl bg-white hover:bg-emerald-50 text-emerald-800 font-bold text-xs flex flex-col sm:flex-row items-center justify-center gap-1 border border-emerald-300 active:scale-98 transition disabled:opacity-50 cursor-pointer shadow-2xs text-center"
             >
               <ArrowUpRight size={16} className="text-emerald-700" />
               <span>Levantar Dinheiro</span>
@@ -350,9 +430,9 @@ function ProEarnings() {
             <button
               type="button"
               onClick={() => setCashDeclModalOpen(true)}
-              className="py-3 px-3 rounded-2xl bg-white/10 hover:bg-white/15 text-white font-bold text-xs flex items-center justify-center gap-1.5 border border-white/20 active:scale-98 transition cursor-pointer backdrop-blur-xs"
+              className="py-3 px-2 rounded-2xl bg-emerald-50 hover:bg-emerald-100 text-emerald-800 font-bold text-xs flex flex-col sm:flex-row items-center justify-center gap-1 border border-emerald-200 active:scale-98 transition cursor-pointer shadow-2xs text-center"
             >
-              <Banknote size={15} className="text-emerald-300" />
+              <Banknote size={15} className="text-emerald-700" />
               <span>Declarar em Dinheiro</span>
             </button>
           </div>
@@ -1041,66 +1121,130 @@ function ProEarnings() {
         </div>
       </BottomSheet>
 
-      {/* MODAL DE RECARGA BANCÁRIA STP & REGULARIZAÇÃO DE DÍVIDA */}
+      {/* MODAL DE CARREGAMENTO DE CARTEIRA DO PRESTADOR & REGULARIZAÇÃO */}
       <BottomSheet
         open={topUpOpen}
         onClose={() => setTopUpOpen(false)}
-        title="Regularizar Comissões KONEKTA"
-        description="Transfira para as contas oficiais KONEKTA em São Tomé e Príncipe. O saldo será creditado após validação do comprovativo pela administração."
+        title="Carregar Carteira Digital KONEKTA"
+        description="Carregue a sua carteira digital ou regularize comissões por Dobra 24 ou transferência bancária local. O saldo será creditado após validação rápida do comprovativo."
       >
         <div className="space-y-4 pt-2">
-          {providerDebt > 0 && (
-            <div className="p-3.5 rounded-2xl bg-amber-500/10 border border-amber-500/30 text-xs text-amber-900 dark:text-amber-200">
-              Comissões pendentes: <strong>{formatDb(providerDebt)}</strong>. O pagamento amortiza a
-              sua dívida e mantém a sua conta ativa e apta a receber novos serviços.
+          {providerDebt > 0 ? (
+            <div className="p-3.5 rounded-2xl bg-amber-500/10 border border-amber-500/30 text-xs text-amber-900 dark:text-amber-200 space-y-1">
+              <div className="flex items-center gap-1.5 font-bold">
+                <AlertTriangle size={15} />
+                <span>Comissões Pendentes a Regularizar: {formatDb(providerDebt)}</span>
+              </div>
+              <p className="text-[11px] text-amber-800/80 dark:text-amber-300/80">
+                O valor carregado abaterá automaticamente esta dívida. Qualquer valor excedente
+                ficará como saldo disponível líquido na sua carteira.
+              </p>
+            </div>
+          ) : (
+            <div className="p-3 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 text-xs text-emerald-900 dark:text-emerald-200 flex items-center gap-2">
+              <ShieldCheck size={16} className="text-emerald-600 dark:text-emerald-400 shrink-0" />
+              <span>
+                Conta em dia! O montante carregado será 100% creditado no seu saldo disponível.
+              </span>
             </div>
           )}
 
           <div>
-            <label className="text-xs font-bold text-foreground block mb-1">
-              Valor a Transferir (Db) *
-            </label>
+            <div className="flex items-center justify-between mb-1">
+              <label className="text-xs font-bold text-foreground block">
+                Valor a Carregar (Db / STN) *
+              </label>
+              {topUpAmount && Number(topUpAmount) > 0 && (
+                <span className="text-[11px] font-mono font-bold text-primary">
+                  {formatDb(Number(topUpAmount))}
+                </span>
+              )}
+            </div>
             <input
               type="number"
               min="50"
               value={topUpAmount}
               onChange={(e) => setTopUpAmount(e.target.value)}
               placeholder="Ex: 500"
-              className="w-full h-11 px-3.5 rounded-xl bg-muted text-xs font-bold text-foreground outline-none font-mono"
+              className="w-full h-11 px-3.5 rounded-xl bg-muted text-sm font-bold text-foreground outline-none font-mono"
             />
+            {/* Chips Rápidos de Recarga */}
+            <div className="flex flex-wrap gap-1.5 mt-2">
+              {[100, 250, 500, 1000, 2500].map((quickVal) => (
+                <button
+                  key={quickVal}
+                  type="button"
+                  onClick={() => setTopUpAmount(String(quickVal))}
+                  className="px-2.5 py-1 rounded-lg bg-card border border-border text-[11px] font-bold text-foreground hover:bg-muted transition cursor-pointer"
+                >
+                  +{quickVal} Db
+                </button>
+              ))}
+            </div>
           </div>
+
+          {/* Projeção em Tempo Real de Distribuição */}
+          {Number(topUpAmount) > 0 && providerDebt > 0 && (
+            <div className="p-3 rounded-xl bg-card border border-border/80 text-xs space-y-1.5">
+              <div className="flex justify-between text-muted-foreground text-[11px]">
+                <span>Abate de Comissões KONEKTA:</span>
+                <span className="font-bold text-amber-600 font-mono">
+                  -{formatDb(Math.min(Number(topUpAmount), providerDebt))}
+                </span>
+              </div>
+              <div className="flex justify-between text-foreground font-bold pt-1 border-t border-border/60">
+                <span>Crédito Novo no Saldo Disponível:</span>
+                <span className="text-emerald-600 font-mono">
+                  +{formatDb(Math.max(0, Number(topUpAmount) - providerDebt))}
+                </span>
+              </div>
+            </div>
+          )}
 
           <div>
             <label className="text-xs font-bold text-foreground block mb-1.5">
-              Selecione a Conta Bancária de Destino:
+              Selecione o Canal de Pagamento STP:
             </label>
             <div className="grid grid-cols-2 gap-2">
               {[
                 {
                   id: "bistp" as const,
-                  label: "BISTP (Banco Internacional)",
+                  label: "BISTP",
+                  desc: "Banco Internacional de STP",
                   iban: "ST53.0001.0000.1234.5678.9",
                 },
-                { id: "bgfi" as const, label: "BGFI Bank STP", iban: "ST53.0002.0000.8765.4321.0" },
+                {
+                  id: "bgfi" as const,
+                  label: "BGFI Bank",
+                  desc: "BGFI Bank STP",
+                  iban: "ST53.0002.0000.8765.4321.0",
+                },
                 {
                   id: "afriland" as const,
-                  label: "Afriland First Bank",
+                  label: "Afriland Bank",
+                  desc: "Afriland First Bank STP",
                   iban: "ST53.0003.0000.5432.1098.7",
                 },
-                { id: "dobra24" as const, label: "Carteira Dobra 24", iban: "Ref: 994-552-110" },
+                {
+                  id: "dobra24" as const,
+                  label: "Dobra 24 Móvel",
+                  desc: "CST Móvel & Unitel STP",
+                  iban: "Ref Móvel: 994-552-110",
+                },
               ].map((b) => (
                 <button
                   key={b.id}
                   type="button"
                   onClick={() => setSelectedBank(b.id)}
-                  className={`p-3 rounded-xl border text-left transition cursor-pointer ${
+                  className={`p-2.5 rounded-xl border text-left transition cursor-pointer ${
                     selectedBank === b.id
-                      ? "border-primary bg-primary/10 font-bold"
+                      ? "border-primary bg-primary/10 font-bold ring-1 ring-primary/40"
                       : "border-border bg-card hover:bg-muted/40"
                   }`}
                 >
                   <p className="text-xs font-bold text-foreground">{b.label}</p>
-                  <p className="text-[10px] text-muted-foreground font-mono truncate">{b.iban}</p>
+                  <p className="text-[10px] text-muted-foreground truncate">{b.desc}</p>
+                  <p className="text-[9px] text-primary/80 font-mono truncate mt-0.5">{b.iban}</p>
                 </button>
               ))}
             </div>
@@ -1108,31 +1252,103 @@ function ProEarnings() {
 
           <div>
             <label className="text-xs font-bold text-foreground block mb-1">
-              Referência ou Comprovativo de Transferência *
+              Referência ou Nº Telefone Dobra 24
             </label>
             <input
               type="text"
               value={transferProofRef}
               onChange={(e) => setTransferProofRef(e.target.value)}
-              placeholder="Ex: TRF-BISTP-849302 ou nº de telefone"
+              placeholder="Ex: TRF-BISTP-849302 ou nº de telemóvel CST"
               className="w-full h-11 px-3.5 rounded-xl bg-muted text-xs font-medium text-foreground outline-none"
             />
           </div>
 
-          <div className="p-3 rounded-xl bg-muted/40 border border-border/60 text-[11px] text-muted-foreground">
-            💡 <strong>Validação Rápida:</strong> O comprovativo é processado pela equipa KONEKTA em
-            até 2 horas úteis.
+          {/* Upload de Comprovativo Oficial com Pré-visualização */}
+          <div>
+            <label className="text-xs font-bold text-foreground block mb-1.5">
+              Anexar Recibo / Comprovativo Fotográfico
+            </label>
+            <ProofUpload
+              previewUrl={proofImage}
+              onImageUploaded={(url) => setProofImage(url)}
+              onRemove={() => setProofImage(null)}
+            />
+          </div>
+
+          <div className="p-3 rounded-xl bg-muted/40 border border-border/60 text-[11px] text-muted-foreground flex items-center gap-2">
+            <Clock size={16} className="text-primary shrink-0" />
+            <span>
+              <strong>Validação Rápida:</strong> O seu comprovativo é verificado pela equipa de
+              administração KONEKTA em até 2 horas úteis.
+            </span>
           </div>
 
           <button
             type="button"
             onClick={handleTopUpDebt}
-            className="w-full py-3.5 rounded-2xl bg-primary text-primary-foreground font-bold text-xs flex items-center justify-center gap-2 transition cursor-pointer shadow-2xs active:scale-98"
+            disabled={!topUpAmount || Number(topUpAmount) <= 0}
+            className="w-full py-3.5 rounded-2xl bg-primary text-primary-foreground font-bold text-xs flex items-center justify-center gap-2 transition cursor-pointer shadow-2xs active:scale-98 disabled:opacity-40"
           >
-            <Check size={16} /> Submeter Comprovativo de Regularização
+            <Check size={16} /> Submeter Carregamento da Carteira
           </button>
+
+          {/* Histórico de Carregamentos do Prestador */}
+          {providerDeposits.length > 0 && (
+            <div className="pt-3 border-t border-border/70 space-y-2">
+              <span className="text-xs font-bold text-foreground block">
+                Histórico de Pedidos de Recarga ({providerDeposits.length})
+              </span>
+              <div className="space-y-1.5 max-h-40 overflow-y-auto">
+                {providerDeposits.map((dep) => (
+                  <div
+                    key={dep.id}
+                    className="p-2.5 rounded-xl bg-card border border-border/80 flex items-center justify-between text-xs"
+                  >
+                    <div>
+                      <span className="font-bold text-foreground block font-mono">
+                        {formatDb(dep.amount)}
+                      </span>
+                      <span className="text-[10px] text-muted-foreground">
+                        {dep.bankOrProviderName} · {dep.referenceOrPhone}
+                      </span>
+                    </div>
+                    <span
+                      className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                        dep.status === "aprovado"
+                          ? "bg-emerald-500/15 text-emerald-700 dark:text-emerald-300"
+                          : dep.status === "rejeitado"
+                            ? "bg-rose-500/15 text-rose-700 dark:text-rose-300"
+                            : "bg-amber-500/15 text-amber-700 dark:text-amber-300"
+                      }`}
+                    >
+                      {dep.status === "aprovado"
+                        ? "Aprovado"
+                        : dep.status === "rejeitado"
+                          ? "Rejeitado"
+                          : "Pendente"}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       </BottomSheet>
+
+      {/* MODAL OFICIAL SÃO WALLET — RECARGA */}
+      <SaoWalletRechargeModal
+        isOpen={saoWalletRechargeOpen}
+        onClose={() => setSaoWalletRechargeOpen(false)}
+        isPro={true}
+        defaultAmount={balance < 0 ? Math.abs(balance) + 50 : 500}
+      />
+
+      {/* MODAL OFICIAL SÃO WALLET — LEVANTAMENTO */}
+      <SaoWalletWithdrawModal
+        isOpen={saoWalletWithdrawOpen}
+        onClose={() => setSaoWalletWithdrawOpen(false)}
+        isPro={true}
+      />
     </AppShell>
   );
 }

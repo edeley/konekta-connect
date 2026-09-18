@@ -5,6 +5,8 @@ import { BottomNav } from "./BottomNav";
 import { AuthGate } from "./AuthGate";
 import { OfflineBanner } from "./konekta/kit";
 import { ActiveAlarmBanner } from "./konekta/ActiveAlarmBanner";
+import { ProviderDebtLockOverlay } from "./konekta/ProviderDebtLockOverlay";
+import { ProviderToleranceBanner } from "./konekta/ProviderToleranceBanner";
 import { useAlarmScheduler } from "@/lib/useAlarmScheduler";
 import { useStore, type UserRole } from "@/lib/store";
 import { useChatMonitoringListener } from "@/lib/chat-monitoring-listener";
@@ -86,6 +88,12 @@ export function AppShell({
           )}
         >
           <OfflineBanner online={online} />
+          {activeRole === "prestador" && (
+            <>
+              <ProviderDebtLockOverlay />
+              <ProviderToleranceBanner />
+            </>
+          )}
           {children}
           {!hideNav && (
             <>

@@ -666,8 +666,25 @@ export type ModerationDispute = {
   finalDecidedAmount?: number;
 };
 
+export const SAO_WALLET_COMPANY = {
+  name: "Edeley Damião",
+  accountHolder: "Edeley Damião",
+  shortName: "KONEKTA STP",
+  phone: "+239 9944747",
+  formattedPhone: "+239 994 4747",
+  nib: "0001.0000.12345678901.23",
+  iban: "ST53.0001.0000.1234.5678.9",
+  bank: "BISTP",
+  currency: "STN",
+};
+
 export type DepositMethod =
-  "dobra24" | "dobra24_ponto24" | "transferencia_bancaria" | "agente_parceiro";
+  | "sao_wallet_digital"
+  | "sao_wallet_agente"
+  | "dobra24"
+  | "dobra24_ponto24"
+  | "transferencia_bancaria"
+  | "agente_parceiro";
 
 export type DepositStatus = "pendente_aprovacao" | "aprovado" | "rejeitado";
 
@@ -699,7 +716,17 @@ export type PayoutRequest = {
   providerName: string;
   providerPhone?: string;
   amount: number;
-  method: "bistp" | "bgfi" | "afriland" | "dobra24" | "cst_money" | "pix" | "iban";
+  method:
+    | "sao_wallet"
+    | "bistp"
+    | "bgfi"
+    | "afriland"
+    | "bni"
+    | "cistp"
+    | "dobra24"
+    | "cst_money"
+    | "pix"
+    | "iban";
   accountDetails: string;
   holderName: string;
   status: PayoutRequestStatus;
@@ -709,6 +736,18 @@ export type PayoutRequest = {
   rejectionReason?: string;
   proofRef?: string;
   adminNotes?: string;
+};
+
+export type AdminAlert = {
+  id: string;
+  type: "ALERTA_PRESTADOR_BLOQUEADO" | "ALERTA_PRESTADOR_DESBLOQUEADO";
+  providerId: string;
+  providerName: string;
+  providerPhone: string;
+  currentNegativeBalance: number;
+  reason: string;
+  createdAt: number;
+  resolved?: boolean;
 };
 
 export type ProfileKind = "cliente" | "prestador";
@@ -728,6 +767,7 @@ type State = {
   inPersonDeclarations: InPersonCashDeclaration[];
   depositRequests: DepositRequest[];
   payoutRequests: PayoutRequest[];
+  adminAlerts: AdminAlert[];
   messages: Record<string, Message[]>;
   assistantMessages: AssistantMessage[];
   balance: number;
@@ -736,7 +776,7 @@ type State = {
   providerPendingBalance: number;
   providerWithdrawnBalance: number;
   providerDebt: number; // Dívida acumulada de comissões por liquidar
-  isProviderBlockedForDebt: boolean; // Bloqueado se dívida >= 500 STN
+  isProviderBlockedForDebt: boolean; // Bloqueado se saldo <= -50 STN
   providerTransactions: Transaction[];
   favorites: string[];
   favoriteClients: FavoriteClient[];
@@ -1040,6 +1080,7 @@ const defaultState: State = {
   inPersonDeclarations: [],
   depositRequests: seedDepositRequests,
   payoutRequests: seedPayoutRequests,
+  adminAlerts: [],
 
   messages: {
     "edmilson-varela": [
@@ -1159,7 +1200,7 @@ const defaultState: State = {
     providerWhatsappGroup: "https://chat.whatsapp.com/KONEKTA-Prestadores-STP",
     technicalVisitFee: 150,
     technicalVisitGuarantee: "Garantia de deslocação Uber-style para avaliação no terreno",
-    debtBlockLimit: 300,
+    debtBlockLimit: 50,
   },
   onboarded: false,
 };
@@ -1170,19 +1211,31 @@ function load(): State {
     const raw = localStorage.getItem(KEY);
     if (!raw) return defaultState;
     const parsed = JSON.parse(raw) as Partial<State>;
-    const debt = parsed.providerDebt ?? defaultState.providerDebt ?? 0;
-    const isBlocked =
-      debt >= (parsed.config?.debtBlockLimit ?? defaultState.config.debtBlockLimit ?? 300);
+    const userBalance =
+      typeof parsed.balance === "number" && Number.isFinite(parsed.balance)
+        ? parsed.balance
+        : defaultState.balance;
+    const rawProvBalance = parsed.providerBalance ?? defaultState.providerBalance;
+    const provBalance =
+      typeof rawProvBalance === "number" && Number.isFinite(rawProvBalance)
+        ? rawProvBalance
+        : defaultState.providerBalance;
+    const rawDebt = parsed.providerDebt ?? (provBalance < 0 ? Math.abs(provBalance) : 0);
+    const debt = typeof rawDebt === "number" && Number.isFinite(rawDebt) ? rawDebt : 0;
+    const debtLimit = parsed.config?.debtBlockLimit ?? defaultState.config.debtBlockLimit ?? 50;
+    const isBlocked = provBalance <= -debtLimit || debt >= debtLimit;
 
     return {
       ...defaultState,
       ...parsed,
+      balance: userBalance,
       providerDebt: debt,
       isProviderBlockedForDebt: isBlocked,
+      adminAlerts: parsed.adminAlerts ?? defaultState.adminAlerts ?? [],
       inPersonDeclarations: parsed.inPersonDeclarations ?? defaultState.inPersonDeclarations,
       depositRequests: parsed.depositRequests ?? defaultState.depositRequests,
       payoutRequests: parsed.payoutRequests ?? defaultState.payoutRequests,
-      providerBalance: parsed.providerBalance ?? defaultState.providerBalance,
+      providerBalance: provBalance,
       providerPendingBalance: parsed.providerPendingBalance ?? defaultState.providerPendingBalance,
       providerWithdrawnBalance:
         parsed.providerWithdrawnBalance ?? defaultState.providerWithdrawnBalance,
@@ -1230,12 +1283,39 @@ if (typeof document !== "undefined") {
 }
 const listeners = new Set<() => void>();
 
-function persist() {
-  try {
-    localStorage.setItem(KEY, JSON.stringify(state));
-  } catch {
-    // ignore
+let persistTimeout: ReturnType<typeof setTimeout> | null = null;
+
+function flushPersist() {
+  if (persistTimeout) {
+    clearTimeout(persistTimeout);
+    persistTimeout = null;
   }
+  try {
+    if (typeof window !== "undefined") {
+      localStorage.setItem(KEY, JSON.stringify(state));
+    }
+  } catch (err) {
+    console.warn("Storage write warning:", err);
+  }
+}
+
+function persist() {
+  if (persistTimeout) return;
+  persistTimeout = setTimeout(() => {
+    persistTimeout = null;
+    try {
+      if (typeof window !== "undefined") {
+        localStorage.setItem(KEY, JSON.stringify(state));
+      }
+    } catch (err) {
+      console.warn("Storage write warning:", err);
+    }
+  }, 120);
+}
+
+if (typeof window !== "undefined") {
+  window.addEventListener("beforeunload", flushPersist);
+  window.addEventListener("pagehide", flushPersist);
 }
 
 function set(next: Partial<State>, broadcast = true) {
@@ -1275,6 +1355,9 @@ const subscribe = (fn: () => void) => {
     listeners.delete(fn);
   };
 };
+
+export const EMPTY_ARRAY: readonly never[] = Object.freeze([]);
+export const EMPTY_MESSAGES: readonly Message[] = Object.freeze([]);
 
 const getSnapshot = () => state;
 const getServerSnapshot = () => defaultState;
@@ -4248,20 +4331,13 @@ export const store = {
     const commissionPct = decl.commissionPct || state.config.commissionPct || 10;
     const finalCommission = Math.round((finalAmount * commissionPct) / 100);
 
-    // Ajuste da carteira e gestão de dívida
-    let newBalance = state.providerBalance;
-    let newDebt = state.providerDebt;
-
-    if (newBalance >= finalCommission) {
-      newBalance -= finalCommission;
-    } else {
-      const remainingUnpaid = finalCommission - newBalance;
-      newBalance = 0;
-      newDebt += remainingUnpaid;
-    }
-
-    const debtLimit = state.config.debtBlockLimit || 300;
-    const isBlocked = newDebt >= debtLimit;
+    // Regra de Saldo Virtual / Saldo Negativo:
+    // A comissão é deduzida diretamente do saldo virtual do prestador.
+    // Se não tiver saldo suficiente, a carteira entra em terreno negativo.
+    const newBalance = state.providerBalance - finalCommission;
+    const newDebt = newBalance < 0 ? Math.abs(newBalance) : 0;
+    const debtLimit = state.config.debtBlockLimit || 50; // Limite de -50 Dobras
+    const isBlocked = newBalance <= -debtLimit;
 
     // Atualiza declaração
     const updatedDeclarations = state.inPersonDeclarations.map((d) =>
@@ -4317,11 +4393,27 @@ export const store = {
       at: Date.now(),
     };
 
+    let updatedAlerts = state.adminAlerts || [];
+    if (isBlocked) {
+      const blockAlert: AdminAlert = {
+        id: `ALT-BLOQ-${Date.now()}`,
+        type: "ALERTA_PRESTADOR_BLOQUEADO",
+        providerId: decl.providerId,
+        providerName: decl.providerName,
+        providerPhone: "+239 9944747",
+        currentNegativeBalance: newBalance,
+        reason: `Saldo devedor atingiu ${newBalance} STN (limite máximo permitido de -${debtLimit} Dobras). Conta suspensa automaticamente.`,
+        createdAt: Date.now(),
+      };
+      updatedAlerts = [blockAlert, ...updatedAlerts];
+    }
+
     set({
       inPersonDeclarations: updatedDeclarations,
       providerBalance: newBalance,
       providerDebt: newDebt,
       isProviderBlockedForDebt: isBlocked,
+      adminAlerts: updatedAlerts,
       providerTransactions: [providerTx, ...state.providerTransactions],
       technicalVisits: updatedVisits,
       messages: {
@@ -4332,9 +4424,16 @@ export const store = {
 
     if (isBlocked) {
       notify({
-        title: "⚠️ Conta de Prestador Suspensa por Dívida",
-        body: `A sua dívida de comissões atingiu ${newDebt} STN (limite máximo de ${debtLimit} STN). Recarregue a sua carteira via transferência para voltar a receber pedidos.`,
+        title: "🔒 CONTA BLOQUEADA — Limite de Saldo Negativo",
+        body: `A sua conta foi bloqueada devido ao saldo negativo ter atingido ${newBalance} STN (limite de -${debtLimit} Dobras). Recarregue a sua carteira digital para reativar o acesso.`,
         tone: "error",
+        link: "/pro/ganhos",
+      });
+    } else if (newBalance < 0) {
+      notify({
+        title: "⚠️ Aviso: Saldo Negativo na Carteira",
+        body: `Comissão de ${finalCommission} STN debitada. O seu saldo atual é de ${newBalance} STN. Recarregue a sua carteira para evitar o bloqueio da conta (limite de -${debtLimit} Dobras).`,
+        tone: "warning",
         link: "/pro/ganhos",
       });
     } else {
@@ -4626,54 +4725,63 @@ export const store = {
       });
     } else {
       // Prestador
-      let currentDebt = state.providerDebt;
-      let debtLiquidated = 0;
-      let remainingForBalance = deposit.amount;
+      const prevBalance = state.providerBalance;
+      const debtLimit = state.config.debtBlockLimit || 50;
+      const wasBlocked = state.isProviderBlockedForDebt || prevBalance <= -debtLimit;
 
-      if (currentDebt > 0) {
-        debtLiquidated = Math.min(deposit.amount, currentDebt);
-        currentDebt -= debtLiquidated;
-        remainingForBalance = deposit.amount - debtLiquidated;
-      }
+      const newBalance = prevBalance + deposit.amount;
+      const newDebt = newBalance < 0 ? Math.abs(newBalance) : 0;
+      const isStillBlocked = newBalance <= -debtLimit;
 
-      const debtLimit = state.config.debtBlockLimit || 300;
-      const isStillBlocked = currentDebt >= debtLimit;
-      const providerTxs: Transaction[] = [];
-
-      if (debtLiquidated > 0) {
-        providerTxs.push({
-          id: `pt_debt_liq_${Date.now()}`,
-          kind: "out",
-          label: `Abate de Dívida de Comissões (${deposit.bankOrProviderName} · ${deposit.id})`,
-          amount: debtLiquidated,
-          at: Date.now(),
-        });
-      }
-
-      if (remainingForBalance > 0) {
-        providerTxs.push({
+      const providerTxs: Transaction[] = [
+        {
           id: `pt_dep_in_${Date.now()}`,
           kind: "in",
-          label: `Depósito Aprovado Admin — ${deposit.bankOrProviderName} (${deposit.id})`,
-          amount: remainingForBalance,
-          at: Date.now() + 1,
-        });
+          label: `Recarga Aprovada — ${deposit.bankOrProviderName} (${deposit.referenceOrPhone || deposit.id})`,
+          amount: deposit.amount,
+          at: Date.now(),
+        },
+      ];
+
+      let updatedAlerts = state.adminAlerts || [];
+      if (wasBlocked && !isStillBlocked) {
+        const unblockAlert: AdminAlert = {
+          id: `ALT-DESBLOQ-${Date.now()}`,
+          type: "ALERTA_PRESTADOR_DESBLOQUEADO",
+          providerId: deposit.userId,
+          providerName: deposit.userName,
+          providerPhone: deposit.userPhone || "+239 9944747",
+          currentNegativeBalance: newBalance,
+          reason: `Prestador realizou recarga via ${deposit.bankOrProviderName} de ${deposit.amount} STN. Novo saldo: ${newBalance} STN (superior ao limite de -${debtLimit} Dobras). Conta reativada automaticamente!`,
+          createdAt: Date.now(),
+        };
+        updatedAlerts = [unblockAlert, ...updatedAlerts];
       }
 
       set({
         depositRequests: updatedDeposits,
-        providerBalance: state.providerBalance + remainingForBalance,
-        providerDebt: currentDebt,
+        providerBalance: newBalance,
+        providerDebt: newDebt,
         isProviderBlockedForDebt: isStillBlocked,
+        adminAlerts: updatedAlerts,
         providerTransactions: [...providerTxs, ...state.providerTransactions],
       });
 
-      notify({
-        title: "Depósito KONEKTA Validado",
-        body: `Recarga de ${deposit.amount} STN aprovada pelo Administrador! Saldo disponível atualizado.`,
-        tone: "success",
-        link: "/pro/ganhos",
-      });
+      if (wasBlocked && !isStillBlocked) {
+        notify({
+          title: "🔓 Conta Reativada com Sucesso!",
+          body: `Recarga de ${deposit.amount} STN processada. Novo saldo: ${newBalance} STN. O bloqueio foi removido e já pode voltar a receber serviços!`,
+          tone: "success",
+          link: "/pro",
+        });
+      } else {
+        notify({
+          title: "Recarga KONEKTA Validada",
+          body: `Recarga de ${deposit.amount} STN aprovada pelo Administrador! Saldo atualizado para ${newBalance} STN.`,
+          tone: "success",
+          link: "/pro/ganhos",
+        });
+      }
     }
 
     try {
@@ -4686,6 +4794,34 @@ export const store = {
       ok: true,
       message: `Depósito ${deposit.id} de ${deposit.amount} STN (${deposit.userName}) aprovado com sucesso! Saldo creditado.`,
     };
+  },
+
+  /**
+   * Recarga instantânea da São Wallet (Digital ou Agente) com aprovação direta para demonstração
+   */
+  simulateInstantRecharge(input: {
+    amount: number;
+    method: DepositMethod;
+    reference: string;
+    userRole?: "cliente" | "prestador";
+  }): { ok: boolean; message: string } {
+    const isPro = input.userRole === "prestador" || state.user?.role === "prestador";
+    const depRes = this.createDepositRequest({
+      amount: input.amount,
+      method: input.method,
+      bankOrProviderName:
+        input.method === "sao_wallet_agente"
+          ? "Agente Físico São Wallet"
+          : "App Digital São Wallet",
+      referenceOrPhone: input.reference,
+      userRole: isPro ? "prestador" : "cliente",
+      notes: "Recarga São Wallet",
+    });
+
+    if (depRes.ok && depRes.deposit) {
+      return this.approveDepositRequest(depRes.deposit.id, "Validação instantânea São Wallet");
+    }
+    return { ok: false, message: "Falha ao processar recarga instantânea." };
   },
 
   rejectDepositRequest(depositId: string, reason: string): { ok: boolean; message: string } {

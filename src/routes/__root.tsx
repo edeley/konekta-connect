@@ -15,6 +15,7 @@ import { Toaster } from "@/components/ui/sonner";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 import { useStore } from "@/lib/store";
 import { initAlarmWatcher } from "@/lib/sync-manager";
+import { AppShield } from "@/components/konekta/AppShield";
 
 function NotFoundComponent() {
   return (
@@ -142,6 +143,27 @@ function RootShell({ children }: { children: ReactNode }) {
     <html lang="pt">
       <head>
         <HeadContent />
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              window.addEventListener('vite:preloadError', function(event) {
+                event.preventDefault();
+                window.location.reload();
+              });
+              window.addEventListener('error', function(event) {
+                if (event.message && (event.message.indexOf('Failed to fetch dynamically imported module') !== -1 || event.message.indexOf('Failed to load module script') !== -1)) {
+                  event.preventDefault();
+                  var lastReload = sessionStorage.getItem('konekta_dyn_reload');
+                  var now = Date.now();
+                  if (!lastReload || now - parseInt(lastReload, 10) > 4000) {
+                    sessionStorage.setItem('konekta_dyn_reload', now.toString());
+                    window.location.reload();
+                  }
+                }
+              });
+            `,
+          }}
+        />
       </head>
       <body>
         {children}
@@ -165,52 +187,16 @@ function RootComponent() {
     }
   }, [darkMode]);
 
-  const [showSplash, setShowSplash] = useState(false);
-
   useEffect(() => {
     initAlarmWatcher();
-    if (typeof window !== "undefined") {
-      try {
-        const hasSeen = sessionStorage.getItem("konekta_splash_session");
-        if (!hasSeen) {
-          setShowSplash(true);
-          const timer = setTimeout(() => {
-            try {
-              sessionStorage.setItem("konekta_splash_session", "true");
-            } catch {
-              // ignore
-            }
-            setShowSplash(false);
-          }, 1200);
-          return () => clearTimeout(timer);
-        }
-      } catch {
-        // In case sessionStorage is blocked by browser security
-      }
-    }
   }, []);
 
   return (
     <QueryClientProvider client={queryClient}>
-      {showSplash && (
-        <div
-          id="konekta-app-splash"
-          className="fixed inset-0 z-9999 grid place-items-center bg-[#1D68D8] px-6 text-white select-none pointer-events-auto"
-        >
-          <div className="flex flex-col items-center gap-4 text-center max-w-xs animate-in fade-in zoom-in-95 duration-400">
-            <div className="grid size-24 place-items-center rounded-[28px] bg-white/20 text-4xl font-extrabold text-white shadow-inner backdrop-blur-xs">
-              K
-            </div>
-            <h1 className="text-3xl font-extrabold tracking-tight text-white mt-1">KONEKTA</h1>
-            <p className="text-sm text-white/90 font-medium leading-relaxed max-w-[260px]">
-              Serviços de confiança em São Tomé e Príncipe
-            </p>
-            <div className="mt-6 size-7 animate-spin rounded-full border-[2.5px] border-white/25 border-t-white" />
-          </div>
-        </div>
-      )}
-      {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
-      <Outlet />
+      {/* Blindagem de conectividade e renderização KONEKTA */}
+      <AppShield>
+        <Outlet />
+      </AppShield>
       <Toaster position="top-center" richColors closeButton />
     </QueryClientProvider>
   );

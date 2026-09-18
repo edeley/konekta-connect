@@ -327,7 +327,7 @@ function NewRequest() {
 
   const canNext = !formSafety.isValid
     ? false
-    : (step === 1 && !!categorySlug) ||
+    : (step === 1 && (!!categorySlug || (!!smartRead?.categorySlug && !!smartCategory))) ||
       (step === 2 && (title.trim().length >= 3 || !!category) && description.trim().length >= 5) ||
       step === 3;
 
@@ -499,63 +499,125 @@ function NewRequest() {
                 </div>
               </div>
 
+              {/* Sugestões rápidas de problemas do dia a dia */}
+              <div className="flex flex-wrap gap-1.5 pt-1">
+                <span className="text-[10px] text-muted-foreground font-semibold self-center mr-1">
+                  Exemplos rápidos:
+                </span>
+                {[
+                  "A minha geladeira não está funcionando",
+                  "Luz foi abaixo e disjuntor disparou",
+                  "Fuga de água ou cano roto",
+                  "Gerador não arranca e deita fumo",
+                  "Carro não pega / socorro mecânico",
+                  "Roçar capim no quintal com roçadora",
+                  "Tranças afro ao domicílio",
+                ].map((sug) => (
+                  <button
+                    key={sug}
+                    type="button"
+                    onClick={() => setSmartText(sug)}
+                    className="rounded-full bg-muted/60 hover:bg-primary/10 hover:text-primary hover:border-primary/30 border border-border px-2.5 py-1 text-[11px] text-foreground transition-all"
+                  >
+                    {sug.length > 28 ? sug.slice(0, 26) + "…" : sug}
+                  </button>
+                ))}
+              </div>
+
               {smartRead && smartCategory ? (
                 smartCategoryIsActive ? (
-                  <KCard className="space-y-2.5 border border-primary/25 bg-primary/[0.04]">
-                    <div className="flex items-center gap-2">
-                      <Lightbulb size={15} className="text-primary" />
-                      <span className="text-xs font-bold text-foreground">
-                        Sugestão automática: {smartCategory.displayName || smartCategory.name}
-                      </span>
-                      <span className="inline-flex items-center gap-1 text-[10px] text-primary font-semibold ml-auto">
-                        <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
-                        Prestador Ativo
+                  <KCard className="space-y-3 border-2 border-primary/30 bg-primary/[0.04] p-4 shadow-sm">
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="flex items-center gap-2">
+                        <div className="w-7 h-7 rounded-xl bg-primary/15 text-primary flex items-center justify-center shrink-0">
+                          <Lightbulb size={16} />
+                        </div>
+                        <div>
+                          <span className="text-[10px] uppercase tracking-wider font-extrabold text-primary block">
+                            Orientação Inteligente KONEKTA
+                          </span>
+                          <h4 className="text-xs font-bold text-foreground">
+                            {smartRead.problemSummary || "Problema Identificado"}
+                          </h4>
+                        </div>
+                      </div>
+                      <span className="inline-flex items-center gap-1 text-[10px] text-emerald-700 dark:text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 rounded-full font-bold shrink-0">
+                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                        Prestadores Ativos em STP
                       </span>
                     </div>
+
+                    <div className="rounded-xl bg-background/80 border border-border/70 p-3 space-y-2">
+                      <div className="flex items-center gap-2">
+                        <span className="text-[11px] font-bold text-muted-foreground">
+                          Profissional ideal a chamar:
+                        </span>
+                        <span className="text-xs font-black text-primary">
+                          {smartRead.professionTitle ||
+                            smartCategory.displayName ||
+                            smartCategory.name}
+                        </span>
+                      </div>
+                      <p className="text-[11px] text-muted-foreground leading-relaxed">
+                        {smartRead.whyThisProfessional}
+                      </p>
+                    </div>
+
                     <div className="flex flex-wrap gap-1.5">
-                      <span className="rounded-full bg-card px-2 py-0.5 text-[10px] font-bold text-muted-foreground border border-border">
-                        {urgencyLabel[smartRead.urgency]}
+                      <span className="rounded-full bg-card px-2.5 py-1 text-[10px] font-bold text-foreground border border-border">
+                        Urgência: {urgencyLabel[smartRead.urgency]}
                       </span>
                       {smartRead.suggestedBudget ? (
-                        <span className="rounded-full bg-card px-2 py-0.5 text-[10px] font-bold text-muted-foreground border border-border">
-                          Estimativa ~{smartRead.suggestedBudget.toLocaleString("pt-PT")} STN
+                        <span className="rounded-full bg-card px-2.5 py-1 text-[10px] font-bold text-foreground border border-border">
+                          Estimativa STP: ~{smartRead.suggestedBudget.toLocaleString("pt-PT")} STN
                         </span>
                       ) : null}
-                      <span className="rounded-full bg-card px-2 py-0.5 text-[10px] font-bold text-muted-foreground border border-border">
-                        Confiança {Math.round(smartRead.confidence * 100)}%
+                      <span className="rounded-full bg-card px-2.5 py-1 text-[10px] font-bold text-primary border border-primary/20 bg-primary/5">
+                        Categoria: {smartCategory.displayName || smartCategory.name}
                       </span>
                     </div>
+
                     {smartRead.followUps.length > 0 && (
-                      <ul className="space-y-1">
-                        {smartRead.followUps.map((q) => (
-                          <li key={q} className="text-[11px] text-muted-foreground flex gap-1.5">
-                            <span className="text-primary">•</span>
-                            <span>{q}</span>
-                          </li>
-                        ))}
-                      </ul>
+                      <div className="space-y-1.5 pt-1">
+                        <span className="text-[10px] font-bold text-muted-foreground block">
+                          Perguntas que o prestador vai precisar de saber:
+                        </span>
+                        <ul className="space-y-1">
+                          {smartRead.followUps.map((q) => (
+                            <li key={q} className="text-[11px] text-muted-foreground flex gap-1.5">
+                              <span className="text-primary font-bold">•</span>
+                              <span>{q}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
                     )}
+
                     <Button
-                      className="h-10 w-full rounded-xl text-xs font-bold cursor-pointer"
+                      className="h-11 w-full rounded-xl text-xs font-bold gap-2 cursor-pointer shadow-soft"
                       onClick={applySmartRead}
                     >
-                      Preencher pedido automaticamente
+                      <span>Preencher Pedido com este Especialista</span>
+                      <ChevronRight size={14} />
                     </Button>
                   </KCard>
                 ) : (
-                  <KCard className="space-y-3 border border-border bg-muted/30">
+                  <KCard className="space-y-3 border border-border bg-muted/30 p-4">
                     <div className="flex items-start gap-2.5">
                       <AlertCircle className="w-5 h-5 text-primary shrink-0 mt-0.5" />
                       <div>
                         <h4 className="text-xs font-bold text-foreground">
-                          Especialidade sem prestadores ativos:{" "}
-                          {smartCategory.displayName || smartCategory.name}
+                          Profissional Recomendado:{" "}
+                          {smartRead.professionTitle ||
+                            smartCategory.displayName ||
+                            smartCategory.name}
                         </h4>
                         <p className="text-[11px] text-muted-foreground mt-1 leading-relaxed">
-                          Para proteger a sua segurança e garantir que o seu pedido nunca fica sem
-                          resposta, a KONEKTA nunca mostra nem publica pedidos de serviços que não
-                          têm prestadores ativos credenciados. Deseja que a administração recrute um
-                          prestador para si?
+                          {smartRead.whyThisProfessional}
+                        </p>
+                        <p className="text-[11px] text-muted-foreground mt-2 font-medium">
+                          Esta especialidade ainda não tem prestadores validados disponíveis em São
+                          Tomé neste momento. Deseja que a administração aloque um parceiro para si?
                         </p>
                       </div>
                     </div>
@@ -564,7 +626,9 @@ function NewRequest() {
                       size="sm"
                       onClick={() => {
                         setUnservedModalInitialName(
-                          smartCategory.displayName || smartCategory.name,
+                          smartRead.professionTitle ||
+                            smartCategory.displayName ||
+                            smartCategory.name,
                         );
                         setIsRequestUnservedModalOpen(true);
                       }}
@@ -575,10 +639,38 @@ function NewRequest() {
                     </Button>
                   </KCard>
                 )
+              ) : smartRead?.isUnserved ? (
+                <KCard className="space-y-3 border border-border bg-muted/30 p-4">
+                  <div className="flex items-start gap-2.5">
+                    <AlertCircle className="w-5 h-5 text-primary shrink-0 mt-0.5" />
+                    <div>
+                      <h4 className="text-xs font-bold text-foreground">
+                        Profissional Recomendado: {smartRead.professionTitle}
+                      </h4>
+                      <p className="text-[11px] text-muted-foreground mt-1 leading-relaxed">
+                        {smartRead.whyThisProfessional}
+                      </p>
+                    </div>
+                  </div>
+                  <Button
+                    type="button"
+                    size="sm"
+                    onClick={() => {
+                      setUnservedModalInitialName(
+                        smartRead.unservedAlternativeName || smartRead.professionTitle,
+                      );
+                      setIsRequestUnservedModalOpen(true);
+                    }}
+                    className="h-9 w-full rounded-xl text-xs font-bold gap-1.5 bg-primary text-white hover:opacity-90"
+                  >
+                    <Sparkles className="w-3.5 h-3.5" />
+                    Pedir à KONEKTA para recrutar este técnico
+                  </Button>
+                </KCard>
               ) : (
                 <p className="text-[11px] text-muted-foreground">
-                  Escreva ou grave a voz e a KONEKTA identifica a especialidade ativa, a urgência e
-                  a estimativa de preço por si.
+                  Escreva ou grave a sua voz em linguagem comum (ex.: geladeira, disjuntor, fuga no
+                  cano) e a IA KONEKTA identifica a profissão e o especialista ideal por si.
                 </p>
               )}
             </div>
@@ -734,7 +826,10 @@ function NewRequest() {
                                   {srv.name}
                                 </p>
                                 <p className="text-[10px] text-muted-foreground truncate">
-                                  Por {srv.providerName} (★ {srv.rating.toFixed(1)})
+                                  Por {srv.providerName}{" "}
+                                  {typeof srv.rating === "number" &&
+                                    !Number.isNaN(srv.rating) &&
+                                    `(★ ${srv.rating.toFixed(1)})`}
                                 </p>
                               </div>
                               <div className="text-right shrink-0">
@@ -1656,7 +1751,23 @@ function NewRequest() {
         <Button
           className="h-12 flex-[2] rounded-2xl text-sm font-bold cursor-pointer"
           disabled={!canNext}
-          onClick={() => (step === 3 ? publish() : setStep(step + 1))}
+          onClick={() => {
+            if (step === 1) {
+              if (!categorySlug && smartRead && smartCategory) {
+                applySmartRead();
+                return;
+              }
+              if (categorySlug) {
+                setStep(2);
+                return;
+              }
+            }
+            if (step === 3) {
+              publish();
+            } else {
+              setStep(step + 1);
+            }
+          }}
         >
           {step === 3 ? "Publicar Pedido Agora" : "Continuar"}
         </Button>

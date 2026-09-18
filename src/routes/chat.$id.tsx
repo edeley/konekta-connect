@@ -23,13 +23,20 @@ import {
   Scale,
   Compass,
   CheckCircle,
+  CheckCircle2,
   Navigation,
   Paperclip,
+  Sparkles,
+  Eye,
+  Inbox,
+  Briefcase,
+  History,
 } from "lucide-react";
 import { getProvider } from "@/lib/konekta-data";
 import {
   store,
   useStore,
+  EMPTY_MESSAGES,
   type Order,
   type Quote,
   type TechnicalVisit,
@@ -66,6 +73,10 @@ import { toast } from "sonner";
 import { AudioRecorderButton } from "@/components/konekta/AudioRecorderButton";
 
 export const Route = createFileRoute("/chat/$id")({
+  validateSearch: (search: Record<string, unknown>): { requestId?: string; orderId?: string } => ({
+    requestId: typeof search.requestId === "string" ? search.requestId : undefined,
+    orderId: typeof search.orderId === "string" ? search.orderId : undefined,
+  }),
   head: ({ params }) => {
     const p = getProvider(params.id);
     return {
@@ -90,12 +101,14 @@ export const Route = createFileRoute("/chat/$id")({
 
 function ChatDetail() {
   const { id } = Route.useParams();
+  const { requestId: queryRequestId, orderId: queryOrderId } = Route.useSearch();
   const provider = getProvider(id);
-  const messages = useStore((s) => s.messages[id] ?? []);
+  const messages = useStore((s) => s.messages[id] ?? EMPTY_MESSAGES);
   const balance = useStore((s) => s.balance);
   const technicalVisits = useStore((s) => s.technicalVisits);
   const config = useStore((s) => s.config);
   const orders = useStore((s) => s.orders);
+  const requests = useStore((s) => s.requests);
   const role = useStore((s) => s.user?.role ?? "cliente");
   const isProviderBlockedForDebt = useStore((s) => s.isProviderBlockedForDebt);
   const providerDebt = useStore((s) => s.providerDebt);
@@ -107,6 +120,7 @@ function ChatDetail() {
   const [mediationModalOpen, setMediationModalOpen] = useState(false);
   const [viewingPhoto, setViewingPhoto] = useState<string | null>(null);
   const [isTyping, setIsTyping] = useState(realtimeBus.getTyping(id));
+  const [showHistoryServices, setShowHistoryServices] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
 
   // Orçamento ativo mais recente
@@ -116,11 +130,57 @@ function ChatDetail() {
     return quoteMsgs[quoteMsgs.length - 1].quote || null;
   }, [messages]);
 
-  // Verifica se todos os pedidos associados já foram concluídos
-  const relatedOrders = orders.filter((o) => o.providerId === id);
-  const isAllOrdersFinished =
-    relatedOrders.length > 0 &&
-    relatedOrders.every((o) => ["concluido", "avaliado"].includes(o.status));
+  // Pedidos e orçamentos associados a este profissional
+  const relatedOrders = useMemo(() => orders.filter((o) => o.providerId === id), [orders, id]);
+
+  const activeOrder = useMemo(() => {
+    if (queryOrderId) {
+      const match = relatedOrders.find((o) => o.id === queryOrderId);
+      if (match && !["concluido", "avaliado", "cancelado"].includes(match.status)) {
+        return match;
+      }
+    }
+    return (
+      relatedOrders.find((o) => !["concluido", "avaliado", "cancelado"].includes(o.status)) || null
+    );
+  }, [relatedOrders, queryOrderId]);
+
+  const completedOrders = useMemo(
+    () => relatedOrders.filter((o) => ["concluido", "avaliado"].includes(o.status)),
+    [relatedOrders],
+  );
+
+  // Pedidos publicados no mercado KONEKTA com propostas deste prestador ou directos
+  const relatedRequests = useMemo(() => {
+    return requests.filter(
+      (r) =>
+        r.proposals.some((p) => p.providerId === id) ||
+        r.directProviderId === id ||
+        (queryRequestId && r.id === queryRequestId),
+    );
+  }, [requests, id, queryRequestId]);
+
+  const activeRequest = useMemo(() => {
+    if (queryRequestId) {
+      const match = requests.find((r) => r.id === queryRequestId);
+      if (match) return match;
+    }
+    return (
+      relatedRequests.find(
+        (r) => r.status === "aberto" && r.proposals.some((p) => p.providerId === id),
+      ) ||
+      relatedRequests.find((r) => r.status === "aberto") ||
+      null
+    );
+  }, [queryRequestId, requests, relatedRequests, id]);
+
+  const activeProposal = useMemo(() => {
+    if (!activeRequest) return null;
+    return activeRequest.proposals.find((p) => p.providerId === id) || null;
+  }, [activeRequest, id]);
+
+  // Histórico prévio de serviços concluídos com este profissional
+  const hasFinishedHistory = completedOrders.length > 0;
 
   // Technical Visit Modal State (Proposta enviada pelo Profissional)
   const [visitModalOpen, setVisitModalOpen] = useState(false);
@@ -192,15 +252,6 @@ function ChatDetail() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const cameraInputRef = useRef<HTMLInputElement>(null);
   const galleryInputRef = useRef<HTMLInputElement>(null);
-
-  // Pedido ativo associado a este prestador
-  const activeOrder = useMemo(() => {
-    return (
-      relatedOrders.find(
-        (o) => o.status !== "concluido" && o.status !== "avaliado" && o.status !== "cancelado",
-      ) || null
-    );
-  }, [relatedOrders]);
 
   const handleImageFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -710,6 +761,207 @@ function ChatDetail() {
                   Todas as comissões e pagamentos são protegidos por custódia interna. Para a sua
                   segurança, o sistema impede contactos e negociações fora da app.
                 </p>
+              </div>
+            )}
+
+            {/* Histórico & Seletor de Serviços Conectados entre Cliente e Prestador */}
+            {(relatedOrders.length > 0 || relatedRequests.length > 0) && (
+              <div className="rounded-2xl bg-card border border-border/80 p-3 shadow-2xs space-y-2">
+                <div className="flex items-center justify-between">
+                  <span className="text-[11px] font-bold text-muted-foreground flex items-center gap-1.5">
+                    <Briefcase size={13} className="text-primary" />
+                    <span>
+                      Serviços & Negociações ({relatedOrders.length + relatedRequests.length})
+                    </span>
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => setShowHistoryServices(!showHistoryServices)}
+                    className="text-[10px] font-bold text-primary hover:underline flex items-center gap-0.5 cursor-pointer"
+                  >
+                    <span>{showHistoryServices ? "Recolher" : "Ver Todos"}</span>
+                  </button>
+                </div>
+
+                {/* Resumo do Contexto Ativo */}
+                {activeRequest ? (
+                  <div className="flex items-center justify-between gap-2 p-2.5 rounded-xl bg-primary/10 border border-primary/20 text-xs">
+                    <div className="min-w-0">
+                      <span className="text-[10px] font-bold text-primary block">
+                        🎯 Em Negociação: Pedido #{activeRequest.id}
+                      </span>
+                      <p className="font-bold text-foreground text-xs truncate">
+                        {activeRequest.title}
+                      </p>
+                    </div>
+                    <Link
+                      to="/pedido/$id"
+                      params={{ id: activeRequest.id }}
+                      className="px-2.5 py-1 rounded-lg bg-card border border-border text-[10px] font-bold text-foreground hover:bg-muted shrink-0"
+                    >
+                      Ver Pedido
+                    </Link>
+                  </div>
+                ) : activeOrder ? (
+                  <div className="flex items-center justify-between gap-2 p-2.5 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-xs">
+                    <div className="min-w-0">
+                      <span className="text-[10px] font-bold text-emerald-700 dark:text-emerald-300 block">
+                        ⚡ Serviço Contratado em Execução #{activeOrder.id}
+                      </span>
+                      <p className="font-bold text-foreground text-xs truncate">
+                        {activeOrder.title || "Serviço Ativo"} ({activeOrder.status})
+                      </p>
+                    </div>
+                    <Link
+                      to="/pedido/$id"
+                      params={{ id: activeOrder.id }}
+                      className="px-2.5 py-1 rounded-lg bg-card border border-border text-[10px] font-bold text-foreground hover:bg-muted shrink-0"
+                    >
+                      Ver Pedido
+                    </Link>
+                  </div>
+                ) : hasFinishedHistory ? (
+                  <div className="flex items-center justify-between gap-2 p-2 rounded-xl bg-muted/60 border border-border text-xs">
+                    <span className="text-[11px] text-muted-foreground truncate">
+                      Serviço anterior concluído. Chat aberto para novas propostas.
+                    </span>
+                    <Link
+                      to="/novo-pedido"
+                      className="px-2 py-0.5 rounded-lg bg-primary/10 text-primary font-bold text-[10px] hover:bg-primary/20 shrink-0"
+                    >
+                      + Novo
+                    </Link>
+                  </div>
+                ) : null}
+
+                {/* Lista Completa Expandível de Serviços (Cada serviço tratado de forma individual) */}
+                {showHistoryServices && (
+                  <div className="pt-2 border-t border-border/60 space-y-1.5 max-h-48 overflow-y-auto">
+                    {relatedRequests.map((r) => {
+                      const prop = r.proposals.find((p) => p.providerId === id);
+                      return (
+                        <div
+                          key={`req-${r.id}`}
+                          className="p-2 rounded-xl bg-muted/40 border border-border flex items-center justify-between gap-2 text-[11px]"
+                        >
+                          <div className="min-w-0">
+                            <span className="font-semibold text-foreground truncate block">
+                              📋 {r.title}
+                            </span>
+                            <span className="text-[10px] text-muted-foreground">
+                              {r.status === "aberto" ? "Aberto a Propostas" : "Adjudicado"}
+                              {prop ? ` · Proposta: ${formatDb(prop.price)}` : ""}
+                            </span>
+                          </div>
+                          <Link
+                            to="/pedido/$id"
+                            params={{ id: r.id }}
+                            className="text-[10px] font-bold text-primary hover:underline shrink-0"
+                          >
+                            Abrir
+                          </Link>
+                        </div>
+                      );
+                    })}
+                    {relatedOrders.map((o) => (
+                      <div
+                        key={`ord-${o.id}`}
+                        className="p-2 rounded-xl bg-muted/40 border border-border flex items-center justify-between gap-2 text-[11px]"
+                      >
+                        <div className="min-w-0">
+                          <span className="font-semibold text-foreground truncate block">
+                            📦 Pedido #{o.id} · {o.title || "Serviço"}
+                          </span>
+                          <span className="text-[10px] text-muted-foreground">
+                            {formatDb(o.price)} · Estado:{" "}
+                            <strong className="text-foreground">{o.status}</strong>
+                          </span>
+                        </div>
+                        <Link
+                          to="/pedido/$id"
+                          params={{ id: o.id }}
+                          className="text-[10px] font-bold text-primary hover:underline shrink-0"
+                        >
+                          Abrir
+                        </Link>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Card de Negociação de Proposta do Pedido Aberto */}
+            {activeRequest && (
+              <div className="rounded-2xl bg-primary/10 border border-primary/25 p-3.5 space-y-2.5 shadow-2xs">
+                <div className="flex items-center justify-between">
+                  <span className="font-bold text-primary flex items-center gap-1.5 text-xs">
+                    <Sparkles size={14} /> Negociação do Pedido
+                  </span>
+                  <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-primary/20 text-primary">
+                    {activeRequest.status === "aberto" ? "Aberto a Propostas" : "Adjudicado"}
+                  </span>
+                </div>
+                <div>
+                  <p className="text-xs font-bold text-foreground">{activeRequest.title}</p>
+                  <p className="text-[11px] text-muted-foreground mt-0.5">
+                    📍 {activeRequest.district} · Categoria: {activeRequest.categoryName}
+                  </p>
+                </div>
+                {activeProposal && (
+                  <div className="p-2.5 rounded-xl bg-card border border-border/80 flex items-center justify-between">
+                    <div>
+                      <span className="text-[10px] text-muted-foreground block">
+                        Proposta Apresentada:
+                      </span>
+                      <span className="text-sm font-black text-primary font-mono">
+                        {formatDb(activeProposal.price)}
+                      </span>
+                    </div>
+                    <div className="text-right">
+                      <span className="text-[10px] text-muted-foreground block">
+                        Disponibilidade:
+                      </span>
+                      <span className="text-[11px] font-bold text-foreground">
+                        {activeProposal.availability}
+                      </span>
+                    </div>
+                  </div>
+                )}
+                <div className="pt-1 border-t border-primary/20 flex flex-wrap gap-2">
+                  <Link
+                    to="/pedido/$id"
+                    params={{ id: activeRequest.id }}
+                    className="px-3 py-1.5 rounded-xl bg-card border border-border hover:bg-muted text-foreground font-bold text-[11px] flex items-center gap-1.5 transition shadow-2xs"
+                  >
+                    <Eye size={12} className="text-primary" /> Ver Pedido
+                  </Link>
+                  {isClient && activeProposal && activeRequest.status === "aberto" && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const res = store.acceptProposal(activeRequest.id, activeProposal.id);
+                        if (res) {
+                          toast.success("Proposta Aceite com Sucesso!", {
+                            description: `O pedido foi adjudicado a ${provider.name}.`,
+                          });
+                        }
+                      }}
+                      className="px-3 py-1.5 rounded-xl bg-primary text-primary-foreground font-bold text-[11px] flex items-center gap-1.5 transition shadow-2xs cursor-pointer active:scale-95"
+                    >
+                      <Check size={12} /> Aceitar Proposta ({formatDb(activeProposal.price)})
+                    </button>
+                  )}
+                  {!isClient && (
+                    <button
+                      type="button"
+                      onClick={() => setComposerOpen(true)}
+                      className="px-3 py-1.5 rounded-xl bg-primary text-primary-foreground font-bold text-[11px] flex items-center gap-1.5 transition shadow-2xs cursor-pointer active:scale-95"
+                    >
+                      <Tag size={12} /> {activeProposal ? "Ajustar Orçamento" : "Enviar Orçamento"}
+                    </button>
+                  )}
+                </div>
               </div>
             )}
 
@@ -1311,155 +1563,176 @@ function ChatDetail() {
 
           {/* Barra de Ações & Envio de Mensagem */}
           <div className="sticky bottom-0 bg-card ring-1 ring-border px-3 py-3 space-y-2">
-            {isAllOrdersFinished ? (
-              <div className="p-3 rounded-2xl bg-muted/80 border border-border text-center space-y-1.5">
-                <div className="flex items-center justify-center gap-1.5 text-xs font-bold text-foreground">
-                  <Lock size={14} className="text-muted-foreground" />
-                  <span>Serviço Concluído · Chat Encerrado</span>
+            {/* Notificação Amigável quando o serviço anterior já foi concluído */}
+            {hasFinishedHistory && !activeOrder && !activeRequest && (
+              <div className="flex items-center justify-between gap-2 p-2.5 rounded-xl bg-muted/60 border border-border text-xs">
+                <div className="flex items-center gap-2 min-w-0">
+                  <CheckCircle2
+                    size={16}
+                    className="text-emerald-600 dark:text-emerald-400 shrink-0"
+                  />
+                  <div className="min-w-0">
+                    <p className="font-bold text-foreground text-xs truncate">
+                      Serviço anterior concluído com sucesso
+                    </p>
+                    <p className="text-[11px] text-muted-foreground truncate">
+                      Pode enviar uma nova mensagem ou negociar outro serviço livremente.
+                    </p>
+                  </div>
                 </div>
-                <p className="text-[11px] text-muted-foreground">
-                  Este serviço foi concluído e os valores foram liquidados com sucesso. O chat foi
-                  fechado.
-                </p>
-                <div className="pt-1 flex items-center justify-center gap-2">
+                {isClient && (
                   <Link
-                    to="/chat"
-                    className="px-3 py-1.5 rounded-xl bg-card border border-border text-xs font-bold text-foreground hover:bg-muted transition"
+                    to="/novo-pedido"
+                    className="px-2.5 py-1 rounded-lg bg-primary/10 hover:bg-primary/20 text-primary font-bold text-[11px] shrink-0 transition"
                   >
-                    Voltar às conversas
+                    + Novo Pedido
                   </Link>
-                </div>
+                )}
+              </div>
+            )}
+
+            {isClient ? (
+              <div className="flex gap-2">
+                <Link
+                  to="/orcamento/$providerId"
+                  params={{ providerId: id }}
+                  className="press flex min-h-10 flex-1 items-center justify-center gap-1.5 rounded-xl bg-accent text-xs font-semibold text-accent-foreground hover:bg-accent/80 transition"
+                >
+                  <FileText size={14} className="text-primary" /> Solicitar Orçamento Oficial
+                </Link>
+                {activeRequest && activeProposal && activeRequest.status === "aberto" && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const res = store.acceptProposal(activeRequest.id, activeProposal.id);
+                      if (res) {
+                        toast.success("Proposta Aceite com Sucesso!", {
+                          description: `O pedido foi adjudicado a ${provider.name}.`,
+                        });
+                      }
+                    }}
+                    className="press flex min-h-10 px-3 items-center justify-center gap-1.5 rounded-xl bg-primary text-xs font-bold text-primary-foreground hover:bg-primary/90 transition cursor-pointer shrink-0"
+                  >
+                    <Check size={14} /> Aceitar ({formatDb(activeProposal.price)})
+                  </button>
+                )}
               </div>
             ) : (
-              <>
-                {isClient ? (
-                  <div className="flex gap-2">
-                    <Link
-                      to="/orcamento/$providerId"
-                      params={{ providerId: id }}
-                      className="press flex min-h-10 flex-1 items-center justify-center gap-1.5 rounded-xl bg-accent text-xs font-semibold text-accent-foreground hover:bg-accent/80 transition"
-                    >
-                      <FileText size={14} className="text-primary" /> Solicitar Orçamento Oficial
-                    </Link>
-                  </div>
-                ) : (
-                  <div className="grid grid-cols-3 gap-1.5">
-                    <button
-                      type="button"
-                      onClick={() => setComposerOpen(true)}
-                      disabled={isProviderBlockedForDebt}
-                      className="press flex min-h-10 items-center justify-center gap-1 rounded-xl bg-accent text-[11px] font-semibold text-accent-foreground hover:bg-accent/80 transition cursor-pointer disabled:opacity-40"
-                      title="Enviar orçamento diretamente caso fotos e dados bastem"
-                    >
-                      <Tag size={12} className="text-primary" /> Orçamento
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setVisitModalOpen(true)}
-                      disabled={isProviderBlockedForDebt}
-                      className="press flex min-h-10 items-center justify-center gap-1 rounded-xl bg-amber-500/15 border border-amber-500/30 text-[11px] font-bold text-amber-900 dark:text-amber-200 hover:bg-amber-500/25 transition cursor-pointer disabled:opacity-40"
-                      title="Propor visita técnica no terreno para avaliar antes de orçar"
-                    >
-                      <Car size={12} /> Visita
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setCashModalOpen(true)}
-                      className="press flex min-h-10 items-center justify-center gap-1 rounded-xl bg-emerald-500/15 border border-emerald-500/30 text-[11px] font-bold text-emerald-900 dark:text-emerald-200 hover:bg-emerald-500/25 transition cursor-pointer"
-                      title="Declarar valor cobrado em mão para liquidação de comissão"
-                    >
-                      <Banknote size={12} /> Em Mão
-                    </button>
-                  </div>
-                )}
-
-                {/* Respostas Rápidas / Mensagens Pré-definidas Contextuais */}
-                <ChatQuickReplies
-                  isClient={isClient}
-                  hasActiveQuote={Boolean(activeQuote)}
-                  isEscrowPaid={Boolean(
-                    activeQuote &&
-                    (activeQuote.status === "pago" || activeQuote.status === "concluido"),
-                  )}
-                  onSelect={(reply) => {
-                    setText(reply);
-                  }}
-                />
-
-                {/* Aviso pró-ativo em tempo real ao digitar termos restritos com detecção de país */}
-                {!unlocked &&
-                  text.trim().length > 2 &&
-                  (() => {
-                    const analysis = analyzeBlockedContent(text);
-                    if (!analysis.blocked) return null;
-                    return (
-                      <div className="flex items-start gap-1.5 px-3 py-2 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-950 dark:text-amber-200 text-[11px] animate-in fade-in">
-                        <ShieldAlert
-                          size={14}
-                          className="shrink-0 text-amber-600 dark:text-amber-400 mt-0.5"
-                        />
-                        <span className="leading-tight font-medium">
-                          {analysis.reason ||
-                            "Detectado contacto ou termo restrito. As negociações devem ser feitas na app."}
-                        </span>
-                      </div>
-                    );
-                  })()}
-
-                <form onSubmit={handleSend} className="flex gap-2 items-center">
-                  <button
-                    type="button"
-                    onClick={() => setPhotoModalOpen(true)}
-                    className="size-11 rounded-xl bg-muted hover:bg-muted/80 text-foreground grid place-items-center cursor-pointer transition shrink-0 border border-border"
-                    title="Enviar foto para diagnóstico à distância"
-                  >
-                    <Camera size={18} />
-                  </button>
-                  <button
-                    type="button"
-                    onClick={handleShareGPSLocation}
-                    disabled={isLocatingGPS}
-                    className="size-11 rounded-xl bg-primary/10 hover:bg-primary/20 text-primary grid place-items-center cursor-pointer transition shrink-0 border border-primary/20 disabled:opacity-50"
-                    title="Partilhar Zona e Localização GPS em tempo real"
-                  >
-                    <Navigation
-                      size={18}
-                      className={isLocatingGPS ? "animate-spin text-primary" : ""}
-                    />
-                  </button>
-                  <div className="relative flex-1">
-                    <input
-                      value={text}
-                      onChange={(e) => setText(e.target.value)}
-                      placeholder="Escreva uma mensagem no chat protegido..."
-                      maxLength={500}
-                      className={`w-full py-2.5 pl-3.5 pr-10 bg-surface ring-1 rounded-xl text-xs focus:outline-none focus:ring-2 text-foreground placeholder:text-muted-foreground ${
-                        !unlocked && text.trim().length > 2 && containsBlockedContent(text)
-                          ? "ring-amber-500/60 focus:ring-amber-500/40"
-                          : "ring-border focus:ring-primary/40"
-                      }`}
-                    />
-                    <div className="absolute right-1.5 top-1/2 -translate-y-1/2">
-                      <AudioRecorderButton
-                        onTranscription={(transcribed) => {
-                          setText((prev) => (prev ? `${prev} ${transcribed}` : transcribed));
-                          toast.success("Áudio transcrito com Gemini 3.5!");
-                        }}
-                        promptContext="Conversa entre cliente e prestador de serviços em São Tomé e Príncipe"
-                      />
-                    </div>
-                  </div>
-                  <button
-                    type="submit"
-                    disabled={!text.trim()}
-                    className="size-11 rounded-xl bg-primary text-primary-foreground grid place-items-center disabled:opacity-40 cursor-pointer shrink-0"
-                    aria-label="Enviar"
-                  >
-                    <Send size={16} />
-                  </button>
-                </form>
-              </>
+              <div className="grid grid-cols-3 gap-1.5">
+                <button
+                  type="button"
+                  onClick={() => setComposerOpen(true)}
+                  disabled={isProviderBlockedForDebt}
+                  className="press flex min-h-10 items-center justify-center gap-1 rounded-xl bg-accent text-[11px] font-semibold text-accent-foreground hover:bg-accent/80 transition cursor-pointer disabled:opacity-40"
+                  title="Enviar orçamento diretamente caso fotos e dados bastem"
+                >
+                  <Tag size={12} className="text-primary" /> Orçamento
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setVisitModalOpen(true)}
+                  disabled={isProviderBlockedForDebt}
+                  className="press flex min-h-10 items-center justify-center gap-1 rounded-xl bg-amber-500/15 border border-amber-500/30 text-[11px] font-bold text-amber-900 dark:text-amber-200 hover:bg-amber-500/25 transition cursor-pointer disabled:opacity-40"
+                  title="Propor visita técnica no terreno para avaliar antes de orçar"
+                >
+                  <Car size={12} /> Visita
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setCashModalOpen(true)}
+                  className="press flex min-h-10 items-center justify-center gap-1 rounded-xl bg-emerald-500/15 border border-emerald-500/30 text-[11px] font-bold text-emerald-900 dark:text-emerald-200 hover:bg-emerald-500/25 transition cursor-pointer"
+                  title="Declarar valor cobrado em mão para liquidação de comissão"
+                >
+                  <Banknote size={12} /> Em Mão
+                </button>
+              </div>
             )}
+
+            {/* Respostas Rápidas / Mensagens Pré-definidas Contextuais */}
+            <ChatQuickReplies
+              isClient={isClient}
+              hasActiveQuote={Boolean(activeQuote)}
+              isEscrowPaid={Boolean(
+                activeQuote &&
+                (activeQuote.status === "pago" || activeQuote.status === "concluido"),
+              )}
+              onSelect={(reply) => {
+                setText(reply);
+              }}
+            />
+
+            {/* Aviso pró-ativo em tempo real ao digitar termos restritos com detecção de país */}
+            {!unlocked &&
+              text.trim().length > 2 &&
+              (() => {
+                const analysis = analyzeBlockedContent(text);
+                if (!analysis.blocked) return null;
+                return (
+                  <div className="flex items-start gap-1.5 px-3 py-2 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-950 dark:text-amber-200 text-[11px] animate-in fade-in">
+                    <ShieldAlert
+                      size={14}
+                      className="shrink-0 text-amber-600 dark:text-amber-400 mt-0.5"
+                    />
+                    <span className="leading-tight font-medium">
+                      {analysis.reason ||
+                        "Detectado contacto ou termo restrito. As negociações devem ser feitas na app."}
+                    </span>
+                  </div>
+                );
+              })()}
+
+            <form onSubmit={handleSend} className="flex gap-2 items-center">
+              <button
+                type="button"
+                onClick={() => setPhotoModalOpen(true)}
+                className="size-11 rounded-xl bg-muted hover:bg-muted/80 text-foreground grid place-items-center cursor-pointer transition shrink-0 border border-border"
+                title="Enviar foto para diagnóstico à distância"
+              >
+                <Camera size={18} />
+              </button>
+              <button
+                type="button"
+                onClick={handleShareGPSLocation}
+                disabled={isLocatingGPS}
+                className="size-11 rounded-xl bg-primary/10 hover:bg-primary/20 text-primary grid place-items-center cursor-pointer transition shrink-0 border border-primary/20 disabled:opacity-50"
+                title="Partilhar Zona e Localização GPS em tempo real"
+              >
+                <Navigation
+                  size={18}
+                  className={isLocatingGPS ? "animate-spin text-primary" : ""}
+                />
+              </button>
+              <div className="relative flex-1">
+                <input
+                  value={text}
+                  onChange={(e) => setText(e.target.value)}
+                  placeholder="Escreva uma mensagem no chat protegido..."
+                  maxLength={500}
+                  className={`w-full py-2.5 pl-3.5 pr-10 bg-surface ring-1 rounded-xl text-xs focus:outline-none focus:ring-2 text-foreground placeholder:text-muted-foreground ${
+                    !unlocked && text.trim().length > 2 && containsBlockedContent(text)
+                      ? "ring-amber-500/60 focus:ring-amber-500/40"
+                      : "ring-border focus:ring-primary/40"
+                  }`}
+                />
+                <div className="absolute right-1.5 top-1/2 -translate-y-1/2">
+                  <AudioRecorderButton
+                    onTranscription={(transcribed) => {
+                      setText((prev) => (prev ? `${prev} ${transcribed}` : transcribed));
+                      toast.success("Áudio transcrito com Gemini 3.5!");
+                    }}
+                    promptContext="Conversa entre cliente e prestador de serviços em São Tomé e Príncipe"
+                  />
+                </div>
+              </div>
+              <button
+                type="submit"
+                disabled={!text.trim()}
+                className="size-11 rounded-xl bg-primary text-primary-foreground grid place-items-center disabled:opacity-40 cursor-pointer shrink-0"
+                aria-label="Enviar"
+              >
+                <Send size={16} />
+              </button>
+            </form>
           </div>
         </div>
       </div>

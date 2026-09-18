@@ -260,6 +260,30 @@ export const STP_QUICK_SERVICE_TEMPLATES: ServiceQuickTemplate[] = [
     urgency: "esta-semana",
     badge: "❄️ Instalação Nova",
   },
+  {
+    id: "tpl-ac-geladeira",
+    categorySlug: "ar-condicionado",
+    categoryName: "Climatização & Frio",
+    title: "Reparação de Geladeira / Frigorífico (não gela ou motor parou)",
+    suggestedDesc:
+      "A minha geladeira não está a funcionar corretamente (não gela ou o motor/compressor não arranca). Preciso de visita técnica no local para diagnosticar o gás, termostato e peças.",
+    materialStatus: "avaliar",
+    estimatedBudgetSTN: 450,
+    urgency: "urgente",
+    badge: "❄️ Geladeira & Frio",
+  },
+  {
+    id: "tpl-ac-recarga",
+    categorySlug: "ar-condicionado",
+    categoryName: "Climatização & Frio",
+    title: "Recarga de Gás para Geladeira ou Ar Condicionado",
+    suggestedDesc:
+      "O aparelho liga normalmente mas não produz frio. Suspeita de perda de gás refrigerante no circuito. Necessário teste de estanqueidade e recarga.",
+    materialStatus: "prestador_compra",
+    estimatedBudgetSTN: 550,
+    urgency: "urgente",
+    badge: "❄️ Recarga de Gás",
+  },
 
   // Limpeza Residencial & Comercial
   {
@@ -313,6 +337,70 @@ export const STP_QUICK_SERVICE_TEMPLATES: ServiceQuickTemplate[] = [
     estimatedBudgetSTN: 450,
     urgency: "urgente",
     badge: "🚗 Socorro Mecânico",
+  },
+  {
+    id: "tpl-mec-gerador",
+    categorySlug: "mecanico",
+    categoryName: "Mecânico & Geradores",
+    title: "Manutenção ou Reparação de Gerador de Energia (Diesel/Gasolina)",
+    suggestedDesc:
+      "O gerador não arranca, deita fumo preto ou não estabiliza a corrente para alimentar a casa. Preciso de limpeza de carburador/injetores e mudança de óleo e filtros.",
+    materialStatus: "avaliar",
+    estimatedBudgetSTN: 500,
+    urgency: "urgente",
+    badge: "⚡ Gerador de Energia",
+  },
+
+  // Jardinagem & Limpeza de Quintal
+  {
+    id: "tpl-jard-1",
+    categorySlug: "jardinagem",
+    categoryName: "Jardinagem",
+    title: "Roçagem de capim alto e limpeza de quintal com roçadora",
+    suggestedDesc:
+      "O capim no quintal está muito alto. Preciso de corte completo com máquina roçadora a gasolina e recolha das ervas cortadas.",
+    materialStatus: "tem_material",
+    estimatedBudgetSTN: 350,
+    urgency: "esta-semana",
+    badge: "🌱 Roçagem de Capim",
+  },
+  {
+    id: "tpl-jard-2",
+    categorySlug: "jardinagem",
+    categoryName: "Jardinagem",
+    title: "Poda de árvores e coqueiros junto à casa",
+    suggestedDesc:
+      "Corte e poda de ramos perigosos próximos do telhado e fios de eletricidade, além de limpeza dos cocos secos.",
+    materialStatus: "avaliar",
+    estimatedBudgetSTN: 450,
+    urgency: "esta-semana",
+    badge: "🌴 Poda de Árvores",
+  },
+
+  // Estética & Beleza ao Domicílio
+  {
+    id: "tpl-bel-1",
+    categorySlug: "beleza",
+    categoryName: "Estética & Beleza",
+    title: "Tranças Afro (Box Braids / Nagô / Twists) ao domicílio",
+    suggestedDesc:
+      "Pretendo fazer tranças com aplicação de postiço em casa. Desejo acabamento bem definido e profissional.",
+    materialStatus: "tem_material",
+    estimatedBudgetSTN: 450,
+    urgency: "esta-semana",
+    badge: "✂️ Tranças Afro",
+  },
+  {
+    id: "tpl-bel-2",
+    categorySlug: "beleza",
+    categoryName: "Estética & Beleza",
+    title: "Manicure & Pedicure Completa ao domicílio",
+    suggestedDesc:
+      "Cuidado com cutículas, esfoliação, corte, limagem e aplicação de verniz ou verniz gel.",
+    materialStatus: "tem_material",
+    estimatedBudgetSTN: 250,
+    urgency: "esta-semana",
+    badge: "💅 Manicure & Pedicure",
   },
 ];
 

@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { GoogleGenAI } from "@google/genai";
+import { geminiEngine } from "../lib/gemini-service";
 
 export const Route = createFileRoute("/api/transcribe")({
   server: {
@@ -9,7 +9,7 @@ export const Route = createFileRoute("/api/transcribe")({
           JSON.stringify({
             status: "ok",
             endpoint: "/api/transcribe",
-            model: "gemini-3.5-transcribe",
+            model: "gemini-3.5-transcribe / gemini-3.8-flash",
             hasApiKey: Boolean(process.env.GEMINI_API_KEY),
           }),
           {
@@ -69,80 +69,29 @@ export const Route = createFileRoute("/api/transcribe")({
             );
           }
 
-          const apiKey = process.env.GEMINI_API_KEY;
           let transcribedText = "";
+          let failureReason = "";
 
-          if (apiKey && apiKey.trim().length > 0) {
-            const ai = new GoogleGenAI({
-              apiKey,
-              httpOptions: {
-                headers: {
-                  "User-Agent": "aistudio-build",
-                },
-              },
-            });
-
-            const audioPart = {
-              inlineData: {
-                mimeType: cleanMime,
-                data: cleanBase64,
-              },
-            };
-
-            const instructionText = promptContext
-              ? `Transcreva este áudio com fidelidade em português de São Tomé e Príncipe. Contexto do pedido ou mensagem: ${promptContext}. Retorne apenas a transcrição literal do que foi falado, sem introduções, aspas extras ou comentários adicionais.`
-              : "Transcreva este áudio com fidelidade em português de São Tomé e Príncipe. Retorne apenas o texto transcrito literal sem introduções, explicações ou comentários.";
-
-            // 1ª Tentativa: gemini-3.5-transcribe (modelo dedicado de áudio)
+          if (process.env.GEMINI_API_KEY) {
             try {
-              const response = await ai.models.generateContent({
-                model: "gemini-3.5-transcribe",
-                contents: {
-                  parts: [audioPart, { text: instructionText }],
-                },
+              const res = await geminiEngine.transcribeAudio({
+                cleanMime,
+                cleanBase64,
+                promptContext,
               });
-
-              transcribedText = response.text?.trim() || "";
-              if (!transcribedText && response.candidates?.[0]?.content?.parts) {
-                for (const part of response.candidates[0].content.parts) {
-                  if (part.text) {
-                    transcribedText += (transcribedText ? " " : "") + part.text.trim();
-                  }
-                }
+              transcribedText = res.text;
+            } catch (err) {
+              const msg = err instanceof Error ? err.message : String(err);
+              if (
+                msg.includes("503") ||
+                msg.includes("high demand") ||
+                msg.includes("UNAVAILABLE") ||
+                msg.includes("429")
+              ) {
+                failureReason =
+                  "O serviço de voz com IA está com alta procura temporária da Google. Por favor, tente enviar novamente dentro de instantes ou digite a sua mensagem.";
               }
-            } catch (transcribeError) {
-              console.warn(
-                "gemini-3.5-transcribe não processou o áudio, acionando fallback:",
-                transcribeError,
-              );
-            }
-
-            // 2ª Tentativa (Fallback): gemini-3.8-flash (multimodal de alta performance)
-            if (!transcribedText) {
-              try {
-                const fallbackResponse = await ai.models.generateContent({
-                  model: "gemini-3.8-flash",
-                  contents: {
-                    parts: [
-                      audioPart,
-                      {
-                        text: `${instructionText} Se houver apenas ruído de fundo ou silêncio, retorne vazio.`,
-                      },
-                    ],
-                  },
-                });
-
-                transcribedText = fallbackResponse.text?.trim() || "";
-                if (!transcribedText && fallbackResponse.candidates?.[0]?.content?.parts) {
-                  for (const part of fallbackResponse.candidates[0].content.parts) {
-                    if (part.text) {
-                      transcribedText += (transcribedText ? " " : "") + part.text.trim();
-                    }
-                  }
-                }
-              } catch (fallbackError) {
-                console.warn("Fallback gemini-3.8-flash também falhou:", fallbackError);
-              }
+              console.warn("[TranscribeAPI] Estado de transcrição:", msg.slice(0, 160));
             }
           }
 
@@ -163,6 +112,7 @@ export const Route = createFileRoute("/api/transcribe")({
             JSON.stringify({
               success: false,
               error:
+                failureReason ||
                 "Não foi possível identificar voz no áudio gravado. Fale mais perto do microfone ou digite a sua mensagem.",
               text: "",
             }),

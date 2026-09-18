@@ -24,6 +24,23 @@ export function AudioRecorderButton({
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
   const timerRef = useRef<number | null>(null);
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
+
+  const handleFileInputChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    try {
+      const mime = file.type || "audio/mp4";
+      await handleProcessTranscription(file, mime);
+    } catch (err) {
+      console.warn("Falha ao processar áudio selecionado:", err);
+      toast.error("Não foi possível processar o ficheiro de áudio.");
+    } finally {
+      if (e.target) {
+        e.target.value = "";
+      }
+    }
+  };
 
   useEffect(() => {
     return () => {
@@ -106,11 +123,27 @@ export function AudioRecorderButton({
       }, 1000);
 
       toast.info("Microfone ligado. Descreva o seu pedido ou dúvida...");
-    } catch (err) {
-      console.error("Erro ao aceder ao microfone:", err);
-      toast.error(
-        "Permissão de microfone negada. Ative o acesso ao microfone nas definições do navegador.",
-      );
+    } catch (err: unknown) {
+      console.warn("Acesso ao microfone não disponível ou permissão recusada:", err);
+      const errorObj = err as { name?: string; message?: string };
+      const isPermissionDenied =
+        errorObj?.name === "NotAllowedError" ||
+        errorObj?.name === "PermissionDeniedError" ||
+        (typeof errorObj?.message === "string" &&
+          errorObj.message.toLowerCase().includes("permission denied"));
+
+      if (isPermissionDenied) {
+        toast.info(
+          "Permissão do microfone negada. Pode gravar diretamente com o gravador de voz do seu dispositivo.",
+          { duration: 4000 },
+        );
+        // Fallback para gravação nativa através do seletor de áudio do sistema
+        if (fileInputRef.current) {
+          fileInputRef.current.click();
+        }
+      } else {
+        toast.error("Não foi possível aceder ao microfone neste navegador.");
+      }
     }
   };
 
@@ -244,28 +277,46 @@ export function AudioRecorderButton({
 
   if (size === "icon") {
     return (
-      <button
-        type="button"
-        onClick={startRecording}
-        disabled={isTranscribing}
-        className={`inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-border bg-card text-muted-foreground transition hover:border-emerald-500/50 hover:bg-emerald-500/10 hover:text-emerald-600 focus:outline-none disabled:opacity-50 dark:hover:text-emerald-400 ${className}`}
-        title="Falar por áudio (transcrição inteligente Gemini 3.5 Transcribe)"
-      >
-        <Mic className="h-4 w-4" />
-      </button>
+      <>
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept="audio/*"
+          className="hidden"
+          onChange={handleFileInputChange}
+        />
+        <button
+          type="button"
+          onClick={startRecording}
+          disabled={isTranscribing}
+          className={`inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-border bg-card text-muted-foreground transition hover:border-emerald-500/50 hover:bg-emerald-500/10 hover:text-emerald-600 focus:outline-none disabled:opacity-50 dark:hover:text-emerald-400 ${className}`}
+          title="Falar por áudio (transcrição inteligente Gemini 3.5 Transcribe)"
+        >
+          <Mic className="h-4 w-4" />
+        </button>
+      </>
     );
   }
 
   return (
-    <button
-      type="button"
-      onClick={startRecording}
-      disabled={isTranscribing}
-      className={`inline-flex items-center gap-2 rounded-xl border border-border bg-card px-3 py-2 text-xs font-medium text-foreground transition hover:border-emerald-500/50 hover:bg-emerald-500/10 hover:text-emerald-600 disabled:opacity-50 dark:hover:text-emerald-400 ${className}`}
-      title="Gravar áudio com o microfone para preenchimento automático"
-    >
-      <Mic className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
-      <span>{buttonText || "Gravar por Voz (Gemini Transcribe)"}</span>
-    </button>
+    <>
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept="audio/*"
+        className="hidden"
+        onChange={handleFileInputChange}
+      />
+      <button
+        type="button"
+        onClick={startRecording}
+        disabled={isTranscribing}
+        className={`inline-flex items-center gap-2 rounded-xl border border-border bg-card px-3 py-2 text-xs font-medium text-foreground transition hover:border-emerald-500/50 hover:bg-emerald-500/10 hover:text-emerald-600 disabled:opacity-50 dark:hover:text-emerald-400 ${className}`}
+        title="Gravar áudio com o microfone para preenchimento automático"
+      >
+        <Mic className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
+        <span>{buttonText || "Gravar por Voz (Gemini Transcribe)"}</span>
+      </button>
+    </>
   );
 }

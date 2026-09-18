@@ -251,14 +251,14 @@ function ProHome() {
   return (
     <AppShell roles={["prestador"]} hideFab>
       {/* ========================================================================= */}
-      {/* CABEÇALHO ELEGANTE & PROFISSIONAL KONEKTA (HUMAN-DESIGNED) */}
+      {/* CABEÇALHO ELEGANTE & PROFISSIONAL KONEKTA (BRANCO & VERDE) */}
       {/* ========================================================================= */}
-      <header className="rounded-b-3xl bg-slate-950 text-white px-5 pt-7 pb-6 space-y-4 border-b border-slate-800/80 shadow-md">
+      <header className="rounded-b-3xl bg-white text-slate-900 px-5 pt-7 pb-6 space-y-4 border-b border-emerald-100 shadow-xs">
         {/* TOPO: PERFIL & NOTIFICAÇÕES */}
         <div className="flex items-center justify-between gap-3">
           <div className="flex items-center gap-3 min-w-0">
             <div className="relative shrink-0">
-              <div className="size-13 rounded-2xl bg-gradient-to-tr from-emerald-600 to-teal-500 border border-white/20 flex items-center justify-center font-bold text-base text-white shadow-sm overflow-hidden">
+              <div className="size-13 rounded-2xl bg-gradient-to-tr from-emerald-600 to-teal-600 border-2 border-emerald-100 flex items-center justify-center font-bold text-base text-white shadow-xs overflow-hidden">
                 {user?.avatar ? (
                   <img src={user.avatar} alt={displayName} className="size-full object-cover" />
                 ) : (
@@ -267,29 +267,33 @@ function ProHome() {
               </div>
               <span
                 className={cn(
-                  "absolute -bottom-0.5 -right-0.5 size-3.5 rounded-full border-2 border-slate-950",
-                  isOnline ? "bg-emerald-400" : "bg-slate-500",
+                  "absolute -bottom-0.5 -right-0.5 size-3.5 rounded-full border-2 border-white",
+                  isOnline ? "bg-emerald-500 ring-2 ring-emerald-100" : "bg-slate-400",
                 )}
               />
             </div>
 
             <div className="min-w-0">
               <div className="flex items-center gap-1.5 flex-wrap">
-                <span className="text-[10px] font-black uppercase tracking-widest text-emerald-400">
+                <span className="text-[10px] font-black uppercase tracking-widest text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200/60">
                   KONEKTA
                 </span>
-                <span className="text-[10px] text-slate-400">· São Tomé e Príncipe</span>
+                <span className="text-[10px] text-slate-500 font-medium">
+                  · São Tomé e Príncipe
+                </span>
               </div>
-              <h1 className="text-lg font-bold text-white leading-tight truncate">
+              <h1 className="text-lg font-black text-slate-900 leading-tight truncate">
                 Olá, {displayName}
               </h1>
-              <p className="text-[11px] text-slate-400 flex items-center gap-1 mt-0.5">
-                <MapPin size={11} className="text-emerald-400 shrink-0" />
+              <p className="text-[11px] text-slate-600 flex items-center gap-1 mt-0.5 font-medium">
+                <MapPin size={11} className="text-emerald-600 shrink-0" />
                 <span className="truncate">
                   {providerProfile?.category || "Profissional Certificado"}
                 </span>
                 <span>·</span>
-                <span className="text-slate-300">{providerProfile?.district || "Água Grande"}</span>
+                <span className="text-slate-600 font-semibold">
+                  {providerProfile?.district || "Água Grande"}
+                </span>
               </p>
             </div>
           </div>
@@ -301,7 +305,7 @@ function ProHome() {
               onClick={() => setOpenAlarmModal(true)}
               aria-label="Sincronizar Alarme & Lembretes"
               title="Sincronizar Alarme e Lembretes do Telemóvel"
-              className="grid size-9 place-items-center rounded-xl bg-slate-800/90 text-amber-400 hover:bg-slate-800 hover:text-amber-300 transition border border-slate-700/60"
+              className="grid size-9 place-items-center rounded-xl bg-emerald-50 text-emerald-700 hover:bg-emerald-100 hover:text-emerald-800 transition border border-emerald-200/70 cursor-pointer shadow-2xs"
             >
               <Clock size={16} />
             </button>
@@ -309,38 +313,38 @@ function ProHome() {
             <Link
               to="/notificacoes"
               aria-label="Notificações"
-              className="relative grid size-9 place-items-center rounded-xl bg-slate-800/90 text-slate-300 hover:text-white transition border border-slate-700/60"
+              className="relative grid size-9 place-items-center rounded-xl bg-emerald-50 text-emerald-700 hover:bg-emerald-100 hover:text-emerald-800 transition border border-emerald-200/70 shadow-2xs"
             >
               <Bell size={16} />
               {unreadNotifications > 0 && (
-                <span className="absolute top-1.5 right-1.5 size-2 rounded-full bg-emerald-400 ring-2 ring-slate-950" />
+                <span className="absolute top-1.5 right-1.5 size-2 rounded-full bg-emerald-600 ring-2 ring-white" />
               )}
             </Link>
 
             <Link
               to="/definicoes"
               aria-label="Definições"
-              className="grid size-9 place-items-center rounded-xl bg-slate-800/90 text-slate-300 hover:text-white transition border border-slate-700/60"
+              className="grid size-9 place-items-center rounded-xl bg-emerald-50 text-emerald-700 hover:bg-emerald-100 hover:text-emerald-800 transition border border-emerald-200/70 shadow-2xs"
             >
               <Settings size={16} />
             </Link>
           </div>
         </div>
 
-        {/* STATUS OPERACIONAL: DISPONIBILIDADE (HUMAN, CLEAN, NO TRUNCATION) */}
-        <div className="p-4 rounded-2xl bg-slate-900/90 border border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-3.5">
+        {/* STATUS OPERACIONAL: DISPONIBILIDADE (BRANCO & VERDE) */}
+        <div className="p-4 rounded-2xl bg-emerald-50/80 border border-emerald-200/90 flex flex-col sm:flex-row sm:items-center justify-between gap-3.5 shadow-2xs">
           <div className="flex items-start gap-3 min-w-0">
             <span
               className={cn(
                 "size-3 rounded-full mt-1 shrink-0",
-                isOnline ? "bg-emerald-400 shadow-[0_0_10px_#34d399]" : "bg-slate-500",
+                isOnline ? "bg-emerald-600 shadow-[0_0_8px_#059669]" : "bg-slate-400",
               )}
             />
             <div className="space-y-0.5">
-              <p className="text-xs font-bold text-white">
+              <p className="text-xs font-black text-emerald-950">
                 {isOnline ? "Disponível para Novos Chamados" : "Atendimento Pausado (Offline)"}
               </p>
-              <p className="text-[11px] text-slate-400 leading-relaxed">
+              <p className="text-[11px] text-emerald-800/90 leading-relaxed font-medium">
                 {isOnline
                   ? "O seu perfil está ativo e visível para novos clientes em São Tomé e Príncipe."
                   : "Ative a disponibilidade para voltar a receber pedidos no telemóvel."}
@@ -354,8 +358,8 @@ function ProHome() {
             className={cn(
               "px-4 py-2.5 rounded-xl text-xs font-bold transition flex items-center justify-center gap-2 cursor-pointer shrink-0 active:scale-95 shadow-xs",
               isOnline
-                ? "bg-emerald-500 text-slate-950 hover:bg-emerald-400"
-                : "bg-slate-800 text-slate-200 hover:bg-slate-700 border border-slate-700",
+                ? "bg-emerald-600 text-white hover:bg-emerald-700"
+                : "bg-white text-emerald-900 hover:bg-emerald-50 border border-emerald-200",
             )}
           >
             <Power size={14} />
@@ -368,18 +372,18 @@ function ProHome() {
           <button
             type="button"
             onClick={() => setOpenKycModal(true)}
-            className="flex items-center gap-1.5 text-slate-300 hover:text-white transition cursor-pointer text-xs"
+            className="flex items-center gap-1.5 text-emerald-800 hover:text-emerald-950 transition cursor-pointer text-xs font-semibold"
           >
-            <ShieldCheck size={14} className="text-emerald-400" />
+            <ShieldCheck size={14} className="text-emerald-600" />
             <span>Identidade Verificada KONEKTA</span>
           </button>
 
           <Link
             to="/prestador/$id"
             params={{ id: "edmilson-varela" }}
-            className="px-3 py-1.5 rounded-xl bg-slate-800/90 hover:bg-slate-800 border border-slate-700/60 text-slate-200 hover:text-white font-bold flex items-center gap-1.5 transition text-xs"
+            className="px-3 py-1.5 rounded-xl bg-white hover:bg-emerald-50 border border-emerald-200 text-emerald-800 font-bold flex items-center gap-1.5 transition text-xs shadow-2xs"
           >
-            <Eye size={13} />
+            <Eye size={13} className="text-emerald-600" />
             <span>Ver Perfil Público</span>
           </Link>
         </div>
