@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { useState, useRef, useEffect } from "react";
 import { Mic, MicOff, Square, Loader2, Volume2 } from "lucide-react";
 import { toast } from "sonner";
@@ -25,6 +26,8 @@ export function AudioRecorderButton({
   const audioChunksRef = useRef<Blob[]>([]);
   const timerRef = useRef<number | null>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const speechRecognitionRef = useRef<any>(null);
+  const speechTranscriptRef = useRef<string>("");
 
   const handleFileInputChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -46,6 +49,13 @@ export function AudioRecorderButton({
     return () => {
       if (timerRef.current) {
         clearInterval(timerRef.current);
+      }
+      if (speechRecognitionRef.current) {
+        try {
+          speechRecognitionRef.current.stop();
+        } catch (err) {
+          void err;
+        }
       }
       if (mediaRecorderRef.current && mediaRecorderRef.current.state === "recording") {
         mediaRecorderRef.current.stop();
@@ -96,8 +106,25 @@ export function AudioRecorderButton({
         // Desligar tracks do microfone para libertar o hardware
         stream.getTracks().forEach((track) => track.stop());
 
+        // Parar também reconhecimento nativo se ativo
+        if (speechRecognitionRef.current) {
+          try {
+            speechRecognitionRef.current.stop();
+          } catch (err) {
+            void err;
+          }
+        }
+
         const finalMime = mediaRecorder.mimeType || mimeType || "audio/webm";
         const audioBlob = new Blob(audioChunksRef.current, { type: finalMime });
+
+        // Se o reconhecimento nativo já capturou o texto com precisão:
+        const capturedSpeech = speechTranscriptRef.current?.trim();
+        if (capturedSpeech && capturedSpeech.length > 2) {
+          toast.success("Áudio transcrito com sucesso!");
+          onTranscription(capturedSpeech);
+          return;
+        }
 
         if (audioBlob.size < 200) {
           toast.info("Áudio muito curto. Fale um pouco mais.");
@@ -110,6 +137,38 @@ export function AudioRecorderButton({
       mediaRecorder.start(250); // fatiar em blocos de 250ms
       setIsRecording(true);
       setRecordDuration(0);
+
+      // Iniciar reconhecimento de voz nativo do navegador em paralelo (se suportado)
+      speechTranscriptRef.current = "";
+      const SpeechRecognition =
+        typeof window !== "undefined"
+          ? (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition
+          : null;
+
+      if (SpeechRecognition) {
+        try {
+          const recognition = new SpeechRecognition();
+          recognition.continuous = true;
+          recognition.interimResults = true;
+          recognition.lang = "pt-PT";
+          recognition.onresult = (event: any) => {
+            let assembled = "";
+            for (let i = 0; i < event.results.length; i++) {
+              assembled += (assembled ? " " : "") + event.results[i][0].transcript;
+            }
+            if (assembled.trim()) {
+              speechTranscriptRef.current = assembled.trim();
+            }
+          };
+          recognition.onerror = () => {
+            // Se falhar silenciosamente, o fallback com Gemini tratará o áudio gravado
+          };
+          recognition.start();
+          speechRecognitionRef.current = recognition;
+        } catch {
+          // Navegador sem suporte ou bloqueado, prossegue com gravação regular
+        }
+      }
 
       timerRef.current = window.setInterval(() => {
         setRecordDuration((prev) => {
@@ -175,51 +234,67 @@ export function AudioRecorderButton({
             .trim()
             .toLowerCase();
 
-          const response = await fetch("/api/transcribe", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              audioBase64: base64Audio,
-              mimeType: cleanMime,
-              promptContext,
-            }),
-          });
+          const controller = new AbortController();
+          const timeoutId = setTimeout(() => controller.abort(), 12000);
 
-          let data: {
-            success: boolean;
-            text?: string;
-            error?: string;
-          };
-
-          const responseText = await response.text();
           try {
-            data = JSON.parse(responseText);
-          } catch {
-            console.warn(
-              "Resposta não-JSON do endpoint de transcrição:",
-              responseText.slice(0, 120),
-            );
-            data = {
-              success: false,
-              error:
-                "O serviço de transcrição está temporariamente indisponível. Por favor, tente novamente.",
-            };
-          }
-
-          if (data.success && data.text) {
-            toast.success("Áudio transcrito com sucesso!", { id: toastId });
-            onTranscription(data.text);
-          } else {
-            toast.error(data.error || "Não foi possível transcrever o áudio gravado.", {
-              id: toastId,
+            const response = await fetch("/api/transcribe", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                audioBase64: base64Audio,
+                mimeType: cleanMime,
+                promptContext,
+              }),
+              signal: controller.signal,
             });
+            clearTimeout(timeoutId);
+
+            let data: {
+              success: boolean;
+              text?: string;
+              error?: string;
+            };
+
+            const responseText = await response.text();
+            try {
+              data = JSON.parse(responseText);
+            } catch {
+              console.warn(
+                "Resposta não-JSON do endpoint de transcrição:",
+                responseText.slice(0, 120),
+              );
+              data = {
+                success: false,
+                error:
+                  "O serviço de transcrição está temporariamente indisponível. Por favor, tente novamente.",
+              };
+            }
+
+            if (data.success && data.text) {
+              toast.success("Áudio transcrito com sucesso!", { id: toastId });
+              onTranscription(data.text);
+            } else {
+              toast.error(data.error || "Não foi possível transcrever o áudio gravado.", {
+                id: toastId,
+              });
+            }
+          } catch (fetchErr: any) {
+            clearTimeout(timeoutId);
+            const isAbort = fetchErr?.name === "AbortError";
+            console.warn("Aviso ao enviar áudio para transcrição:", fetchErr?.message || fetchErr);
+            toast.error(
+              isAbort
+                ? "O processamento do áudio excedeu o tempo limite. Por favor, tente novamente ou digite a mensagem."
+                : "Não foi possível conectar ao serviço de transcrição. Por favor, tente novamente ou digite a sua mensagem.",
+              { id: toastId },
+            );
+          } finally {
+            setIsTranscribing(false);
           }
-        } catch (fetchErr) {
-          console.error("Erro ao enviar áudio para transcrição:", fetchErr);
-          toast.error("Erro de comunicação com o serviço de transcrição.", {
-            id: toastId,
-          });
-        } finally {
+        } catch (readErr) {
+          console.error("Falha ao processar dados de áudio:", readErr);
+          toast.error("Erro no processamento do áudio gravado.", { id: toastId });
           setIsTranscribing(false);
         }
       };

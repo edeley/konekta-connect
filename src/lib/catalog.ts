@@ -1,4 +1,5 @@
 import { categories, providers, type Provider } from "./konekta-data";
+import { evaluateSmartMatch } from "./search-engine";
 
 export { categories as CATEGORIES_DATA };
 
@@ -276,23 +277,39 @@ export function searchProviders(
   categorySlug?: string,
   options?: { providerList?: Provider[]; onlyActive?: boolean },
 ): Provider[] {
-  const q = query.trim().toLowerCase();
   const source =
     options?.providerList && options.providerList.length > 0 ? options.providerList : providers;
   const list = options?.onlyActive === false ? source : source.filter(isProviderActive);
 
-  return list.filter((p) => {
-    const matchesCategory =
-      !categorySlug ||
-      p.categorySlug === categorySlug ||
-      slugifyCategory(p.category) === categorySlug;
-    const matchesQuery =
-      !q ||
-      p.name.toLowerCase().includes(q) ||
-      p.category.toLowerCase().includes(q) ||
-      p.services.some((s) => s.toLowerCase().includes(q));
-    return matchesCategory && matchesQuery;
-  });
+  return list
+    .map((p) => {
+      const matchesCategory =
+        !categorySlug ||
+        p.categorySlug === categorySlug ||
+        slugifyCategory(p.category) === categorySlug;
+
+      if (!matchesCategory) {
+        return { provider: p, isMatch: false, score: 0 };
+      }
+
+      if (!query || !query.trim()) {
+        return { provider: p, isMatch: true, score: 1 };
+      }
+
+      const smart = evaluateSmartMatch(query, {
+        categoryName: p.category,
+        categorySlug: p.categorySlug || slugifyCategory(p.category),
+        providerName: p.name,
+        services: p.services,
+        bio: p.bio,
+        detailedServices: p.detailedServices,
+      });
+
+      return { provider: p, isMatch: smart.isMatch, score: smart.score };
+    })
+    .filter((item) => item.isMatch)
+    .sort((a, b) => b.score - a.score)
+    .map((item) => item.provider);
 }
 
 export function formatDb(value: number) {

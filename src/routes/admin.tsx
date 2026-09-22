@@ -153,10 +153,20 @@ export default function AdminPage() {
   const [whatsapp, setWhatsapp] = useState(config.officialWhatsapp || "+239 9944747");
   const [email, setEmail] = useState(config.officialEmail || "edeleydamiao@gmail.com");
   const [clientGroup, setClientGroup] = useState(
-    config.clientWhatsappGroup || "https://chat.whatsapp.com/KONEKTA-Clientes-STP",
+    config.clientWhatsappGroup &&
+      config.clientWhatsappGroup !== "https://chat.whatsapp.com/KONEKTA-Clientes-STP" &&
+      config.clientWhatsappGroup !==
+        "https://chat.whatsapp.com/Bajk3OQPrr2G2ECoByOcjj?s=sw&p=a&mlu=4&ilr=4"
+      ? config.clientWhatsappGroup
+      : "https://chat.whatsapp.com/Gnf1e16KuWcKwztxuuP0Ci?s=sw&p=a&mlu=4&ilr=4",
   );
   const [providerGroup, setProviderGroup] = useState(
-    config.providerWhatsappGroup || "https://chat.whatsapp.com/KONEKTA-Prestadores-STP",
+    config.providerWhatsappGroup &&
+      config.providerWhatsappGroup !== "https://chat.whatsapp.com/KONEKTA-Prestadores-STP" &&
+      config.providerWhatsappGroup !==
+        "https://chat.whatsapp.com/Gnf1e16KuWcKwztxuuP0Ci?s=sw&p=a&mlu=4&ilr=4"
+      ? config.providerWhatsappGroup
+      : "https://chat.whatsapp.com/Bajk3OQPrr2G2ECoByOcjj?s=sw&p=a&mlu=4&ilr=4",
   );
   const [commissionPct, setCommissionPct] = useState(String(config.commissionPct || 20));
   const [technicalVisitFee, setTechnicalVisitFee] = useState(
@@ -803,7 +813,7 @@ export default function AdminPage() {
 
                   <div className="flex items-center gap-2 pt-1">
                     <Link
-                      to="/pro/$id"
+                      to="/prestador/$id"
                       params={{ id: p.id }}
                       className="flex-1 h-9 rounded-xl bg-muted hover:bg-muted/80 text-foreground text-xs font-bold flex items-center justify-center gap-1.5 transition"
                     >

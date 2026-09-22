@@ -21,6 +21,7 @@ import {
 } from "lucide-react";
 import { AppShell } from "@/components/AppShell";
 import { getActiveCategories, getAllActiveServices, formatDb } from "@/lib/catalog";
+import { evaluateSmartMatch, getSmartQuerySuggestions } from "@/lib/search-engine";
 import { useStore } from "@/lib/store";
 import { RequestUnservedServiceModal } from "@/components/konekta/RequestUnservedServiceModal";
 import { Button } from "@/components/ui/button";
@@ -101,28 +102,42 @@ function CategoriasPage() {
   // Todos os serviços individuais oferecidos por prestadores ativos
   const allActiveServices = useMemo(() => getAllActiveServices(providers), [providers]);
 
-  // Filtro de Categorias Ativas
+  const smartSuggestions = useMemo(() => {
+    return getSmartQuerySuggestions(query);
+  }, [query]);
+
+  // Filtro de Categorias Ativas com Semântica Inteligente
   const filteredCategories = useMemo(() => {
-    const q = query.trim().toLowerCase();
-    return activeCategories.filter(
-      (c) =>
-        !q ||
-        c.name.toLowerCase().includes(q) ||
-        (c.displayName && c.displayName.toLowerCase().includes(q)) ||
-        descriptions[c.slug]?.toLowerCase().includes(q),
-    );
+    const q = query.trim();
+    if (!q) return activeCategories;
+
+    return activeCategories.filter((c) => {
+      const smart = evaluateSmartMatch(q, {
+        categoryName: c.displayName || c.name,
+        categorySlug: c.slug,
+        services: c.availableServices,
+      });
+
+      return smart.isMatch;
+    });
   }, [activeCategories, query]);
 
-  // Filtro de Serviços Ativos
+  // Filtro de Serviços Ativos com Semântica Inteligente e Isolamento Estrito
   const filteredServices = useMemo(() => {
-    const q = query.trim().toLowerCase();
-    return allActiveServices.filter(
-      (s) =>
-        !q ||
-        s.name.toLowerCase().includes(q) ||
-        s.categoryName.toLowerCase().includes(q) ||
-        s.providerName.toLowerCase().includes(q),
-    );
+    const q = query.trim();
+    if (!q) return allActiveServices;
+
+    return allActiveServices.filter((s) => {
+      const smart = evaluateSmartMatch(q, {
+        categoryName: s.categoryName,
+        categorySlug: s.categorySlug,
+        providerName: s.providerName,
+        services: [s.name],
+        detailedServices: [{ name: s.name, description: s.description }],
+      });
+
+      return smart.isMatch;
+    });
   }, [allActiveServices, query]);
 
   return (
@@ -205,6 +220,34 @@ function CategoriasPage() {
             </button>
           </div>
         </div>
+
+        {/* Sugestões Semânticas Inteligentes */}
+        {query && smartSuggestions.suggestedTags.length > 0 && (
+          <div className="flex items-center gap-2 overflow-x-auto no-scrollbar py-1 text-xs">
+            <span className="flex items-center gap-1 text-[10px] uppercase font-bold text-muted-foreground tracking-wider shrink-0">
+              <Sparkles size={12} className="text-primary" />
+              Termos semelhantes:
+            </span>
+            {smartSuggestions.suggestedTags.map((tag) => {
+              const isActive = query.toLowerCase() === tag.toLowerCase();
+              return (
+                <button
+                  key={tag}
+                  type="button"
+                  onClick={() => setQuery(isActive ? "" : tag)}
+                  className={cn(
+                    "px-2.5 py-1 rounded-full text-xs font-semibold whitespace-nowrap transition cursor-pointer border",
+                    isActive
+                      ? "bg-primary text-primary-foreground border-primary shadow-xs"
+                      : "bg-surface text-foreground border-border hover:border-primary/40 hover:bg-muted/60",
+                  )}
+                >
+                  {tag}
+                </button>
+              );
+            })}
+          </div>
+        )}
 
         {/* BANNER REASSURANCE: Pedir serviço sem prestador */}
         <div className="rounded-2xl border border-primary/20 bg-primary/[0.04] p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-2xs">

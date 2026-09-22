@@ -38,6 +38,11 @@ import { STP_DISTRICTS } from "@/lib/auth-schemas";
 import { ProfileSwitcher } from "@/components/konekta/ProfileSwitcher";
 import { cn } from "@/lib/utils";
 import { getCurrentGPSLocation } from "@/lib/sync-manager";
+import {
+  calculateProviderDistance,
+  evaluateSmartMatch,
+  getSmartQuerySuggestions,
+} from "@/lib/search-engine";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/")({
@@ -182,18 +187,39 @@ function Home() {
     return list;
   }, [providers, selectedDistrict]);
 
+  const smartSuggestions = useMemo(() => {
+    return getSmartQuerySuggestions(query);
+  }, [query]);
+
   const searchResults = useMemo(() => {
-    const q = query.trim().toLowerCase();
+    const q = query.trim();
     if (!q) return [];
-    return providers
-      .filter((p) => isProviderActive(p))
-      .filter(
-        (p) =>
-          p.name.toLowerCase().includes(q) ||
-          p.category.toLowerCase().includes(q) ||
-          p.services.some((s) => s.toLowerCase().includes(q)),
-      );
-  }, [providers, query]);
+
+    const activeList = providers.filter((p) => isProviderActive(p));
+
+    return activeList
+      .map((p) => {
+        const smart = evaluateSmartMatch(q, {
+          categoryName: p.category,
+          categorySlug: p.categorySlug,
+          providerName: p.name,
+          services: p.services,
+          bio: p.bio,
+          detailedServices: p.detailedServices,
+        });
+        const distInfo = calculateProviderDistance(p, {
+          district: selectedDistrict !== "Todos" ? selectedDistrict : "Água Grande",
+        });
+        return {
+          ...p,
+          distanceInfo: distInfo,
+          smartScore: smart.score,
+          isMatch: smart.isMatch,
+        };
+      })
+      .filter((p) => p.isMatch)
+      .sort((a, b) => b.smartScore - a.smartScore);
+  }, [providers, query, selectedDistrict]);
 
   return (
     <AppShell>
@@ -429,6 +455,34 @@ function Home() {
             </button>
           </div>
 
+          {/* Sugestões de Termos Semelhantes Semânticos */}
+          {smartSuggestions.suggestedTags.length > 0 && (
+            <div className="flex items-center gap-2 overflow-x-auto no-scrollbar py-1 text-xs">
+              <span className="flex items-center gap-1 text-[10px] uppercase font-bold text-muted-foreground tracking-wider shrink-0">
+                <Sparkles size={12} className="text-primary" />
+                Termos semelhantes:
+              </span>
+              {smartSuggestions.suggestedTags.map((tag) => {
+                const isActive = query.toLowerCase() === tag.toLowerCase();
+                return (
+                  <button
+                    key={tag}
+                    type="button"
+                    onClick={() => setQuery(isActive ? "" : tag)}
+                    className={cn(
+                      "px-2.5 py-1 rounded-full text-xs font-semibold whitespace-nowrap transition cursor-pointer border",
+                      isActive
+                        ? "bg-primary text-primary-foreground border-primary shadow-xs"
+                        : "bg-surface text-foreground border-border hover:border-primary/40 hover:bg-muted/60",
+                    )}
+                  >
+                    {tag}
+                  </button>
+                );
+              })}
+            </div>
+          )}
+
           <div className="space-y-2.5">
             {searchResults.map((p) => (
               <Link
@@ -452,21 +506,33 @@ function Home() {
                 </div>
 
                 <div className="min-w-0 flex-1 space-y-0.5">
-                  <div className="flex items-center gap-1.5">
+                  <div className="flex items-center gap-1.5 flex-wrap">
                     <p className="truncate text-sm font-bold text-foreground group-hover:text-primary transition-colors">
                       {p.name}
                     </p>
                     <span className="text-[10px] font-bold px-1.5 py-0.2 rounded bg-primary/10 text-primary border border-primary/20">
                       BI STP Validado
                     </span>
+                    {p.distanceInfo && (
+                      <span className="text-[10px] font-bold px-1.5 py-0.2 rounded bg-muted text-muted-foreground border border-border">
+                        📍 {p.distanceInfo.formatted}
+                      </span>
+                    )}
                   </div>
-                  <p className="text-xs text-muted-foreground font-medium">{p.category}</p>
+                  <p className="text-xs text-muted-foreground font-medium">
+                    {p.category} · {p.district || "São Tomé"}
+                  </p>
                   <div className="flex items-center gap-2 text-[11px] text-muted-foreground">
                     <span className="flex items-center gap-0.5 text-amber-700 font-bold">
                       <Star size={12} className="fill-amber-500 text-amber-500" />
                       {p.rating}
                     </span>
                     <span>({p.reviews} avaliações)</span>
+                    {p.distanceInfo && (
+                      <span className="text-emerald-800 font-medium">
+                        · ~{p.distanceInfo.travelTimeEstimateMinutes} min
+                      </span>
+                    )}
                   </div>
                 </div>
 

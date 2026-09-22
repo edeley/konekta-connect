@@ -1,5 +1,5 @@
 import { useState, useMemo } from "react";
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { CalendarDays, Clock, CheckCircle2, AlertCircle } from "lucide-react";
 import { toast } from "sonner";
 import { AppShell } from "@/components/AppShell";
@@ -128,13 +128,17 @@ function ProAgenda() {
           </KCard>
         ) : (
           scheduled.map((o) => (
-            <KCard key={o.id} className="flex items-center justify-between gap-3">
-              <div className="min-w-0">
-                <p className="truncate text-sm font-bold">{o.service}</p>
-                <p className="text-xs text-muted-foreground">{o.scheduledFor}</p>
-              </div>
-              <StatusPill tone="primary">Agendado</StatusPill>
-            </KCard>
+            <Link key={o.id} to="/pedido/$id" params={{ id: o.id }} className="block group">
+              <KCard className="flex items-center justify-between gap-3 group-hover:border-primary/50 transition-colors">
+                <div className="min-w-0">
+                  <p className="truncate text-sm font-bold group-hover:text-primary transition-colors">
+                    {o.service}
+                  </p>
+                  <p className="text-xs text-muted-foreground">{o.scheduledFor}</p>
+                </div>
+                <StatusPill tone="primary">Agendado</StatusPill>
+              </KCard>
+            </Link>
           ))
         )}
       </Section>

@@ -52,6 +52,7 @@ import { cn } from "@/lib/utils";
 import { validateFormSafety } from "@/lib/escrow";
 import { AudioRecorderButton } from "@/components/konekta/AudioRecorderButton";
 import { RequestUnservedServiceModal } from "@/components/konekta/RequestUnservedServiceModal";
+import { CalendarPicker } from "@/components/konekta/CalendarPicker";
 import {
   type SyncScheduleEvent,
   registerEventAndAlarms,
@@ -142,7 +143,6 @@ function NewRequest() {
   const navigate = useNavigate();
   const galleryInputRef = useRef<HTMLInputElement>(null);
   const cameraInputRef = useRef<HTMLInputElement>(null);
-  const dateInputRef = useRef<HTMLInputElement>(null);
 
   const todayStr = new Date().toISOString().split("T")[0];
   const tomorrowDate = new Date();
@@ -1494,74 +1494,26 @@ function NewRequest() {
                   <div className="flex items-center justify-between">
                     <span className="flex items-center gap-1.5 text-xs font-bold text-foreground">
                       <Calendar size={14} className="text-primary" />
-                      Data pretendida:
+                      Data pretendida do serviço:
                     </span>
                     <span className="text-xs font-semibold text-primary capitalize">
                       {formatDatePt(serviceDate)}
                     </span>
                   </div>
 
-                  <div className="flex flex-wrap gap-2">
-                    <button
-                      type="button"
-                      onClick={() => setServiceDate(todayStr)}
-                      className={cn(
-                        "press rounded-full px-3 py-1 text-xs font-semibold cursor-pointer transition border",
-                        serviceDate === todayStr
-                          ? "bg-primary text-primary-foreground border-primary"
-                          : "bg-card text-muted-foreground border-border",
-                      )}
-                    >
-                      Hoje
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setServiceDate(tomorrowStr)}
-                      className={cn(
-                        "press rounded-full px-3 py-1 text-xs font-semibold cursor-pointer transition border",
-                        serviceDate === tomorrowStr
-                          ? "bg-primary text-primary-foreground border-primary"
-                          : "bg-card text-muted-foreground border-border",
-                      )}
-                    >
-                      Amanhã
-                    </button>
-                  </div>
-
-                  <div className="relative">
-                    <label
-                      htmlFor="service-date-picker"
-                      className="flex w-full items-center justify-between rounded-xl bg-card p-3 text-xs font-semibold border border-border shadow-2xs cursor-pointer hover:border-primary/50 transition"
-                    >
-                      <div className="flex items-center gap-2 min-w-0">
-                        <Calendar size={15} className="text-primary shrink-0" />
-                        <span className="truncate text-foreground">
-                          {formatDatePt(serviceDate) || "Escolher data no calendário"}
-                        </span>
-                      </div>
-                      <span className="shrink-0 rounded-lg bg-primary/10 px-2 py-1 text-[10px] font-bold text-primary">
-                        Alterar Data
-                      </span>
-                    </label>
-                    <input
-                      id="service-date-picker"
-                      ref={dateInputRef}
-                      type="date"
-                      min={todayStr}
-                      value={serviceDate}
-                      onChange={(e) => {
-                        if (e.target.value) {
-                          setServiceDate(e.target.value);
-                          if (e.target.value === todayStr) {
-                            setUrgency("urgente");
-                          } else {
-                            setUrgency("esta-semana");
-                          }
-                        }
-                      }}
-                      className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
-                    />
-                  </div>
+                  <CalendarPicker
+                    value={serviceDate}
+                    minDate={todayStr}
+                    defaultExpanded={true}
+                    onChange={(newDate) => {
+                      setServiceDate(newDate);
+                      if (newDate === todayStr) {
+                        setUrgency("urgente");
+                      } else {
+                        setUrgency("esta-semana");
+                      }
+                    }}
+                  />
                 </div>
               )}
 

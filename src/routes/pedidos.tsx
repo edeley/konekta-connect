@@ -27,6 +27,7 @@ import { toast } from "sonner";
 import { ReviewModal } from "@/components/konekta/ReviewModal";
 import { CancelServiceModal } from "@/components/konekta/CancelServiceModal";
 import { openNativeMap } from "@/lib/sync-manager";
+import { OrderService } from "@/lib/order-service";
 
 export const Route = createFileRoute("/pedidos")({
   head: () => ({
@@ -79,6 +80,12 @@ function OrdersPage() {
 
   function handleSendDispute() {
     if (!disputeOrder || !disputeReason.trim()) return;
+    OrderService.openDispute({
+      orderId: disputeOrder.id,
+      openedByUserId: "client_me",
+      reason: disputeReason.trim(),
+      description: disputeReason.trim(),
+    });
     toast.success("Solicitação de mediação enviada à equipa KONEKTA", {
       description: "Um mediador entrará em contacto consigo e com o prestador em até 2h.",
     });

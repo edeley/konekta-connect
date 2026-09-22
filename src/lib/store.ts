@@ -36,7 +36,12 @@ import { seedRequests, type Proposal, type RequestUrgency, type ServiceRequest }
 import { buildSanitizedUserContext } from "./chat-specialist-context";
 import { generateSpecialistResponse } from "./specialist-ai";
 import { soundAlerts } from "./sound-alerts";
-import { getActiveCategories, isProviderActive, type ActiveCategory } from "./catalog";
+import {
+  getActiveCategories,
+  isProviderActive,
+  slugifyCategory,
+  type ActiveCategory,
+} from "./catalog";
 
 export type UnservedServiceRequest = {
   id: string;
@@ -1196,8 +1201,8 @@ const defaultState: State = {
     currency: "Db",
     officialWhatsapp: "+239 9944747",
     officialEmail: "edeleydamiao@gmail.com",
-    clientWhatsappGroup: "https://chat.whatsapp.com/KONEKTA-Clientes-STP",
-    providerWhatsappGroup: "https://chat.whatsapp.com/KONEKTA-Prestadores-STP",
+    clientWhatsappGroup: "https://chat.whatsapp.com/Gnf1e16KuWcKwztxuuP0Ci?s=sw&p=a&mlu=4&ilr=4",
+    providerWhatsappGroup: "https://chat.whatsapp.com/Bajk3OQPrr2G2ECoByOcjj?s=sw&p=a&mlu=4&ilr=4",
     technicalVisitFee: 150,
     technicalVisitGuarantee: "Garantia de deslocação Uber-style para avaliação no terreno",
     debtBlockLimit: 50,
@@ -1242,7 +1247,29 @@ function load(): State {
       profiles: { ...defaultState.profiles, ...(parsed.profiles ?? {}) },
       flags: { ...defaultFlags, ...(parsed.flags ?? {}) },
       settings: { ...defaultSettings, ...(parsed.settings ?? {}) },
-      config: { ...defaultState.config, ...(parsed.config ?? {}) },
+      config: (() => {
+        const mergedConfig = { ...defaultState.config, ...(parsed.config ?? {}) };
+        if (
+          !mergedConfig.clientWhatsappGroup ||
+          mergedConfig.clientWhatsappGroup === "https://chat.whatsapp.com/KONEKTA-Clientes-STP" ||
+          mergedConfig.clientWhatsappGroup ===
+            "https://chat.whatsapp.com/Bajk3OQPrr2G2ECoByOcjj?s=sw&p=a&mlu=4&ilr=4"
+        ) {
+          mergedConfig.clientWhatsappGroup =
+            "https://chat.whatsapp.com/Gnf1e16KuWcKwztxuuP0Ci?s=sw&p=a&mlu=4&ilr=4";
+        }
+        if (
+          !mergedConfig.providerWhatsappGroup ||
+          mergedConfig.providerWhatsappGroup ===
+            "https://chat.whatsapp.com/KONEKTA-Prestadores-STP" ||
+          mergedConfig.providerWhatsappGroup ===
+            "https://chat.whatsapp.com/Gnf1e16KuWcKwztxuuP0Ci?s=sw&p=a&mlu=4&ilr=4"
+        ) {
+          mergedConfig.providerWhatsappGroup =
+            "https://chat.whatsapp.com/Bajk3OQPrr2G2ECoByOcjj?s=sw&p=a&mlu=4&ilr=4";
+        }
+        return mergedConfig;
+      })(),
       technicalVisits: parsed.technicalVisits ?? defaultState.technicalVisits,
       moderationDisputes: parsed.moderationDisputes ?? defaultState.moderationDisputes,
       securityIncidents: parsed.securityIncidents ?? defaultState.securityIncidents,
@@ -1261,8 +1288,36 @@ function load(): State {
         ...fc,
         phone: undefined,
       })),
-      providers:
-        parsed.providers && parsed.providers.length > 0 ? parsed.providers : defaultState.providers,
+      providers: (() => {
+        const stored =
+          parsed.providers && parsed.providers.length > 0
+            ? parsed.providers
+            : defaultState.providers;
+        return stored.map((p) => {
+          const canonical = catalogProviders.find((cp) => cp.id === p.id);
+          if (canonical) {
+            return {
+              ...p,
+              name: canonical.name,
+              category: canonical.category,
+              categorySlug: canonical.categorySlug || slugifyCategory(canonical.category),
+              services: canonical.services,
+              detailedServices: canonical.detailedServices,
+              bio: canonical.bio,
+              district: canonical.district || p.district,
+              districts: canonical.districts || p.districts,
+              verified: p.verified ?? canonical.verified ?? true,
+              status: p.status ?? canonical.status ?? "ativo",
+            };
+          }
+          return {
+            ...p,
+            categorySlug: p.categorySlug || slugifyCategory(p.category || ""),
+            verified: p.verified ?? true,
+            status: p.status ?? "ativo",
+          };
+        });
+      })(),
       unservedServiceRequests:
         parsed.unservedServiceRequests && parsed.unservedServiceRequests.length > 0
           ? parsed.unservedServiceRequests
@@ -1339,7 +1394,30 @@ if (typeof window !== "undefined") {
           profiles: { ...defaultState.profiles, ...(fresh.profiles ?? {}) },
           flags: { ...defaultFlags, ...(fresh.flags ?? {}) },
           settings: { ...defaultSettings, ...(fresh.settings ?? {}) },
-          config: { ...defaultState.config, ...(fresh.config ?? {}) },
+          config: (() => {
+            const mergedConfig = { ...defaultState.config, ...(fresh.config ?? {}) };
+            if (
+              !mergedConfig.clientWhatsappGroup ||
+              mergedConfig.clientWhatsappGroup ===
+                "https://chat.whatsapp.com/KONEKTA-Clientes-STP" ||
+              mergedConfig.clientWhatsappGroup ===
+                "https://chat.whatsapp.com/Bajk3OQPrr2G2ECoByOcjj?s=sw&p=a&mlu=4&ilr=4"
+            ) {
+              mergedConfig.clientWhatsappGroup =
+                "https://chat.whatsapp.com/Gnf1e16KuWcKwztxuuP0Ci?s=sw&p=a&mlu=4&ilr=4";
+            }
+            if (
+              !mergedConfig.providerWhatsappGroup ||
+              mergedConfig.providerWhatsappGroup ===
+                "https://chat.whatsapp.com/KONEKTA-Prestadores-STP" ||
+              mergedConfig.providerWhatsappGroup ===
+                "https://chat.whatsapp.com/Gnf1e16KuWcKwztxuuP0Ci?s=sw&p=a&mlu=4&ilr=4"
+            ) {
+              mergedConfig.providerWhatsappGroup =
+                "https://chat.whatsapp.com/Bajk3OQPrr2G2ECoByOcjj?s=sw&p=a&mlu=4&ilr=4";
+            }
+            return mergedConfig;
+          })(),
         };
         listeners.forEach((l) => l());
       } catch {

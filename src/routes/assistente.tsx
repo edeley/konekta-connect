@@ -58,6 +58,7 @@ export const Route = createFileRoute("/assistente")({
 interface ActionSuggestion {
   label: string;
   link?: string;
+  externalUrl?: string;
   phone?: string;
   action?: () => void;
 }
@@ -255,9 +256,13 @@ function generateIntelligentResponse(text: string): AssistantResponse {
     lower.includes("escritório")
   ) {
     return {
-      text: `**Centro de Atendimento Oficial KONEKTA São Tomé:**\n\n• **Linha Direta STP**: +239 994 4747\n• **Horário de Apoio**: Segunda a Domingo, das 07:30 às 20:00 (GMT)\n• **WhatsApp de Emergência**: +239 994 4747\n• **Gabinete de Mediação**: Cidade de São Tomé (Água Grande).\n\nPode ligar imediatamente clicando no botão abaixo:`,
+      text: `**Centro de Atendimento Oficial KONEKTA São Tomé:**\n\n• **Linha Direta STP**: +239 994 4747\n• **WhatsApp da Comunidade**: Grupo Oficial de Clientes\n• **Horário de Apoio**: Segunda a Domingo, das 07:30 às 20:00 (GMT)\n• **WhatsApp de Emergência**: +239 994 4747\n• **Gabinete de Mediação**: Cidade de São Tomé (Água Grande).\n\nPode aceder diretamente através das opções abaixo:`,
       actions: [
         { label: "Ligar Linha STP (+239 994 4747)", phone: "+2399944747" },
+        {
+          label: "Entrar no Grupo WhatsApp de Clientes",
+          externalUrl: "https://chat.whatsapp.com/Gnf1e16KuWcKwztxuuP0Ci?s=sw&p=a&mlu=4&ilr=4",
+        },
         { label: "Ver Perguntas Frequentes", link: "/como-funciona" },
       ],
     };
@@ -912,6 +917,20 @@ function AssistantPage() {
                                 <ExternalLink size={11} />
                                 <span>{act.label}</span>
                               </Link>
+                            );
+                          }
+                          if (act.externalUrl) {
+                            return (
+                              <a
+                                key={act.label}
+                                href={act.externalUrl}
+                                target="_blank"
+                                rel="noreferrer"
+                                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-[11px] font-bold shadow-2xs transition"
+                              >
+                                <ExternalLink size={11} />
+                                <span>{act.label}</span>
+                              </a>
                             );
                           }
                           return null;

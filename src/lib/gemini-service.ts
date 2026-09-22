@@ -285,66 +285,44 @@ class GeminiResilienceEngine {
         ? `Transcreva este áudio com fidelidade em português de São Tomé e Príncipe. Contexto do pedido ou mensagem: ${promptContext}. Retorne apenas a transcrição literal do que foi falado, sem introduções, aspas extras ou comentários adicionais.`
         : "Transcreva este áudio com fidelidade em português de São Tomé e Príncipe. Retorne apenas o texto transcrito literal sem introduções, explicações ou comentários.";
 
-      // Cascada de modelos de áudio priorizando o modelo de transcrição e modelos leves de alta disponibilidade
-      const modelsToTry = [
-        "gemini-3.5-transcribe",
-        "gemini-3.1-flash-lite",
-        "gemini-flash-latest",
-        "gemini-3.8-flash",
-      ];
+      // Modelos suportados oficialmente para áudio com respostas rápidas
+      const modelsToTry = ["gemini-3.5-transcribe", "gemini-3.8-flash"];
+      const TRANSCRIBE_TIMEOUT_MS = 6000;
 
       for (const modelName of modelsToTry) {
-        // Tentar até 2 tentativas se for erro de alta demanda transitória (503/429)
-        for (let attempt = 1; attempt <= 2; attempt++) {
-          try {
-            const callPromise = (ai.models as any).generateContent({
-              model: modelName,
-              contents: {
-                parts: [audioPart, { text: instructionText }],
-              },
-            });
+        try {
+          const callPromise = (ai.models as any).generateContent({
+            model: modelName,
+            contents: {
+              parts: [audioPart, { text: instructionText }],
+            },
+          });
 
-            const timeoutPromise = new Promise<never>((_, reject) =>
-              setTimeout(
-                () => reject(new Error(`Timeout de ${REQUEST_TIMEOUT_MS}ms com ${modelName}`)),
-                REQUEST_TIMEOUT_MS,
-              ),
-            );
+          const timeoutPromise = new Promise<never>((_, reject) =>
+            setTimeout(
+              () => reject(new Error(`Timeout de ${TRANSCRIBE_TIMEOUT_MS}ms com ${modelName}`)),
+              TRANSCRIBE_TIMEOUT_MS,
+            ),
+          );
 
-            const response = await Promise.race([callPromise, timeoutPromise]);
-            let text = response.text?.trim() || "";
+          const response = await Promise.race([callPromise, timeoutPromise]);
+          let text = response.text?.trim() || "";
 
-            if (!text && response.candidates?.[0]?.content?.parts) {
-              let assembled = "";
-              for (const part of response.candidates[0].content.parts) {
-                if (part.text) assembled += (assembled ? " " : "") + part.text.trim();
-              }
-              text = assembled;
+          if (!text && response.candidates?.[0]?.content?.parts) {
+            let assembled = "";
+            for (const part of response.candidates[0].content.parts) {
+              if (part.text) assembled += (assembled ? " " : "") + part.text.trim();
             }
-
-            if (text) {
-              return { text, model: modelName };
-            }
-          } catch (err) {
-            const errMsg = err instanceof Error ? err.message : String(err);
-            const isHighDemand =
-              errMsg.includes("503") ||
-              errMsg.includes("high demand") ||
-              errMsg.includes("UNAVAILABLE") ||
-              errMsg.includes("429");
-
-            if (isHighDemand && attempt === 1) {
-              // Breve pausa de 400ms antes de tentar novamente ou passar ao próximo modelo
-              await new Promise((resolve) => setTimeout(resolve, 400));
-              continue;
-            }
-
-            console.warn(
-              `[GeminiEngine] Transcrição falhou com ${modelName} (tentativa ${attempt}):`,
-              isHighDemand ? "Modelo em alta demanda (503/429). A avançar na cascada..." : errMsg,
-            );
-            break; // Avança para o próximo modelo da lista
+            text = assembled;
           }
+
+          if (text) {
+            return { text, model: modelName };
+          }
+        } catch (err) {
+          const errMsg = err instanceof Error ? err.message : String(err);
+          console.warn(`[GeminiEngine] Transcrição com ${modelName}:`, errMsg.slice(0, 120));
+          // Avança imediatamente para o próximo modelo sem esperas excessivas
         }
       }
 

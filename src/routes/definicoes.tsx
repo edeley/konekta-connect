@@ -528,8 +528,13 @@ function SettingsPage() {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1">
               <a
                 href={
-                  platformConfig.clientWhatsappGroup ||
-                  "https://chat.whatsapp.com/KONEKTA-Clientes-STP"
+                  platformConfig.clientWhatsappGroup &&
+                  platformConfig.clientWhatsappGroup !==
+                    "https://chat.whatsapp.com/KONEKTA-Clientes-STP" &&
+                  platformConfig.clientWhatsappGroup !==
+                    "https://chat.whatsapp.com/Bajk3OQPrr2G2ECoByOcjj?s=sw&p=a&mlu=4&ilr=4"
+                    ? platformConfig.clientWhatsappGroup
+                    : "https://chat.whatsapp.com/Gnf1e16KuWcKwztxuuP0Ci?s=sw&p=a&mlu=4&ilr=4"
                 }
                 target="_blank"
                 rel="noreferrer"
@@ -540,8 +545,13 @@ function SettingsPage() {
               </a>
               <a
                 href={
-                  platformConfig.providerWhatsappGroup ||
-                  "https://chat.whatsapp.com/KONEKTA-Prestadores-STP"
+                  platformConfig.providerWhatsappGroup &&
+                  platformConfig.providerWhatsappGroup !==
+                    "https://chat.whatsapp.com/KONEKTA-Prestadores-STP" &&
+                  platformConfig.providerWhatsappGroup !==
+                    "https://chat.whatsapp.com/Gnf1e16KuWcKwztxuuP0Ci?s=sw&p=a&mlu=4&ilr=4"
+                    ? platformConfig.providerWhatsappGroup
+                    : "https://chat.whatsapp.com/Bajk3OQPrr2G2ECoByOcjj?s=sw&p=a&mlu=4&ilr=4"
                 }
                 target="_blank"
                 rel="noreferrer"

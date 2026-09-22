@@ -59,6 +59,8 @@ export type Provider = {
   portfolio?: PortfolioItem[];
   district?: string;
   districts?: string[];
+  latitude?: number;
+  longitude?: number;
   phone?: string;
   status?: string;
   verified?: boolean;
@@ -69,10 +71,16 @@ export const providers: Provider[] = [
     id: "edmilson-varela",
     name: "Edmilson Varela",
     category: "Eletricista",
+    categorySlug: "eletricista",
     rating: 4.9,
     reviews: 128,
     priceFrom: 450,
     image: electricianImg,
+    district: "Água Grande",
+    districts: ["Água Grande", "Mé-Zóchi", "Lobata", "Cantagalo"],
+    latitude: 0.3365,
+    longitude: 6.7273,
+    verified: true,
     bio: "Eletricista certificado com 8 anos de experiência em instalações residenciais e comerciais em São Tomé.",
     services: ["Instalações", "Reparações", "Iluminação", "Quadros elétricos"],
     detailedServices: [
@@ -191,10 +199,16 @@ export const providers: Provider[] = [
     id: "dercio-costa",
     name: "Dércio Costa",
     category: "Canalizador",
+    categorySlug: "canalizador",
     rating: 4.8,
     reviews: 84,
     priceFrom: 380,
     image: plumberImg,
+    district: "Água Grande",
+    districts: ["Água Grande", "Mé-Zóchi", "Cantagalo"],
+    latitude: 0.332,
+    longitude: 6.729,
+    verified: true,
     bio: "Especialista em canalização doméstica, deteção de fugas e reparação de tubagens.",
     services: ["Fugas", "Reparações", "Instalação de torneiras", "Aquecedores"],
     detailedServices: [
@@ -236,7 +250,7 @@ export const providers: Provider[] = [
         billingLabel: "Preço Fixo",
         unit: "aparelho",
         duration: "2h - 3h",
-        description: "Ligação hidráulica e elétrica segura de sistemas de água quente.",
+        description: "Ligação hidráulica e fixação segura de sistemas de água quente.",
       },
       {
         id: "dc-s5",
@@ -304,10 +318,16 @@ export const providers: Provider[] = [
     id: "maria-santos",
     name: "Maria Santos",
     category: "Limpeza",
+    categorySlug: "limpeza",
     rating: 4.9,
     reviews: 212,
     priceFrom: 250,
     image: cleanerImg,
+    district: "Mé-Zóchi",
+    districts: ["Água Grande", "Mé-Zóchi", "Lobata"],
+    latitude: 0.2989,
+    longitude: 6.6491,
+    verified: true,
     bio: "Limpeza residencial profunda e regular. Serviço meticuloso e de confiança.",
     services: ["Limpeza geral", "Limpeza profunda", "Pós-obra", "Escritórios"],
     detailedServices: [
@@ -407,10 +427,16 @@ export const providers: Provider[] = [
     id: "joao-pedro",
     name: "João Pedro",
     category: "Pintor",
+    categorySlug: "pintor",
     rating: 4.7,
     reviews: 63,
     priceFrom: 600,
     image: painterImg,
+    district: "Lobata",
+    districts: ["Água Grande", "Mé-Zóchi", "Lobata", "Cantagalo"],
+    latitude: 0.3601,
+    longitude: 6.6608,
+    verified: true,
     bio: "Pintor profissional. Interiores, exteriores e acabamentos decorativos.",
     services: ["Pintura interior", "Pintura exterior", "Estuque", "Vernizes"],
     detailedServices: [
@@ -536,7 +562,10 @@ export const providers: Provider[] = [
       "Reparação de Arcas Congeladoras e Frio Comercial",
       "Substituição de Termostato e Compressor",
     ],
+    district: "Água Grande",
     districts: ["Água Grande", "Mé-Zóchi", "Cantagalo", "Lobata"],
+    latitude: 0.341,
+    longitude: 6.731,
     verified: true,
     badges: ["Verificado KONEKTA", "Especialista em Frio", "Top Avaliado"],
     detailedServices: [
@@ -636,7 +665,10 @@ export const providers: Provider[] = [
       "Reparação de Travões e Embraiagem",
       "Socorro de Bateria & Arranque no Local",
     ],
+    district: "Mé-Zóchi",
     districts: ["Água Grande", "Mé-Zóchi", "Cantagalo", "Lobata", "Lembá"],
+    latitude: 0.295,
+    longitude: 6.645,
     verified: true,
     badges: ["Verificado KONEKTA", "Especialista em Geradores", "Piquete Rápido"],
     detailedServices: [
@@ -693,7 +725,10 @@ export const providers: Provider[] = [
       "Tratamento de Canteiros e Adubação",
       "Diária Completa de Jardinagem",
     ],
+    district: "Cantagalo",
     districts: ["Água Grande", "Mé-Zóchi", "Cantagalo", "Lobata"],
+    latitude: 0.2201,
+    longitude: 6.7051,
     verified: true,
     badges: ["Verificado KONEKTA", "Equipamento Próprio", "Pontual"],
     detailedServices: [
@@ -740,7 +775,10 @@ export const providers: Provider[] = [
       "Tratamento Capilar e Hidratação Profunda",
       "Penteados e Maquilhagem para Eventos",
     ],
+    district: "Água Grande",
     districts: ["Água Grande", "Mé-Zóchi"],
+    latitude: 0.338,
+    longitude: 6.725,
     verified: true,
     badges: ["Verificado KONEKTA", "Atendimento ao Domicílio", "5 Estrelas"],
     detailedServices: [
