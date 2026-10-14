@@ -99,7 +99,7 @@ export function SaoWalletWithdrawModal({
         ? `São Wallet: ${walletPhone.trim()} (${walletHolderName.trim()})`
         : `${selectedBank} · NIB: ${bankNib.trim()} (${bankHolderName.trim()})`;
 
-    const res = store.requestPayout({
+    const ok = store.requestPayout({
       amount: val,
       method: methodCode,
       accountDetails: accountInfo,
@@ -108,14 +108,14 @@ export function SaoWalletWithdrawModal({
 
     setIsSubmitting(false);
 
-    if (res.ok) {
+    if (ok) {
       toast.success("Pedido de levantamento registado!", {
         description:
           "O valor foi congelado na sua carteira. A equipa KONEKTA enviará a quantia para os seus dados em até 2 horas.",
       });
       onClose();
     } else {
-      toast.error(res.message);
+      toast.error("Saldo insuficiente ou valor inválido para levantamento.");
     }
   }
 

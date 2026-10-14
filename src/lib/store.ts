@@ -4220,15 +4220,23 @@ export const store = {
     return net;
   },
 
-  requestPayout(amount: number) {
-    if (amount <= 0 || amount > state.providerBalance) return false;
+  requestPayout(
+    input:
+      | number
+      | { amount: number; method?: string; accountDetails?: string; holderName?: string },
+  ) {
+    const amount = typeof input === "number" ? input : input.amount;
+    const payoutDetails = typeof input === "number" ? undefined : input.accountDetails;
+    if (!Number.isFinite(amount) || amount <= 0 || amount > state.providerBalance) return false;
     set({
       providerBalance: state.providerBalance - amount,
       providerTransactions: [
         {
           id: `pt_${Date.now()}`,
           kind: "out",
-          label: "Levantamento solicitado",
+          label: payoutDetails
+            ? `Levantamento solicitado · ${payoutDetails}`
+            : "Levantamento solicitado",
           amount,
           at: Date.now(),
         },

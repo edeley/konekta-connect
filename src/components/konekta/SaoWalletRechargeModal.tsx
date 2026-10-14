@@ -383,15 +383,11 @@ export function SaoWalletRechargeModal({
                 Foto do Talão ou Captura de Ecrã (Opcional)
               </label>
               <ProofUpload
-                onUploadComplete={(url, name) => {
-                  setProofImage(url);
+                value={proofImage}
+                fileName={proofFileName}
+                onChange={(dataUrl, name) => {
+                  setProofImage(dataUrl);
                   setProofFileName(name);
-                }}
-                currentUrl={proofImage}
-                currentFileName={proofFileName}
-                onRemove={() => {
-                  setProofImage(undefined);
-                  setProofFileName(undefined);
                 }}
               />
             </div>
