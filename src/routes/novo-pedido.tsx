@@ -199,7 +199,7 @@ function NewRequest() {
     () => (smartText.trim().length >= 6 ? analyzeRequestText(smartText) : null),
     [smartText],
   );
-  const smartCategory = useMemo(() => {
+  const smartCategory = useMemo<Category & { displayName: string } | undefined>(() => {
     if (!smartRead?.categorySlug) return undefined;
     const base =
       activeCategories.find((c) => c.slug === smartRead.categorySlug) ||
