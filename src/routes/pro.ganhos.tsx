@@ -1269,9 +1269,8 @@ function ProEarnings() {
               Anexar Recibo / Comprovativo Fotográfico
             </label>
             <ProofUpload
-              previewUrl={proofImage}
-              onImageUploaded={(url) => setProofImage(url)}
-              onRemove={() => setProofImage(null)}
+              value={proofImage || undefined}
+              onChange={(dataUrl) => setProofImage(dataUrl || null)}
             />
           </div>
 

@@ -139,7 +139,7 @@ function Home() {
   const [unservedInitialName, setUnservedInitialName] = useState("");
 
   const activeCategories = useMemo(
-    () => getActiveCategories({ providerList: providers }),
+    () => getActiveCategories(undefined, providers),
     [providers],
   );
 
@@ -620,6 +620,7 @@ function Home() {
                     key={c.slug}
                     to="/categorias/$slug"
                     params={{ slug: c.slug }}
+                    search={{}}
                     preload="intent"
                     className="flex flex-col items-center gap-1.5 p-3 rounded-xl border border-border bg-card hover:border-primary/40 hover:shadow-soft transition-all text-center group press"
                   >

@@ -1663,7 +1663,8 @@ export default function AdminPage() {
                           </div>
 
                           <Link
-                            to={`/chat/${inc.providerId}`}
+                            to="/chat/$id"
+                            params={{ id: inc.providerId }}
                             className="text-xs font-bold text-primary hover:underline flex items-center gap-1"
                           >
                             <span>Abrir Conversa do Chat</span>

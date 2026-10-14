@@ -95,7 +95,7 @@ function CategoriasPage() {
 
   // Apenas categorias que têm prestadores ativos e credenciados
   const activeCategories = useMemo(
-    () => getActiveCategories({ providerList: providers }),
+    () => getActiveCategories(undefined, providers),
     [providers],
   );
 
@@ -323,6 +323,7 @@ function CategoriasPage() {
                       <Link
                         to="/categorias/$slug"
                         params={{ slug: c.slug }}
+                        search={{}}
                         className="press flex h-full items-start gap-3.5 rounded-2xl border border-border bg-card p-4 transition-all hover:border-primary/40 hover:shadow-soft group"
                       >
                         <span
