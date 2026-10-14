@@ -35,7 +35,9 @@ import { Route as TornarPrestadorRouteImport } from './routes/tornar-prestador'
 import { Route as VerifyOtpRouteImport } from './routes/verify-otp'
 import { Route as Char91DotmcpChar93ListToolsRouteImport } from './routes/[.mcp]/list-tools'
 import { Route as Char91DotwellKnownChar93OauthProtectedResourceRouteImport } from './routes/[.well-known]/oauth-protected-resource'
+import { Route as ApiAssistantRouteImport } from './routes/api.assistant'
 import { Route as ApiChatRouteImport } from './routes/api.chat'
+import { Route as ApiTranscribeRouteImport } from './routes/api.transcribe'
 import { Route as CategoriasIndexRouteImport } from './routes/categorias.index'
 import { Route as CategoriasSlugRouteImport } from './routes/categorias.$slug'
 import { Route as ChatIndexRouteImport } from './routes/chat.index'
@@ -183,9 +185,19 @@ const Char91DotwellKnownChar93OauthProtectedResourceRoute =
     path: '/.well-known/oauth-protected-resource',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiAssistantRoute = ApiAssistantRouteImport.update({
+  id: '/api/assistant',
+  path: '/api/assistant',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiChatRoute = ApiChatRouteImport.update({
   id: '/api/chat',
   path: '/api/chat',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiTranscribeRoute = ApiTranscribeRouteImport.update({
+  id: '/api/transcribe',
+  path: '/api/transcribe',
   getParentRoute: () => rootRouteImport,
 } as any)
 const CategoriasIndexRoute = CategoriasIndexRouteImport.update({
@@ -287,7 +299,9 @@ export interface FileRoutesByFullPath {
   '/verify-otp': typeof VerifyOtpRoute
   '/.mcp/list-tools': typeof Char91DotmcpChar93ListToolsRoute
   '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
+  '/api/assistant': typeof ApiAssistantRoute
   '/api/chat': typeof ApiChatRoute
+  '/api/transcribe': typeof ApiTranscribeRoute
   '/categorias/$slug': typeof CategoriasSlugRoute
   '/chat/$id': typeof ChatIdRoute
   '/orcamento/$providerId': typeof OrcamentoProviderIdRoute
@@ -330,7 +344,9 @@ export interface FileRoutesByTo {
   '/verify-otp': typeof VerifyOtpRoute
   '/.mcp/list-tools': typeof Char91DotmcpChar93ListToolsRoute
   '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
+  '/api/assistant': typeof ApiAssistantRoute
   '/api/chat': typeof ApiChatRoute
+  '/api/transcribe': typeof ApiTranscribeRoute
   '/categorias/$slug': typeof CategoriasSlugRoute
   '/chat/$id': typeof ChatIdRoute
   '/orcamento/$providerId': typeof OrcamentoProviderIdRoute
@@ -374,7 +390,9 @@ export interface FileRoutesById {
   '/verify-otp': typeof VerifyOtpRoute
   '/.mcp/list-tools': typeof Char91DotmcpChar93ListToolsRoute
   '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
+  '/api/assistant': typeof ApiAssistantRoute
   '/api/chat': typeof ApiChatRoute
+  '/api/transcribe': typeof ApiTranscribeRoute
   '/categorias/$slug': typeof CategoriasSlugRoute
   '/chat/$id': typeof ChatIdRoute
   '/orcamento/$providerId': typeof OrcamentoProviderIdRoute
@@ -419,7 +437,9 @@ export interface FileRouteTypes {
     | '/verify-otp'
     | '/.mcp/list-tools'
     | '/.well-known/oauth-protected-resource'
+    | '/api/assistant'
     | '/api/chat'
+    | '/api/transcribe'
     | '/categorias/$slug'
     | '/chat/$id'
     | '/orcamento/$providerId'
@@ -462,7 +482,9 @@ export interface FileRouteTypes {
     | '/verify-otp'
     | '/.mcp/list-tools'
     | '/.well-known/oauth-protected-resource'
+    | '/api/assistant'
     | '/api/chat'
+    | '/api/transcribe'
     | '/categorias/$slug'
     | '/chat/$id'
     | '/orcamento/$providerId'
@@ -505,7 +527,9 @@ export interface FileRouteTypes {
     | '/verify-otp'
     | '/.mcp/list-tools'
     | '/.well-known/oauth-protected-resource'
+    | '/api/assistant'
     | '/api/chat'
+    | '/api/transcribe'
     | '/categorias/$slug'
     | '/chat/$id'
     | '/orcamento/$providerId'
@@ -549,7 +573,9 @@ export interface RootRouteChildren {
   VerifyOtpRoute: typeof VerifyOtpRoute
   Char91DotmcpChar93ListToolsRoute: typeof Char91DotmcpChar93ListToolsRoute
   Char91DotwellKnownChar93OauthProtectedResourceRoute: typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
+  ApiAssistantRoute: typeof ApiAssistantRoute
   ApiChatRoute: typeof ApiChatRoute
+  ApiTranscribeRoute: typeof ApiTranscribeRoute
   CategoriasSlugRoute: typeof CategoriasSlugRoute
   ChatIdRoute: typeof ChatIdRoute
   OrcamentoProviderIdRoute: typeof OrcamentoProviderIdRoute
@@ -750,11 +776,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof Char91DotwellKnownChar93OauthProtectedResourceRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/assistant': {
+      id: '/api/assistant'
+      path: '/api/assistant'
+      fullPath: '/api/assistant'
+      preLoaderRoute: typeof ApiAssistantRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/chat': {
       id: '/api/chat'
       path: '/api/chat'
       fullPath: '/api/chat'
       preLoaderRoute: typeof ApiChatRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/transcribe': {
+      id: '/api/transcribe'
+      path: '/api/transcribe'
+      fullPath: '/api/transcribe'
+      preLoaderRoute: typeof ApiTranscribeRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/categorias/': {
@@ -886,7 +926,9 @@ const rootRouteChildren: RootRouteChildren = {
   Char91DotmcpChar93ListToolsRoute: Char91DotmcpChar93ListToolsRoute,
   Char91DotwellKnownChar93OauthProtectedResourceRoute:
     Char91DotwellKnownChar93OauthProtectedResourceRoute,
+  ApiAssistantRoute: ApiAssistantRoute,
   ApiChatRoute: ApiChatRoute,
+  ApiTranscribeRoute: ApiTranscribeRoute,
   CategoriasSlugRoute: CategoriasSlugRoute,
   ChatIdRoute: ChatIdRoute,
   OrcamentoProviderIdRoute: OrcamentoProviderIdRoute,
