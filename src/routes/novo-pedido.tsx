@@ -318,10 +318,20 @@ function NewRequest() {
     }
   };
 
-  const category = useMemo(
-    () =>
-      activeCategories.find((c) => c.slug === categorySlug) ||
-      categories.find((c) => c.slug === categorySlug),
+  const category = useMemo<Category & { displayName: string } | undefined>(
+    () => {
+      const base =
+        activeCategories.find((c) => c.slug === categorySlug) ||
+        categories.find((c) => c.slug === categorySlug);
+      if (!base) return undefined;
+      return {
+        ...base,
+        displayName:
+          "displayName" in base && base.displayName
+            ? base.displayName
+            : categoryDisplayName[base.slug] || base.name,
+      };
+    },
     [categorySlug, activeCategories],
   );
 
