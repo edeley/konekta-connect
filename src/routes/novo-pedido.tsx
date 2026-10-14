@@ -36,7 +36,7 @@ import { AppShell } from "@/components/AppShell";
 import { ScreenHeader, Section, KCard, ProgressSteps } from "@/components/konekta/kit";
 import { Button } from "@/components/ui/button";
 import { CameraCaptureModal } from "@/components/CameraCaptureModal";
-import { categories } from "@/lib/konekta-data";
+import { categories, type Category } from "@/lib/konekta-data";
 import {
   categoryDisplayName,
   categoryEmoji,
