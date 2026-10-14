@@ -205,13 +205,8 @@ function NewRequest() {
       activeCategories.find((c) => c.slug === smartRead.categorySlug) ||
       categories.find((c) => c.slug === smartRead.categorySlug);
     if (!base) return undefined;
-    return {
-      ...base,
-      displayName:
-        "displayName" in base && base.displayName
-          ? base.displayName
-          : categoryDisplayName[base.slug] || base.name,
-    };
+    const displayName: string = categoryDisplayName[base.slug] || base.name;
+    return { slug: base.slug, name: base.name, tint: base.tint, displayName };
   }, [smartRead, activeCategories]);
 
   const smartCategoryIsActive = useMemo(() => {
@@ -324,13 +319,8 @@ function NewRequest() {
         activeCategories.find((c) => c.slug === categorySlug) ||
         categories.find((c) => c.slug === categorySlug);
       if (!base) return undefined;
-      return {
-        ...base,
-        displayName:
-          "displayName" in base && base.displayName
-            ? base.displayName
-            : categoryDisplayName[base.slug] || base.name,
-      };
+      const displayName: string = categoryDisplayName[base.slug] || base.name;
+      return { slug: base.slug, name: base.name, tint: base.tint, displayName };
     },
     [categorySlug, activeCategories],
   );
