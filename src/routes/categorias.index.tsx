@@ -323,7 +323,7 @@ function CategoriasPage() {
                       <Link
                         to="/categorias/$slug"
                         params={{ slug: c.slug }}
-                        search={{}}
+                        search={{ q: undefined, distrito: undefined, distancia: undefined }}
                         className="press flex h-full items-start gap-3.5 rounded-2xl border border-border bg-card p-4 transition-all hover:border-primary/40 hover:shadow-soft group"
                       >
                         <span

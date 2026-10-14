@@ -620,7 +620,7 @@ function Home() {
                     key={c.slug}
                     to="/categorias/$slug"
                     params={{ slug: c.slug }}
-                    search={{}}
+                    search={{ q: undefined, distrito: undefined, distancia: undefined }}
                     preload="intent"
                     className="flex flex-col items-center gap-1.5 p-3 rounded-xl border border-border bg-card hover:border-primary/40 hover:shadow-soft transition-all text-center group press"
                   >
