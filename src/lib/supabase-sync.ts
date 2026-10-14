@@ -158,7 +158,7 @@ export async function testSupabaseConnection(): Promise<{
   if (!isSupabaseConfigured()) {
     return {
       connected: false,
-      message: "Variáveis VITE_SUPABASE_URL e VITE_SUPABASE_ANON_KEY não preenchidas no Settings.",
+      message: "Ligação ao Lovable Cloud ainda não configurada.",
     };
   }
 
