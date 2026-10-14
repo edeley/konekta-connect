@@ -201,10 +201,17 @@ function NewRequest() {
   );
   const smartCategory = useMemo(() => {
     if (!smartRead?.categorySlug) return undefined;
-    return (
+    const base =
       activeCategories.find((c) => c.slug === smartRead.categorySlug) ||
-      categories.find((c) => c.slug === smartRead.categorySlug)
-    );
+      categories.find((c) => c.slug === smartRead.categorySlug);
+    if (!base) return undefined;
+    return {
+      ...base,
+      displayName:
+        "displayName" in base && base.displayName
+          ? base.displayName
+          : categoryDisplayName[base.slug] || base.name,
+    };
   }, [smartRead, activeCategories]);
 
   const smartCategoryIsActive = useMemo(() => {
