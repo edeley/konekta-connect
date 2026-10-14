@@ -1,6 +1,6 @@
 import type { User } from "@supabase/supabase-js";
 import { getSupabase } from "./supabase";
-import { store, type UserProfile } from "./store";
+import { store, type User as LocalUser } from "./store";
 
 export interface SupabaseAuthResult {
   success: boolean;
@@ -103,9 +103,10 @@ export async function registerWithSupabase(params: {
     }
 
     // 3. Atualizar o estado local da app (Store)
-    const localProfile: UserProfile = {
+    const localProfile: LocalUser = {
+      id: authUser.id,
       name: params.name,
-      phone: params.phone,
+      phone: params.phone || authEmail,
       email: params.email,
       role: params.role,
       district: params.district || "Água Grande",
@@ -164,13 +165,15 @@ export async function loginWithSupabase(params: {
 
     const role = (profileData?.role ||
       authUser.user_metadata?.role ||
-      "cliente") as UserProfile["role"];
+      "cliente") as LocalUser["role"];
     const name = profileData?.name || authUser.user_metadata?.name || authEmail.split("@")[0];
-    const phone = profileData?.phone || authUser.user_metadata?.phone || params.phone;
+    const phone =
+      profileData?.phone || authUser.user_metadata?.phone || params.phone || authEmail;
     const district = profileData?.district || authUser.user_metadata?.district || "Água Grande";
     const walletBalance = Number(profileData?.wallet_balance) || 0;
 
-    const localProfile: UserProfile = {
+    const localProfile: LocalUser = {
+      id: authUser.id,
       name,
       phone,
       email: params.email || authEmail,
@@ -204,7 +207,7 @@ export async function logoutWithSupabase(): Promise<void> {
       // Ignora falhas de rede no logout
     }
   }
-  store.logout();
+  store.signOut();
 }
 
 /**
@@ -226,8 +229,9 @@ export async function restoreSupabaseSession(): Promise<void> {
 
       if (profile) {
         store.setUser({
+          id: authUser.id,
           name: profile.name,
-          phone: profile.phone,
+          phone: profile.phone || authUser.phone || "",
           email: profile.email,
           role: profile.role,
           district: profile.district,

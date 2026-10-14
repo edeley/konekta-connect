@@ -738,7 +738,8 @@ function AssistantPage() {
                   </div>
                 </div>
                 <Link
-                  to={`/pedido/${userContext.activeOrders[0].id}`}
+                  to="/pedido/$id"
+                  params={{ id: userContext.activeOrders[0].id }}
                   className="text-[10px] font-bold text-primary shrink-0 hover:underline flex items-center gap-0.5"
                 >
                   <span>Acompanhar</span>

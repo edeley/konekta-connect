@@ -186,7 +186,7 @@ export function buildSanitizedUserContext(params: {
       serviceTitle: o.service,
       total: o.total,
       district: o.district || "São Tomé",
-      providerName: o.provider,
+      providerName: o.providerId,
       date: o.scheduledFor,
     }));
 
@@ -235,7 +235,7 @@ export function buildSanitizedUserContext(params: {
       title: r.title,
       district: r.district,
       urgency: r.urgency,
-      proposalsCount: r.proposalsCount || (r.proposals ? r.proposals.length : 0),
+      proposalsCount: r.proposals?.length ?? 0,
     }));
 
   // Transações recentes consolidadas

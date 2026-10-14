@@ -1,91 +1,71 @@
-import { createClient, type SupabaseClient } from "@supabase/supabase-js";
-
-// Obter variáveis de ambiente públicas do Vite ou fallback configurado
-const DEFAULT_SUPABASE_URL = "https://yfaxyxgldqikimpswgld.supabase.co";
-const DEFAULT_SUPABASE_ANON_KEY = "sb_publishable_KSqw4ybwFsnNnYk-X9N1-g_2OoDzL-y";
-
-const supabaseUrl =
-  (typeof import.meta !== "undefined" && import.meta.env?.VITE_SUPABASE_URL) ||
-  (typeof window !== "undefined" && window.localStorage?.getItem("konekta_supabase_url")) ||
-  DEFAULT_SUPABASE_URL;
-
-const supabaseAnonKey =
-  (typeof import.meta !== "undefined" && import.meta.env?.VITE_SUPABASE_ANON_KEY) ||
-  DEFAULT_SUPABASE_ANON_KEY;
+import type { SupabaseClient } from "@supabase/supabase-js";
+import { supabase as cloudSupabase } from "@/integrations/supabase/client";
 
 /**
- * Cliente singleton do Supabase com inicialização segura e preguiçosa.
- * Se as variáveis ainda não tiverem sido configuradas no painel de Settings,
- * o cliente avisa graciosamente em vez de quebrar a aplicação.
+ * Ligação à nuvem KONEKTA.
+ *
+ * A base de dados é gerida pelo Lovable Cloud: o cliente é gerado
+ * automaticamente e lê VITE_SUPABASE_URL / VITE_SUPABASE_PUBLISHABLE_KEY.
+ * Este módulo mantém a API antiga da app (getSupabase, isSupabaseConfigured,
+ * ...) por cima desse cliente, para que a autenticação, a sincronização e as
+ * definições continuem a funcionar sem alterações.
  */
-let clientInstance: SupabaseClient | null = null;
 
-export function getSupabase(): SupabaseClient | null {
-  if (clientInstance) return clientInstance;
-
-  const currentUrl =
-    (typeof import.meta !== "undefined" && import.meta.env?.VITE_SUPABASE_URL) ||
-    (typeof window !== "undefined" && window.localStorage?.getItem("konekta_supabase_url")) ||
-    supabaseUrl;
-
-  const currentAnonKey =
-    (typeof import.meta !== "undefined" && import.meta.env?.VITE_SUPABASE_ANON_KEY) ||
-    supabaseAnonKey ||
-    DEFAULT_SUPABASE_ANON_KEY;
-
-  if (currentUrl && currentAnonKey) {
-    clientInstance = createClient(currentUrl, currentAnonKey, {
-      auth: {
-        persistSession: true,
-        autoRefreshToken: true,
-      },
-    });
-    return clientInstance;
+function readEnv(name: string): string {
+  try {
+    const viteValue =
+      typeof import.meta !== "undefined" && import.meta.env
+        ? (import.meta.env as Record<string, string | undefined>)[name]
+        : undefined;
+    if (viteValue) return viteValue;
+  } catch {
+    // import.meta indisponível
   }
 
-  return null;
-}
-
-/**
- * Permite definir e salvar o URL do Supabase localmente para conexões imediatas
- */
-export function setSupabaseUrl(url: string): void {
-  if (typeof window !== "undefined") {
-    const trimmed = url.trim();
-    if (trimmed) {
-      window.localStorage.setItem("konekta_supabase_url", trimmed);
-    } else {
-      window.localStorage.removeItem("konekta_supabase_url");
+  try {
+    if (typeof process !== "undefined" && process.env) {
+      return process.env[name] || "";
     }
-    clientInstance = null; // Reinicializa o cliente na próxima chamada
+  } catch {
+    // process indisponível no browser
   }
+
+  return "";
 }
 
+const CLOUD_URL = readEnv("VITE_SUPABASE_URL") || readEnv("SUPABASE_URL");
+const CLOUD_KEY = readEnv("VITE_SUPABASE_PUBLISHABLE_KEY") || readEnv("SUPABASE_PUBLISHABLE_KEY");
+
 /**
- * Informa se a conexão com o Supabase está ativa e configurada
+ * Informa se a ligação à nuvem está ativa e configurada
  */
 export function isSupabaseConfigured(): boolean {
-  const currentUrl =
-    (typeof import.meta !== "undefined" && import.meta.env?.VITE_SUPABASE_URL) ||
-    (typeof window !== "undefined" && window.localStorage?.getItem("konekta_supabase_url")) ||
-    supabaseUrl;
-
-  const currentKey =
-    (typeof import.meta !== "undefined" && import.meta.env?.VITE_SUPABASE_ANON_KEY) ||
-    supabaseAnonKey ||
-    DEFAULT_SUPABASE_ANON_KEY;
-
-  return Boolean(currentUrl && currentKey);
+  return Boolean(CLOUD_URL && CLOUD_KEY);
 }
 
+/**
+ * URL da base de dados em uso (gerida pelo Lovable Cloud)
+ */
 export function getCurrentSupabaseUrl(): string {
-  if (typeof import.meta !== "undefined" && import.meta.env?.VITE_SUPABASE_URL) {
-    return import.meta.env.VITE_SUPABASE_URL;
-  }
-  if (typeof window !== "undefined") {
-    return window.localStorage?.getItem("konekta_supabase_url") || DEFAULT_SUPABASE_URL;
-  }
-  return DEFAULT_SUPABASE_URL;
+  return CLOUD_URL;
+}
+
+/**
+ * Cliente singleton da nuvem. Devolve null apenas quando a ligação
+ * ainda não está configurada, para que a app continue em modo offline.
+ */
+export function getSupabase(): SupabaseClient | null {
+  if (!isSupabaseConfigured()) return null;
+  return cloudSupabase as unknown as SupabaseClient;
+}
+
+/**
+ * Mantido por compatibilidade com o ecrã de definições.
+ * A base de dados é a do Lovable Cloud, por isso definir um URL próprio
+ * deixa de alterar o destino dos dados.
+ */
+export function setSupabaseUrl(_url: string): void {
+  // Sem efeito: a app usa exclusivamente a ligação gerida pelo Lovable Cloud.
 }
 
 /**

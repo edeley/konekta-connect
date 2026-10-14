@@ -307,7 +307,7 @@ DIRETRIZES DE ATUAÇÃO E PROTOCOLOS 'KONEKTA CONNECT':
             };
 
             // Adicionar ferramenta de Google Maps se relevante para geolocalização em STP
-            if (isMapsQuery || role === "maps") {
+            if (isMapsQuery) {
               config.tools = [{ googleMaps: {} }];
               config.toolConfig = {
                 retrievalConfig: {

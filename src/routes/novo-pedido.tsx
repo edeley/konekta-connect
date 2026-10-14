@@ -36,7 +36,7 @@ import { AppShell } from "@/components/AppShell";
 import { ScreenHeader, Section, KCard, ProgressSteps } from "@/components/konekta/kit";
 import { Button } from "@/components/ui/button";
 import { CameraCaptureModal } from "@/components/CameraCaptureModal";
-import { categories } from "@/lib/konekta-data";
+import { categories, type Category } from "@/lib/konekta-data";
 import {
   categoryDisplayName,
   categoryEmoji,
@@ -199,12 +199,14 @@ function NewRequest() {
     () => (smartText.trim().length >= 6 ? analyzeRequestText(smartText) : null),
     [smartText],
   );
-  const smartCategory = useMemo(() => {
+  const smartCategory = useMemo<Category & { displayName: string } | undefined>(() => {
     if (!smartRead?.categorySlug) return undefined;
-    return (
+    const base =
       activeCategories.find((c) => c.slug === smartRead.categorySlug) ||
-      categories.find((c) => c.slug === smartRead.categorySlug)
-    );
+      categories.find((c) => c.slug === smartRead.categorySlug);
+    if (!base) return undefined;
+    const displayName: string = categoryDisplayName[base.slug] || base.name;
+    return { slug: base.slug, name: base.name, tint: base.tint, displayName };
   }, [smartRead, activeCategories]);
 
   const smartCategoryIsActive = useMemo(() => {
@@ -311,10 +313,15 @@ function NewRequest() {
     }
   };
 
-  const category = useMemo(
-    () =>
-      activeCategories.find((c) => c.slug === categorySlug) ||
-      categories.find((c) => c.slug === categorySlug),
+  const category = useMemo<Category & { displayName: string } | undefined>(
+    () => {
+      const base =
+        activeCategories.find((c) => c.slug === categorySlug) ||
+        categories.find((c) => c.slug === categorySlug);
+      if (!base) return undefined;
+      const displayName: string = categoryDisplayName[base.slug] || base.name;
+      return { slug: base.slug, name: base.name, tint: base.tint, displayName };
+    },
     [categorySlug, activeCategories],
   );
 

@@ -64,6 +64,8 @@ export type Provider = {
   phone?: string;
   status?: string;
   verified?: boolean;
+  badges?: string[];
+  experienceYears?: number;
 };
 
 export const providers: Provider[] = [

@@ -76,6 +76,12 @@ export function SaoWalletRechargeModal({
       return;
     }
 
+    if (!proofImage) {
+      toast.error("Anexe o comprovativo ou recibo de pagamento. Sem comprovativo o pedido não pode ser validado.");
+      return;
+    }
+
+
     setIsSubmitting(true);
     const method = tab === "agente" ? "sao_wallet_agente" : "sao_wallet_digital";
     const res = store.createDepositRequest({
@@ -380,18 +386,14 @@ export function SaoWalletRechargeModal({
             {/* Anexo de Talão / Comprovativo Físico (Mais comum em Agente) */}
             <div>
               <label className="text-xs font-bold text-zinc-700 dark:text-zinc-300 block mb-1.5">
-                Foto do Talão ou Captura de Ecrã (Opcional)
+                Foto do Talão ou Captura de Ecrã (Obrigatório)
               </label>
               <ProofUpload
-                onUploadComplete={(url, name) => {
-                  setProofImage(url);
+                value={proofImage}
+                fileName={proofFileName}
+                onChange={(dataUrl, name) => {
+                  setProofImage(dataUrl);
                   setProofFileName(name);
-                }}
-                currentUrl={proofImage}
-                currentFileName={proofFileName}
-                onRemove={() => {
-                  setProofImage(undefined);
-                  setProofFileName(undefined);
                 }}
               />
             </div>

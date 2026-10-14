@@ -1,4 +1,4 @@
-import { categories, providers, type Provider } from "./konekta-data";
+import { categories, providers, type Category, type Provider } from "./konekta-data";
 import { evaluateSmartMatch } from "./search-engine";
 
 export { categories as CATEGORIES_DATA };

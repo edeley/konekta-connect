@@ -809,7 +809,7 @@ function ChatDetail() {
                         ⚡ Serviço Contratado em Execução #{activeOrder.id}
                       </span>
                       <p className="font-bold text-foreground text-xs truncate">
-                        {activeOrder.title || "Serviço Ativo"} ({activeOrder.status})
+                        {activeOrder.service || "Serviço Ativo"} ({activeOrder.status})
                       </p>
                     </div>
                     <Link
@@ -870,10 +870,10 @@ function ChatDetail() {
                       >
                         <div className="min-w-0">
                           <span className="font-semibold text-foreground truncate block">
-                            📦 Pedido #{o.id} · {o.title || "Serviço"}
+                            📦 Pedido #{o.id} · {o.service || "Serviço"}
                           </span>
                           <span className="text-[10px] text-muted-foreground">
-                            {formatDb(o.price)} · Estado:{" "}
+                            {formatDb(o.total)} · Estado:{" "}
                             <strong className="text-foreground">{o.status}</strong>
                           </span>
                         </div>
