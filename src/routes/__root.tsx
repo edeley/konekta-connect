@@ -15,6 +15,8 @@ import { Toaster } from "@/components/ui/sonner";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 import { useStore } from "@/lib/store";
 import { initAlarmWatcher } from "@/lib/sync-manager";
+import { fetchRemoteOrders } from "@/lib/supabase-sync";
+import { restoreSupabaseSession } from "@/lib/supabase-auth";
 import { AppShield } from "@/components/konekta/AppShield";
 
 function NotFoundComponent() {
@@ -150,15 +152,41 @@ function RootShell({ children }: { children: ReactNode }) {
                 event.preventDefault();
                 window.location.reload();
               });
-              window.addEventListener('error', function(event) {
-                if (event.message && (event.message.indexOf('Failed to fetch dynamically imported module') !== -1 || event.message.indexOf('Failed to load module script') !== -1)) {
-                  event.preventDefault();
-                  var lastReload = sessionStorage.getItem('konekta_dyn_reload');
+
+              function handleDynamicImportError(err) {
+                var message = (err && (err.message || (typeof err === 'string' ? err : ''))) || '';
+                if (
+                  message.indexOf('Failed to fetch dynamically imported module') !== -1 ||
+                  message.indexOf('Failed to load module script') !== -1 ||
+                  message.indexOf('error loading dynamically imported module') !== -1 ||
+                  message.indexOf('client.tsx') !== -1
+                ) {
+                  var retries = parseInt(sessionStorage.getItem('konekta_import_retries') || '0', 10);
+                  var lastTry = parseInt(sessionStorage.getItem('konekta_dyn_reload') || '0', 10);
                   var now = Date.now();
-                  if (!lastReload || now - parseInt(lastReload, 10) > 4000) {
-                    sessionStorage.setItem('konekta_dyn_reload', now.toString());
-                    window.location.reload();
+                  if (now - lastTry > 1500 && retries < 4) {
+                    sessionStorage.setItem('konekta_dyn_reload', String(now));
+                    sessionStorage.setItem('konekta_import_retries', String(retries + 1));
+                    setTimeout(function() {
+                      window.location.reload();
+                    }, Math.min(600 * (retries + 1), 2500));
                   }
+                  return true;
+                }
+                return false;
+              }
+
+              window.addEventListener('unhandledrejection', function(event) {
+                if (handleDynamicImportError(event.reason)) {
+                  event.preventDefault();
+                  console.warn('[KONEKTA Shield] Intercetada falha transitória de importação de módulo dinâmico.');
+                }
+              });
+
+              window.addEventListener('error', function(event) {
+                if (handleDynamicImportError(event.error || event.message)) {
+                  event.preventDefault();
+                  console.warn('[KONEKTA Shield] Intercetado erro de script de módulo.');
                 }
               });
             `,
@@ -189,6 +217,8 @@ function RootComponent() {
 
   useEffect(() => {
     initAlarmWatcher();
+    restoreSupabaseSession().catch(() => {});
+    fetchRemoteOrders().catch(() => {});
   }, []);
 
   return (

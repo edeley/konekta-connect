@@ -21,6 +21,8 @@ import {
   Smartphone,
   Info,
   Camera,
+  Database,
+  RefreshCw,
 } from "lucide-react";
 import { AppShell } from "@/components/AppShell";
 import { Section, KCard, BottomSheet } from "@/components/konekta/kit";
@@ -28,6 +30,8 @@ import { ProfileSwitcher } from "@/components/konekta/ProfileSwitcher";
 import { AlarmSyncModal } from "@/components/konekta/AlarmSyncModal";
 import { store, useStore } from "@/lib/store";
 import { cn } from "@/lib/utils";
+import { isSupabaseConfigured, getCurrentSupabaseUrl, setSupabaseUrl } from "@/lib/supabase";
+import { testSupabaseConnection, fetchRemoteOrders } from "@/lib/supabase-sync";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/definicoes")({
@@ -79,6 +83,38 @@ function SettingsPage() {
   const [currentPass, setCurrentPass] = useState("");
   const [newPass, setNewPass] = useState("");
   const [savingPass, setSavingPass] = useState(false);
+
+  // Supabase Connection State
+  const [testingSupabase, setTestingSupabase] = useState(false);
+  const [supabaseStatusMsg, setSupabaseStatusMsg] = useState<string | null>(null);
+  const [customSupabaseUrl, setCustomSupabaseUrl] = useState(() => getCurrentSupabaseUrl());
+  const [isEditingUrl, setIsEditingUrl] = useState(false);
+
+  async function handleSaveSupabaseUrl() {
+    setSupabaseUrl(customSupabaseUrl);
+    setIsEditingUrl(false);
+    toast.success("URL do Supabase atualizado!");
+    await handleTestSupabase();
+  }
+
+  async function handleTestSupabase() {
+    setTestingSupabase(true);
+    setSupabaseStatusMsg(null);
+    try {
+      const result = await testSupabaseConnection();
+      setSupabaseStatusMsg(result.message);
+      if (result.connected) {
+        toast.success("Supabase conectado com sucesso!");
+        await fetchRemoteOrders();
+      } else {
+        toast.info("Status da verificação do Supabase recebido");
+      }
+    } catch {
+      toast.error("Erro inesperado ao testar conexão.");
+    } finally {
+      setTestingSupabase(false);
+    }
+  }
 
   function handleSaveProfile(e: React.FormEvent) {
     e.preventDefault();
@@ -561,6 +597,115 @@ function SettingsPage() {
                 <ChevronRight size={14} className="text-muted-foreground" />
               </a>
             </div>
+          </div>
+        </Section>
+
+        {/* Integração e Banco de Dados Supabase */}
+        <Section title="Banco de Dados na Nuvem">
+          <div className="rounded-3xl border border-border/80 bg-card p-4 space-y-3">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-emerald-500/10 text-emerald-600">
+                  <Database size={20} />
+                </div>
+                <div>
+                  <p className="text-sm font-bold text-foreground">Conexão Supabase</p>
+                  <p className="text-xs text-muted-foreground">
+                    {isSupabaseConfigured()
+                      ? "Variáveis de ambiente detetadas"
+                      : "Aguardando VITE_SUPABASE_URL e VITE_SUPABASE_ANON_KEY"}
+                  </p>
+                </div>
+              </div>
+              <span
+                className={cn(
+                  "inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold",
+                  isSupabaseConfigured()
+                    ? "bg-emerald-500/10 text-emerald-600"
+                    : "bg-amber-500/10 text-amber-600",
+                )}
+              >
+                <span
+                  className={cn(
+                    "w-2 h-2 rounded-full",
+                    isSupabaseConfigured() ? "bg-emerald-500 animate-pulse" : "bg-amber-500",
+                  )}
+                />
+                {isSupabaseConfigured() ? "Configurado" : "Pendente"}
+              </span>
+            </div>
+
+            <p className="text-xs text-muted-foreground leading-relaxed">
+              Sincroniza pedidos, orçamentos e transações diretamente com o PostgreSQL gerenciado no
+              Supabase.
+            </p>
+
+            <div className="space-y-2 pt-1 border-t border-border/60">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-semibold text-foreground">
+                  Project URL (Supabase)
+                </span>
+                {!isEditingUrl ? (
+                  <button
+                    type="button"
+                    onClick={() => setIsEditingUrl(true)}
+                    className="text-[11px] font-bold text-primary hover:underline"
+                  >
+                    {customSupabaseUrl ? "Alterar URL" : "Inserir URL"}
+                  </button>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => setIsEditingUrl(false)}
+                    className="text-[11px] font-bold text-muted-foreground hover:underline"
+                  >
+                    Cancelar
+                  </button>
+                )}
+              </div>
+
+              {isEditingUrl ? (
+                <div className="space-y-2">
+                  <input
+                    type="url"
+                    placeholder="https://xyzcompany.supabase.co"
+                    value={customSupabaseUrl}
+                    onChange={(e) => setCustomSupabaseUrl(e.target.value)}
+                    className="w-full px-3 py-2 rounded-xl bg-background border border-border/80 text-xs text-foreground focus:outline-none focus:ring-1 focus:ring-primary"
+                  />
+                  <button
+                    type="button"
+                    onClick={handleSaveSupabaseUrl}
+                    className="w-full py-2 px-3 rounded-xl bg-emerald-600 text-white font-bold text-xs flex items-center justify-center gap-1.5 hover:bg-emerald-700 transition"
+                  >
+                    <Check size={14} />
+                    <span>Guardar URL e Conectar</span>
+                  </button>
+                </div>
+              ) : (
+                <p className="text-[11px] text-muted-foreground font-mono truncate bg-muted/40 p-2 rounded-xl">
+                  {customSupabaseUrl || "Nenhum URL configurado ainda (clique em Inserir URL)"}
+                </p>
+              )}
+            </div>
+
+            {supabaseStatusMsg && (
+              <div className="p-3 rounded-2xl bg-muted/60 border border-border/60 text-xs font-medium text-foreground">
+                {supabaseStatusMsg}
+              </div>
+            )}
+
+            <button
+              type="button"
+              onClick={handleTestSupabase}
+              disabled={testingSupabase}
+              className="w-full py-2.5 px-4 rounded-xl bg-primary text-primary-foreground font-bold text-xs flex items-center justify-center gap-2 hover:opacity-90 transition disabled:opacity-50"
+            >
+              <RefreshCw size={14} className={testingSupabase ? "animate-spin" : ""} />
+              <span>
+                {testingSupabase ? "A verificar conexão..." : "Testar Conexão com o Supabase"}
+              </span>
+            </button>
           </div>
         </Section>
 

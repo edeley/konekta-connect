@@ -1,7 +1,6 @@
 import { QueryClient } from "@tanstack/react-query";
 import { createRouter } from "@tanstack/react-router";
 import { routeTree } from "./routeTree.gen";
-import { RoutePendingSkeleton } from "./components/RoutePendingSkeleton";
 
 export const getRouter = () => {
   const queryClient = new QueryClient({
@@ -22,9 +21,6 @@ export const getRouter = () => {
     defaultPreload: "intent", // Pré-carrega rotas e módulos ao passar o dedo/cursor
     defaultPreloadDelay: 60, // Evita disparar pré-carregamento em toques acidentais/scroll rápido
     defaultPreloadStaleTime: 60_000, // 60s de validade para evitar downloads duplicados
-    defaultPendingComponent: RoutePendingSkeleton,
-    defaultPendingMs: 180, // Não mostra flash de carregador se carregar em menos de 180ms
-    defaultPendingMinMs: 300, // Evita cintilação rápida se o carregador aparecer
   });
 
   return router;

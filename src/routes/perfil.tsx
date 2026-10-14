@@ -30,6 +30,7 @@ import {
 import { AppShell } from "@/components/AppShell";
 import { Section, KCard, StatusPill, ListRow, BottomSheet } from "@/components/konekta/kit";
 import { store, useStore } from "@/lib/store";
+import { logoutWithSupabase } from "@/lib/supabase-auth";
 import { documentStateMeta } from "@/lib/states";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
@@ -95,6 +96,7 @@ function ProfilePage() {
         : "em_analise";
 
   function handleSignOut() {
+    logoutWithSupabase().catch(() => {});
     store.signOut();
     toast.info("Sessão terminada. Até breve!");
     navigate({ to: "/login", replace: true });

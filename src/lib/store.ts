@@ -42,6 +42,7 @@ import {
   slugifyCategory,
   type ActiveCategory,
 } from "./catalog";
+import { syncOrderToSupabase, syncTransactionToSupabase } from "./supabase-sync";
 
 export type UnservedServiceRequest = {
   id: string;
@@ -2215,11 +2216,29 @@ export const store = {
       tone: "success",
       link: "/pedidos",
     });
+
+    // Sincronização automática em segundo plano com o Supabase
+    syncOrderToSupabase(order).catch(() => {});
+    if (payWithWallet) {
+      syncTransactionToSupabase({
+        id: `t_${Date.now()}`,
+        kind: "out",
+        label: `Reserva — ${input.service}`,
+        amount: input.total,
+        at: Date.now(),
+      }).catch(() => {});
+    }
+
     return order;
   },
 
   updateOrder(id: string, patch: Partial<Order>) {
-    set({ orders: state.orders.map((o) => (o.id === id ? { ...o, ...patch } : o)) });
+    const updatedOrders = state.orders.map((o) => (o.id === id ? { ...o, ...patch } : o));
+    set({ orders: updatedOrders });
+    const updated = updatedOrders.find((o) => o.id === id);
+    if (updated) {
+      syncOrderToSupabase(updated).catch(() => {});
+    }
   },
 
   startService(id: string) {

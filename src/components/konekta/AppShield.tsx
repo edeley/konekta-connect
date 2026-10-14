@@ -84,11 +84,13 @@ export class SafeErrorBoundary extends React.Component<
  * continuam operacionais.
  */
 export function ConnectivityShield() {
+  const [mounted, setMounted] = useState<boolean>(false);
   const [isOnline, setIsOnline] = useState<boolean>(true);
   const [wasOffline, setWasOffline] = useState<boolean>(false);
   const [showRestoredNotice, setShowRestoredNotice] = useState<boolean>(false);
 
   useEffect(() => {
+    setMounted(true);
     if (typeof window === "undefined") return;
 
     setIsOnline(navigator.onLine);
@@ -115,6 +117,10 @@ export function ConnectivityShield() {
       window.removeEventListener("offline", handleOffline);
     };
   }, [wasOffline]);
+
+  if (!mounted) {
+    return null;
+  }
 
   if (!isOnline) {
     return (

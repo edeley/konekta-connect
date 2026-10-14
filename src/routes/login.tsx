@@ -2,6 +2,7 @@ import { useState } from "react";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { toast } from "sonner";
 import { store } from "@/lib/store";
+import { loginWithSupabase } from "@/lib/supabase-auth";
 import { Smartphone, Mail, X, ChevronDown, Search, Check, Eye, EyeOff } from "lucide-react";
 import { COUNTRIES, DEFAULT_COUNTRY, Country } from "@/lib/countries";
 import { cn } from "@/lib/utils";
@@ -90,20 +91,46 @@ function LoginPage() {
     }
 
     setLoading(true);
-    setTimeout(() => {
-      const fullPhone = `${selectedCountry.code} ${selectedCountry.format(phone)}`;
-      store.signIn({
-        phone: method === "phone" ? fullPhone : undefined,
-        email: method === "email" ? email.trim() : undefined,
-        name:
-          method === "email" ? email.split("@")[0] : `Utilizador ${phone.slice(-4) || "KONEKTA"}`,
-        password: pass,
-        role: "cliente",
+    const fullPhone = `${selectedCountry.code} ${selectedCountry.format(phone)}`;
+
+    // Tentar autenticar com Supabase Auth
+    loginWithSupabase({
+      phone: method === "phone" ? fullPhone : undefined,
+      email: method === "email" ? email.trim() : undefined,
+      password: pass,
+    })
+      .then((res) => {
+        if (!res.success) {
+          // Se for erro de credenciais ou rede, faz fallback local transparente
+          store.signIn({
+            phone: method === "phone" ? fullPhone : undefined,
+            email: method === "email" ? email.trim() : undefined,
+            name:
+              method === "email"
+                ? email.split("@")[0]
+                : `Utilizador ${phone.slice(-4) || "KONEKTA"}`,
+            password: pass,
+            role: "cliente",
+          });
+        }
+        store.markOnboarded();
+        setLoading(false);
+        toast.success("Sessão iniciada com sucesso!");
+        navigate({ to: "/" });
+      })
+      .catch(() => {
+        store.signIn({
+          phone: method === "phone" ? fullPhone : undefined,
+          email: method === "email" ? email.trim() : undefined,
+          name:
+            method === "email" ? email.split("@")[0] : `Utilizador ${phone.slice(-4) || "KONEKTA"}`,
+          password: pass,
+          role: "cliente",
+        });
+        store.markOnboarded();
+        setLoading(false);
+        navigate({ to: "/" });
       });
-      store.markOnboarded();
-      setLoading(false);
-      navigate({ to: "/" });
-    }, 600);
   };
 
   return (

@@ -27,6 +27,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { store, useStore } from "@/lib/store";
+import { registerWithSupabase } from "@/lib/supabase-auth";
 import { cn } from "@/lib/utils";
 import { COUNTRIES, DEFAULT_COUNTRY, findCountryByCodeOrIso, Country } from "@/lib/countries";
 
@@ -892,6 +893,18 @@ function RegistoPage() {
             city: "São Tomé",
           });
         }
+
+        // Criar utilizador nativo no Supabase Auth em segundo plano com as credenciais
+        registerWithSupabase({
+          phone: formattedPhone,
+          email: email.trim() || undefined,
+          password: password,
+          name: fullName.trim() || proName.trim() || "Utilizador KONEKTA",
+          role: role,
+          district: selectedDistricts[0] || "Água Grande",
+        }).catch((err) => {
+          console.warn("[Supabase Auth] Registro em segundo plano:", err);
+        });
 
         store.markOnboarded();
         setSubmitting(false);

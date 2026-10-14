@@ -31,4 +31,12 @@ startTransition(() => {
       <StartClient />
     </StrictMode>,
   );
+  if (typeof window !== "undefined") {
+    try {
+      sessionStorage.removeItem("konekta_dyn_reload");
+      sessionStorage.removeItem("konekta_import_retries");
+    } catch {
+      // ignore
+    }
+  }
 });
